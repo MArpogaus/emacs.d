@@ -1,5 +1,5 @@
 #+TITLE: Emacs Literate Configuration
-#+AUTHOR: Your Name Here
+#+AUTHOR: Marcel Arpogaus
 #+PROPERTY: header-args :tangle yes
 
 * Configuration
@@ -18,15 +18,49 @@
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
+  - [[#better-defaults][Better Defaults]]
+    - [[#startup][Startup]]
+    - [[#encoding][Encoding]]
+    - [[#recovery][Recovery]]
+    - [[#bookmarks][Bookmarks]]
+    - [[#history][History]]
+    - [[#cursor][Cursor]]
+    - [[#customization-file][Customization File]]
+    - [[#cursor-1][Cursor]]
+    - [[#text][Text]]
+    - [[#mouse][Mouse]]
+    - [[#scroll][Scroll]]
+    - [[#typography][Typography]]
+    - [[#default-mode][Default mode]]
+    - [[#tabulations][Tabulations]]
+    - [[#time-stamp-in-header][time-stamp in header]]
+    - [[#change-re-builder-syntax][Change re-builder syntax]]
   - [[#packages][Packages]]
+    - [[#recent-files][Recent files]]
+    - [[#highlighting-current-line][Highlighting current line]]
+    - [[#parenthesis][Parenthesis]]
+    - [[#server][Server]]
     - [[#evil][Evil]]
-    - [[#ivy][Ivy]]
-    - [[#counsel][Counsel]]
+    - [[#keyboard][Keyboard]]
+    - [[#vertico][Vertico]]
+    - [[#savehist][Savehist]]
     - [[#swiper][Swiper]]
     - [[#magit][Magit]]
     - [[#projectile][Projectile]]
+    - [[#ascii-art-to-unicode][ascii-art-to-unicode]]
+    - [[#all-the-icons][all-the-icons]]
+    - [[#pdf-tools][pdf-tools]]
+    - [[#citar][Citar]]
     - [[#org][Org]]
-    - [[#toc-org][Toc-org]]
+    - [[#evil-org-mode][evil-org-mode]]
+    - [[#org-brain][org-brain]]
+    - [[#org-noter][org-noter]]
+    - [[#toc-org][toc-org]]
+    - [[#org-cliplink][org-cliplink]]
+    - [[#org-modern][org-modern]]
+    - [[#modus-themes][Modus Themes]]
+    - [[#helpful][Helpful]]
+    - [[#ligatures][Ligatures]]
   - [[#post-initialization][Post Initialization]]
 
 ** About this file
@@ -64,8 +98,8 @@ works property directly on github.
 Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
-(setq user-full-name "Your Name Here"
-      user-mail-address "user@email.com")
+  (setq user-full-name "Your Name Here"
+        user-mail-address "user@email.com")
 #+END_SRC
 
 ** Emacs Initialization
@@ -76,16 +110,16 @@ We'll lower this value significantly after initialization has completed. We don'
 too high or it will result in long GC pauses during normal usage.
 
 #+BEGIN_SRC emacs-lisp
-(eval-and-compile
-  (setq gc-cons-threshold 402653184
-        gc-cons-percentage 0.6))
+  (eval-and-compile
+    (setq gc-cons-threshold 402653184
+          gc-cons-percentage 0.6))
 #+END_SRC
 
 Disable certain byte compiler warnings to cut down on the noise. This is a personal choice and can be removed
 if you would like to see any and all byte compiler warnings.
 
 #+BEGIN_SRC emacs-lisp
-(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 #+END_SRC
 
 *** Package Management
@@ -148,9 +182,9 @@ previously compiled manually then all of the package initialization will still t
     (require 'package)
 
     (unless (assoc-default "melpa" package-archives)
-      (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t))
-    (unless (assoc-default "org" package-archives)
-      (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t))
+      (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
+    (unless (assoc-default "elpa" package-archives)
+      (add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/") t))
 
     (package-initialize)
     (unless (package-installed-p 'use-package)
@@ -160,44 +194,389 @@ previously compiled manually then all of the package initialization will still t
     (setq use-package-always-ensure t))
 #+END_SRC
 
+** Better Defaults
+https://github.com/rougier/dotemacs
 
+*** Startup
+
+Emacs does a lot of things at startup and here, we disable pretty much everything.
+
+#+begin_src emacs-lisp
+
+  (setq-default
+   inhibit-startup-screen t               ; Disable start-up screen
+   inhibit-startup-message t              ; Disable startup message
+   inhibit-startup-echo-area-message t    ; Disable initial echo message
+   initial-scratch-message ""             ; Empty the initial *scratch* buffer
+   initial-buffer-choice t                ; Open *scratch* buffer at init
+   display-line-numbers-type t)
+
+#+end_src
+
+*** Encoding
+
+We tell emacs to use UTF-8 encoding as much as possible.
+
+#+begin_src emacs-lisp
+
+  (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
+  (prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
+  (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
+  (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
+  (set-language-environment "English")    ; Set up multilingual environment
+
+#+end_src
+*** Recovery
+
+If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
+
+#+begin_src emacs-lisp
+
+  (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
+        (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
+        auto-save-default t        ; Auto-save every buffer that visits a file
+        auto-save-timeout 20       ; Number of seconds between auto-save
+        auto-save-interval 200)    ; Number of keystrokes between auto-saves
+
+#+end_src
+
+*** Bookmarks
+
+#+begin_src emacs-lisp
+
+  (setq bookmark-default-file (expand-file-name "bookmark" user-emacs-directory))
+
+#+end_src
+
+*** History
+
+Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
+
+#+begin_src emacs-lisp 
+
+  (defun unpropertize-kill-ring ()
+    (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
+
+  (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
+
+#+end_src
+
+*** Cursor
+
+Record cursor position from one session ot the other
+
+#+begin_src emacs-lisp
+
+  (setq save-place-file (expand-file-name "saveplace" user-emacs-directory)
+        save-place-forget-unreadable-files t)
+
+  (save-place-mode 1)
+
+#+end_src
+
+*** Customization File
+
+Since init.el will be generated from this file, we save customization in a dedicated file.
+
+#+begin_src emacs-lisp
+
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+
+  (when (file-exists-p custom-file)
+    (load custom-file nil t))
+
+#+end_src
+
+*** Cursor
+
+We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
+
+#+begin_src emacs-lisp
+
+  (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
+                cursor-type '(hbar . 2)            ; Underline-shaped cursor
+                cursor-intangible-mode t           ; Enforce cursor intangibility
+                x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
+
+  (blink-cursor-mode 0)                            ; Still cursor
+
+#+end_src
+
+*** Text
+
+Pretty self-explanatory
+
+#+begin_src emacs-lisp
+
+  (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
+                confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
+
+#+end_src
+
+*** Mouse
+
+Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
+
+#+begin_src emacs-lisp
+
+  (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
+  (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
+
+#+end_src
+
+Mouse active in tty mode.
+
+#+begin_src emacs-lisp
+
+  (unless (display-graphic-p)
+    (xterm-mouse-mode 1)
+    (global-set-key (kbd "<mouse-4>") #'scroll-down-line)
+    (global-set-key (kbd "<mouse-5>") #'scroll-up-line))
+
+#+end_src
+
+*** Scroll
+
+Smoother scrolling.
+
+#+begin_src emacs-lisp
+
+  (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
+                scroll-margin 2                 ; Add a margin when scrolling vertically
+                recenter-positions '(5 bottom)) ; Set re-centering positions
+
+#+end_src
+
+*** Typography
+
+#+begin_src emacs-lisp
+
+  (setq-default fill-column 80                          ; Default line width 
+                sentence-end-double-space nil           ; Use a single space after dots
+                bidi-paragraph-direction 'left-to-right ; Faster
+                truncate-string-ellipsis "…")           ; Nicer ellipsis
+
+#+end_src
+
+*** Default mode
+
+Default & initial mode is text.
+
+#+begin_src emacs-lisp
+
+  (setq-default initial-major-mode 'text-mode   ; Initial mode is text
+                default-major-mode 'text-mode)  ; Default mode is text
+
+#+end_src
+
+Visual line mode for prog and text modes
+
+#+begin_src emacs-lisp
+
+  (add-hook 'text-mode-hook 'visual-line-mode)
+  (add-hook 'prog-mode-hook 'visual-line-mode)
+
+#+end_src
+
+*** Tabulations
+
+No tabulation, ever.
+
+#+begin_src emacs-lisp
+
+  (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
+                tab-always-indent 'complete ; Indent first then try completions
+                tab-width 4)                ; Smaller width for tab characters
+
+  ;; Let Emacs guess Python indent silently
+  (setq python-indent-guess-indent-offset t
+        python-indent-guess-indent-offset-verbose nil)
+
+#+end_src
+
+*** time-stamp in header
+Update time stamp in Headr when file is saved
+#+begin_src emacs-lisp
+  (setq
+   time-stamp-active t          ; do enable time-stamps
+   time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
+  (add-hook 'write-file-functions 'time-stamp) ; update when saving
+#+end_src
+
+*** Change re-builder syntax
+https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
+
+#+begin_src emacs-lisp
+  (setq reb-re-syntax 'string)
+#+end_src
+                                        
 ** Packages
+
+*** Recent files
+
+50 Recents files with some exclusion (regex patterns).
+
+#+begin_src emacs-lisp
+  (use-package recentf
+    :config
+
+    (setq recentf-max-menu-items 10
+          recentf-max-saved-items 100)
+
+    (let (message-log-max)
+      (recentf-mode 1)))
+#+end_src
+*** Highlighting current line
+
+Highlighting of the current line (native mode)
+
+#+begin_src emacs-lisp
+  (use-package hl-line
+    :config
+    (global-hl-line-mode))
+#+end_src
+
+*** Parenthesis
+
+Paren mode for highlighting matcing paranthesis
+
+#+begin_src emacs-lisp
+  (use-package paren
+    :config
+    ;; (setq show-paren-style 'expression)
+    (setq show-paren-style 'parenthesis)
+    (setq show-paren-when-point-in-periphery t)
+    (setq show-paren-when-point-inside-paren nil)
+    (show-paren-mode))
+#+end_src
+
+*** Server
+
+Server start.
+
+#+begin_src emacs-lisp
+  (use-package server
+    :config
+    (unless (server-running-p)
+      (server-start)))
+#+end_src
 
 *** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
 
+#+begin_src emacs-lisp
+  (use-package evil
+    :demand t
+    :config
+    (evil-mode 1))
+#+end_src
+
+*** Keyboard
+
+The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :demand t
+    :config
+    (which-key-mode))
+#+end_src
+
+*** Vertico
+Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
+
 #+BEGIN_SRC emacs-lisp
-(use-package evil
-  :demand t
-  :config
-  (evil-mode 1))
-#+END_SRC
+  ;; Enable vertico
+  (use-package vertico
+    :config
+    ;; Different scroll margin
+    ;; (setq vertico-scroll-margin 0)
 
-*** Ivy
-Generic completion frontend that's just awesome! Let's install and enable it.
+    ;; Show more candidates
+    (setq vertico-count 20)
 
-#+BEGIN_SRC emacs-lisp
-(use-package ivy
-  :demand t)
-#+END_SRC
+    ;; Grow and shrink the Vertico minibuffer
+    (setq vertico-resize t)
 
-*** Counsel
-Counsel allows us to utilize ivy by replacing many built-in and common functions
-with richer versions. Let's install it!
+    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+    (setq vertico-cycle t)
 
-#+BEGIN_SRC emacs-lisp
-(use-package counsel-projectile)
-(use-package counsel
-  :demand t)
-#+END_SRC
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+    (defun crm-indicator (args)
+      (cons (format "[CRM%s] %s"
+                    (replace-regexp-in-string
+                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                     crm-separator)
+                    (car args))
+            (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
+
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t)
+
+    ;; enable vertico
+    (vertico-mode))
+#+end_src
+
+*** Savehist
+We save every possible history we can think of.
+
+#+begin_src emacs-lisp 
+  ;; Persist history over Emacs restarts. Vertico sorts by history position.
+  (use-package savehist
+    :config
+    (setq kill-ring-max 50
+          history-length 50)
+
+    (setq savehist-additional-variables
+          '(kill-ring
+            command-history
+            set-variable-value-history
+            custom-variable-history   
+            query-replace-history     
+            read-expression-history   
+            minibuffer-history        
+            read-char-history         
+            face-name-history         
+            bookmark-history
+            file-name-history))
+
+    (put 'minibuffer-history         'history-length 50)
+    (put 'file-name-history          'history-length 50)
+    (put 'set-variable-value-history 'history-length 25)
+    (put 'custom-variable-history    'history-length 25)
+    (put 'query-replace-history      'history-length 25)
+    (put 'read-expression-history    'history-length 25)
+    (put 'read-char-history          'history-length 25)
+    (put 'face-name-history          'history-length 25)
+    (put 'bookmark-history           'history-length 25)
+
+    ;; No duplicates in history  
+    (setq history-delete-duplicates t)
+
+    ;;Start history mode.
+    (let (message-log-max)
+      (savehist-mode)))
+#+end_src
 
 *** Swiper
 Swiper is an awesome searching utility with a quick preview. Let's install it and
 load it when =swiper= or =swiper-all= is called.
 
 #+BEGIN_SRC emacs-lisp
-(use-package swiper
-  :commands (swiper swiper-all))
+  (use-package swiper
+    :commands (swiper swiper-all))
 #+END_SRC
 
 *** Magit
@@ -205,8 +584,8 @@ The magical git client. Let's load magit only when one of the several entry pont
 functions we invoke regularly outside of magit is called.
 
 #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :commands (magit-status magit-blame magit-log-buffer-file magit-log-all))
+  (use-package magit
+    :commands (magit-status magit-blame magit-log-buffer-file magit-log-all))
 #+END_SRC
 
 *** Projectile
@@ -214,40 +593,560 @@ Projectile is a quick and easy project management package that "just works". We'
 going to install it and make sure it's loaded immediately.
 
 #+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :demand t)
+  (use-package projectile
+    :demand t)
 #+END_SRC
 
+*** ascii-art-to-unicode
+Make org-brain-visualize-mode look a bit nicer.
+#+begin_src emacs-lisp
+  (use-package ascii-art-to-unicode
+    :config
+    (defface aa2u-face '((t . nil))
+      "Face for aa2u box drawing characters")
+    (advice-add #'aa2u-1c :filter-return
+                (lambda (str) (propertize str 'face 'aa2u-face)))
+    (defun aa2u-org-brain-buffer ()
+      (let ((inhibit-read-only t))
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                     '(aa2u-face . org-brain-wires))
+        (ignore-errors (aa2u (point-min) (point-max)))))
+    (with-eval-after-load 'org-brain
+      (add-hook 'org-brain-after-visualize-hook #'aa2u-org-brain-buffer)))
+#+end_src
+
+*** all-the-icons
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :if (display-graphic-p))
+#+end_src
+*** pdf-tools
+
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :config
+    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+
+    (setq-default pdf-view-use-scaling t
+                  pdf-view-use-imagemagick nil))
+#+end_src
+*** Citar
+Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
+
+#+begin_src emacs-lisp
+    (use-package citar
+      :no-require
+      :after (org all-the-icons)
+      :custom
+      (org-cite-insert-processor 'citar)
+      (org-cite-follow-processor 'citar)
+      (org-cite-activate-processor 'citar)
+      :config
+      (setq citar-bibliography (car (file-expand-wildcards (concat org-directory "bib/*.bib")))
+            citar-notes-paths (list (concat org-directory "brain/bib_notes/"))
+            ctar-notes-template-multiple-files '(concat "#+TITLE: ${title}\n"
+                                                        "#+AUTHOR: ${author editor}\n"
+                                                        "#+DATE: ${date}\n"
+                                                        "#+SOURCE: ${doi url}\n"
+                                                        "#+CUSTOM_ID: ${=key= id}\n"
+                                                        "#+cite_export: biblatex ieee\n"
+                                                        (concat "#+bibliography: " citar-bibliography "\n\n")
+                                                        "* Notes :ignore:\n"
+                                                        ":PROPERTIES:\n"
+                                                        ":NOTER_DOCUMENT: ${file} \n"
+                                                        ":END:\n\n"
+                                                        "* Summary :childless:showchildren:export:\n"
+                                                        "This is a summary of [citet:@${=key=}].\n"
+                                                        "** Bibliography :ignore:\n"
+                                                        )
+            citar-notes-template-one-file (concat "** TODO ${=key=}: ${title}, (${year}) :${type}:\n"
+                                                  ":PROPERTIES:\n"
+                                                  ":Custom_ID: ${=key=}\n"
+                                                  ":FILE: [[file:${file}]]\n"
+                                                  ":END:\n"
+                                                  "See [[cite:&${=key=}]]\n")
+            citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+                              (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
+                              (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+                              (note . ,(eval ctar-notes-template-multiple-files)))
+            citar-symbols `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
+                            (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
+                            (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " "))
+            citar-symbol-separator "  ")
+
+      ;; optional: org-cite-insert is also bound to C-c C-x C-@
+      ;;:bind
+      ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
+      )
+#+end_src
+
 *** Org
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :ensure org-contrib
+    :defer t
+    :init
+    (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+    :config
+    (add-to-list 'org-modules 'org-habit t)
+    (setq org-agenda-files
+          (mapcar 'file-truename
+                  (file-expand-wildcards (concat org-directory "agenda/*.org"))))
+
+    ;; Refile
+    (setq org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
+                               (,(concat org-directory "agenda/projects.org") :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
+                               (,(concat org-directory "agenda/someday.org") :level . 1)
+                               (,(concat org-directory "agenda/literature.org") :maxlevel . 2)
+                               (,(concat org-directory "agenda/scheduled.org") :maxlevel . 2)))
+
+    ;; Save the corresponding buffers
+    (defun gtd-save-org-buffers ()
+      "Save `org-agenda-files' buffers without user confirmation. See also `org-save-all-org-buffers'"
+      (interactive)
+      (message "Saving org-agenda-files buffers...")
+      (save-some-buffers t (lambda ()
+                             (when (member (buffer-file-name) org-agenda-files)
+                               t)))
+      (message "Saving org-agenda-files buffers... done"))
+
+    ;; Add it after refile
+    (advice-add 'org-refile :after
+                (lambda (&rest _)
+                  (gtd-save-org-buffers)))
+
+    ;; Wie gehts das??
+    ;; (defun gtd-sort-tasks (&rest ignore)
+    ;;   (org-sort-list nil ?x))
+    ;; (add-hook 'org-after-todo-state-change-hook #'gtd-sort-tasks)
+
+    ;; Todo
+    (setq org-todo-keywords
+          '((sequence
+             "TODO(t)"  ; A task that needs doing & is ready to do
+             "PROJ(p)"  ; A project, which usually contains other tasks
+             "NEXT(n)"  ; Next task in a project
+             "STRT(s)"  ; A task that is in progress
+             "WAIT(w)"  ; Something external is holding up this task
+             "HOLD(h)"  ; This task is paused/on hold because of me
+             "|"
+             "DONE(d)"  ; Task successfully completed
+             "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
+            (sequence
+             "[ ](T)"   ; A task that needs doing
+             "[-](S)"   ; Task is in progress
+             "[?](W)"   ; Task is being held up or paused
+             "|"
+             "[X](D)")) ; Task was completed
+          org-todo-keyword-faces
+          '(("[-]"  . +org-todo-active)
+            ("STRT" . +org-todo-active)
+            ("[?]"  . +org-todo-onhold)
+            ("WAIT" . +org-todo-onhold)
+            ("HOLD" . +org-todo-onhold)
+            ("PROJ" . +org-todo-project)))
+    (defun log-todo-next-creation-date (&rest ignore)
+      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+      (when (and (string= (org-get-todo-state) "NEXT")
+                 (not (org-entry-get nil "ACTIVATED")))
+        (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+    (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
+
+    ;; Add timstamp to items when doen
+    (setq org-log-done 'time)
+
+    ;; Agenda
+    (setq org-agenda-custom-commands
+          '(("g" "Get Things Done (GTD)"
+             ((agenda ""
+                      ((org-agenda-span 'day)
+                       (org-agenda-start-day "today")
+                       (org-agenda-skip-function
+                        '(or (org-agenda-skip-entry-if 'deadline)
+                             (my/org-agenda-skip-without-match "-groceries")
+                             (my/org-agenda-skip-without-match "-social")))
+                       (org-deadline-warning-days 0)))
+              (todo "STRT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nActive Tasks\n")))
+              (todo "NEXT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nNext Tasks\n")))
+              (agenda nil
+                      ((org-agenda-entry-types '(:deadline))
+                       (org-agenda-format-date "")
+                       (org-deadline-warning-days 7)
+                       (org-agenda-skip-function
+                        '(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
+                       (org-agenda-overriding-header "\nDeadlines")))
+              (tags-todo "inbox"
+                         ((org-agenda-prefix-format "  %?-12t% s")
+                          (org-agenda-overriding-header "\nInbox\n")))
+              (todo "HOLD|WAIT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nPaused Tasks\n")))
+              (tags "CLOSED>=\"<today>\""
+                    ((org-agenda-overriding-header "\nCompleted today\n")))))
+            ("G" "Shopping List" tags-todo "groceries"
+             ((org-agenda-tags-todo-honor-ignore-options t)
+              (org-agenda-skip-deadline-prewarning-if-scheduled t)
+              (org-agenda-todo-ignore-scheduled 'future)
+              (org-agenda-sorting-strategy '(scheduled-up))
+              (org-agenda-prefix-format "%s")))
+            ("l" "Literature" tags-todo "literature"
+             ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+              (org-agenda-prefix-format "  %i %-12:c [%e] ")))
+            ("p" "Social"
+             ((agenda ""
+                      ((org-agenda-span 'week)
+                       (org-agenda-start-day "today")
+                       (org-agenda-skip-function
+                        '(or (org-agenda-skip-entry-if 'deadline)
+                             (my/org-agenda-skip-without-match "-groceries")))
+                       (org-deadline-warning-days 0)))
+              (tags-todo "social"
+                         ((org-agenda-tags-todo-honor-ignore-options t)
+                          (org-agenda-skip-deadline-prewarning-if-scheduled t)
+                          (org-agenda-todo-ignore-scheduled 'future)
+                          (org-agenda-sorting-strategy '(scheduled-up))
+                          (org-agenda-prefix-format "%s"))))))
+          )
+    ;; archive all DONE tasks in subtree
+    ;; https://stackoverflow.com/questions/6997387
+    (defun org-archive-done-tasks ()
+      (interactive)
+      (org-map-entries
+       (lambda ()
+         (org-archive-subtree)
+         (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+       "/DONE" 'tree))
+    ;; Org LaTeX language support
+    ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
+    (add-to-list 'org-latex-packages-alist
+                 '("AUTO" "babel" t ("pdflatex")))
+    (add-to-list 'org-latex-packages-alist
+                 '("AUTO" "polyglossia" t ("xelatex" "lualatex")))
+
+    (with-eval-after-load 'ox-latex
+      ;; Support for KOMA script article class
+      ;; https://orgmode.org/worg/org-tutorials/org-latex-export.html#org3ed51b6
+      (add-to-list 'org-latex-classes
+                   '("koma-article"
+                     "\\documentclass{scrartcl}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+      (add-to-list 'org-latex-classes
+                   '("koma-letter"
+                     "\\documentclass{scrlttr2}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+
+    (with-eval-after-load 'ox-beamer
+      (add-to-list 'org-beamer-environments-extra
+                   '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+
+    (with-eval-after-load 'ox-extra
+      (ox-extras-activate '(ignore-headlines))))
+#+END_SRC
+
 Let's include a newer version of org-mode than the one that is built in. We're going
 to manually remove the org directories from the load path, to ensure the version we
 want is prioritized instead.
 
-#+BEGIN_SRC emacs-lisp
-(use-package org
-  :ensure org-plus-contrib
-  :pin org
-  :defer t)
+*** evil-org-mode
+#+begin_src emacs-lisp
+  (use-package evil-org
+    :ensure t
+    :after org
+    :hook (org-mode . evil-org-mode)
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+#+end_src
 
-;; Ensure ELPA org is prioritized above built-in org.
-(require 'cl)
-(setq load-path (remove-if (lambda (x) (string-match-p "org$" x)) load-path))
-#+END_SRC
+*** org-brain
+#+begin_src emacs-lisp
+  (use-package org-brain
+    :after (org org-noter)
+    :init
+    (setq org-brain-path (concat org-directory "brain/"))
 
-*** Toc-org
+    ;; For Evil users
+    (with-eval-after-load 'evil
+      (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
+    :config
+    (setq org-id-track-globally t)
+    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+    (add-hook 'before-save-hook #'org-brain-ensure-ids-in-buffer)
+    (setq org-brain-visualize-default-choices 'all)
+    (setq org-brain-title-max-length 24)
+    (setq org-brain-include-file-entries t
+          org-brain-file-entries-use-title t)
+
+    ;; from org brain README
+    ;; Here’s a command which uses org-cliplink to add a link from the clipboard
+    ;; as an org-brain resource.
+    ;; It guesses the description from the URL title.
+    ;; Here I’ve bound it to L in org-brain-visualize.
+    (defun org-brain-cliplink-resource ()
+      "Add a URL from the clipboard as an org-brain resource.
+  Suggest the URL title as a description for resource."
+      (interactive)
+      (let ((url (org-cliplink-clipboard-content)))
+        (org-brain-add-resource
+         url
+         (org-cliplink-retrieve-title-synchronously url)
+         t)))
+
+    ;; Org-noter’s purpose is to let you create notes that are kept in sync when
+    ;; you scroll through the [PDF etc] document
+    (add-hook 'org-noter-insert-heading-hook #'org-id-get-create)
+    (defun org-brain-open-org-noter (entry)
+      "Open `org-noter' on the ENTRY.
+  If run interactively, get ENTRY from context."
+      (interactive (list (org-brain-entry-at-pt)))
+      (org-with-point-at (org-brain-entry-marker entry)
+        (org-noter)))
+
+    (defun org-brain-insert-resource-icon (link)
+      "Insert an icon, based on content of org-mode LINK."
+      (insert (format "%s "
+                      (cond ((string-prefix-p "brain:" link)
+                             (all-the-icons-fileicon "brain"))
+                            ((string-prefix-p "info:" link)
+                             (all-the-icons-octicon "info"))
+                            ((string-prefix-p "help:" link)
+                             (all-the-icons-material "help"))
+                            ((string-prefix-p "http" link)
+                             (all-the-icons-icon-for-url link))
+                            (t
+                             (all-the-icons-icon-for-file link))))))
+    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
+    ;; Allows you to edit entries directly from org-brain-visualize
+    ;; (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode)
+    ;;:bind (:map org-brain-visualize-mode-map
+    ;;      "L" . org-brain-cliplink-resource
+    ;;      "C-c n" . org-brain-open-org-noter)
+    )
+#+end_src
+
+*** org-noter
+
+#+begin_src emacs-lisp
+  (use-package org-noter
+    :after (org pdf-tools)
+    :config
+    (setq
+     ;; The WM can handle splits
+     org-noter-notes-window-location 'other-frame
+     ;; Please stop opening frames
+     org-noter-always-create-frame nil
+     ;; I want to see the whole file
+     org-noter-hide-other nil
+     ;; Everything is relative to the main notes file
+     ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
+     )
+    )
+#+end_src
+
+*** toc-org
 Let's install and load the =toc-org= package after org mode is loaded. This is the
 package that automatically generates an up to date table of contents for us.
 
 #+BEGIN_SRC emacs-lisp
-(use-package toc-org
-  :after org
-  :init (add-hook 'org-mode-hook #'toc-org-enable))
+  (use-package toc-org
+    :after org
+    :init (add-hook 'org-mode-hook #'toc-org-enable))
 #+END_SRC
+
+*** org-cliplink
+A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-cliplink
+    :after org)
+#+END_SRC
+
+*** org-modern 
+This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-modern
+    :hook (org-mode . global-org-modern-mode)
+    :after org
+    :config
+    ;; (setq org-modern-label-border 0.3)
+
+    (setq
+     ;; Edit settings
+     org-auto-align-tags nil
+     org-tags-column 0
+     org-fold-catch-invisible-edits 'show-and-error
+     org-special-ctrl-a/e t
+     org-insert-heading-respect-content t
+
+     ;; Org styling, hide markup etc.
+     org-hide-emphasis-markers t
+     org-pretty-entities t
+     org-ellipsis "…"
+
+     ;; Agenda styling
+     org-agenda-tags-column 0
+     org-agenda-block-separator ?─
+     org-agenda-time-grid
+     '((daily today require-timed)
+       (800 1000 1200 1400 1600 1800 2000)
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+     org-agenda-current-time-string
+     "⭠ now ─────────────────────────────────────────────────"))
+#+END_src
+
+*** Modus Themes
+Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
+https://protesilaos.com/emacs/modus-themes
+
+#+BEGIN_SRC emacs-lisp
+  (use-package modus-themes
+    :config
+    ;; Minimal UI
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+
+    ;; Add all your customizations prior to loading the themes
+    (setq modus-themes-italic-constructs t
+          modus-themes-bold-constructs nil)
+
+    ;; Load the theme of your choice.
+    (load-theme 'modus-operandi :no-confirm)
+
+    ;; (define-key global-map (kbd "<f5>") #'modus-themes-toggle
+
+    ;; Choose some fonts
+    ;; (set-face-attribute 'default nil :family "Iosevka")
+    ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
+    ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
+
+    ;; Add frame borders and window dividers
+    (modify-all-frames-parameters
+     '((right-divider-width . 20)
+       (internal-border-width . 20)))
+    (dolist (face '(window-divider
+                    window-divider-first-pixel
+                    window-divider-last-pixel))
+      (face-spec-reset-face face)
+      (set-face-foreground face (face-attribute 'default :background)))
+    (set-face-background 'fringe (face-attribute 'default :background)))
+#+END_SRC
+*** Helpful
+[[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
+It is a bit slow to load so we do need load it explicitely.
+
+#+begin_src emacs-lisp
+  (use-package helpful
+    :config
+                                          ; Focus new help windows when opened
+    (setq help-window-select t))
+#+end_src
+*** Ligatures
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ligature
+    :config
+    ;; set Fira as default font
+    (set-frame-font "Fira Code Light-10" nil t)
+    ;; Enable the "www" ligature in every possible major mode
+    (ligature-set-ligatures 't '("www"))
+    ;; Enable traditional ligature support in eww-mode, if the
+    ;; `variable-pitch' face supports it
+    (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
+    ;; Enable all Cascadia and Fira Code ligatures in programming modes
+    (ligature-set-ligatures '(prog-mode org-mode)
+                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                              ;; =:= =!=
+                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                              ;; ;; ;;;
+                              (";" (rx (+ ";")))
+                              ;; && &&&
+                              ("&" (rx (+ "&")))
+                              ;; !! !!! !. !: !!. != !== !~
+                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                              ;; ?? ??? ?:  ?=  ?.
+                              ("?" (rx (or ":" "=" "\." (+ "?"))))
+                              ;; %% %%%
+                              ("%" (rx (+ "%")))
+                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                              ;; |->>-||-<<-| |- |== ||=||
+                              ;; |==>>==<<==<=>==//==/=!==:===>
+                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                              "-" "=" ))))
+                              ;; \\ \\\ \/
+                              ("\\" (rx (or "/" (+ "\\"))))
+                              ;; ++ +++ ++++ +>
+                              ("+" (rx (or ">" (+ "+"))))
+                              ;; :: ::: :::: :> :< := :// ::=
+                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                              "="))))
+                              ;; .. ... .... .= .- .? ..= ..<
+                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                              ;; *> */ *)  ** *** ****
+                              ("*" (rx (or ">" "/" ")" (+ "*"))))
+                              ;; www wwww
+                              ("w" (rx (+ "w")))
+                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                              ;; << <<< <<<<
+                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                              "-"  "/" "|" "="))))
+                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                              ;; >> >>> >>>>
+                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                           (+ "#"))))
+                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                              ;; __ ___ ____ _|_ __|____|_
+                              ("_" (rx (+ (or "_" "|"))))
+                              ;; Fira code: 0xFF 0x12
+                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                              ;; Fira code:
+                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                              ;; The few not covered by the regexps.
+                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
+#+END_SRC
+
+#+RESULTS:
+: t
 
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
 
 #+BEGIN_SRC emacs-lisp
-(setq gc-cons-threshold 16777216
-      gc-cons-percentage 0.1)
+  (setq gc-cons-threshold 16777216
+        gc-cons-percentage 0.1)
 #+END_SRC
