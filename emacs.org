@@ -18,55 +18,16 @@
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
-  - [[#better-defaults][Better Defaults]]
-    - [[#startup][Startup]]
-    - [[#encoding][Encoding]]
-    - [[#recovery][Recovery]]
-    - [[#bookmarks][Bookmarks]]
-    - [[#history][History]]
-    - [[#cursor][Cursor]]
-    - [[#customization-file][Customization File]]
-    - [[#cursor-1][Cursor]]
-    - [[#text][Text]]
-    - [[#mouse][Mouse]]
-    - [[#scroll][Scroll]]
-    - [[#typography][Typography]]
-    - [[#default-mode][Default mode]]
-    - [[#tabulations][Tabulations]]
-    - [[#time-stamp-in-header][time-stamp in header]]
-    - [[#change-re-builder-syntax][Change re-builder syntax]]
+    - [[#better-defaults][Better Defaults]]
   - [[#packages][Packages]]
-    - [[#modus-themes][Modus Themes]]
-    - [[#doom-modline][doom-modline]]
-    - [[#nerd-icons][nerd-icons]]
-    - [[#all-the-icons][all-the-icons]]
-    - [[#recent-files][Recent files]]
-    - [[#highlighting-current-line][Highlighting current line]]
-    - [[#parenthesis][Parenthesis]]
-    - [[#server][Server]]
-    - [[#evil][Evil]]
-    - [[#which-key][which-key]]
-    - [[#undo-tree][Undo-Tree]]
-    - [[#vertico][Vertico]]
-    - [[#savehist][Savehist]]
-    - [[#swiper][Swiper]]
-    - [[#magit][Magit]]
-    - [[#gitgutter][GitGutter]]
-    - [[#projectile][Projectile]]
-    - [[#treemacs][Treemacs]]
-    - [[#ascii-art-to-unicode][ascii-art-to-unicode]]
-    - [[#pdf-tools][pdf-tools]]
-    - [[#citar][Citar]]
+    - [[#ui][UI]]
+    - [[#editor][Editor]]
+    - [[#tools][Tools]]
+    - [[#completion][Completion]]
+    - [[#version-control][Version Control]]
+    - [[#project-management][Project Management]]
     - [[#org][Org]]
-    - [[#evil-org-mode][evil-org-mode]]
-    - [[#org-brain][org-brain]]
-    - [[#org-noter][org-noter]]
-    - [[#toc-org][toc-org]]
-    - [[#org-cliplink][org-cliplink]]
-    - [[#org-modern][org-modern]]
-    - [[#flycheck][Flycheck]]
-    - [[#helpful][Helpful]]
-    - [[#ligatures][Ligatures]]
+    - [[#programming][Programming]]
   - [[#post-initialization][Post Initialization]]
 
 ** About this file
@@ -104,21 +65,29 @@ works property directly on github.
 Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Your Name Here"
-        user-mail-address "user@email.com")
+  (setq user-full-name "Marcel Arpogaus"
+        user-mail-address "marcel.arpogaus@gmail.com")
 #+END_SRC
 
 ** Emacs Initialization
-
 *** Settings
-We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time.
-We'll lower this value significantly after initialization has completed. We don't want to keep this value
-too high or it will result in long GC pauses during normal usage.
+We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time. 
+We'll lower this value significantly after initialization has completed.
+We don't want to keep this value too high or it will result in long GC pauses during normal usage.
 
 #+BEGIN_SRC emacs-lisp
   (eval-and-compile
-    (setq gc-cons-threshold 402653184
+    (setq gc-cons-threshold (* 50 1000 1000)
           gc-cons-percentage 0.6))
+
+  ;; Profile emacs startup
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (message "*** Emacs loaded in %s with %d garbage collections."
+                       (format "%.2f seconds"
+                               (float-time
+                                (time-subtract after-init-time before-init-time)))
+                       gcs-done)))
 #+END_SRC
 
 Disable certain byte compiler warnings to cut down on the noise. This is a personal choice and can be removed
@@ -197,225 +166,144 @@ previously compiled manually then all of the package initialization will still t
 We'll use the [[help:bind-key][bind-key]] function (from use-package) for bindings. Then we can use [[help:describe-personal-keybindings][describe-personal-keybindings]] to check for personal bindings.
 
 #+begin_src emacs-lisp
-(require 'bind-key)
+  (require 'bind-key)
 #+end_src
-** Better Defaults
+*** Better Defaults
 https://github.com/rougier/dotemacs
 
-*** Startup
-
-Emacs does a lot of things at startup and here, we disable pretty much everything.
-
 #+begin_src emacs-lisp
+    (use-package emacs
+      :config
+      ;; Startup
+      ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
+      (setq-default
+       inhibit-startup-screen t               ; Disable start-up screen
+       inhibit-startup-message t              ; Disable startup message
+       inhibit-startup-echo-area-message t    ; Disable initial echo message
+       initial-scratch-message ""             ; Empty the initial *scratch* buffer
+       initial-buffer-choice t                ; Open *scratch* buffer at init
+       display-line-numbers-type t)
 
-  (setq-default
-   inhibit-startup-screen t               ; Disable start-up screen
-   inhibit-startup-message t              ; Disable startup message
-   inhibit-startup-echo-area-message t    ; Disable initial echo message
-   initial-scratch-message ""             ; Empty the initial *scratch* buffer
-   initial-buffer-choice t                ; Open *scratch* buffer at init
-   display-line-numbers-type t)
+      ;; Encoding
+      ;; We tell emacs to use UTF-8 encoding as much as possible.
+      (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
+      (prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
+      (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
+      (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
+      (set-language-environment "English")    ; Set up multilingual environment
 
+      ;; Recovery
+      ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
+      (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
+            (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
+            auto-save-default t        ; Auto-save every buffer that visits a file
+            auto-save-timeout 20       ; Number of seconds between auto-save
+            auto-save-interval 200)    ; Number of keystrokes between auto-saves
+
+      ;; Bookmarks
+      (setq bookmark-default-file (expand-file-name "bookmark" user-emacs-directory))
+
+      ;; History
+      ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
+      (defun unpropertize-kill-ring ()
+        (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
+      (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
+
+      ;; Cursor
+      ;; Record cursor position from one session ot the other
+      (setq save-place-file (expand-file-name "saveplace" user-emacs-directory)
+            save-place-forget-unreadable-files t)
+      (save-place-mode 1)
+
+      ;; Customization File
+      ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+      (setq custom-file (concat user-emacs-directory "custom.el"))
+      (when (file-exists-p custom-file)
+        (load custom-file nil t))
+
+      ;; Cursor
+      ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
+      (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
+                    cursor-type '(hbar . 2)            ; Underline-shaped cursor
+                    cursor-intangible-mode t           ; Enforce cursor intangibility
+                    x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
+      (blink-cursor-mode 0)                            ; Still cursor
+
+      ;; Text
+      ;; Pretty self-explanatory
+      (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
+                    confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
+
+      ;; Mouse
+      ;; Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
+      (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
+      (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
+
+      ;; Mouse active in tty mode.
+      (unless (display-graphic-p)
+        (xterm-mouse-mode 1)
+        ;; Scroll
+        ;; Smoother scrolling.
+        (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
+                      scroll-margin 2                 ; Add a margin when scrolling vertically
+                      recenter-positions '(5 bottom))) ; Set re-centering positions
+
+      ;; Typography
+      (setq-default fill-column 80                          ; Default line width 
+                    sentence-end-double-space nil           ; Use a single space after dots
+                    bidi-paragraph-direction 'left-to-right ; Faster
+                    truncate-string-ellipsis "…")           ; Nicer ellipsis
+
+      ;; Default mode
+      ;; Default & initial mode is text.
+      (setq-default initial-major-mode 'text-mode   ; Initial mode is text
+                    default-major-mode 'text-mode)  ; Default mode is text
+      ;; Visual line mode for prog and text modes
+      (add-hook 'text-mode-hook 'visual-line-mode)
+      (add-hook 'prog-mode-hook 'visual-line-mode)
+
+      ;; Tabulations
+      ;; No tabulation, ever.
+      (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
+                    tab-always-indent 'complete ; Indent first then try completions
+                    tab-width 4)                ; Smaller width for tab characters
+
+      ;; time-stamp in header
+      ;; Update time stamp in Headr when file is saved
+      (setq
+       time-stamp-active t          ; do enable time-stamps
+       time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
+      (add-hook 'write-file-functions 'time-stamp) ; update when saving
+
+      ;;ESC Cancels All
+      (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+      ;; Line numbers
+      ;; Enable line numbers and customize their format.
+
+
+  (column-number-mode)
+
+  ;; Enable line numbers for some modes
+  (dolist (mode '(text-mode-hook
+                  prog-mode-hook
+                  conf-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 1))))
+
+  ;; Override some modes which derive from the above
+  (dolist (mode '(org-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+
+
+      ;; Change re-builder syntax
+      ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
+      (setq reb-re-syntax 'string))
 #+end_src
 
-*** Encoding
-
-We tell emacs to use UTF-8 encoding as much as possible.
-
-#+begin_src emacs-lisp
-
-  (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
-  (prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
-  (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
-  (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
-  (set-language-environment "English")    ; Set up multilingual environment
-
-#+end_src
-*** Recovery
-
-If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
-
-#+begin_src emacs-lisp
-
-  (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
-        (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
-        auto-save-default t        ; Auto-save every buffer that visits a file
-        auto-save-timeout 20       ; Number of seconds between auto-save
-        auto-save-interval 200)    ; Number of keystrokes between auto-saves
-
-#+end_src
-
-*** Bookmarks
-
-#+begin_src emacs-lisp
-  (setq bookmark-default-file (expand-file-name "bookmark" user-emacs-directory))
-#+end_src
-
-*** History
-
-Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
-
-#+begin_src emacs-lisp 
-
-  (defun unpropertize-kill-ring ()
-    (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-
-  (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
-
-#+end_src
-
-*** Cursor
-
-Record cursor position from one session ot the other
-
-#+begin_src emacs-lisp
-
-  (setq save-place-file (expand-file-name "saveplace" user-emacs-directory)
-        save-place-forget-unreadable-files t)
-
-  (save-place-mode 1)
-
-#+end_src
-
-*** Customization File
-
-Since init.el will be generated from this file, we save customization in a dedicated file.
-
-#+begin_src emacs-lisp
-
-  (setq custom-file (concat user-emacs-directory "custom.el"))
-
-  (when (file-exists-p custom-file)
-    (load custom-file nil t))
-
-#+end_src
-
-*** Cursor
-
-We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
-
-#+begin_src emacs-lisp
-
-  (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
-                cursor-type '(hbar . 2)            ; Underline-shaped cursor
-                cursor-intangible-mode t           ; Enforce cursor intangibility
-                x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
-
-  (blink-cursor-mode 0)                            ; Still cursor
-
-#+end_src
-
-*** Text
-
-Pretty self-explanatory
-
-#+begin_src emacs-lisp
-
-  (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
-                confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
-
-#+end_src
-
-*** Mouse
-
-Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
-
-#+begin_src emacs-lisp
-
-  (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
-  (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
-
-#+end_src
-
-Mouse active in tty mode.
-
-#+begin_src emacs-lisp
-
-  (unless (display-graphic-p)
-    (xterm-mouse-mode 1)
-    (global-set-key (kbd "<mouse-4>") #'scroll-down-line)
-    (global-set-key (kbd "<mouse-5>") #'scroll-up-line))
-
-#+end_src
-
-*** Scroll
-
-Smoother scrolling.
-
-#+begin_src emacs-lisp
-
-  (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
-                scroll-margin 2                 ; Add a margin when scrolling vertically
-                recenter-positions '(5 bottom)) ; Set re-centering positions
-
-#+end_src
-
-*** Typography
-
-#+begin_src emacs-lisp
-
-  (setq-default fill-column 80                          ; Default line width 
-                sentence-end-double-space nil           ; Use a single space after dots
-                bidi-paragraph-direction 'left-to-right ; Faster
-                truncate-string-ellipsis "…")           ; Nicer ellipsis
-
-#+end_src
-
-*** Default mode
-
-Default & initial mode is text.
-
-#+begin_src emacs-lisp
-
-  (setq-default initial-major-mode 'text-mode   ; Initial mode is text
-                default-major-mode 'text-mode)  ; Default mode is text
-
-#+end_src
-
-Visual line mode for prog and text modes
-
-#+begin_src emacs-lisp
-
-  (add-hook 'text-mode-hook 'visual-line-mode)
-  (add-hook 'prog-mode-hook 'visual-line-mode)
-
-#+end_src
-
-*** Tabulations
-
-No tabulation, ever.
-
-#+begin_src emacs-lisp
-
-  (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
-                tab-always-indent 'complete ; Indent first then try completions
-                tab-width 4)                ; Smaller width for tab characters
-
-  ;; Let Emacs guess Python indent silently
-  (setq python-indent-guess-indent-offset t
-        python-indent-guess-indent-offset-verbose nil)
-
-#+end_src
-
-*** time-stamp in header
-Update time stamp in Headr when file is saved
-#+begin_src emacs-lisp
-  (setq
-   time-stamp-active t          ; do enable time-stamps
-   time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
-  (add-hook 'write-file-functions 'time-stamp) ; update when saving
-#+end_src
-
-*** Change re-builder syntax
-https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
-
-#+begin_src emacs-lisp
-  (setq reb-re-syntax 'string)
-#+end_src
-                                        
 ** Packages
-
-*** Modus Themes
+*** UI
+**** Modus Themes
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
 
@@ -452,61 +340,147 @@ https://protesilaos.com/emacs/modus-themes
       (set-face-foreground face (face-attribute 'default :background)))
     (set-face-background 'fringe (face-attribute 'default :background)))
 #+END_SRC
-*** doom-modline
+**** doom-modline
 A fancy and fast mode-line inspired by minimalism design.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package doom-modeline
-    :init
-    ;; If non-nil, cause imenu to see `doom-modeline' declarations.
-    ;; This is done by adjusting `lisp-imenu-generic-expression' to
-    ;; include support for finding `doom-modeline-def-*' forms.
-    ;; Must be set before loading doom-modeline.
-    (setq doom-modeline-support-imenu t)
+    (use-package doom-modeline
+      :init
+      ;; If non-nil, cause imenu to see `doom-modeline' declarations.
+      ;; This is done by adjusting `lisp-imenu-generic-expression' to
+      ;; include support for finding `doom-modeline-def-*' forms.
+      ;; Must be set before loading doom-modeline.
+      (setq doom-modeline-support-imenu t)
 
-    :config
-    ;; How tall the mode-line should be. It's only respected in GUI.
-    ;; If the actual char height is larger, it respects the actual height.
-    (setq doom-modeline-height 20)
-  
-    ;; Whether to use hud instead of default bar. It's only respected in GUI.
-    (setq doom-modeline-hud t)
+      :config
+      ;; How tall the mode-line should be. It's only respected in GUI.
+      ;; If the actual char height is larger, it respects the actual height.
+      (setq doom-modeline-height 20)
 
-    ;; Whether display icons in the mode-line.
-    ;; While using the server mode in GUI, should set the value explicitly.
-    (setq doom-modeline-icon t)
+      ;; display the real names, please put this into your init file.
+      (setq find-file-visit-truename t)
+    
+      ;; Whether to use hud instead of default bar. It's only respected in GUI.
+      (setq doom-modeline-hud t)
 
-    ;; If non-nil, only display one number for checker information if applicable.
-    (setq doom-modeline-checker-simple-format t)
+      ;; Whether display icons in the mode-line.
+      ;; While using the server mode in GUI, should set the value explicitly.
+      (setq doom-modeline-icon t)
 
-    (doom-modeline-mode 1))
+      ;; If non-nil, only display one number for checker information if applicable.
+      (setq doom-modeline-checker-simple-format t)
+
+      (doom-modeline-mode 1))
 #+END_SRC
 
-*** nerd-icons
+**** nerd-icons
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
   (use-package nerd-icons)
-  #+END_SRC
-*** all-the-icons
+#+END_SRC
+**** all-the-icons
 #+begin_src emacs-lisp
   (use-package all-the-icons
     :if (display-graphic-p))
 #+end_src
-*** Recent files
 
-50 Recents files with some exclusion (regex patterns).
-
+**** ascii-art-to-unicode
+Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
-  (use-package recentf
+  (use-package ascii-art-to-unicode
     :config
-
-    (setq recentf-max-menu-items 10
-          recentf-max-saved-items 100)
-
-    (let (message-log-max)
-      (recentf-mode 1)))
+    (defface aa2u-face '((t . nil))
+      "Face for aa2u box drawing characters")
+    (advice-add #'aa2u-1c :filter-return
+                (lambda (str) (propertize str 'face 'aa2u-face)))
+    (defun aa2u-org-brain-buffer ()
+      (let ((inhibit-read-only t))
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                     '(aa2u-face . org-brain-wires))
+        (ignore-errors (aa2u (point-min) (point-max)))))
+    (with-eval-after-load 'org-brain
+      (add-hook 'org-brain-after-visualize-hook #'aa2u-org-brain-buffer)))
 #+end_src
-*** Highlighting current line
+
+**** Ligatures
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ligature
+    :config
+    ;; set Fira as default font
+    (set-frame-font "Fira Code Light-10" nil t)
+    ;; Enable the "www" ligature in every possible major mode
+    (ligature-set-ligatures 't '("www"))
+    ;; Enable traditional ligature support in eww-mode, if the
+    ;; `variable-pitch' face supports it
+    (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
+    ;; Enable all Cascadia and Fira Code ligatures in programming modes
+    (ligature-set-ligatures '(prog-mode org-mode)
+                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                              ;; =:= =!=
+                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                              ;; ;; ;;;
+                              (";" (rx (+ ";")))
+                              ;; && &&&
+                              ("&" (rx (+ "&")))
+                              ;; !! !!! !. !: !!. != !== !~
+                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                              ;; ?? ??? ?:  ?=  ?.
+                              ("?" (rx (or ":" "=" "\." (+ "?"))))
+                              ;; %% %%%
+                              ("%" (rx (+ "%")))
+                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                              ;; |->>-||-<<-| |- |== ||=||
+                              ;; |==>>==<<==<=>==//==/=!==:===>
+                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                              "-" "=" ))))
+                              ;; \\ \\\ \/
+                              ("\\" (rx (or "/" (+ "\\"))))
+                              ;; ++ +++ ++++ +>
+                              ("+" (rx (or ">" (+ "+"))))
+                              ;; :: ::: :::: :> :< := :// ::=
+                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                              "="))))
+                              ;; .. ... .... .= .- .? ..= ..<
+                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                              ;; *> */ *)  ** *** ****
+                              ("*" (rx (or ">" "/" ")" (+ "*"))))
+                              ;; www wwww
+                              ("w" (rx (+ "w")))
+                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                              ;; << <<< <<<<
+                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                              "-"  "/" "|" "="))))
+                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                              ;; >> >>> >>>>
+                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                           (+ "#"))))
+                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                              ;; __ ___ ____ _|_ __|____|_
+                              ("_" (rx (+ (or "_" "|"))))
+                              ;; Fira code: 0xFF 0x12
+                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                              ;; Fira code:
+                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                              ;; The few not covered by the regexps.
+                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
+#+END_SRC
+
+*** Editor
+**** Highlighting current line
 
 Highlighting of the current line (native mode)
 
@@ -516,7 +490,7 @@ Highlighting of the current line (native mode)
     (global-hl-line-mode))
 #+end_src
 
-*** Parenthesis
+**** Parenthesis
 
 Paren mode for highlighting matcing paranthesis
 
@@ -530,23 +504,12 @@ Paren mode for highlighting matcing paranthesis
     (show-paren-mode))
 #+end_src
 
-*** Server
-
-Server start.
-
-#+begin_src emacs-lisp
-  (use-package server
-    :config
-    (unless (server-running-p)
-      (server-start)))
-#+end_src
-
-*** Evil
+**** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
 
 heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]] 
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package evil
     :init
     (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
@@ -593,19 +556,150 @@ heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/module
     (evil-collection-init))
 #+end_src
 
-*** which-key
+**** Meow
+Meow is yet another modal editing mode for Emacs.
+#+BEGIN_SRC emacs-lisp
+  (use-package meow
+    :init
+    (defun meow-setup ()
+      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+      (meow-motion-overwrite-define-key
+       '("j" . meow-next)
+       '("k" . meow-prev)
+       '("<escape>" . ignore))
+      (meow-leader-define-key
+       ;; SPC j/k will run the original command in MOTION state.
+       '("j" . "H-j")
+       '("k" . "H-k")
+       ;; Use SPC (0-9) for digit arguments.
+       '("1" . meow-digit-argument)
+       '("2" . meow-digit-argument)
+       '("3" . meow-digit-argument)
+       '("4" . meow-digit-argument)
+       '("5" . meow-digit-argument)
+       '("6" . meow-digit-argument)
+       '("7" . meow-digit-argument)
+       '("8" . meow-digit-argument)
+       '("9" . meow-digit-argument)
+       '("0" . meow-digit-argument)
+       '("/" . meow-keypad-describe-key)
+       '("?" . meow-cheatsheet))
+      (meow-normal-define-key
+       '("0" . meow-expand-0)
+       '("9" . meow-expand-9)
+       '("8" . meow-expand-8)
+       '("7" . meow-expand-7)
+       '("6" . meow-expand-6)
+       '("5" . meow-expand-5)
+       '("4" . meow-expand-4)
+       '("3" . meow-expand-3)
+       '("2" . meow-expand-2)
+       '("1" . meow-expand-1)
+       '("-" . negative-argument)
+       '(";" . meow-reverse)
+       '("," . meow-inner-of-thing)
+       '("." . meow-bounds-of-thing)
+       '("[" . meow-beginning-of-thing)
+       '("]" . meow-end-of-thing)
+       '("a" . meow-append)
+       '("A" . meow-open-below)
+       '("b" . meow-back-word)
+       '("B" . meow-back-symbol)
+       '("c" . meow-change)
+       '("d" . meow-delete)
+       '("D" . meow-backward-delete)
+       '("e" . meow-next-word)
+       '("E" . meow-next-symbol)
+       '("f" . meow-find)
+       '("<escape>" . meow-cancel-selection)
+       '("G" . meow-grab)
+       '("h" . meow-left)
+       '("H" . meow-left-expand)
+       '("i" . meow-insert)
+       '("I" . meow-open-above)
+       '("j" . meow-next)
+       '("J" . meow-next-expand)
+       '("k" . meow-prev)
+       '("K" . meow-prev-expand)
+       '("l" . meow-right)
+       '("L" . meow-right-expand)
+       '("m" . meow-join)
+       '("n" . meow-search)
+       '("o" . meow-block)
+       '("O" . meow-to-block)
+       '("p" . meow-yank)
+       '("q" . meow-quit)
+       '("Q" . meow-goto-line)
+       '("r" . meow-replace)
+       '("R" . meow-swap-grab)
+       '("s" . meow-kill)
+       '("t" . meow-till)
+       '("u" . meow-undo)
+       '("U" . meow-undo-in-selection)
+       '("v" . meow-visit)
+       '("w" . meow-mark-word)
+       '("W" . meow-mark-symbol)
+       '("x" . meow-line)
+       '("X" . meow-goto-line)
+       '("y" . meow-save)
+       '("Y" . meow-sync-grab)
+       '("z" . meow-pop-selection)
+       '("=" . meow-indent)
+       '("'" . repeat)))
+    :config
+    (meow-setup)
+    (meow-global-mode 1))
+#+END_SRC
+
+*** Tools
+**** Recent files
+
+50 Recents files with some exclusion (regex patterns).
+
+#+begin_src emacs-lisp
+  (use-package recentf
+    :config
+
+    (setq recentf-max-menu-items 10
+          recentf-max-saved-items 100)
+
+    (let (message-log-max)
+      (recentf-mode 1)))
+#+end_src
+**** Server
+
+Server start.
+
+#+begin_src emacs-lisp
+  (use-package server
+    :config
+    (unless (server-running-p)
+      (server-start)))
+#+end_src
+
+**** Which Key
 
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 
 #+begin_src emacs-lisp
-  (use-package which-key
-    :demand t
-    :config
-    (setq which-key-idle-delay 0.5)
-    (which-key-mode))
+    (use-package which-key
+      :demand t
+      :config
+      (setq which-key-idle-delay 0.2)
+      (which-key-mode))
 #+end_src
 
-*** Undo-Tree
+**** Helpful
+[[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
+It is a bit slow to load so we do need load it explicitely.
+
+#+begin_src emacs-lisp
+  (use-package helpful
+    :config
+                                          ; Focus new help windows when opened
+    (setq help-window-select t))
+#+end_src
+**** Undo Tree
 
 #+begin_src emacs-lisp
   (use-package undo-tree
@@ -639,7 +733,65 @@ The mode displays the key bindings following your currently entered incomplete c
     (global-undo-tree-mode))
 #+end_src
 
-*** Vertico
+**** Savehist
+#+begin_src emacs-lisp
+  (use-package savehist
+    :config
+    (setq kill-ring-max 50
+          history-length 50)
+
+    (setq savehist-additional-variables
+          '(kill-ring
+            command-history
+            set-variable-value-history
+            custom-variable-history   
+            query-replace-history     
+            read-expression-history   
+            minibuffer-history        
+            read-char-history         
+            face-name-history         
+            bookmark-history
+            file-name-history))
+
+    (put 'minibuffer-history         'history-length 50)
+    (put 'file-name-history          'history-length 50)
+    (put 'set-variable-value-history 'history-length 25)
+    (put 'custom-variable-history    'history-length 25)
+    (put 'query-replace-history      'history-length 25)
+    (put 'read-expression-history    'history-length 25)
+    (put 'read-char-history          'history-length 25)
+    (put 'face-name-history          'history-length 25)
+    (put 'bookmark-history           'history-length 25)
+
+    ;; No duplicates in history  
+    (setq history-delete-duplicates t)
+
+    ;;Start history mode.
+    (let (message-log-max)
+      (savehist-mode)))
+#+end_src
+
+**** Swiper
+Swiper is an awesome searching utility with a quick preview. Let's install it and
+load it when =swiper= or =swiper-all= is called.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package swiper
+    :commands (swiper swiper-all))
+#+END_SRC
+
+**** PDF Tools
+
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :config
+    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+
+    (setq-default pdf-view-use-scaling t
+                  pdf-view-use-imagemagick nil))
+#+end_src
+*** Completion
+**** Vertico
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
 
 #+BEGIN_SRC emacs-lisp
@@ -686,57 +838,120 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (vertico-mode))
 #+end_src
 
-*** Savehist
-We save every possible history we can think of.
-
-#+begin_src emacs-lisp 
-  ;; Persist history over Emacs restarts. Vertico sorts by history position.
-  (use-package savehist
-    :config
-    (setq kill-ring-max 50
-          history-length 50)
-
-    (setq savehist-additional-variables
-          '(kill-ring
-            command-history
-            set-variable-value-history
-            custom-variable-history   
-            query-replace-history     
-            read-expression-history   
-            minibuffer-history        
-            read-char-history         
-            face-name-history         
-            bookmark-history
-            file-name-history))
-
-    (put 'minibuffer-history         'history-length 50)
-    (put 'file-name-history          'history-length 50)
-    (put 'set-variable-value-history 'history-length 25)
-    (put 'custom-variable-history    'history-length 25)
-    (put 'query-replace-history      'history-length 25)
-    (put 'read-expression-history    'history-length 25)
-    (put 'read-char-history          'history-length 25)
-    (put 'face-name-history          'history-length 25)
-    (put 'bookmark-history           'history-length 25)
-
-    ;; No duplicates in history  
-    (setq history-delete-duplicates t)
-
-    ;;Start history mode.
-    (let (message-log-max)
-      (savehist-mode)))
-#+end_src
-
-*** Swiper
-Swiper is an awesome searching utility with a quick preview. Let's install it and
-load it when =swiper= or =swiper-all= is called.
-
+**** Corfu
+Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
-  (use-package swiper
-    :commands (swiper swiper-all))
+      (use-package corfu
+      ;; Optional customizations
+      ;; :custom
+      ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+      ;; (corfu-auto t)                 ;; Enable auto completion
+      ;; (corfu-separator ?\s)          ;; Orderless field separator
+      ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+      ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+      ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+      ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+      ;; Enable Corfu only for certain modes.
+      ;; :hook ((prog-mode . corfu-mode)
+      ;;        (shell-mode . corfu-mode)
+      ;;        (eshell-mode . corfu-mode))
+
+      ;; Recommended: Enable Corfu globally.
+      ;; This is recommended since Dabbrev can be used globally (M-/).
+      ;; See also `corfu-exclude-modes'.
+      :init
+      (global-corfu-mode))
+
+    ;; A few more useful configurations...
+    (use-package emacs
+      :init
+      ;; TAB cycle if there are only few candidates
+      (setq completion-cycle-threshold 3)
+
+      ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+      ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+      ;; (setq read-extended-command-predicate
+      ;;       #'command-completion-default-include-p)
+
+      ;; Enable indentation+completion using the TAB key.
+      ;; `completion-at-point' is often bound to M-TAB.
+      (setq tab-always-indent 'complete))
+  
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+END_SRC
+**** Marginalia
+#+BEGIN_SRC emacs-lisp
+(use-package marginalia
+  :after vertico
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  :init
+  (marginalia-mode))
 #+END_SRC
 
-*** Magit
+**** Citar
+Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
+
+#+begin_src emacs-lisp
+  (use-package citar
+    :no-require
+    :after (org all-the-icons)
+    :custom
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    :config
+    (setq citar-bibliography (car (file-expand-wildcards (concat org-directory "bib/*.bib")))
+          citar-notes-paths (list (concat org-directory "brain/bib_notes/"))
+          ctar-notes-template-multiple-files '(concat "#+TITLE: ${title}\n"
+                                                      "#+AUTHOR: ${author editor}\n"
+                                                      "#+DATE: ${date}\n"
+                                                      "#+SOURCE: ${doi url}\n"
+                                                      "#+CUSTOM_ID: ${=key= id}\n"
+                                                      "#+cite_export: biblatex ieee\n"
+                                                      (concat "#+bibliography: " citar-bibliography "\n\n")
+                                                      "* Notes :ignore:\n"
+                                                      ":PROPERTIES:\n"
+                                                      ":NOTER_DOCUMENT: ${file} \n"
+                                                      ":END:\n\n"
+                                                      "* Summary :childless:showchildren:export:\n"
+                                                      "This is a summary of [citet:@${=key=}].\n"
+                                                      "** Bibliography :ignore:\n"
+                                                      )
+          citar-notes-template-one-file (concat "** TODO ${=key=}: ${title}, (${year}) :${type}:\n"
+                                                ":PROPERTIES:\n"
+                                                ":Custom_ID: ${=key=}\n"
+                                                ":FILE: [[file:${file}]]\n"
+                                                ":END:\n"
+                                                "See [[cite:&${=key=}]]\n")
+          citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+                            (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
+                            (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+                            (note . ,(eval ctar-notes-template-multiple-files)))
+          citar-symbols `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
+                          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
+                          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " "))
+          citar-symbol-separator "  ")
+
+    ;; optional: org-cite-insert is also bound to C-c C-x C-@
+    ;;:bind
+    ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
+    )
+#+end_src
+
+*** Version Control
+
+**** Magit
 The magical git client. Let's load magit only when one of the several entry pont
 functions we invoke regularly outside of magit is called.
 
@@ -745,7 +960,7 @@ functions we invoke regularly outside of magit is called.
     :commands (magit-status magit-blame magit-log-buffer-file magit-log-all))
 #+END_SRC
 
-*** GitGutter
+**** GitGutter
 
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter
@@ -775,16 +990,41 @@ functions we invoke regularly outside of magit is called.
      ("C-x v SPC" . git-gutter:mark-hunk)))
 #+END_SRC
 
-*** Projectile
+*** Project Management
+**** Perspective
+Workspaces
+
+#+BEGIN_SRC emacs-lisp
+(use-package perspective
+  :bind
+  ("C-c w" . persp-list-buffers)         ; or use a nicer switcher, see below
+  :custom
+  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
+  :init
+  (persp-mode))
+#+END_SRC
+**** Projectile
 Projectile is a quick and easy project management package that "just works". We're
 going to install it and make sure it's loaded immediately.
 
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
-    :demand t)
+    :after perspective
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    (when (file-directory-p "~/Projekte")
+      (setq projectile-project-search-path '("~/Projekte")))
+    :config
+    (defun my/switch-project-action ()
+      "Switch to a workspace with the project name and start `magit-status'."
+      (persp-switch (projectile-project-name))
+      (magit-status))
+    (setq projectile-switch-project-action #'my/switch-project-action)
+    (projectile-mode))
 #+END_SRC
 
-*** Treemacs
+**** Treemacs
 Tree layout file explorer for Emacs
 #+BEGIN_SRC emacs-lisp
   (use-package treemacs
@@ -818,7 +1058,7 @@ Tree layout file explorer for Emacs
             treemacs-move-forward-on-expand          nil
             treemacs-no-png-images                   nil
             treemacs-no-delete-other-windows         t
-            treemacs-project-follow-cleanup          nil
+            treemacs-project-follow-cleanup          t
             treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
             treemacs-position                        'left
             treemacs-read-string-input               'from-child-frame
@@ -866,8 +1106,8 @@ Tree layout file explorer for Emacs
 
       (treemacs-hide-gitignored-files-mode nil))
     :bind
-    (:map global-map
           ("M-0"       . treemacs-select-window)
+    (:map global-map
           ("C-x t 1"   . treemacs-delete-other-windows)
           ("C-x t t"   . treemacs)
           ("C-x t d"   . treemacs-select-directory)
@@ -902,86 +1142,12 @@ Tree layout file explorer for Emacs
     :config (treemacs-set-scope-type 'Tabs))
 #+END_SRC
 
-*** ascii-art-to-unicode
-Make org-brain-visualize-mode look a bit nicer.
-#+begin_src emacs-lisp
-  (use-package ascii-art-to-unicode
-    :config
-    (defface aa2u-face '((t . nil))
-      "Face for aa2u box drawing characters")
-    (advice-add #'aa2u-1c :filter-return
-                (lambda (str) (propertize str 'face 'aa2u-face)))
-    (defun aa2u-org-brain-buffer ()
-      (let ((inhibit-read-only t))
-        (make-local-variable 'face-remapping-alist)
-        (add-to-list 'face-remapping-alist
-                     '(aa2u-face . org-brain-wires))
-        (ignore-errors (aa2u (point-min) (point-max)))))
-    (with-eval-after-load 'org-brain
-      (add-hook 'org-brain-after-visualize-hook #'aa2u-org-brain-buffer)))
-#+end_src
-
-*** pdf-tools
-
-#+begin_src emacs-lisp
-  (use-package pdf-tools
-    :config
-    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
-
-    (setq-default pdf-view-use-scaling t
-                  pdf-view-use-imagemagick nil))
-#+end_src
-*** Citar
-Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
-
-#+begin_src emacs-lisp
-    (use-package citar
-      :no-require
-      :after (org all-the-icons)
-      :custom
-      (org-cite-insert-processor 'citar)
-      (org-cite-follow-processor 'citar)
-      (org-cite-activate-processor 'citar)
-      :config
-      (setq citar-bibliography (car (file-expand-wildcards (concat org-directory "bib/*.bib")))
-            citar-notes-paths (list (concat org-directory "brain/bib_notes/"))
-            ctar-notes-template-multiple-files '(concat "#+TITLE: ${title}\n"
-                                                        "#+AUTHOR: ${author editor}\n"
-                                                        "#+DATE: ${date}\n"
-                                                        "#+SOURCE: ${doi url}\n"
-                                                        "#+CUSTOM_ID: ${=key= id}\n"
-                                                        "#+cite_export: biblatex ieee\n"
-                                                        (concat "#+bibliography: " citar-bibliography "\n\n")
-                                                        "* Notes :ignore:\n"
-                                                        ":PROPERTIES:\n"
-                                                        ":NOTER_DOCUMENT: ${file} \n"
-                                                        ":END:\n\n"
-                                                        "* Summary :childless:showchildren:export:\n"
-                                                        "This is a summary of [citet:@${=key=}].\n"
-                                                        "** Bibliography :ignore:\n"
-                                                        )
-            citar-notes-template-one-file (concat "** TODO ${=key=}: ${title}, (${year}) :${type}:\n"
-                                                  ":PROPERTIES:\n"
-                                                  ":Custom_ID: ${=key=}\n"
-                                                  ":FILE: [[file:${file}]]\n"
-                                                  ":END:\n"
-                                                  "See [[cite:&${=key=}]]\n")
-            citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
-                              (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
-                              (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-                              (note . ,(eval ctar-notes-template-multiple-files)))
-            citar-symbols `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
-                            (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
-                            (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " "))
-            citar-symbol-separator "  ")
-
-      ;; optional: org-cite-insert is also bound to C-c C-x C-@
-      ;;:bind
-      ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
-      )
-#+end_src
-
 *** Org
+**** Org
+Let's include a newer version of org-mode than the one that is built in. We're going
+to manually remove the org directories from the load path, to ensure the version we
+want is prioritized instead.
+
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :defer t
@@ -1164,11 +1330,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
       (ox-extras-activate '(ignore-headlines))))
 #+END_SRC
 
-Let's include a newer version of org-mode than the one that is built in. We're going
-to manually remove the org directories from the load path, to ensure the version we
-want is prioritized instead.
-
-*** evil-org-mode
+**** evil-org-mode
 #+begin_src emacs-lisp
   (use-package evil-org
     :after org
@@ -1179,7 +1341,7 @@ want is prioritized instead.
     (evil-org-agenda-set-keys))
 #+end_src
 
-*** org-brain
+**** org-brain
 #+begin_src emacs-lisp
   (use-package org-brain
     :after (org org-noter)
@@ -1245,7 +1407,7 @@ want is prioritized instead.
     )
 #+end_src
 
-*** org-noter
+**** org-noter
 
 #+begin_src emacs-lisp
   (use-package org-noter
@@ -1264,7 +1426,7 @@ want is prioritized instead.
     )
 #+end_src
 
-*** toc-org
+**** toc-org
 Let's install and load the =toc-org= package after org mode is loaded. This is the
 package that automatically generates an up to date table of contents for us.
 
@@ -1274,7 +1436,7 @@ package that automatically generates an up to date table of contents for us.
     :init (add-hook 'org-mode-hook #'toc-org-enable))
 #+END_SRC
 
-*** org-cliplink
+**** org-cliplink
 A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
 
 #+BEGIN_SRC emacs-lisp
@@ -1282,7 +1444,7 @@ A simple command that takes a URL from the clipboard and inserts an org-mode lin
     :after org)
 #+END_SRC
 
-*** org-modern 
+**** org-modern 
 This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
 #+BEGIN_SRC emacs-lisp
@@ -1315,103 +1477,71 @@ This package implements a modern style for your Org buffers using font locking a
      org-agenda-current-time-string
      "⭠ now ─────────────────────────────────────────────────"))
 #+END_src
-
-*** Flycheck
+*** Programming
+**** lsp
 #+BEGIN_SRC emacs-lisp
-(use-package flycheck
-  :init (global-flycheck-mode))
+  (use-package lsp-mode
+    :commands lsp
+    :hook ((typescript-mode js2-mode web-mode) . lsp)
+    :bind (:map lsp-mode-map
+                ("TAB" . completion-at-point))
+    :custom (lsp-headerline-breadcrumb-enable nil))
+
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :config
+    (setq lsp-ui-sideline-enable t)
+    (setq lsp-ui-sideline-show-hover nil)
+    (setq lsp-ui-doc-position 'bottom)
+    (lsp-ui-doc-show))
   #+END_SRC
 
-*** Helpful
-[[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
-It is a bit slow to load so we do need load it explicitely.
-
-#+begin_src emacs-lisp
-  (use-package helpful
-    :config
-                                          ; Focus new help windows when opened
-    (setq help-window-select t))
-#+end_src
-*** Ligatures
-
+**** Flycheck
 #+BEGIN_SRC emacs-lisp
-  (use-package ligature
-    :config
-    ;; set Fira as default font
-    (set-frame-font "Fira Code Light-10" nil t)
-    ;; Enable the "www" ligature in every possible major mode
-    (ligature-set-ligatures 't '("www"))
-    ;; Enable traditional ligature support in eww-mode, if the
-    ;; `variable-pitch' face supports it
-    (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
-    ;; Enable all Cascadia and Fira Code ligatures in programming modes
-    (ligature-set-ligatures '(prog-mode org-mode)
-                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                              ;; =:= =!=
-                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                              ;; ;; ;;;
-                              (";" (rx (+ ";")))
-                              ;; && &&&
-                              ("&" (rx (+ "&")))
-                              ;; !! !!! !. !: !!. != !== !~
-                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                              ;; ?? ??? ?:  ?=  ?.
-                              ("?" (rx (or ":" "=" "\." (+ "?"))))
-                              ;; %% %%%
-                              ("%" (rx (+ "%")))
-                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                              ;; |->>-||-<<-| |- |== ||=||
-                              ;; |==>>==<<==<=>==//==/=!==:===>
-                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                              "-" "=" ))))
-                              ;; \\ \\\ \/
-                              ("\\" (rx (or "/" (+ "\\"))))
-                              ;; ++ +++ ++++ +>
-                              ("+" (rx (or ">" (+ "+"))))
-                              ;; :: ::: :::: :> :< := :// ::=
-                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                              "="))))
-                              ;; .. ... .... .= .- .? ..= ..<
-                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                              ;; *> */ *)  ** *** ****
-                              ("*" (rx (or ">" "/" ")" (+ "*"))))
-                              ;; www wwww
-                              ("w" (rx (+ "w")))
-                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                              ;; << <<< <<<<
-                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                              "-"  "/" "|" "="))))
-                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                              ;; >> >>> >>>>
-                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                           (+ "#"))))
-                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                              ;; __ ___ ____ _|_ __|____|_
-                              ("_" (rx (+ (or "_" "|"))))
-                              ;; Fira code: 0xFF 0x12
-                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                              ;; Fira code:
-                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                              ;; The few not covered by the regexps.
-                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
-    (global-ligature-mode t))
+  (use-package flycheck
+    :init (global-flycheck-mode))
 #+END_SRC
 
+**** Format All
+#+begin_src emacs-lisp
+  (use-package format-all)
+#+end_src
+
+**** Python
+#+begin_src emacs-lisp
+  (use-package python
+    :config
+    ;; Stop the spam!
+    ;; Let Emacs guess Python indent silently
+    (setq python-indent-guess-indent-offset t
+          python-indent-guess-indent-offset-verbose nil)
+
+    ;; Default to Python 3. Prefer the versioned Python binaries since some
+    ;; systems link the unversioned one to Python 2.
+    (when (and (executable-find "python3")
+               (string= python-shell-interpreter "python"))
+      (setq python-shell-interpreter "python3")))
+
+  (use-package pyimport
+    :defer t)
+
+  (use-package py-isort
+    :defer t)
+
+  (use-package conda
+    :after python
+    :init
+    ;; enable auto-activation
+    (conda-env-autoactivate-mode t)
+
+    ;; support for mambaforge envs
+    (setq conda-anaconda-home "~/mambaforge/"
+          conda-env-home-directory "~/mambaforge/"))
+        #+end_src
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
 
 #+BEGIN_SRC emacs-lisp
-  (setq gc-cons-threshold 16777216
+  (setq gc-cons-threshold (* 2 1000 1000)
         gc-cons-percentage 0.1)
 #+END_SRC
