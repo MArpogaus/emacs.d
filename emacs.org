@@ -630,7 +630,7 @@ It is a bit slow to load so we do need load it explicitely.
 #+end_src
 
 **** Exec Path From Shell
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package exec-path-from-shell
     :config
     (exec-path-from-shell-copy-env "SSH_AGENT_PID")
@@ -639,13 +639,6 @@ It is a bit slow to load so we do need load it explicitely.
       (exec-path-from-shell-initialize)))
 #+end_src
 
-**** RG
-Use ripgrep in Emacs.
-#+begin_src emacs-lisp
-  (use-package rg
-    :config
-    (rg-enable-default-bindings))
-#+end_src
 
 *** Editor
 **** Highlighting current line
@@ -868,6 +861,16 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (vertico-mode))
 #+end_src
 
+**** Marginalia
+#+BEGIN_SRC emacs-lisp
+  (use-package marginalia
+    :after vertico
+    :custom
+    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    :init
+    (marginalia-mode))
+#+END_SRC
+
 **** Corfu
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
@@ -919,16 +922,147 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
           completion-category-defaults nil
           completion-category-overrides '((file (styles . (partial-completion))))))
 #+END_SRC
-**** Marginalia
-#+BEGIN_SRC emacs-lisp
-  (use-package marginalia
-    :after vertico
-    :custom
-    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-    :init
-    (marginalia-mode))
-#+END_SRC
+**** Consult
+additional featureful completion commands
+#+begin_src emacs-lisp
+  ;; Example configuration for Consult
+  (use-package consult
+    ;; Replace bindings. Lazily loaded due by `use-package'.
+    :bind (;; C-c bindings in `mode-specific-map'
+           ("C-c M-x" . consult-mode-command)
+           ("C-c h" . consult-history)
+           ("C-c k" . consult-kmacro)
+           ("C-c m" . consult-man)
+           ("C-c i" . consult-info)
+           ([remap Info-search] . consult-info)
+           ;; C-x bindings in `ctl-x-map'
+           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+           ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+           ;; Custom M-# bindings for fast register access
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+           ("C-M-#" . consult-register)
+           ;; Other custom bindings
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ;; M-g bindings in `goto-map'
+           ("M-g e" . consult-compile-error)
+           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("M-g g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+           ;; M-s bindings in `search-map'
+           ("M-s d" . consult-find)
+           ("M-s D" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+           ;; Isearch integration
+           ("M-s e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+           ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+           ;; Minibuffer history
+           :map minibuffer-local-map
+           ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+           ("M-r" . consult-history))                ;; orig. previous-matching-history-element
 
+    ;; Enable automatic preview at point in the *Completions* buffer. This is
+    ;; relevant when you use the default completion UI.
+    ;; :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    ;; The :init configuration is always executed (Not lazy)
+    :init
+
+    ;; Optionally configure the register formatting. This improves the register
+    ;; preview for `consult-register', `consult-register-load',
+    ;; `consult-register-store' and the Emacs built-ins.
+    (setq register-preview-delay 0.5
+          register-preview-function #'consult-register-format)
+
+    ;; Optionally tweak the register preview window.
+    ;; This adds thin lines, sorting and hides the mode line of the window.
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+
+    ;; Configure other variables and modes in the :config section,
+    ;; after lazily loading the package.
+    :config
+
+    ;; Optionally configure preview. The default value
+    ;; is 'any, such that any key triggers the preview.
+    ;; (setq consult-preview-key 'any)
+    ;; (setq consult-preview-key "M-.")
+    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+    ;; For some commands and buffer sources it is useful to configure the
+    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; :preview-key "M-."
+     :preview-key '(:debounce 0.4 any))
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (setq consult-narrow-key "<") ;; "C-+"
+
+    ;; Optionally make narrowing help available in the minibuffer.
+    ;; You may want to use `embark-prefix-help-command' or which-key instead.
+    ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+    ;; Configure a different project root function.
+    (autoload 'projectile-project-root "projectile")
+    (setq consult-project-function (lambda (_) (projectile-project-root))))
+#+end_src
+**** Embark
+Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
+#+begin_src emacs-lisp
+  (use-package embark
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("M-." . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+    ;; strategy, if you want to see the documentation from multiple providers.
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 **** Citar
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 
@@ -995,12 +1129,11 @@ functions we invoke regularly outside of magit is called.
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter
     :config
-    (require 'git-gutter)
+    ;;updates diff information in real-time
+    (setq git-gutter:update-interval 0.5)
+
     ;; If you enable global minor mode
     (global-git-gutter-mode t)
-
-    ;; If you would like to use git-gutter.el and linum-mode
-    ;; (git-gutter:linum-setup)
 
     :bind
     (("C-x C-g" . git-gutter)
@@ -1018,6 +1151,12 @@ functions we invoke regularly outside of magit is called.
 
      ;; Mark current hunk
      ("C-x v SPC" . git-gutter:mark-hunk)))
+  (use-package git-gutter-fringe
+    :config
+    ;; (setq git-gutter-fr:side 'right-fringe)
+    (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 #+END_SRC
 
 *** Project Management
@@ -1044,16 +1183,16 @@ going to install it and make sure it's loaded immediately.
 
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
-    :after (perspective exec-path-from-shell)
+    :after perspective
     :bind-keymap
     ("C-c p" . projectile-command-map)
     :config
-    ;; (defun my/switch-project-action ()
-    ;;   "Switch to a workspace with the project name and start `magit-status'."
-    ;;   (persp-switch (projectile-project-name))
-    ;;   (magit-status-setup-buffer)
-    ;;   (projectile-find-file))
-    ;; (setq projectile-switch-project-action #'my/switch-project-action)
+    (defun my/switch-project-action ()
+      "Switch to a workspace with the project name and start `magit-status'."
+      (persp-switch (projectile-project-name))
+      ;; (magit-status-setup-buffer)
+      (projectile-find-file))
+    (setq projectile-switch-project-action #'my/switch-project-action)
     (projectile-mode))
 #+END_SRC
 
@@ -1514,17 +1653,24 @@ This package implements a modern style for your Org buffers using font locking a
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :commands lsp
-    :hook ((typescript-mode js2-mode web-mode) . lsp)
+    :hook ((c++-mode python-mode java-mode js-mode) . lsp-deferred)
     :bind (:map lsp-mode-map
                 ("TAB" . completion-at-point))
     :custom (lsp-headerline-breadcrumb-enable nil))
 
   (use-package lsp-ui
     :hook (lsp-mode . lsp-ui-mode)
+    :commands lsp-ui-mode
     :config
-    (setq lsp-ui-sideline-enable t)
-    (setq lsp-ui-sideline-show-hover nil)
-    (setq lsp-ui-doc-position 'bottom)
+    (setq lsp-ui-sideline-enable t
+          lsp-ui-sideline-show-hover nil
+          lsp-ui-doc-position 'bottom
+          lsp-ui-doc-enable nil
+          lsp-ui-doc-header t
+          lsp-ui-doc-include-signature t
+          lsp-ui-doc-border (face-foreground 'default)
+          lsp-ui-sideline-show-code-actions t
+          lsp-ui-sideline-delay 0.05)
     (lsp-ui-doc-show))
   #+END_SRC
 
