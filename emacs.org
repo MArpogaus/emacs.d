@@ -10,19 +10,20 @@
 ** Table of Contents :TOC_3_gh:
 - [[#configuration][Configuration]]
   - [[#about-this-file][About this file]]
+  - [[#references][References]]
   - [[#org-file-tweaks][Org File Tweaks]]
     - [[#automatically-tangle][Automatically Tangle]]
     - [[#visibility-settings][Visibility Settings]]
     - [[#table-of-contents][Table of Contents]]
-  - [[#personal-information][Personal Information]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
+    - [[#global-variales][Global Variales]]
     - [[#better-defaults][Better Defaults]]
   - [[#packages][Packages]]
     - [[#ui][UI]]
-    - [[#editor][Editor]]
     - [[#tools][Tools]]
+    - [[#editor][Editor]]
     - [[#completion][Completion]]
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
@@ -34,6 +35,13 @@
 This is an Emacs literate configuration template. It contains the basic structure
 of a literate config along with some optimizations to ensure a fast load time.
 
+** References
+The folliwing Setteinge were inspired by:
+- [[https://github.com/rougier/dotemacs][GitHub - rougier/dotemacs: Litterate configuration for GNU Emacs]]
+- [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
+- [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
+- [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
+  
 ** Org File Tweaks
 There are a few tweaks included in this org file that make it a little easier to
 work with.
@@ -60,14 +68,6 @@ tells an org-mode package =toc-org= to generate a table of contents under this h
 that has a max depth of 3 and is created using Github-style hrefs. This table of contents
 is updated everytime the file is saved and makes for a functional table of contents that
 works property directly on github.
-
-** Personal Information
-Let's set some variables with basic user information.
-
-#+BEGIN_SRC emacs-lisp
-  (setq user-full-name "Marcel Arpogaus"
-        user-mail-address "marcel.arpogaus@gmail.com")
-#+END_SRC
 
 ** Emacs Initialization
 *** Settings
@@ -168,137 +168,153 @@ We'll use the [[help:bind-key][bind-key]] function (from use-package) for bindin
 #+begin_src emacs-lisp
   (require 'bind-key)
 #+end_src
+
+*** Global Variales
+**** Personal Information
+Let's set some variables with basic user information.
+
+#+BEGIN_SRC emacs-lisp
+  (setq user-full-name "Marcel Arpogaus"
+        user-mail-address "marcel.arpogaus@gmail.com")
+#+END_SRC
+**** Paths
+#+BEGIN_SRC emacs-lisp
+  (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+  (setq org-brain-path (concat org-directory "brain/"))
+  (setq projectile-project-search-path '("~/Projekte"))
+  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+        url-history-file (expand-file-name "url/history" user-emacs-directory))
+
+  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
+  (use-package no-littering)
+#+end_src
+
 *** Better Defaults
-https://github.com/rougier/dotemacs
-
 #+begin_src emacs-lisp
-    (use-package emacs
-      :config
-      ;; Startup
-      ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-      (setq-default
-       inhibit-startup-screen t               ; Disable start-up screen
-       inhibit-startup-message t              ; Disable startup message
-       inhibit-startup-echo-area-message t    ; Disable initial echo message
-       initial-scratch-message ""             ; Empty the initial *scratch* buffer
-       initial-buffer-choice t                ; Open *scratch* buffer at init
-       display-line-numbers-type t)
+  (use-package emacs
+    :config
+    ;; Startup
+    ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
+    (setq-default
+     inhibit-startup-screen t               ; Disable start-up screen
+     inhibit-startup-message t              ; Disable startup message
+     inhibit-startup-echo-area-message t    ; Disable initial echo message
+     initial-scratch-message ""             ; Empty the initial *scratch* buffer
+     initial-buffer-choice t                ; Open *scratch* buffer at init
+     display-line-numbers-type t)
 
-      ;; Encoding
-      ;; We tell emacs to use UTF-8 encoding as much as possible.
-      (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
-      (prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
-      (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
-      (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
-      (set-language-environment "English")    ; Set up multilingual environment
+    ;; Encoding
+    ;; We tell emacs to use UTF-8 encoding as much as possible.
+    (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
+    (prefer-coding-system       'utf-8)     ; Add utf-8 at the front for automatic detection.
+    (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
+    (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
+    (set-language-environment "English")    ; Set up multilingual environment
 
-      ;; Recovery
-      ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
-      (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
-            (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
-            auto-save-default t        ; Auto-save every buffer that visits a file
-            auto-save-timeout 20       ; Number of seconds between auto-save
-            auto-save-interval 200)    ; Number of keystrokes between auto-saves
+    ;; Recovery
+    ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
+    (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
+          (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
+          auto-save-default t        ; Auto-save every buffer that visits a file
+          auto-save-timeout 20       ; Number of seconds between auto-save
+          auto-save-interval 200)    ; Number of keystrokes between auto-saves
 
-      ;; Bookmarks
-      (setq bookmark-default-file (expand-file-name "bookmark" user-emacs-directory))
+    ;; History
+    ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
+    (defun unpropertize-kill-ring ()
+      (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
+    (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
 
-      ;; History
-      ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
-      (defun unpropertize-kill-ring ()
-        (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-      (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
+    ;; Customization File
+    ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+    (load custom-file 'noerror 'nomessage)
 
-      ;; Cursor
-      ;; Record cursor position from one session ot the other
-      (setq save-place-file (expand-file-name "saveplace" user-emacs-directory)
-            save-place-forget-unreadable-files t)
-      (save-place-mode 1)
+    ;; Cursor
+    ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
+    (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
+                  cursor-type '(hbar . 2)            ; Underline-shaped cursor
+                  cursor-intangible-mode t           ; Enforce cursor intangibility
+                  x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
+    (blink-cursor-mode 0)                            ; Still cursor
 
-      ;; Customization File
-      ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-      (setq custom-file (concat user-emacs-directory "custom.el"))
-      (when (file-exists-p custom-file)
-        (load custom-file nil t))
+    ;; Record cursor position from one session ot the other
+    (save-place-mode 1)
 
-      ;; Cursor
-      ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
-      (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
-                    cursor-type '(hbar . 2)            ; Underline-shaped cursor
-                    cursor-intangible-mode t           ; Enforce cursor intangibility
-                    x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
-      (blink-cursor-mode 0)                            ; Still cursor
+    ;; Text
+    ;; Pretty self-explanatory
+    (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
+                  confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
 
-      ;; Text
-      ;; Pretty self-explanatory
-      (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
-                    confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
+    ;; Mouse
+    ;; Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
+    (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
+    (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
 
-      ;; Mouse
-      ;; Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
-      (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
-      (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
+    ;; Mouse active in tty mode.
+    (unless (display-graphic-p)
+      (xterm-mouse-mode 1)
+      ;; Scroll
+      ;; Smoother scrolling.
+      (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
+                    scroll-margin 2                 ; Add a margin when scrolling vertically
+                    recenter-positions '(5 bottom))) ; Set re-centering positions
+    ;; Typography
+    (setq-default fill-column 80                          ; Default line width 
+                  sentence-end-double-space nil           ; Use a single space after dots
+                  bidi-paragraph-direction 'left-to-right ; Faster
+                  truncate-string-ellipsis "…")           ; Nicer ellipsis
 
-      ;; Mouse active in tty mode.
-      (unless (display-graphic-p)
-        (xterm-mouse-mode 1)
-        ;; Scroll
-        ;; Smoother scrolling.
-        (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
-                      scroll-margin 2                 ; Add a margin when scrolling vertically
-                      recenter-positions '(5 bottom))) ; Set re-centering positions
+    ;; Default mode
+    ;; Default & initial mode is text.
+    (setq-default initial-major-mode 'text-mode   ; Initial mode is text
+                  default-major-mode 'text-mode)  ; Default mode is text
+    ;; Visual line mode for prog and text modes
+    (add-hook 'text-mode-hook 'visual-line-mode)
+    (add-hook 'prog-mode-hook 'visual-line-mode)
 
-      ;; Typography
-      (setq-default fill-column 80                          ; Default line width 
-                    sentence-end-double-space nil           ; Use a single space after dots
-                    bidi-paragraph-direction 'left-to-right ; Faster
-                    truncate-string-ellipsis "…")           ; Nicer ellipsis
+    ;; Tabulations
+    ;; No tabulation, ever.
+    (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
+                  tab-always-indent 'complete ; Indent first then try completions
+                  tab-width 4)                ; Smaller width for tab characters
 
-      ;; Default mode
-      ;; Default & initial mode is text.
-      (setq-default initial-major-mode 'text-mode   ; Initial mode is text
-                    default-major-mode 'text-mode)  ; Default mode is text
-      ;; Visual line mode for prog and text modes
-      (add-hook 'text-mode-hook 'visual-line-mode)
-      (add-hook 'prog-mode-hook 'visual-line-mode)
+    ;; time-stamp in header
+    ;; Update time stamp in Headr when file is saved
+    (setq
+     time-stamp-active t          ; do enable time-stamps
+     time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
+    (add-hook 'write-file-functions 'time-stamp) ; update when saving
 
-      ;; Tabulations
-      ;; No tabulation, ever.
-      (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
-                    tab-always-indent 'complete ; Indent first then try completions
-                    tab-width 4)                ; Smaller width for tab characters
+    ;;ESC Cancels All
+    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-      ;; time-stamp in header
-      ;; Update time stamp in Headr when file is saved
-      (setq
-       time-stamp-active t          ; do enable time-stamps
-       time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
-      (add-hook 'write-file-functions 'time-stamp) ; update when saving
+    ;; Line numbers
+    ;; Enable line numbers and customize their format.
+    (column-number-mode)
 
-      ;;ESC Cancels All
-      (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+    ;; Enable line numbers for some modes
+    (dolist (mode '(text-mode-hook
+                    prog-mode-hook
+                    conf-mode-hook))
+      (add-hook mode (lambda () (display-line-numbers-mode 1))))
 
-      ;; Line numbers
-      ;; Enable line numbers and customize their format.
+    ;; Override some modes which derive from the above
+    (dolist (mode '(org-mode-hook))
+      (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+    ;; Don't pop up UI dialogs when prompting
+    (setq use-dialog-box nil)
+  
+    ;; Revert buffers when the underlying file has changed
+    (global-auto-revert-mode 1)
+    ;; Revert Dired and other buffers
+    (setq global-auto-revert-non-file-buffers t)
 
-  (column-number-mode)
-
-  ;; Enable line numbers for some modes
-  (dolist (mode '(text-mode-hook
-                  prog-mode-hook
-                  conf-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 1))))
-
-  ;; Override some modes which derive from the above
-  (dolist (mode '(org-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-
-
-      ;; Change re-builder syntax
-      ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
-      (setq reb-re-syntax 'string))
+    ;; Change re-builder syntax
+    ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
+    (setq reb-re-syntax 'string))
 #+end_src
 
 ** Packages
@@ -344,33 +360,33 @@ https://protesilaos.com/emacs/modus-themes
 A fancy and fast mode-line inspired by minimalism design.
 
 #+BEGIN_SRC emacs-lisp
-    (use-package doom-modeline
-      :init
-      ;; If non-nil, cause imenu to see `doom-modeline' declarations.
-      ;; This is done by adjusting `lisp-imenu-generic-expression' to
-      ;; include support for finding `doom-modeline-def-*' forms.
-      ;; Must be set before loading doom-modeline.
-      (setq doom-modeline-support-imenu t)
+  (use-package doom-modeline
+    :init
+    ;; If non-nil, cause imenu to see `doom-modeline' declarations.
+    ;; This is done by adjusting `lisp-imenu-generic-expression' to
+    ;; include support for finding `doom-modeline-def-*' forms.
+    ;; Must be set before loading doom-modeline.
+    (setq doom-modeline-support-imenu t)
 
-      :config
-      ;; How tall the mode-line should be. It's only respected in GUI.
-      ;; If the actual char height is larger, it respects the actual height.
-      (setq doom-modeline-height 20)
+    :config
+    ;; How tall the mode-line should be. It's only respected in GUI.
+    ;; If the actual char height is larger, it respects the actual height.
+    (setq doom-modeline-height 20)
 
-      ;; display the real names, please put this into your init file.
-      (setq find-file-visit-truename t)
-    
-      ;; Whether to use hud instead of default bar. It's only respected in GUI.
-      (setq doom-modeline-hud t)
+    ;; display the real names, please put this into your init file.
+    (setq find-file-visit-truename t)
 
-      ;; Whether display icons in the mode-line.
-      ;; While using the server mode in GUI, should set the value explicitly.
-      (setq doom-modeline-icon t)
+    ;; Whether to use hud instead of default bar. It's only respected in GUI.
+    (setq doom-modeline-hud t)
 
-      ;; If non-nil, only display one number for checker information if applicable.
-      (setq doom-modeline-checker-simple-format t)
+    ;; Whether display icons in the mode-line.
+    ;; While using the server mode in GUI, should set the value explicitly.
+    (setq doom-modeline-icon t)
 
-      (doom-modeline-mode 1))
+    ;; If non-nil, only display one number for checker information if applicable.
+    (setq doom-modeline-checker-simple-format t)
+
+    (doom-modeline-mode 1))
 #+END_SRC
 
 **** nerd-icons
@@ -478,6 +494,158 @@ Make org-brain-visualize-mode look a bit nicer.
     ;; per mode with `ligature-mode'.
     (global-ligature-mode t))
 #+END_SRC
+
+*** Tools
+**** Recent files
+
+50 Recents files with some exclusion (regex patterns).
+
+#+begin_src emacs-lisp
+  (use-package recentf
+    :config
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-var-directory))
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-etc-directory))
+    (setq recentf-max-menu-items 10
+          recentf-max-saved-items 100)
+
+    (let (message-log-max)
+      (recentf-mode 1)))
+#+end_src
+**** Server
+
+Server start.
+
+#+begin_src emacs-lisp
+  (use-package server
+    :config
+    (unless (server-running-p)
+      (server-start)))
+#+end_src
+
+**** Which Key
+
+The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :demand t
+    :config
+    (setq which-key-idle-delay 0.2)
+    (which-key-mode))
+#+end_src
+
+**** Helpful
+[[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
+It is a bit slow to load so we do need load it explicitely.
+
+#+begin_src emacs-lisp
+  (use-package helpful
+    :config
+                                          ; Focus new help windows when opened
+    (setq help-window-select t))
+#+end_src
+**** Undo Tree
+
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    ;; Branching & persistent undo
+    :custom (undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo-tree-hist/"))))
+    :config
+    (setq undo-tree-visualizer-diff t
+          undo-tree-auto-save-history t
+          undo-tree-enable-undo-in-region t
+          ;; Increase undo limits to avoid emacs prematurely truncating the undo
+          ;; history and corrupting the tree. This is larger than the undo-fu
+          ;; defaults because undo-tree trees consume exponentially more space,
+          ;; and then some when `undo-tree-enable-undo-in-region' is involved. See
+          ;; syl20bnr/spacemacs#12110
+          undo-limit 800000           ; 800kb (default is 160kb)
+          undo-strong-limit 12000000  ; 12mb  (default is 240kb)
+          undo-outer-limit 128000000) ; 128mb (default is 24mb)
+
+    ;; Compress undo-tree history files with zstd, if available. File size isn't
+    ;; the (only) concern here: the file IO barrier is slow for Emacs to cross;
+    ;; reading a tiny file and piping it in-memory through zstd is *slightly*
+    ;; faster than Emacs reading the entire undo-tree file from the get go (on
+    ;; SSDs). Whether or not that's true in practice, we still enjoy zstd's ~80%
+    ;; file savings (these files add up over time and zstd is so incredibly fast).
+    (when (executable-find "zstd")
+      (defun my/add_zst_ext (file)
+        (concat file ".zst"))
+      (advice-add 'my/add_zst_ext
+                  :filter-return #'undo-tree-make-history-save-file-name))
+
+    (global-undo-tree-mode))
+#+end_src
+
+**** Savehist
+#+begin_src emacs-lisp
+  (use-package savehist
+    :config
+    (setq kill-ring-max 50
+          history-length 50)
+
+    (setq savehist-additional-variables
+          '(kill-ring
+            command-history
+            set-variable-value-history
+            custom-variable-history   
+            query-replace-history     
+            read-expression-history   
+            minibuffer-history        
+            read-char-history         
+            face-name-history         
+            bookmark-history
+            file-name-history))
+
+    (put 'minibuffer-history         'history-length 50)
+    (put 'file-name-history          'history-length 50)
+    (put 'set-variable-value-history 'history-length 25)
+    (put 'custom-variable-history    'history-length 25)
+    (put 'query-replace-history      'history-length 25)
+    (put 'read-expression-history    'history-length 25)
+    (put 'read-char-history          'history-length 25)
+    (put 'face-name-history          'history-length 25)
+    (put 'bookmark-history           'history-length 25)
+
+    ;; No duplicates in history  
+    (setq history-delete-duplicates t)
+
+    ;;Start history mode.
+    (let (message-log-max)
+      (savehist-mode)))
+#+end_src
+
+**** PDF Tools
+
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :config
+    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+
+    (setq-default pdf-view-use-scaling t
+                  pdf-view-use-imagemagick nil))
+#+end_src
+
+**** Exec Path From Shell
+#+begin_src emacs-lisp
+  (use-package exec-path-from-shell
+    :config
+    (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)))
+#+end_src
+
+**** RG
+Use ripgrep in Emacs.
+#+begin_src emacs-lisp
+  (use-package rg
+    :config
+    (rg-enable-default-bindings))
+#+end_src
 
 *** Editor
 **** Highlighting current line
@@ -606,6 +774,7 @@ Meow is yet another modal editing mode for Emacs.
        '("b" . meow-back-word)
        '("B" . meow-back-symbol)
        '("c" . meow-change)
+       '("C" . comment-or-uncomment-region)
        '("d" . meow-delete)
        '("D" . meow-backward-delete)
        '("e" . meow-next-word)
@@ -651,145 +820,6 @@ Meow is yet another modal editing mode for Emacs.
     (meow-global-mode 1))
 #+END_SRC
 
-*** Tools
-**** Recent files
-
-50 Recents files with some exclusion (regex patterns).
-
-#+begin_src emacs-lisp
-  (use-package recentf
-    :config
-
-    (setq recentf-max-menu-items 10
-          recentf-max-saved-items 100)
-
-    (let (message-log-max)
-      (recentf-mode 1)))
-#+end_src
-**** Server
-
-Server start.
-
-#+begin_src emacs-lisp
-  (use-package server
-    :config
-    (unless (server-running-p)
-      (server-start)))
-#+end_src
-
-**** Which Key
-
-The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
-
-#+begin_src emacs-lisp
-    (use-package which-key
-      :demand t
-      :config
-      (setq which-key-idle-delay 0.2)
-      (which-key-mode))
-#+end_src
-
-**** Helpful
-[[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
-It is a bit slow to load so we do need load it explicitely.
-
-#+begin_src emacs-lisp
-  (use-package helpful
-    :config
-                                          ; Focus new help windows when opened
-    (setq help-window-select t))
-#+end_src
-**** Undo Tree
-
-#+begin_src emacs-lisp
-  (use-package undo-tree
-    ;; Branching & persistent undo
-    :custom (undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo-tree-hist/"))))
-    :config
-    (setq undo-tree-visualizer-diff t
-          undo-tree-auto-save-history t
-          undo-tree-enable-undo-in-region t
-          ;; Increase undo limits to avoid emacs prematurely truncating the undo
-          ;; history and corrupting the tree. This is larger than the undo-fu
-          ;; defaults because undo-tree trees consume exponentially more space,
-          ;; and then some when `undo-tree-enable-undo-in-region' is involved. See
-          ;; syl20bnr/spacemacs#12110
-          undo-limit 800000           ; 800kb (default is 160kb)
-          undo-strong-limit 12000000  ; 12mb  (default is 240kb)
-          undo-outer-limit 128000000) ; 128mb (default is 24mb)
-
-    ;; Compress undo-tree history files with zstd, if available. File size isn't
-    ;; the (only) concern here: the file IO barrier is slow for Emacs to cross;
-    ;; reading a tiny file and piping it in-memory through zstd is *slightly*
-    ;; faster than Emacs reading the entire undo-tree file from the get go (on
-    ;; SSDs). Whether or not that's true in practice, we still enjoy zstd's ~80%
-    ;; file savings (these files add up over time and zstd is so incredibly fast).
-    (when (executable-find "zstd")
-      (defun my/add_zst_ext (file)
-        (concat file ".zst"))
-      (advice-add 'my/add_zst_ext
-                  :filter-return #'undo-tree-make-history-save-file-name))
-
-    (global-undo-tree-mode))
-#+end_src
-
-**** Savehist
-#+begin_src emacs-lisp
-  (use-package savehist
-    :config
-    (setq kill-ring-max 50
-          history-length 50)
-
-    (setq savehist-additional-variables
-          '(kill-ring
-            command-history
-            set-variable-value-history
-            custom-variable-history   
-            query-replace-history     
-            read-expression-history   
-            minibuffer-history        
-            read-char-history         
-            face-name-history         
-            bookmark-history
-            file-name-history))
-
-    (put 'minibuffer-history         'history-length 50)
-    (put 'file-name-history          'history-length 50)
-    (put 'set-variable-value-history 'history-length 25)
-    (put 'custom-variable-history    'history-length 25)
-    (put 'query-replace-history      'history-length 25)
-    (put 'read-expression-history    'history-length 25)
-    (put 'read-char-history          'history-length 25)
-    (put 'face-name-history          'history-length 25)
-    (put 'bookmark-history           'history-length 25)
-
-    ;; No duplicates in history  
-    (setq history-delete-duplicates t)
-
-    ;;Start history mode.
-    (let (message-log-max)
-      (savehist-mode)))
-#+end_src
-
-**** Swiper
-Swiper is an awesome searching utility with a quick preview. Let's install it and
-load it when =swiper= or =swiper-all= is called.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package swiper
-    :commands (swiper swiper-all))
-#+END_SRC
-
-**** PDF Tools
-
-#+begin_src emacs-lisp
-  (use-package pdf-tools
-    :config
-    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
-
-    (setq-default pdf-view-use-scaling t
-                  pdf-view-use-imagemagick nil))
-#+end_src
 *** Completion
 **** Vertico
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
@@ -828,8 +858,8 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
     ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
     ;; Vertico commands are hidden in normal buffers.
-    ;; (setq read-extended-command-predicate
-    ;;       #'command-completion-default-include-p)
+    (setq read-extended-command-predicate
+          #'command-completion-default-include-p)
 
     ;; Enable recursive minibuffers
     (setq enable-recursive-minibuffers t)
@@ -841,45 +871,45 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 **** Corfu
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
-      (use-package corfu
-      ;; Optional customizations
-      ;; :custom
-      ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-      ;; (corfu-auto t)                 ;; Enable auto completion
-      ;; (corfu-separator ?\s)          ;; Orderless field separator
-      ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-      ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-      ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-      ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-      ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-      ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (use-package corfu
+    ;; Optional customizations
+    ;; :custom
+    ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    ;; (corfu-auto t)                 ;; Enable auto completion
+    ;; (corfu-separator ?\s)          ;; Orderless field separator
+    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-      ;; Enable Corfu only for certain modes.
-      ;; :hook ((prog-mode . corfu-mode)
-      ;;        (shell-mode . corfu-mode)
-      ;;        (eshell-mode . corfu-mode))
+    ;; Enable Corfu only for certain modes.
+    ;; :hook ((prog-mode . corfu-mode)
+    ;;        (shell-mode . corfu-mode)
+    ;;        (eshell-mode . corfu-mode))
 
-      ;; Recommended: Enable Corfu globally.
-      ;; This is recommended since Dabbrev can be used globally (M-/).
-      ;; See also `corfu-exclude-modes'.
-      :init
-      (global-corfu-mode))
+    ;; Recommended: Enable Corfu globally.
+    ;; This is recommended since Dabbrev can be used globally (M-/).
+    ;; See also `corfu-exclude-modes'.
+    :init
+    (global-corfu-mode))
 
-    ;; A few more useful configurations...
-    (use-package emacs
-      :init
-      ;; TAB cycle if there are only few candidates
-      (setq completion-cycle-threshold 3)
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
 
-      ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-      ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-      ;; (setq read-extended-command-predicate
-      ;;       #'command-completion-default-include-p)
+    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
 
-      ;; Enable indentation+completion using the TAB key.
-      ;; `completion-at-point' is often bound to M-TAB.
-      (setq tab-always-indent 'complete))
-  
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (setq tab-always-indent 'complete))
+
   (use-package orderless
     :init
     ;; Configure a custom style dispatcher (see the Consult wiki)
@@ -891,12 +921,12 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 #+END_SRC
 **** Marginalia
 #+BEGIN_SRC emacs-lisp
-(use-package marginalia
-  :after vertico
-  :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-  :init
-  (marginalia-mode))
+  (use-package marginalia
+    :after vertico
+    :custom
+    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    :init
+    (marginalia-mode))
 #+END_SRC
 
 **** Citar
@@ -995,40 +1025,42 @@ functions we invoke regularly outside of magit is called.
 Workspaces
 
 #+BEGIN_SRC emacs-lisp
-(use-package perspective
-  :bind
-  ("C-c w" . persp-list-buffers)         ; or use a nicer switcher, see below
-  :custom
-  (persp-mode-prefix-key (kbd "C-c M-p"))  ; pick your own prefix key here
-  :init
-  (persp-mode))
+  (use-package perspective
+    :demand t
+    ;; :bind (("C-M-k" . persp-switch)
+    ;;        ("C-c w w" . persp-list-buffers) ; or use a nicer switcher, see below
+    ;;        ("C-M-n" . persp-next)
+    ;;        ("C-x k" . persp-kill-buffer*))
+    :custom
+    (persp-initial-frame-name "Main")
+    (persp-mode-prefix-key (kbd "C-c w")) ; pick your own prefix key here
+    :init
+    (persp-mode))
 #+END_SRC
+
 **** Projectile
 Projectile is a quick and easy project management package that "just works". We're
 going to install it and make sure it's loaded immediately.
 
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
-    :after perspective
+    :after (perspective exec-path-from-shell)
     :bind-keymap
     ("C-c p" . projectile-command-map)
-    :init
-    (when (file-directory-p "~/Projekte")
-      (setq projectile-project-search-path '("~/Projekte")))
     :config
-    (defun my/switch-project-action ()
-      "Switch to a workspace with the project name and start `magit-status'."
-      (persp-switch (projectile-project-name))
-      (magit-status))
-    (setq projectile-switch-project-action #'my/switch-project-action)
+    ;; (defun my/switch-project-action ()
+    ;;   "Switch to a workspace with the project name and start `magit-status'."
+    ;;   (persp-switch (projectile-project-name))
+    ;;   (magit-status-setup-buffer)
+    ;;   (projectile-find-file))
+    ;; (setq projectile-switch-project-action #'my/switch-project-action)
     (projectile-mode))
 #+END_SRC
 
 **** Treemacs
 Tree layout file explorer for Emacs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package treemacs
-    :defer t
     :init
     (with-eval-after-load 'winum
       (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
@@ -1046,6 +1078,7 @@ Tree layout file explorer for Emacs
             treemacs-follow-after-init               t
             treemacs-expand-after-init               t
             treemacs-find-workspace-method           'find-for-file-or-pick-first
+
             treemacs-git-command-pipe                ""
             treemacs-goto-tag-strategy               'refetch-index
             treemacs-header-scroll-indicators        '(nil . "^^^^^^")
@@ -1058,7 +1091,7 @@ Tree layout file explorer for Emacs
             treemacs-move-forward-on-expand          nil
             treemacs-no-png-images                   nil
             treemacs-no-delete-other-windows         t
-            treemacs-project-follow-cleanup          t
+            treemacs-project-follow-cleanup          nil
             treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
             treemacs-position                        'left
             treemacs-read-string-input               'from-child-frame
@@ -1106,8 +1139,8 @@ Tree layout file explorer for Emacs
 
       (treemacs-hide-gitignored-files-mode nil))
     :bind
-          ("M-0"       . treemacs-select-window)
     (:map global-map
+          ("M-0"       . treemacs-select-window)
           ("C-x t 1"   . treemacs-delete-other-windows)
           ("C-x t t"   . treemacs)
           ("C-x t d"   . treemacs-select-directory)
@@ -1115,31 +1148,32 @@ Tree layout file explorer for Emacs
           ("C-x t C-t" . treemacs-find-file)
           ("C-x t M-t" . treemacs-find-tag)))
 
+  (use-package treemacs-evil
+    :after (treemacs evil)
+    :requires evil
+    :ensure t)
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile)
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :hook (dired-mode . treemacs-icons-dired-enable-once)
+    :ensure t)
+
+  (use-package treemacs-magit
+    :after (treemacs magit)
+    :ensure t)
+
+  (use-package treemacs-perspectivep ;;treemacs-perspective if you use perspective.el vs. persp-mode
+    :after (treemacs perspective) ;;or perspective vs. persp-mode
+    :ensure t
+    :config (treemacs-set-scope-type 'Perspectives))
+
   (use-package treemacs-all-the-icons
     :after (treemacs all-the-icons)
     :config
     (treemacs-load-theme "all-the-icons"))
-
-  (use-package treemacs-evil
-    :requires evil
-    :after (treemacs evil))
-
-  (use-package treemacs-projectile
-    :after (treemacs projectile))
-
-  (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once))
-
-  (use-package treemacs-magit
-    :after (treemacs magit))
-
-  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :config (treemacs-set-scope-type 'Perspectives))
-
-  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-    :after (treemacs)
-    :config (treemacs-set-scope-type 'Tabs))
 #+END_SRC
 
 *** Org
@@ -1346,8 +1380,6 @@ want is prioritized instead.
   (use-package org-brain
     :after (org org-noter)
     :init
-    (setq org-brain-path (concat org-directory "brain/"))
-
     ;; For Evil users
     (with-eval-after-load 'evil
       (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
@@ -1531,12 +1563,20 @@ This package implements a modern style for your Org buffers using font locking a
   (use-package conda
     :after python
     :init
-    ;; enable auto-activation
-    (conda-env-autoactivate-mode t)
-
     ;; support for mambaforge envs
     (setq conda-anaconda-home "~/mambaforge/"
-          conda-env-home-directory "~/mambaforge/"))
+          conda-env-home-directory "~/mambaforge/")
+    :config
+    ;; interactive shell support
+    (conda-env-initialize-interactive-shells)
+    ;; if you want eshell support, include:
+    (conda-env-initialize-eshell)
+    ;; enable auto-activation
+    ;; (conda-env-autoactivate-mode t)
+    ;; if you want to automatically activate a conda environment on the opening of a file:
+    ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+    ;                                          (conda-env-activate-for-buffer))))
+    )
         #+end_src
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
