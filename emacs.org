@@ -1,6 +1,7 @@
 #+TITLE: Emacs Literate Configuration
 #+AUTHOR: Marcel Arpogaus
 #+PROPERTY: header-args :tangle yes
+#+auto_tangle: t
 
 * Configuration
 :PROPERTIES:
@@ -18,16 +19,15 @@
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
-    - [[#global-variales][Global Variales]]
-    - [[#better-defaults][Better Defaults]]
+    - [[#emacs-configuration][Emacs Configuration]]
   - [[#packages][Packages]]
     - [[#ui][UI]]
+    - [[#org][Org]]
     - [[#tools][Tools]]
     - [[#editor][Editor]]
     - [[#completion][Completion]]
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
-    - [[#org][Org]]
     - [[#programming][Programming]]
   - [[#post-initialization][Post Initialization]]
 
@@ -99,85 +99,46 @@ if you would like to see any and all byte compiler warnings.
 
 *** Package Management
 
-**** Package Settings
-We're going to set the =load-path= ourselves and avoid calling =(package-initilize)= (for performance reasons) so we need to set =package--init-file-ensured= to true to tell =package.el= to not automatically call it on our behalf. Additionally we're setting =package-enable-at-startup= to nil so that packages will not automatically be loaded for us since =use-package= will be handling that.
-
-#+BEGIN_SRC emacs-lisp
-  (eval-and-compile
-    (setq load-prefer-newer t
-          package-native-compile t
-          package-user-dir "~/.emacs.d/elpa"
-          package--init-file-ensured t
-          package-enable-at-startup nil)
-
-    (unless (file-directory-p package-user-dir)
-      (make-directory package-user-dir t)))
-#+END_SRC
-
-**** Use-Package Settings
-Tell =use-package= to always defer loading packages unless explicitly told otherwise. This speeds up
-initialization significantly as many packages are only loaded later when they are explicitly used.
-
-#+BEGIN_SRC emacs-lisp
-  (setq use-package-always-defer t
-        use-package-verbose t)
-#+END_SRC
-
-**** Manually Set Load Path
-We're going to set the load path ourselves so that we don't have to call =package-initialize= at
-runtime and incur a large performance hit. This load-path will actually be faster than the one
-created by =package-initialize= because it appends the elpa packages to the end of the load path.
-Otherwise any time a builtin package was required it would have to search all of third party paths
-first.
-
-#+BEGIN_SRC emacs-lisp
-  (eval-and-compile
-    (add-to-list 'load-path (directory-files package-user-dir t "^[^.]" t)))
-#+END_SRC
-
-**** Initialize Package Management
-Next we are going to require =package.el= and add our additional package archives, 'melpa' and 'org'.
-Afterwards we need to initialize our packages and then ensure that =use-package= is installed, which
-we promptly install if it's missing. Finally we load =use-package= and tell it to always install any
-missing packages.
-
-Note that this entire block is wrapped in =eval-when-compile=. The effect of this is to perform all
-of the package initialization during compilation so that when byte compiled, all of this time consuming
-code is skipped. This can be done because the result of byte compiling =use-package= statements results
-in the macro being fully expanded at which point =use-package= isn't actually required any longer.
-
-Since the code is automatically compiled during runtime, if the configuration hasn't already been
-previously compiled manually then all of the package initialization will still take place at startup.
-
-#+BEGIN_SRC emacs-lisp
-  (eval-when-compile
-    (require 'package)
-
-    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
-    (package-initialize)
-    (unless (package-installed-p 'use-package)
-      (package-refresh-contents)
-      (package-install 'use-package))
-    (require 'use-package)
-    (setq use-package-always-ensure t))
-#+END_SRC
-
-We'll use the [[help:bind-key][bind-key]] function (from use-package) for bindings. Then we can use [[help:describe-personal-keybindings][describe-personal-keybindings]] to check for personal bindings.
-
+**** straight.el bootstrap code
 #+begin_src emacs-lisp
-  (require 'bind-key)
+  ;; Optimze startup time
+  ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
+  (if (and (executable-find "watchexec") (executable-find "python3"))
+      (setq straight-check-for-modifications '(watch-files find-when-checking))
+    (setq straight-check-for-modifications '(check-on-save find-when-checking)))
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+
+  ;; Load the helper package for commands like `straight-x-clean-unused-repos'
+  (require 'straight-x)
 #+end_src
 
-*** Global Variales
-**** Personal Information
+**** install and configure use-packege
+#+BEGIN_SRC emacs-lisp
+  (setq straight-use-package-by-default t
+        use-package-always-defer nil)
+  (straight-use-package 'use-package)
+#+END_SRC
+
+**** Global Variales
+***** Personal Information
 Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Marcel Arpogaus"
         user-mail-address "marcel.arpogaus@gmail.com")
 #+END_SRC
-**** Paths
+***** Paths
 #+BEGIN_SRC emacs-lisp
   (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
   (setq org-brain-path (concat org-directory "brain/"))
@@ -190,7 +151,7 @@ Let's set some variables with basic user information.
   (use-package no-littering)
 #+end_src
 
-*** Better Defaults
+*** Emacs Configuration
 #+begin_src emacs-lisp
   (use-package emacs
     :config
@@ -306,11 +267,17 @@ Let's set some variables with basic user information.
 
     ;; Don't pop up UI dialogs when prompting
     (setq use-dialog-box nil)
-  
+
     ;; Revert buffers when the underlying file has changed
     (global-auto-revert-mode 1)
     ;; Revert Dired and other buffers
     (setq global-auto-revert-non-file-buffers t)
+
+    ;; auto-insert matching bracket
+    (electric-pair-mode 1)
+
+    ;; auto-insert matching quotes
+    (electric-quote-mode 1)
 
     ;; Change re-builder syntax
     ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
@@ -495,6 +462,355 @@ Make org-brain-visualize-mode look a bit nicer.
     (global-ligature-mode t))
 #+END_SRC
 
+*** Org
+**** Org
+Let's include a newer version of org-mode than the one that is built in. We're going
+to manually remove the org directories from the load path, to ensure the version we
+want is prioritized instead.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :defer t
+    :config
+    (setq org-src-fontify-natively t
+          org-fontify-quote-and-verse-blocks t
+          org-src-tab-acts-natively t
+          org-edit-src-content-indentation 2
+          org-hide-block-startup nil
+          org-src-preserve-indentation nil
+          ;; Return or left-click with mouse follows link
+          org-return-follows-link t
+          org-mouse-1-follows-link t
+          ;; Display links as the description provided
+          org-link-descriptive t)
+
+
+    (setq org-agenda-files
+          (mapcar 'file-truename
+                  (file-expand-wildcards (concat org-directory "agenda/*.org"))))
+
+    ;; Refile
+    (setq org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
+                               (,(concat org-directory "agenda/projects.org") :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
+                               (,(concat org-directory "agenda/someday.org") :level . 1)
+                               (,(concat org-directory "agenda/literature.org") :maxlevel . 2)
+                               (,(concat org-directory "agenda/scheduled.org") :maxlevel . 2)))
+
+    ;; Save the corresponding buffers
+    (defun gtd-save-org-buffers ()
+      "Save `org-agenda-files' buffers without user confirmation. See also `org-save-all-org-buffers'"
+      (interactive)
+      (message "Saving org-agenda-files buffers...")
+      (save-some-buffers t (lambda ()
+                             (when (member (buffer-file-name) org-agenda-files)
+                               t)))
+      (message "Saving org-agenda-files buffers... done"))
+
+    ;; Add it after refile
+    (advice-add 'org-refile :after
+                (lambda (&rest _)
+                  (gtd-save-org-buffers)))
+
+    ;; Wie gehts das??
+    ;; (defun gtd-sort-tasks (&rest ignore)
+    ;;   (org-sort-list nil ?x))
+    ;; (add-hook 'org-after-todo-state-change-hook #'gtd-sort-tasks)
+
+    ;; Todo
+    (setq org-todo-keywords
+          '((sequence
+             "TODO(t)"  ; A task that needs doing & is ready to do
+             "PROJ(p)"  ; A project, which usually contains other tasks
+             "NEXT(n)"  ; Next task in a project
+             "STRT(s)"  ; A task that is in progress
+             "WAIT(w)"  ; Something external is holding up this task
+             "HOLD(h)"  ; This task is paused/on hold because of me
+             "|"
+             "DONE(d)"  ; Task successfully completed
+             "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
+            (sequence
+             "[ ](T)"   ; A task that needs doing
+             "[-](S)"   ; Task is in progress
+             "[?](W)"   ; Task is being held up or paused
+             "|"
+             "[X](D)")) ; Task was completed
+          org-todo-keyword-faces
+          '(("[-]"  . +org-todo-active)
+            ("STRT" . +org-todo-active)
+            ("[?]"  . +org-todo-onhold)
+            ("WAIT" . +org-todo-onhold)
+            ("HOLD" . +org-todo-onhold)
+            ("PROJ" . +org-todo-project)))
+    (defun log-todo-next-creation-date (&rest ignore)
+      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+      (when (and (string= (org-get-todo-state) "NEXT")
+                 (not (org-entry-get nil "ACTIVATED")))
+        (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+    (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
+
+    ;; Add timstamp to items when doen
+    (setq org-log-done 'time)
+
+    ;; Agenda
+    (setq org-agenda-custom-commands
+          '(("g" "Get Things Done (GTD)"
+             ((agenda ""
+                      ((org-agenda-span 'day)
+                       (org-agenda-start-day "today")
+                       (org-agenda-skip-function
+                        '(or (org-agenda-skip-entry-if 'deadline)
+                             (my/org-agenda-skip-without-match "-groceries")
+                             (my/org-agenda-skip-without-match "-social")))
+                       (org-deadline-warning-days 0)))
+              (todo "STRT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nActive Tasks\n")))
+              (todo "NEXT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nNext Tasks\n")))
+              (agenda nil
+                      ((org-agenda-entry-types '(:deadline))
+                       (org-agenda-format-date "")
+                       (org-deadline-warning-days 7)
+                       (org-agenda-skip-function
+                        '(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
+                       (org-agenda-overriding-header "\nDeadlines")))
+              (tags-todo "inbox"
+                         ((org-agenda-prefix-format "  %?-12t% s")
+                          (org-agenda-overriding-header "\nInbox\n")))
+              (todo "HOLD|WAIT"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-entry-if 'deadline))
+                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
+                     (org-agenda-overriding-header "\nPaused Tasks\n")))
+              (tags "CLOSED>=\"<today>\""
+                    ((org-agenda-overriding-header "\nCompleted today\n")))))
+            ("G" "Shopping List" tags-todo "groceries"
+             ((org-agenda-tags-todo-honor-ignore-options t)
+              (org-agenda-skip-deadline-prewarning-if-scheduled t)
+              (org-agenda-todo-ignore-scheduled 'future)
+              (org-agenda-sorting-strategy '(scheduled-up))
+              (org-agenda-prefix-format "%s")))
+            ("l" "Literature" tags-todo "literature"
+             ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+              (org-agenda-prefix-format "  %i %-12:c [%e] ")))
+            ("p" "Social"
+             ((agenda ""
+                      ((org-agenda-span 'week)
+                       (org-agenda-start-day "today")
+                       (org-agenda-skip-function
+                        '(or (org-agenda-skip-entry-if 'deadline)
+                             (my/org-agenda-skip-without-match "-groceries")))
+                       (org-deadline-warning-days 0)))
+              (tags-todo "social"
+                         ((org-agenda-tags-todo-honor-ignore-options t)
+                          (org-agenda-skip-deadline-prewarning-if-scheduled t)
+                          (org-agenda-todo-ignore-scheduled 'future)
+                          (org-agenda-sorting-strategy '(scheduled-up))
+                          (org-agenda-prefix-format "%s"))))))
+          )
+    ;; archive all DONE tasks in subtree
+    ;; https://stackoverflow.com/questions/6997387
+    (defun org-archive-done-tasks ()
+      (interactive)
+      (org-map-entries
+       (lambda ()
+         (org-archive-subtree)
+         (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+       "/DONE" 'tree))
+    ;; Org LaTeX language support
+    ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
+    (add-to-list 'org-latex-packages-alist
+                 '("AUTO" "babel" t ("pdflatex")))
+    (add-to-list 'org-latex-packages-alist
+                 '("AUTO" "polyglossia" t ("xelatex" "lualatex")))
+
+    (with-eval-after-load 'ox-latex
+      ;; Support for KOMA script article class
+      ;; https://orgmode.org/worg/org-tutorials/org-latex-export.html#org3ed51b6
+      (add-to-list 'org-latex-classes
+                   '("koma-article"
+                     "\\documentclass{scrartcl}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+      (add-to-list 'org-latex-classes
+                   '("koma-letter"
+                     "\\documentclass{scrlttr2}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+
+    (with-eval-after-load 'ox-beamer
+      (add-to-list 'org-beamer-environments-extra
+                   '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+
+    (with-eval-after-load 'ox-extra
+      (ox-extras-activate '(ignore-headlines))))
+#+END_SRC
+**** org-auto-tangle
+#+BEGIN_SRC emacs-lisp
+  (use-package org-auto-tangle
+    :after org
+    :hook (org-mode . org-auto-tangle-mode))
+#+END_SRC
+
+
+**** evil-org-mode
+#+begin_src emacs-lisp
+  (use-package evil-org
+    :after org
+    :requires evil 
+    :hook (org-mode . evil-org-mode)
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+#+end_src
+
+**** org-brain
+#+begin_src emacs-lisp
+  (use-package org-brain
+    :after (org org-noter)
+    :init
+    ;; For Evil users
+    (with-eval-after-load 'evil
+      (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
+    :config
+    (setq org-id-track-globally t)
+    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+    (add-hook 'before-save-hook #'org-brain-ensure-ids-in-buffer)
+    (setq org-brain-visualize-default-choices 'all)
+    (setq org-brain-title-max-length 24)
+    (setq org-brain-include-file-entries t
+          org-brain-file-entries-use-title t)
+
+    ;; from org brain README
+    ;; Here’s a command which uses org-cliplink to add a link from the clipboard
+    ;; as an org-brain resource.
+    ;; It guesses the description from the URL title.
+    ;; Here I’ve bound it to L in org-brain-visualize.
+    (defun org-brain-cliplink-resource ()
+      "Add a URL from the clipboard as an org-brain resource.
+  Suggest the URL title as a description for resource."
+      (interactive)
+      (let ((url (org-cliplink-clipboard-content)))
+        (org-brain-add-resource
+         url
+         (org-cliplink-retrieve-title-synchronously url)
+         t)))
+
+    ;; Org-noter’s purpose is to let you create notes that are kept in sync when
+    ;; you scroll through the [PDF etc] document
+    (add-hook 'org-noter-insert-heading-hook #'org-id-get-create)
+    (defun org-brain-open-org-noter (entry)
+      "Open `org-noter' on the ENTRY.
+  If run interactively, get ENTRY from context."
+      (interactive (list (org-brain-entry-at-pt)))
+      (org-with-point-at (org-brain-entry-marker entry)
+        (org-noter)))
+
+    (defun org-brain-insert-resource-icon (link)
+      "Insert an icon, based on content of org-mode LINK."
+      (insert (format "%s "
+                      (cond ((string-prefix-p "brain:" link)
+                             (all-the-icons-fileicon "brain"))
+                            ((string-prefix-p "info:" link)
+                             (all-the-icons-octicon "info"))
+                            ((string-prefix-p "help:" link)
+                             (all-the-icons-material "help"))
+                            ((string-prefix-p "http" link)
+                             (all-the-icons-icon-for-url link))
+                            (t
+                             (all-the-icons-icon-for-file link))))))
+    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
+    ;; Allows you to edit entries directly from org-brain-visualize
+    ;; (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode)
+    ;;:bind (:map org-brain-visualize-mode-map
+    ;;      "L" . org-brain-cliplink-resource
+    ;;      "C-c n" . org-brain-open-org-noter)
+    )
+#+end_src
+
+**** org-noter
+
+#+begin_src emacs-lisp
+  (use-package org-noter
+    :after (org pdf-tools)
+    :config
+    (setq
+     ;; The WM can handle splits
+     org-noter-notes-window-location 'other-frame
+     ;; Please stop opening frames
+     org-noter-always-create-frame nil
+     ;; I want to see the whole file
+     org-noter-hide-other nil
+     ;; Everything is relative to the main notes file
+     ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
+     ))
+#+end_src
+
+**** toc-org
+Let's install and load the =toc-org= package after org mode is loaded. This is the
+package that automatically generates an up to date table of contents for us.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package toc-org
+    :after org
+    :init (add-hook 'org-mode-hook #'toc-org-enable))
+#+END_SRC
+
+**** org-cliplink
+A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-cliplink
+    :after org)
+#+END_SRC
+
+**** org-modern 
+This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-modern
+    :hook (org-mode . global-org-modern-mode)
+    :after org
+    :config
+    ;; (setq org-modern-label-border 0.3)
+
+    (setq
+     ;; Edit settings
+     org-auto-align-tags nil
+     org-tags-column 0
+     org-fold-catch-invisible-edits 'show-and-error
+     org-special-ctrl-a/e t
+     org-insert-heading-respect-content t
+
+     ;; Org styling, hide markup etc.
+     org-hide-emphasis-markers t
+     org-pretty-entities t
+     org-ellipsis "…"
+
+     ;; Agenda styling
+     org-agenda-tags-column 0
+     org-agenda-block-separator ?─
+     org-agenda-time-grid
+     '((daily today require-timed)
+       (800 1000 1200 1400 1600 1800 2000)
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+     org-agenda-current-time-string
+     "⭠ now ─────────────────────────────────────────────────"))
+#+END_src
 *** Tools
 **** Recent files
 
@@ -530,7 +846,6 @@ The mode displays the key bindings following your currently entered incomplete c
 
 #+begin_src emacs-lisp
   (use-package which-key
-    :demand t
     :config
     (setq which-key-idle-delay 0.2)
     (which-key-mode))
@@ -638,7 +953,6 @@ It is a bit slow to load so we do need load it explicitely.
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize)))
 #+end_src
-
 
 *** Editor
 **** Highlighting current line
@@ -1068,14 +1382,29 @@ Citar provides a highly-configurable completing-read front-end to browse and act
 
 #+begin_src emacs-lisp
   (use-package citar
-    :no-require
-    :after (org all-the-icons)
+    :after all-the-icons
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
+    :hook
+    (LaTeX-mode . citar-capf-setup)
+    (org-mode . citar-capf-setup)
     :config
-    (setq citar-bibliography (car (file-expand-wildcards (concat org-directory "bib/*.bib")))
+    (defvar citar-indicator-notes-icons
+      (citar-indicator-create
+       :symbol (all-the-icons-material
+                "speaker_notes"
+                :face 'all-the-icons-blue
+                :v-adjust -0.3)
+       :function #'citar-has-notes
+       :padding "  "
+       :tag "has:notes"))
+    (setq citar-bibliography org-cite-global-bibliography
+          citar-at-point-function 'embark-act
+          citar-indicators
+          (list citar-indicator-files ; plain text
+                citar-indicator-notes-icons) ; icon
           citar-notes-paths (list (concat org-directory "brain/bib_notes/"))
           ctar-notes-template-multiple-files '(concat "#+TITLE: ${title}\n"
                                                       "#+AUTHOR: ${author editor}\n"
@@ -1111,6 +1440,10 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     ;;:bind
     ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
     )
+  (use-package citar-embark
+    :after citar embark
+    :no-require
+    :config (citar-embark-mode))
 #+end_src
 
 *** Version Control
@@ -1165,7 +1498,6 @@ Workspaces
 
 #+BEGIN_SRC emacs-lisp
   (use-package perspective
-    :demand t
     ;; :bind (("C-M-k" . persp-switch)
     ;;        ("C-c w w" . persp-list-buffers) ; or use a nicer switcher, see below
     ;;        ("C-M-n" . persp-next)
@@ -1289,24 +1621,19 @@ Tree layout file explorer for Emacs
 
   (use-package treemacs-evil
     :after (treemacs evil)
-    :requires evil
-    :ensure t)
+    :requires evil)
 
   (use-package treemacs-projectile
-    :after (treemacs projectile)
-    :ensure t)
+    :after (treemacs projectile))
 
   (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once)
-    :ensure t)
+    :hook (dired-mode . treemacs-icons-dired-enable-once))
 
   (use-package treemacs-magit
-    :after (treemacs magit)
-    :ensure t)
+    :after (treemacs magit))
 
   (use-package treemacs-perspectivep ;;treemacs-perspective if you use perspective.el vs. persp-mode
     :after (treemacs perspective) ;;or perspective vs. persp-mode
-    :ensure t
     :config (treemacs-set-scope-type 'Perspectives))
 
   (use-package treemacs-all-the-icons
@@ -1315,339 +1642,6 @@ Tree layout file explorer for Emacs
     (treemacs-load-theme "all-the-icons"))
 #+END_SRC
 
-*** Org
-**** Org
-Let's include a newer version of org-mode than the one that is built in. We're going
-to manually remove the org directories from the load path, to ensure the version we
-want is prioritized instead.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package org
-    :defer t
-    :init
-    (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
-    :config
-    (add-to-list 'org-modules 'org-habit t)
-    (setq org-agenda-files
-          (mapcar 'file-truename
-                  (file-expand-wildcards (concat org-directory "agenda/*.org"))))
-
-    ;; Refile
-    (setq org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
-                               (,(concat org-directory "agenda/projects.org") :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
-                               (,(concat org-directory "agenda/someday.org") :level . 1)
-                               (,(concat org-directory "agenda/literature.org") :maxlevel . 2)
-                               (,(concat org-directory "agenda/scheduled.org") :maxlevel . 2)))
-
-    ;; Save the corresponding buffers
-    (defun gtd-save-org-buffers ()
-      "Save `org-agenda-files' buffers without user confirmation. See also `org-save-all-org-buffers'"
-      (interactive)
-      (message "Saving org-agenda-files buffers...")
-      (save-some-buffers t (lambda ()
-                             (when (member (buffer-file-name) org-agenda-files)
-                               t)))
-      (message "Saving org-agenda-files buffers... done"))
-
-    ;; Add it after refile
-    (advice-add 'org-refile :after
-                (lambda (&rest _)
-                  (gtd-save-org-buffers)))
-
-    ;; Wie gehts das??
-    ;; (defun gtd-sort-tasks (&rest ignore)
-    ;;   (org-sort-list nil ?x))
-    ;; (add-hook 'org-after-todo-state-change-hook #'gtd-sort-tasks)
-
-    ;; Todo
-    (setq org-todo-keywords
-          '((sequence
-             "TODO(t)"  ; A task that needs doing & is ready to do
-             "PROJ(p)"  ; A project, which usually contains other tasks
-             "NEXT(n)"  ; Next task in a project
-             "STRT(s)"  ; A task that is in progress
-             "WAIT(w)"  ; Something external is holding up this task
-             "HOLD(h)"  ; This task is paused/on hold because of me
-             "|"
-             "DONE(d)"  ; Task successfully completed
-             "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
-            (sequence
-             "[ ](T)"   ; A task that needs doing
-             "[-](S)"   ; Task is in progress
-             "[?](W)"   ; Task is being held up or paused
-             "|"
-             "[X](D)")) ; Task was completed
-          org-todo-keyword-faces
-          '(("[-]"  . +org-todo-active)
-            ("STRT" . +org-todo-active)
-            ("[?]"  . +org-todo-onhold)
-            ("WAIT" . +org-todo-onhold)
-            ("HOLD" . +org-todo-onhold)
-            ("PROJ" . +org-todo-project)))
-    (defun log-todo-next-creation-date (&rest ignore)
-      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
-      (when (and (string= (org-get-todo-state) "NEXT")
-                 (not (org-entry-get nil "ACTIVATED")))
-        (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
-    (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
-
-    ;; Add timstamp to items when doen
-    (setq org-log-done 'time)
-
-    ;; Agenda
-    (setq org-agenda-custom-commands
-          '(("g" "Get Things Done (GTD)"
-             ((agenda ""
-                      ((org-agenda-span 'day)
-                       (org-agenda-start-day "today")
-                       (org-agenda-skip-function
-                        '(or (org-agenda-skip-entry-if 'deadline)
-                             (my/org-agenda-skip-without-match "-groceries")
-                             (my/org-agenda-skip-without-match "-social")))
-                       (org-deadline-warning-days 0)))
-              (todo "STRT"
-                    ((org-agenda-skip-function
-                      '(org-agenda-skip-entry-if 'deadline))
-                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                     (org-agenda-overriding-header "\nActive Tasks\n")))
-              (todo "NEXT"
-                    ((org-agenda-skip-function
-                      '(org-agenda-skip-entry-if 'deadline))
-                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                     (org-agenda-overriding-header "\nNext Tasks\n")))
-              (agenda nil
-                      ((org-agenda-entry-types '(:deadline))
-                       (org-agenda-format-date "")
-                       (org-deadline-warning-days 7)
-                       (org-agenda-skip-function
-                        '(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
-                       (org-agenda-overriding-header "\nDeadlines")))
-              (tags-todo "inbox"
-                         ((org-agenda-prefix-format "  %?-12t% s")
-                          (org-agenda-overriding-header "\nInbox\n")))
-              (todo "HOLD|WAIT"
-                    ((org-agenda-skip-function
-                      '(org-agenda-skip-entry-if 'deadline))
-                     (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                     (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                     (org-agenda-overriding-header "\nPaused Tasks\n")))
-              (tags "CLOSED>=\"<today>\""
-                    ((org-agenda-overriding-header "\nCompleted today\n")))))
-            ("G" "Shopping List" tags-todo "groceries"
-             ((org-agenda-tags-todo-honor-ignore-options t)
-              (org-agenda-skip-deadline-prewarning-if-scheduled t)
-              (org-agenda-todo-ignore-scheduled 'future)
-              (org-agenda-sorting-strategy '(scheduled-up))
-              (org-agenda-prefix-format "%s")))
-            ("l" "Literature" tags-todo "literature"
-             ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-              (org-agenda-prefix-format "  %i %-12:c [%e] ")))
-            ("p" "Social"
-             ((agenda ""
-                      ((org-agenda-span 'week)
-                       (org-agenda-start-day "today")
-                       (org-agenda-skip-function
-                        '(or (org-agenda-skip-entry-if 'deadline)
-                             (my/org-agenda-skip-without-match "-groceries")))
-                       (org-deadline-warning-days 0)))
-              (tags-todo "social"
-                         ((org-agenda-tags-todo-honor-ignore-options t)
-                          (org-agenda-skip-deadline-prewarning-if-scheduled t)
-                          (org-agenda-todo-ignore-scheduled 'future)
-                          (org-agenda-sorting-strategy '(scheduled-up))
-                          (org-agenda-prefix-format "%s"))))))
-          )
-    ;; archive all DONE tasks in subtree
-    ;; https://stackoverflow.com/questions/6997387
-    (defun org-archive-done-tasks ()
-      (interactive)
-      (org-map-entries
-       (lambda ()
-         (org-archive-subtree)
-         (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
-       "/DONE" 'tree))
-    ;; Org LaTeX language support
-    ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
-    (add-to-list 'org-latex-packages-alist
-                 '("AUTO" "babel" t ("pdflatex")))
-    (add-to-list 'org-latex-packages-alist
-                 '("AUTO" "polyglossia" t ("xelatex" "lualatex")))
-
-    (with-eval-after-load 'ox-latex
-      ;; Support for KOMA script article class
-      ;; https://orgmode.org/worg/org-tutorials/org-latex-export.html#org3ed51b6
-      (add-to-list 'org-latex-classes
-                   '("koma-article"
-                     "\\documentclass{scrartcl}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-      (add-to-list 'org-latex-classes
-                   '("koma-letter"
-                     "\\documentclass{scrlttr2}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-
-    (with-eval-after-load 'ox-beamer
-      (add-to-list 'org-beamer-environments-extra
-                   '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
-
-    (with-eval-after-load 'ox-extra
-      (ox-extras-activate '(ignore-headlines))))
-#+END_SRC
-
-**** evil-org-mode
-#+begin_src emacs-lisp
-  (use-package evil-org
-    :after org
-    :requires evil 
-    :hook (org-mode . evil-org-mode)
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-#+end_src
-
-**** org-brain
-#+begin_src emacs-lisp
-  (use-package org-brain
-    :after (org org-noter)
-    :init
-    ;; For Evil users
-    (with-eval-after-load 'evil
-      (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
-    :config
-    (setq org-id-track-globally t)
-    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
-    (add-hook 'before-save-hook #'org-brain-ensure-ids-in-buffer)
-    (setq org-brain-visualize-default-choices 'all)
-    (setq org-brain-title-max-length 24)
-    (setq org-brain-include-file-entries t
-          org-brain-file-entries-use-title t)
-
-    ;; from org brain README
-    ;; Here’s a command which uses org-cliplink to add a link from the clipboard
-    ;; as an org-brain resource.
-    ;; It guesses the description from the URL title.
-    ;; Here I’ve bound it to L in org-brain-visualize.
-    (defun org-brain-cliplink-resource ()
-      "Add a URL from the clipboard as an org-brain resource.
-  Suggest the URL title as a description for resource."
-      (interactive)
-      (let ((url (org-cliplink-clipboard-content)))
-        (org-brain-add-resource
-         url
-         (org-cliplink-retrieve-title-synchronously url)
-         t)))
-
-    ;; Org-noter’s purpose is to let you create notes that are kept in sync when
-    ;; you scroll through the [PDF etc] document
-    (add-hook 'org-noter-insert-heading-hook #'org-id-get-create)
-    (defun org-brain-open-org-noter (entry)
-      "Open `org-noter' on the ENTRY.
-  If run interactively, get ENTRY from context."
-      (interactive (list (org-brain-entry-at-pt)))
-      (org-with-point-at (org-brain-entry-marker entry)
-        (org-noter)))
-
-    (defun org-brain-insert-resource-icon (link)
-      "Insert an icon, based on content of org-mode LINK."
-      (insert (format "%s "
-                      (cond ((string-prefix-p "brain:" link)
-                             (all-the-icons-fileicon "brain"))
-                            ((string-prefix-p "info:" link)
-                             (all-the-icons-octicon "info"))
-                            ((string-prefix-p "help:" link)
-                             (all-the-icons-material "help"))
-                            ((string-prefix-p "http" link)
-                             (all-the-icons-icon-for-url link))
-                            (t
-                             (all-the-icons-icon-for-file link))))))
-    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
-    ;; Allows you to edit entries directly from org-brain-visualize
-    ;; (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode)
-    ;;:bind (:map org-brain-visualize-mode-map
-    ;;      "L" . org-brain-cliplink-resource
-    ;;      "C-c n" . org-brain-open-org-noter)
-    )
-#+end_src
-
-**** org-noter
-
-#+begin_src emacs-lisp
-  (use-package org-noter
-    :after (org pdf-tools)
-    :config
-    (setq
-     ;; The WM can handle splits
-     org-noter-notes-window-location 'other-frame
-     ;; Please stop opening frames
-     org-noter-always-create-frame nil
-     ;; I want to see the whole file
-     org-noter-hide-other nil
-     ;; Everything is relative to the main notes file
-     ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
-     )
-    )
-#+end_src
-
-**** toc-org
-Let's install and load the =toc-org= package after org mode is loaded. This is the
-package that automatically generates an up to date table of contents for us.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package toc-org
-    :after org
-    :init (add-hook 'org-mode-hook #'toc-org-enable))
-#+END_SRC
-
-**** org-cliplink
-A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package org-cliplink
-    :after org)
-#+END_SRC
-
-**** org-modern 
-This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package org-modern
-    :hook (org-mode . global-org-modern-mode)
-    :after org
-    :config
-    ;; (setq org-modern-label-border 0.3)
-
-    (setq
-     ;; Edit settings
-     org-auto-align-tags nil
-     org-tags-column 0
-     org-fold-catch-invisible-edits 'show-and-error
-     org-special-ctrl-a/e t
-     org-insert-heading-respect-content t
-
-     ;; Org styling, hide markup etc.
-     org-hide-emphasis-markers t
-     org-pretty-entities t
-     org-ellipsis "…"
-
-     ;; Agenda styling
-     org-agenda-tags-column 0
-     org-agenda-block-separator ?─
-     org-agenda-time-grid
-     '((daily today require-timed)
-       (800 1000 1200 1400 1600 1800 2000)
-       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-     org-agenda-current-time-string
-     "⭠ now ─────────────────────────────────────────────────"))
-#+END_src
 *** Programming
 **** lsp
 #+BEGIN_SRC emacs-lisp
@@ -1672,7 +1666,7 @@ This package implements a modern style for your Org buffers using font locking a
           lsp-ui-sideline-show-code-actions t
           lsp-ui-sideline-delay 0.05)
     (lsp-ui-doc-show))
-  #+END_SRC
+#+END_SRC
 
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
@@ -1720,8 +1714,8 @@ This package implements a modern style for your Org buffers using font locking a
     ;; enable auto-activation
     ;; (conda-env-autoactivate-mode t)
     ;; if you want to automatically activate a conda environment on the opening of a file:
-    ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-    ;                                          (conda-env-activate-for-buffer))))
+                                          ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+                                          ;                                          (conda-env-activate-for-buffer))))
     )
         #+end_src
 ** Post Initialization
