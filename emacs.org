@@ -231,6 +231,7 @@ Let's set some variables with basic user information.
     ;; Default & initial mode is text.
     (setq-default initial-major-mode 'text-mode   ; Initial mode is text
                   default-major-mode 'text-mode)  ; Default mode is text
+
     ;; Visual line mode for prog and text modes
     (add-hook 'text-mode-hook 'visual-line-mode)
     (add-hook 'prog-mode-hook 'visual-line-mode)
@@ -264,6 +265,13 @@ Let's set some variables with basic user information.
     ;; Override some modes which derive from the above
     (dolist (mode '(org-mode-hook))
       (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+    ;; Enables spellchecker
+    (dolist (mode '(text-mode-hook
+                    conf-mode-hook
+                    org-mode-hook))
+      (add-hook mode (lambda () (flyspell-mode 1))))
+    (add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode 1)))
 
     ;; Don't pop up UI dialogs when prompting
     (setq use-dialog-box nil)
@@ -1513,7 +1521,7 @@ Workspaces
 Projectile is a quick and easy project management package that "just works". We're
 going to install it and make sure it's loaded immediately.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SR emacs-lisp :tangle no
   (use-package projectile
     :after perspective
     :bind-keymap
@@ -1527,6 +1535,10 @@ going to install it and make sure it's loaded immediately.
     (setq projectile-switch-project-action #'my/switch-project-action)
     (projectile-mode))
 #+END_SRC
+
+**** Project
+configure emacs native project.el
+
 
 **** Treemacs
 Tree layout file explorer for Emacs
@@ -1644,7 +1656,7 @@ Tree layout file explorer for Emacs
 
 *** Programming
 **** lsp
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package lsp-mode
     :commands lsp
     :hook ((c++-mode python-mode java-mode js-mode) . lsp-deferred)
@@ -1667,6 +1679,14 @@ Tree layout file explorer for Emacs
           lsp-ui-sideline-delay 0.05)
     (lsp-ui-doc-show))
 #+END_SRC
+    :ensure t
+
+**** eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :defer t
+    :hook (python-mode . eglot-ensure))
+#+end_src
 
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
