@@ -8,27 +8,26 @@
 :VISIBILITY: children
 :END:
 
-** Table of Contents :TOC_3_gh:
+** Table of Contents                                               :TOC_3_gh:
 - [[#configuration][Configuration]]
   - [[#about-this-file][About this file]]
   - [[#references][References]]
-  - [[#org-file-tweaks][Org File Tweaks]]
-    - [[#automatically-tangle][Automatically Tangle]]
-    - [[#visibility-settings][Visibility Settings]]
-    - [[#table-of-contents][Table of Contents]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
+    - [[#personal-information][Personal Information]]
+    - [[#paths][Paths]]
     - [[#emacs-configuration][Emacs Configuration]]
   - [[#packages][Packages]]
     - [[#ui][UI]]
+    - [[#modus-themes][Modus Themes]]
     - [[#org][Org]]
     - [[#tools][Tools]]
-    - [[#editor][Editor]]
     - [[#completion][Completion]]
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
+    - [[#keybindings][Keybindings]]
   - [[#post-initialization][Post Initialization]]
 
 ** About this file
@@ -42,33 +41,6 @@ The folliwing Setteinge were inspired by:
 - [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
   
-** Org File Tweaks
-There are a few tweaks included in this org file that make it a little easier to
-work with.
-
-*** Automatically Tangle
-First there is a property defined on the file:
-
-#+BEGIN_SRC :tangle no
-header-args :tangle yes
-#+END_SRC
-
-This tells emacs to automatically tangle (include) all code blocks in this file when
-generating the code for the config, unless the code block explicitly includes
-=:tangle no= as the above code block does.
-
-*** Visibility Settings
-Next we have a property defined on the [[Configuration][Configuration]] heading that defines the visibility
-that tells org to show it's direct children on startup. This way a clean outline of all
-sub headings under Configuration is shown each time this file is opened in org-mode.
-
-*** Table of Contents
-Finally, there is a [[Table of Contents][Table of Contents]] heading that includes the tag: =:TOC_3_gh:=. This
-tells an org-mode package =toc-org= to generate a table of contents under this heading
-that has a max depth of 3 and is created using Github-style hrefs. This table of contents
-is updated everytime the file is saved and makes for a functional table of contents that
-works property directly on github.
-
 ** Emacs Initialization
 *** Settings
 We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time. 
@@ -101,6 +73,7 @@ if you would like to see any and all byte compiler warnings.
 
 **** straight.el bootstrap code
 #+begin_src emacs-lisp
+  (eval-and-compile
   ;; Optimze startup time
   ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
   (if (and (executable-find "watchexec") (executable-find "python3"))
@@ -117,7 +90,7 @@ if you would like to see any and all byte compiler warnings.
            'silent 'inhibit-cookies)
         (goto-char (point-max))
         (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+    (load bootstrap-file nil 'nomessage)))
 
   ;; Load the helper package for commands like `straight-x-clean-unused-repos'
   (require 'straight-x)
@@ -130,18 +103,18 @@ if you would like to see any and all byte compiler warnings.
   (straight-use-package 'use-package)
 #+END_SRC
 
-**** Global Variales
-***** Personal Information
+*** Personal Information
 Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Marcel Arpogaus"
         user-mail-address "marcel.arpogaus@gmail.com")
 #+END_SRC
-***** Paths
+*** Paths
 #+BEGIN_SRC emacs-lisp
   (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
   (setq org-brain-path (concat org-directory "brain/"))
+  (setq project-list-file'("~/Projekte"))
   (setq projectile-project-search-path '("~/Projekte"))
   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
   (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
@@ -294,7 +267,7 @@ Let's set some variables with basic user information.
 
 ** Packages
 *** UI
-**** Modus Themes
+*** Modus Themes
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
 
@@ -479,8 +452,10 @@ want is prioritized instead.
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :defer t
+    :hook (org-mode . org-indent-mode)
     :config
-    (setq org-src-fontify-natively t
+    (setq ;org-ellipsis " ▾"
+          org-src-fontify-natively t
           org-fontify-quote-and-verse-blocks t
           org-src-tab-acts-natively t
           org-edit-src-content-indentation 2
@@ -673,11 +648,15 @@ want is prioritized instead.
     :after org
     :hook (org-mode . org-auto-tangle-mode))
 #+END_SRC
-
-
-**** evil-org-mode
+**** org-appear
+*test* /aaa/ =babab=
 #+begin_src emacs-lisp
-  (use-package evil-org
+  (use-package org-appear
+    :after org
+    :hook (org-mode . org-appear-mode))
+#+end_src
+
+**** evil-org-mode(use-package evil-org
     :after org
     :requires evil 
     :hook (org-mode . evil-org-mode)
@@ -800,9 +779,12 @@ This package implements a modern style for your Org buffers using font locking a
      ;; Edit settings
      org-auto-align-tags nil
      org-tags-column 0
-     org-fold-catch-invisible-edits 'show-and-error
+     org-catch-invisible-edits 'show-and-error
      org-special-ctrl-a/e t
      org-insert-heading-respect-content t
+
+     ;; custom stars
+     org-modern-star '("◉" "○" "◇")
 
      ;; Org styling, hide markup etc.
      org-hide-emphasis-markers t
@@ -962,7 +944,6 @@ It is a bit slow to load so we do need load it explicitely.
       (exec-path-from-shell-initialize)))
 #+end_src
 
-*** Editor
 **** Highlighting current line
 
 Highlighting of the current line (native mode)
@@ -974,7 +955,6 @@ Highlighting of the current line (native mode)
 #+end_src
 
 **** Parenthesis
-
 Paren mode for highlighting matcing paranthesis
 
 #+begin_src emacs-lisp
@@ -986,154 +966,6 @@ Paren mode for highlighting matcing paranthesis
     (setq show-paren-when-point-inside-paren nil)
     (show-paren-mode))
 #+end_src
-
-**** Evil
-Install, automatically load, and enable evil. It's like vim, but better!
-
-heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]] 
-
-#+begin_src emacs-lisp :tangle no
-  (use-package evil
-    :init
-    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
-    (setq evil-want-keybinding nil)
-    :preface
-    (setq evil-ex-search-vim-style-regexp t
-          evil-ex-visual-char-range t  ; column range for ex commands
-          evil-mode-line-format 'nil
-          ;; more vim-like behavior
-          evil-symbol-word-search t
-          ;; if the current state is obvious from the cursor's color/shape, then
-          ;; we won't need superfluous indicators to do it instead.
-          evil-default-cursor '+evil-default-cursor-fn
-          evil-normal-state-cursor 'box
-          evil-emacs-state-cursor  '(box +evil-emacs-cursor-fn)
-          evil-insert-state-cursor 'bar
-          evil-visual-state-cursor 'hollow
-          ;; Only do highlighting in selected window so that Emacs has less work
-          ;; to do highlighting them all.
-          evil-ex-interactive-search-highlight 'selected-window
-          ;; It's infuriating that innocuous "beginning of line" or "end of line"
-          ;; errors will abort macros, so suppress them:
-          evil-kbd-macro-suppress-motion-error t
-          evil-undo-system 'undo-tree)
-    :config
-    (evil-select-search-module 'evil-search-module 'evil-search)
-
-    ;; PERF: Stop copying the selection to the clipboard each time the cursor
-    ;; moves in visual mode. Why? Because on most non-X systems (and in terminals
-    ;; with clipboard plugins like xclip.el active), Emacs will spin up a new
-    ;; process to communicate with the clipboard for each movement. On Windows,
-    ;; older versions of macOS (pre-vfork), and Waylang (without pgtk), this is
-    ;; super expensive and can lead to freezing and/or zombie processes.
-    ;;
-    ;; UX: It also clobbers clipboard managers (see emacs-evil/evil#336).
-    (setq evil-visual-update-x-selection-p nil)
-    (evil-mode 1))
-
-  ;; This is a collection of Evil bindings for the parts of Emacs that Evil does not cover properly by default, such as help-mode, M-x calendar, Eshell and more.
-  (use-package evil-collection
-    :after evil
-    :requires evil
-    :config
-    (evil-collection-init))
-#+end_src
-
-**** Meow
-Meow is yet another modal editing mode for Emacs.
-#+BEGIN_SRC emacs-lisp
-  (use-package meow
-    :init
-    (defun meow-setup ()
-      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-      (meow-motion-overwrite-define-key
-       '("j" . meow-next)
-       '("k" . meow-prev)
-       '("<escape>" . ignore))
-      (meow-leader-define-key
-       ;; SPC j/k will run the original command in MOTION state.
-       '("j" . "H-j")
-       '("k" . "H-k")
-       ;; Use SPC (0-9) for digit arguments.
-       '("1" . meow-digit-argument)
-       '("2" . meow-digit-argument)
-       '("3" . meow-digit-argument)
-       '("4" . meow-digit-argument)
-       '("5" . meow-digit-argument)
-       '("6" . meow-digit-argument)
-       '("7" . meow-digit-argument)
-       '("8" . meow-digit-argument)
-       '("9" . meow-digit-argument)
-       '("0" . meow-digit-argument)
-       '("/" . meow-keypad-describe-key)
-       '("?" . meow-cheatsheet))
-      (meow-normal-define-key
-       '("0" . meow-expand-0)
-       '("9" . meow-expand-9)
-       '("8" . meow-expand-8)
-       '("7" . meow-expand-7)
-       '("6" . meow-expand-6)
-       '("5" . meow-expand-5)
-       '("4" . meow-expand-4)
-       '("3" . meow-expand-3)
-       '("2" . meow-expand-2)
-       '("1" . meow-expand-1)
-       '("-" . negative-argument)
-       '(";" . meow-reverse)
-       '("," . meow-inner-of-thing)
-       '("." . meow-bounds-of-thing)
-       '("[" . meow-beginning-of-thing)
-       '("]" . meow-end-of-thing)
-       '("a" . meow-append)
-       '("A" . meow-open-below)
-       '("b" . meow-back-word)
-       '("B" . meow-back-symbol)
-       '("c" . meow-change)
-       '("C" . comment-or-uncomment-region)
-       '("d" . meow-delete)
-       '("D" . meow-backward-delete)
-       '("e" . meow-next-word)
-       '("E" . meow-next-symbol)
-       '("f" . meow-find)
-       '("<escape>" . meow-cancel-selection)
-       '("G" . meow-grab)
-       '("h" . meow-left)
-       '("H" . meow-left-expand)
-       '("i" . meow-insert)
-       '("I" . meow-open-above)
-       '("j" . meow-next)
-       '("J" . meow-next-expand)
-       '("k" . meow-prev)
-       '("K" . meow-prev-expand)
-       '("l" . meow-right)
-       '("L" . meow-right-expand)
-       '("m" . meow-join)
-       '("n" . meow-search)
-       '("o" . meow-block)
-       '("O" . meow-to-block)
-       '("p" . meow-yank)
-       '("q" . meow-quit)
-       '("Q" . meow-goto-line)
-       '("r" . meow-replace)
-       '("R" . meow-swap-grab)
-       '("s" . meow-kill)
-       '("t" . meow-till)
-       '("u" . meow-undo)
-       '("U" . meow-undo-in-selection)
-       '("v" . meow-visit)
-       '("w" . meow-mark-word)
-       '("W" . meow-mark-symbol)
-       '("x" . meow-line)
-       '("X" . meow-goto-line)
-       '("y" . meow-save)
-       '("Y" . meow-sync-grab)
-       '("z" . meow-pop-selection)
-       '("=" . meow-indent)
-       '("'" . repeat)))
-    :config
-    (meow-setup)
-    (meow-global-mode 1))
-#+END_SRC
 
 *** Completion
 **** Vertico
@@ -1195,6 +1027,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
 **** Corfu
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
+src
 #+BEGIN_SRC emacs-lisp
   (use-package corfu
     ;; Optional customizations
@@ -1504,7 +1337,7 @@ functions we invoke regularly outside of magit is called.
 **** Perspective
 Workspaces
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package perspective
     ;; :bind (("C-M-k" . persp-switch)
     ;;        ("C-c w w" . persp-list-buffers) ; or use a nicer switcher, see below
@@ -1521,7 +1354,7 @@ Workspaces
 Projectile is a quick and easy project management package that "just works". We're
 going to install it and make sure it's loaded immediately.
 
-#+BEGIN_SR emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package projectile
     :after perspective
     :bind-keymap
@@ -1539,6 +1372,22 @@ going to install it and make sure it's loaded immediately.
 **** Project
 configure emacs native project.el
 
+**** tabspaces
+#+begin_src emacs-lisp 
+  (use-package tabspaces
+    ;; use this next line only if you also use straight, otherwise ignore it. 
+    :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
+    :commands (tabspaces-switch-or-create-workspace
+	       tabspaces-open-or-create-project-and-workspace)
+    :custom
+    (tabspaces-use-filtered-buffers-as-default t)
+    (tabspaces-default-tab "Default")
+    (tabspaces-remove-to-default t)
+    (tabspaces-include-buffers '("*scratch*"))
+    ;; sessions
+    (tabspaces-session t)
+    (tabspaces-session-auto-restore t))
+#+end_src
 
 **** Treemacs
 Tree layout file explorer for Emacs
@@ -1654,6 +1503,84 @@ Tree layout file explorer for Emacs
     (treemacs-load-theme "all-the-icons"))
 #+END_SRC
 
+**** speedbar
+#+begin_src emacs-lisp
+  (use-package sr-speedbar
+    ;;:command speedbar
+    ;;:defer t
+    :config
+        ;;; set some sane defaults, can be easily extended by user
+    (setq-default speedbar-frame-parameters
+                  '((name . "speedbar")
+                    (title . "speedbar")
+                    (minibuffer . nil)
+                    (border-width . 2)
+                    (menu-bar-lines . 0)
+                    (tool-bar-lines . 0)
+                    (unsplittable . t)
+                    (left-fringe . 10)))
+
+        ;;; list of supported file-extensions
+    ;; feel free to add to this list
+    (speedbar-add-supported-extension
+     (list
+        ;;;; lua and fennel(lisp that transpiles to lua)
+      ".lua"
+      ".fnl"
+      ".fennel"
+        ;;;; shellscript
+      ".sh"
+      ".bash";;is this ever used?
+        ;;;; web languages
+        ;;;;; Hyper-Text-markup-language(html) and php
+      ".php"
+      ".html"
+      ".htm"
+        ;;;;; ecma(java/type)-script
+      ".js"
+      ".json"
+      ".ts"
+        ;;;;; stylasheets
+      ".css"
+      ".less"
+      ".scss"
+      ".sass"
+        ;;;; c/c++ and makefiles
+      ".c"
+      ".cpp"
+      ".h"
+      "makefile"
+      "MAKEFILE"
+      "Makefile"
+        ;;;; runs on JVM, java,kotlin etc
+      ".java"
+      ".kt";;this is for kotlin
+      ".mvn"
+      ".gradle" ".properties";; this is for gradle-projects
+      ".clj";;lisp on the JVM
+        ;;;; lisps
+      ".cl"
+      ".el"
+      ".scm"
+      ".lisp"
+        ;;;; configuration
+      ".yaml"
+      ".toml"
+      ;; json is already in this list
+        ;;;; notes,markup and orgmode
+      ".md"
+      ".markdown"
+      ".org"
+      ".txt"
+      "README"
+      ))
+
+        ;;; make speedbar update automaticaly, and dont use ugly icons(images)
+    (setq-default speedbar-update-flag t)
+    (setq-default speedbar-use-images nil)
+    (setq sr-speedbar-right-side nil))
+#+end_src
+
 *** Programming
 **** lsp
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -1686,6 +1613,15 @@ Tree layout file explorer for Emacs
   (use-package eglot
     :defer t
     :hook (python-mode . eglot-ensure))
+#+end_src
+
+**** yasnippets
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :hook (prog-mode . yas-minor-mode)
+    :config
+    (yas-reload-all))
+  (use-package yasnippet-snippets)
 #+end_src
 
 **** Flycheck
@@ -1738,6 +1674,155 @@ Tree layout file explorer for Emacs
                                           ;                                          (conda-env-activate-for-buffer))))
     )
         #+end_src
+*** Keybindings
+**** Evil
+Install, automatically load, and enable evil. It's like vim, but better!
+
+heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]] 
+
+#+begin_src emacs-lisp :tangle no
+  (use-package evil
+    :init
+    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+    (setq evil-want-keybinding nil)
+    :preface
+    (setq evil-ex-search-vim-style-regexp t
+          evil-ex-visual-char-range t  ; column range for ex commands
+          evil-mode-line-format 'nil
+          ;; more vim-like behavior
+          evil-symbol-word-search t
+          ;; if the current state is obvious from the cursor's color/shape, then
+          ;; we won't need superfluous indicators to do it instead.
+          evil-default-cursor '+evil-default-cursor-fn
+          evil-normal-state-cursor 'box
+          evil-emacs-state-cursor  '(box +evil-emacs-cursor-fn)
+          evil-insert-state-cursor 'bar
+          evil-visual-state-cursor 'hollow
+          ;; Only do highlighting in selected window so that Emacs has less work
+          ;; to do highlighting them all.
+          evil-ex-interactive-search-highlight 'selected-window
+          ;; It's infuriating that innocuous "beginning of line" or "end of line"
+          ;; errors will abort macros, so suppress them:
+          evil-kbd-macro-suppress-motion-error t
+          evil-undo-system 'undo-tree)
+    :config
+    (evil-select-search-module 'evil-search-module 'evil-search)
+
+    ;; PERF: Stop copying the selection to the clipboard each time the cursor
+    ;; moves in visual mode. Why? Because on most non-X systems (and in terminals
+    ;; with clipboard plugins like xclip.el active), Emacs will spin up a new
+    ;; process to communicate with the clipboard for each movement. On Windows,
+    ;; older versions of macOS (pre-vfork), and Waylang (without pgtk), this is
+    ;; super expensive and can lead to freezing and/or zombie processes.
+    ;;
+    ;; UX: It also clobbers clipboard managers (see emacs-evil/evil#336).
+    (setq evil-visual-update-x-selection-p nil)
+    (evil-mode 1))
+
+  ;; This is a collection of Evil bindings for the parts of Emacs that Evil does not cover properly by default, such as help-mode, M-x calendar, Eshell and more.
+  (use-package evil-collection
+    :after evil
+    :requires evil
+    :config
+    (evil-collection-init))
+#+end_src
+
+**** Meow
+Meow is yet another modal editing mode for Emacs.
+#+BEGIN_SRC emacs-lisp
+  (use-package meow
+    :init
+    (defun meow-setup ()
+      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+      (meow-motion-overwrite-define-key
+       '("j" . meow-next)
+       '("k" . meow-prev)
+       '("<escape>" . ignore))
+      (meow-leader-define-key
+       ;; SPC j/k will run the original command in MOTION state.
+       '("j" . "H-j")
+       '("k" . "H-k")
+       ;; Use SPC (0-9) for digit arguments.
+       '("1" . meow-digit-argument)
+       '("2" . meow-digit-argument)
+       '("3" . meow-digit-argument)
+       '("4" . meow-digit-argument)
+       '("5" . meow-digit-argument)
+       '("6" . meow-digit-argument)
+       '("7" . meow-digit-argument)
+       '("8" . meow-digit-argument)
+       '("9" . meow-digit-argument)
+       '("0" . meow-digit-argument)
+       '("/" . meow-keypad-describe-key)
+       '("?" . meow-cheatsheet))
+      (meow-normal-define-key
+       '("0" . meow-expand-0)
+       '("9" . meow-expand-9)
+       '("8" . meow-expand-8)
+       '("7" . meow-expand-7)
+       '("6" . meow-expand-6)
+       '("5" . meow-expand-5)
+       '("4" . meow-expand-4)
+       '("3" . meow-expand-3)
+       '("2" . meow-expand-2)
+       '("1" . meow-expand-1)
+       '("-" . negative-argument)
+       '(";" . meow-reverse)
+       '("," . meow-inner-of-thing)
+       '("." . meow-bounds-of-thing)
+       '("[" . meow-beginning-of-thing)
+       '("]" . meow-end-of-thing)
+       '("a" . meow-append)
+       '("A" . meow-open-below)
+       '("b" . meow-back-word)
+       '("B" . meow-back-symbol)
+       '("c" . meow-change)
+       '("C" . comment-or-uncomment-region)
+       '("d" . meow-delete)
+       '("D" . meow-backward-delete)
+       '("e" . meow-next-word)
+       '("E" . meow-next-symbol)
+       '("f" . meow-find)
+       '("<escape>" . meow-cancel-selection)
+       '("G" . meow-grab)
+       '("h" . meow-left)
+       '("H" . meow-left-expand)
+       '("i" . meow-insert)
+       '("I" . meow-open-above)
+       '("j" . meow-next)
+       '("J" . meow-next-expand)
+       '("k" . meow-prev)
+       '("K" . meow-prev-expand)
+       '("l" . meow-right)
+       '("L" . meow-right-expand)
+       '("m" . meow-join)
+       '("n" . meow-search)
+       '("o" . meow-block)
+       '("O" . meow-to-block)
+       '("p" . meow-yank)
+       '("q" . meow-quit)
+       '("Q" . meow-goto-line)
+       '("r" . meow-replace)
+       '("R" . meow-swap-grab)
+       '("s" . meow-kill)
+       '("t" . meow-till)
+       '("u" . meow-undo)
+       '("U" . meow-undo-in-selection)
+       '("v" . meow-visit)
+       '("w" . meow-mark-word)
+       '("W" . meow-mark-symbol)
+       '("x" . meow-line)
+       '("X" . meow-goto-line)
+       '("y" . meow-save)
+       '("Y" . meow-sync-grab)
+       '("z" . meow-pop-selection)
+       '("=" . meow-indent)
+       '("'" . repeat)))
+    :config
+    (meow-setup)
+    (meow-global-mode 1))
+#+END_SRC
+
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
 
