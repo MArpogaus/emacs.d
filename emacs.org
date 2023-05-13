@@ -110,12 +110,15 @@ Let's set some variables with basic user information.
   (setq user-full-name "Marcel Arpogaus"
         user-mail-address "marcel.arpogaus@gmail.com")
 #+END_SRC
+
 *** Paths
 #+BEGIN_SRC emacs-lisp
   (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
   (setq org-brain-path (concat org-directory "brain/"))
-  (setq project-list-file'("~/Projekte"))
+  (setq project-list-file '("~/Projekte"))
   (setq projectile-project-search-path '("~/Projekte"))
+  (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
+
   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
   (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
         url-history-file (expand-file-name "url/history" user-emacs-directory))
@@ -656,7 +659,9 @@ want is prioritized instead.
     :hook (org-mode . org-appear-mode))
 #+end_src
 
-**** evil-org-mode(use-package evil-org
+**** evil-org-mode
+#+begin_src emacs-lisp
+  (use-package evil-org
     :after org
     :requires evil 
     :hook (org-mode . evil-org-mode)
@@ -1011,6 +1016,18 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ;; Enable recursive minibuffers
     (setq enable-recursive-minibuffers t)
 
+
+    ;; Straight and Package bundle the vertico package differently. When
+    ;; using `package.el', the extensions are built into the package and
+    ;; available on the load-path. When using `straight.el', the
+    ;; extensions are not built into the package, so have to add that path
+    ;; to the load-path manually to enable the following require.
+    (when (fboundp 'straight-use-package)
+      (add-to-list 'load-path
+                   (expand-file-name "straight/build/vertico/extensions"
+                                     straight-base-dir)))
+    (require 'vertico-directory)
+
     ;; enable vertico
     (vertico-mode))
 #+end_src
@@ -1025,58 +1042,36 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (marginalia-mode))
 #+END_SRC
 
-**** Corfu
-Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
-src
-#+BEGIN_SRC emacs-lisp
-  (use-package corfu
-    ;; Optional customizations
-    ;; :custom
-    ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    ;; (corfu-auto t)                 ;; Enable auto completion
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
-    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+**** Embark
+Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
+#+begin_src emacs-lisp
+  (use-package embark
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ;; ("C-:" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-    ;; Enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
-
-    ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since Dabbrev can be used globally (M-/).
-    ;; See also `corfu-exclude-modes'.
     :init
-    (global-corfu-mode))
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
 
-  ;; A few more useful configurations...
-  (use-package emacs
-    :init
-    ;; TAB cycle if there are only few candidates
-    (setq completion-cycle-threshold 3)
+    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+    ;; strategy, if you want to see the documentation from multiple providers.
+    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-    ;; (setq read-extended-command-predicate
-    ;;       #'command-completion-default-include-p)
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
 
-    ;; Enable indentation+completion using the TAB key.
-    ;; `completion-at-point' is often bound to M-TAB.
-    (setq tab-always-indent 'complete))
-
-  (use-package orderless
-    :init
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-    (setq completion-styles '(orderless basic)
-          completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion))))))
-#+END_SRC
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 **** Consult
 additional featureful completion commands
 #+begin_src emacs-lisp
@@ -1188,39 +1183,131 @@ additional featureful completion commands
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-function (lambda (_) (projectile-project-root))))
 #+end_src
-**** Embark
-Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
-#+begin_src emacs-lisp
-  (use-package embark
-    :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
-     ("M-." . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
+**** Corfu
+Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
+#+BEGIN_SRC emacs-lisp
+  (use-package corfu
     :init
-    ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
 
-    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-    ;; strategy, if you want to see the documentation from multiple providers.
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+    (setq read-extended-command-predicate
+          #'command-completion-default-include-p)
 
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (setq tab-always-indent 'complete)
+
+    ;; Optional customizations
+    :custom
+    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                 ;; Enable auto completion
+    (corfu-auto-prefix 2)          ;; Complete with less prefix keys)
+    (corfu-auto-delay 0.0)         ;; No delay for completion
+    (corfu-echo-documentation 0.25);; Echo docs for current completion option
+    ;; (corfu-separator ?\s)          ;; Orderless field separator
+    (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    (corfu-preview-current t)    ;; Disable current candidate preview
+    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+    ;; Enable Corfu only for certain modes.
+    ;; :hook ((prog-mode . corfu-mode)
+    ;;        (shell-mode . corfu-mode)
+    ;;        (eshell-mode . corfu-mode))
+
+    ;; Recommended: Enable Corfu globally.
+    ;; This is recommended since Dabbrev can be used globally (M-/).
+    ;; See also `corfu-exclude-modes'.
     :config
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none)))))
+    (add-hook 'eshell-mode-hook
+              (lambda ()
+                (setq-local corfu-auto nil)
+                (corfu-mode)))
 
-  ;; Consult users will also want the embark-consult package.
-  (use-package embark-consult
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode))
+    (when (fboundp 'straight-use-package)
+      (add-to-list 'load-path
+                   (expand-file-name "straight/build/corfu/extensions"
+                                     straight-base-dir)))
+    (unless (display-graphic-p)
+      (require 'corfu-terminal)
+      (corfu-terminal-mode +1))
+    (require 'corfu-popupinfo)
+
+    (global-corfu-mode 1)
+    (corfu-popupinfo-mode 1)
+    (eldoc-add-command #'corfu-insert))
+
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+                #+END_SRC
+**** Cape
+Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
+#+begin_src emacs-lisp
+  (use-package cape
+    ;; Bind dedicated completion commands
+    ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+    :bind (("C-c p p" . completion-at-point) ;; capf
+           ("C-c p t" . complete-tag)        ;; etags
+           ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+           ("C-c p h" . cape-history)
+           ("C-c p f" . cape-file)
+           ("C-c p k" . cape-keyword)
+           ("C-c p s" . cape-symbol)
+           ("C-c p a" . cape-abbrev)
+           ("C-c p l" . cape-line)
+           ("C-c p w" . cape-dict)
+           ("C-c p \\" . cape-tex)
+           ("C-c p _" . cape-tex)
+           ("C-c p ^" . cape-tex)
+           ("C-c p &" . cape-sgml)
+           ("C-c p r" . cape-rfc1345))
+    :init
+    ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    ;; NOTE: The order matters!
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+    ;;(add-to-list 'completion-at-point-functions #'cape-history)
+    ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-tex)
+    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+    ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+
+
+    ;; The advices are only needed on Emacs 28 and older.
+    (when (< emacs-major-version 29)
+      ;; Silence the pcomplete capf, no errors or messages!
+      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+      ;; Ensure that pcomplete does not write to the buffer
+      ;; and behaves as a pure `completion-at-point-function'.
+      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+
+  (use-package cape-yasnippet
+    :after cape
+    :straight (cape-yasnippet :type git :host github :repo "elken/cape-yasnippet")
+;;    :custom
+;;    (cape-yasnippet-lookup-by ’name)
+    :config
+    (add-to-list 'completion-at-point-functions #'cape-yasnippet))
 #+end_src
+
 **** Citar
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
-
 #+begin_src emacs-lisp
   (use-package citar
     :after all-the-icons
@@ -1618,11 +1705,14 @@ Tree layout file explorer for Emacs
 **** yasnippets
 #+begin_src emacs-lisp
   (use-package yasnippet
-    :hook (prog-mode . yas-minor-mode)
     :config
-    (yas-reload-all))
+    (add-to-list 'yas-snippet-dirs custom-snippets-dir)
+    (setq yas-triggers-in-field t)
+
+    (yas-reload-all)
+    (yas-global-mode 1))
   (use-package yasnippet-snippets)
-#+end_src
+    #+end_src
 
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
@@ -1638,6 +1728,7 @@ Tree layout file explorer for Emacs
 **** Python
 #+begin_src emacs-lisp
   (use-package python
+    :defer t
     :config
     ;; Stop the spam!
     ;; Let Emacs guess Python indent silently
@@ -1651,10 +1742,14 @@ Tree layout file explorer for Emacs
       (setq python-shell-interpreter "python3")))
 
   (use-package pyimport
-    :defer t)
+    :after python)
+
 
   (use-package py-isort
-    :defer t)
+    :after python)
+
+  (use-package numpydoc
+    :after python)
 
   (use-package conda
     :after python
