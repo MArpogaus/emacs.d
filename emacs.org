@@ -457,7 +457,7 @@ want is prioritized instead.
     :defer t
     :hook (org-mode . org-indent-mode)
     :config
-    (setq ;org-ellipsis " ▾"
+    (setq org-ellipsis " ▾"
           org-src-fontify-natively t
           org-fontify-quote-and-verse-blocks t
           org-src-tab-acts-natively t
@@ -777,6 +777,9 @@ This package implements a modern style for your Org buffers using font locking a
   (use-package org-modern
     :hook (org-mode . global-org-modern-mode)
     :after org
+    :custom
+    (org-modern-star '("◉" "○" "◇"))
+    
     :config
     ;; (setq org-modern-label-border 0.3)
 
@@ -787,9 +790,6 @@ This package implements a modern style for your Org buffers using font locking a
      org-catch-invisible-edits 'show-and-error
      org-special-ctrl-a/e t
      org-insert-heading-respect-content t
-
-     ;; custom stars
-     org-modern-star '("◉" "○" "◇")
 
      ;; Org styling, hide markup etc.
      org-hide-emphasis-markers t
