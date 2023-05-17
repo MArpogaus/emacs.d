@@ -13,6 +13,7 @@
     - [[#add-debugger][Add debugger]]
     - [[#add-doom-snippets][Add doom snippets?]]
     - [[#keybindings][Keybindings]]
+    - [[#fix-git-timemachine][Fix git timemachine]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
@@ -52,7 +53,9 @@ This Emacs literate configuration has been inspired by the following projects:
 *** TODO Keybindings
 - [[https://github.com/abo-abo/hydra][GitHub - abo-abo/hydra: make Emacs bindings that stick around]]
 - [[https://github.com/magit/transient][GitHub - magit/transient: Transient commands]]
-
+  
+*** TODO Fix git timemachine
+need meow-motion-mode!
 ** Emacs Initialization
 *** Settings
 We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time. 
@@ -61,7 +64,7 @@ We don't want to keep this value too high or it will result in long GC pauses du
 
 #+BEGIN_SRC emacs-lisp
   (eval-and-compile
-    (setq gc-cons-threshold (* 50 1000 1000)
+    (setq gc-cons-threshold (* 100 1000 1000)
           gc-cons-percentage 0.6))
 
   ;; Profile emacs startup
@@ -114,7 +117,7 @@ if you would like to see any and all byte compiler warnings.
 **** install and configure use-packege
 #+BEGIN_SRC emacs-lisp
   (setq straight-use-package-by-default t
-        use-package-always-defer nil)
+        use-package-always-defer t)
   (straight-use-package 'use-package)
 #+END_SRC
 
@@ -128,23 +131,24 @@ Let's set some variables with basic user information.
 
 *** Paths
 #+BEGIN_SRC emacs-lisp
-  (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
-  (setq org-brain-path (concat org-directory "brain/"))
-  (setq projectile-project-search-path '("~/Projekte"))
-  (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
+    (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+    (setq org-brain-path (concat org-directory "brain/"))
+    (setq projectile-project-search-path '("~/Projekte"))
+    (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
 
-  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-        url-history-file (expand-file-name "url/history" user-emacs-directory))
+    ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+    (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+          url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
-  (use-package no-littering)
+    ;; Use no-littering to automatically set common paths to the new user-emacs-directory
+    (use-package no-littering
+      :demand t)
 #+end_src
 
 *** Emacs Configuration
 #+begin_src emacs-lisp
   (use-package emacs
-    :config
+    :init
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
     (setq-default
@@ -286,17 +290,17 @@ Let's set some variables with basic user information.
     (unless (not (file-exists-p "/bin/zsh"))
       (setq-default shell-file-name "/bin/zsh")
       (setq explicit-shell-file-name "/bin/zsh")))
-#+end_src
+  #+end_src
 
 *** Keymaps
 #+BEGIN_SRC emacs-lisp
   (use-package emacs
-    :config
+    :init
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
     (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar my/toggle-map (make-sparse-keymap) "key-map for version control"))
-      #+END_SRC
+#+END_SRC
 
 ** Packages
 *** UI
@@ -306,6 +310,10 @@ https://protesilaos.com/emacs/modus-themes
 
 #+BEGIN_SRC emacs-lisp
   (use-package modus-themes
+    :demand t
+    :bind
+    (:map my/toggle-map
+          ("m" . modus-themes-toggle))
     :config
     ;; Minimal UI
     (menu-bar-mode -1)
@@ -337,6 +345,11 @@ https://protesilaos.com/emacs/modus-themes
       (set-face-foreground face (face-attribute 'default :background)))
     (set-face-background 'fringe (face-attribute 'default :background)))
 #+END_SRC
+**** nerd-icons
+A Library for Nerd Font icons. Required for modline icons.
+#+BEGIN_SRC emacs-lisp
+  (use-package nerd-icons)
+#+END_SRC
 **** doom-modline
 A fancy and fast mode-line inspired by minimalism design.
 
@@ -367,14 +380,10 @@ A fancy and fast mode-line inspired by minimalism design.
     ;; If non-nil, only display one number for checker information if applicable.
     (setq doom-modeline-checker-simple-format t)
 
-    (doom-modeline-mode 1))
+    :hook
+    (after-init . doom-modeline-mode))
 #+END_SRC
 
-**** nerd-icons
-A Library for Nerd Font icons. Required for modline icons.
-#+BEGIN_SRC emacs-lisp
-  (use-package nerd-icons)
-#+END_SRC
 **** all-the-icons
 #+begin_src emacs-lisp
   (use-package all-the-icons
@@ -484,8 +493,6 @@ want is prioritized instead.
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :defer t
-    ;; :hook (org-mode . org-indent-mode)
     :config
     (setq org-ellipsis " ▾"
           org-src-fontify-natively t
@@ -836,23 +843,6 @@ This package implements a modern style for your Org buffers using font locking a
      "⭠ now ─────────────────────────────────────────────────"))
 #+END_src
 *** Tools
-**** Recent files
-
-50 Recents files with some exclusion (regex patterns).
-
-#+begin_src emacs-lisp
-  (use-package recentf
-    :config
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-var-directory))
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-etc-directory))
-    (setq recentf-max-menu-items 10
-          recentf-max-saved-items 100)
-
-    (let (message-log-max)
-      (recentf-mode 1)))
-#+end_src
 **** Server
 
 Server start.
@@ -911,9 +901,27 @@ It is a bit slow to load so we do need load it explicitely.
       (advice-add 'my/add_zst_ext
                   :filter-return #'undo-tree-make-history-save-file-name))
 
-    (global-undo-tree-mode))
+    :hook
+    (after-init . global-undo-tree-mode))
 #+end_src
 
+**** Recent files
+
+50 Recents files with some exclusion (regex patterns).
+
+#+begin_src emacs-lisp
+  (use-package recentf
+    :config
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-var-directory))
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-etc-directory))
+    (setq recentf-max-menu-items 10
+          recentf-max-saved-items 100)
+
+    :hook
+    (after-init . recentf-mode ))
+#+end_src
 **** Savehist
 #+begin_src emacs-lisp
   (use-package savehist
@@ -947,17 +955,18 @@ It is a bit slow to load so we do need load it explicitely.
     ;; No duplicates in history  
     (setq history-delete-duplicates t)
 
+    :hook
     ;;Start history mode.
-    (let (message-log-max)
-      (savehist-mode)))
+    (after-init . savehist-mode))
 #+end_src
 
 **** PDF Tools
 
 #+begin_src emacs-lisp
   (use-package pdf-tools
+    :magic ("%PDF" . pdf-view-mode)
     :config
-    (add-hook 'doc-view-mode-hook 'pdf-tools-install)
+    (pdf-tools-install :no-query)
 
     (setq-default pdf-view-use-scaling t
                   pdf-view-use-imagemagick nil))
@@ -979,8 +988,8 @@ Highlighting of the current line (native mode)
 
 #+begin_src emacs-lisp
   (use-package hl-line
-    :config
-    (global-hl-line-mode))
+    :hook
+    (after-init . global-hl-line-mode))
 #+end_src
 
 **** Parenthesis
@@ -993,7 +1002,8 @@ Paren mode for highlighting matcing paranthesis
     (setq show-paren-style 'parenthesis)
     (setq show-paren-when-point-in-periphery t)
     (setq show-paren-when-point-inside-paren nil)
-    (show-paren-mode))
+    :hook
+    (prog-mode . show-paren-mode))
 #+end_src
 
 *** Completion
@@ -1053,7 +1063,8 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (require 'vertico-directory)
 
     ;; enable vertico
-    (vertico-mode))
+    :hook
+    (after-init . vertico-mode))
 #+end_src
 
 **** Marginalia
@@ -1066,6 +1077,18 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (marginalia-mode))
 #+END_SRC
 
+**** orderless
+ Emacs completion style that matches multiple regexps in any order 
+#+BEGIN_SRC emacs-lisp
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles . (partial-completion))))))
+#+END_SRC
 **** Embark
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
@@ -1217,8 +1240,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; Optional customizations
     :custom
     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                 ;; Enable auto completion
-    (corfu-auto-prefix 2)          ;; Complete with less prefix keys)
+    (corfu-auto nil)               ;; Enable auto completion
+    (corfu-auto-prefix 1)          ;; Complete with less prefix keys)
     (corfu-auto-delay 0.0)         ;; No delay for completion
     (corfu-echo-documentation 0.25);; Echo docs for current completion option
     ;; (corfu-separator ?\s)          ;; Orderless field separator
@@ -1247,19 +1270,12 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
       (corfu-terminal-mode +1))
     (require 'corfu-popupinfo)
 
-    (global-corfu-mode 1)
-    (corfu-popupinfo-mode 1)
-    (eldoc-add-command #'corfu-insert))
-
-  (use-package orderless
-    :init
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-    (setq completion-styles '(orderless basic)
-          completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion))))))
+    (eldoc-add-command #'corfu-insert)
+    :hook
+    (after-init . global-corfu-mode)
+    (after-init . corfu-popupinfo-mode))
 #+END_SRC
+
 **** Cape
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
@@ -1308,6 +1324,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
       (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
 
   (use-package cape-yasnippet
+    :demand t
     :after cape
     :straight (:type git :host github :repo "elken/cape-yasnippet")
     ;;    :custom
@@ -1408,7 +1425,16 @@ functions we invoke regularly outside of magit is called.
           ("v"  . magit-status)
           ("r"  . magit-rebase)))
 #+END_SRC
-
+**** git-timemachine
+#+begin_src emacs-lisp
+  (use-package git-timemachine
+    ;;:straight (:build (:not native-compile))
+    :config
+    (add-hook 'git-timemachine-mode-hook (lambda ()(sleep-for 0 100)(meow-motion-mode)))
+    :bind
+    (:map my/version-control-map
+          ("t" . git-timemachine)))
+#+end_src
 **** GitGutter
 
 #+BEGIN_SRC emacs-lisp
@@ -1474,70 +1500,63 @@ going to install it and make sure it's loaded immediately.
     (projectile-mode))
 #+END_SRC
 
-**** project
-#+begin_src emacs-lisp
-  (use-package project
-    :demand t)
-#+end_src
 **** tabspaces
 #+begin_src emacs-lisp
-    (use-package tabspaces
-      :demand t
-      :after project
-      :straight (:type git :host github :repo "mclear-tools/tabspaces")
-      :init
-      (defun my/tabspace-setup ()
-        "Set up tabspace at startup."
-        ;; Rename default tab to \`Home\'
-        (progn (tab-bar-rename-tab "Home"))
-        (tabspaces-mode))
-      ;; use this next line only if you also use straight, otherwise ignore it. 
-      :hook
-      (after-init . my/tabspace-setup)
+  (use-package tabspaces
+    :straight (:type git :host github :repo "mclear-tools/tabspaces")
+    :init
+    (defun my/tabspace-setup ()
+      "Set up tabspace at startup."
+      ;; Rename default tab to \`Home\'
+      (progn (tab-bar-rename-tab "Home"))
+      (tabspaces-mode))
+    ;; use this next line only if you also use straight, otherwise ignore it. 
+    :hook
+    (after-init . my/tabspace-setup)
+    :commands
+    (tabspaces-switch-or-create-workspace
+     tabspaces-open-or-create-project-and-workspace)
+    :bind
+    (;;([remap project-switch-project] . tabspaces-open-or-create-project-and-workspace)
+     ;;([remap project-switch-to-buffer] . tabspaces-switch-to-buffer)
+     ;;([remap project-kill-buffers] . tabspaces-kill-buffers-close-workspace)
+     :map project-prefix-map
+     ("k" . tabspaces-kill-buffers-close-workspace)
+     ("p" . tabspaces-open-or-create-project-and-workspace)
+     ("W" . tabspaces-project-switch-project-open-file)
+     ("w" . tabspaces-switch-or-create-workspace)
+     ("S" . tabspaces-save-session)
+     ("R" . tabspaces-restore-session))
+    :custom
+    (tabspaces-use-filtered-buffers-as-default t)
+    (tabspaces-default-tab "Default")
+    (tabspaces-remove-to-default t)
+    (tabspaces-include-buffers '("*scratch*"))
+    ;; sessions
+    (tabspaces-session t)
+    ;;(tabspaces-session-auto-restore t)
+    :config
+    ;; Filter Buffers for Consult-Buffer
+    (with-eval-after-load 'consult
+      ;; hide full buffer list (still available with "b" prefix)
+      (consult-customize consult--source-buffer :hidden t :default nil)
+      ;; set consult-workspace buffer list
+      (defvar consult--source-workspace
+        (list :name     "Workspace Buffers"
+              :narrow   ?w
+              :history  'buffer-name-history
+              :category 'buffer
+              :state    #'consult--buffer-state
+              :default  t
+              :items    (lambda () (consult--buffer-query
+                                    :predicate #'tabspaces--local-buffer-p
+                                    :sort 'visibility
+                                    :as #'buffer-name)))
 
-      :commands (tabspaces-switch-or-create-workspace
-                 tabspaces-open-or-create-project-and-workspace)
-      :bind
-      (;;([remap project-switch-project] . tabspaces-open-or-create-project-and-workspace)
-       ;;([remap project-switch-to-buffer] . tabspaces-switch-to-buffer)
-       ;;([remap project-kill-buffers] . tabspaces-kill-buffers-close-workspace)
-       :map project-prefix-map
-       ("k" . tabspaces-kill-buffers-close-workspace)
-       ("p" . tabspaces-open-or-create-project-and-workspace)
-       ("W" . tabspaces-project-switch-project-open-file)
-       ("w" . tabspaces-switch-or-create-workspace)
-       ("S" . tabspaces-save-session)
-       ("R" . tabspaces-restore-session))
-      :custom
-      (tabspaces-use-filtered-buffers-as-default t)
-      (tabspaces-default-tab "Default")
-      (tabspaces-remove-to-default t)
-      (tabspaces-include-buffers '("*scratch*"))
-      ;; sessions
-      (tabspaces-session t)
-      ;;(tabspaces-session-auto-restore t)
-      :config
-      ;; Filter Buffers for Consult-Buffer
-      (with-eval-after-load 'consult
-        ;; hide full buffer list (still available with "b" prefix)
-        (consult-customize consult--source-buffer :hidden t :default nil)
-        ;; set consult-workspace buffer list
-        (defvar consult--source-workspace
-          (list :name     "Workspace Buffers"
-                :narrow   ?w
-                :history  'buffer-name-history
-                :category 'buffer
-                :state    #'consult--buffer-state
-                :default  t
-                :items    (lambda () (consult--buffer-query
-                                      :predicate #'tabspaces--local-buffer-p
-                                      :sort 'visibility
-                                      :as #'buffer-name)))
+        "Set workspace buffer list for consult-buffer.")
+      (add-to-list 'consult-buffer-sources 'consult--source-workspace))
 
-          "Set workspace buffer list for consult-buffer.")
-        (add-to-list 'consult-buffer-sources 'consult--source-workspace))
-
-      )
+    )
     #+end_src
 
 **** Treemacs
@@ -1657,8 +1676,9 @@ Tree layout file explorer for Emacs
 **** speedbar
 #+begin_src emacs-lisp
   (use-package sr-speedbar
-    ;;:command speedbar
-    ;;:defer t
+    :bind
+    (:map my/toggle-map
+          ("s" . sr-speedbar-toggle))
     :config
         ;;; set some sane defaults, can be easily extended by user
     (setq-default speedbar-frame-parameters
@@ -1761,7 +1781,6 @@ Tree layout file explorer for Emacs
 **** eglot
 #+begin_src emacs-lisp
   (use-package eglot
-    :defer t
     :hook (python-mode . eglot-ensure))
 #+end_src
 
@@ -1773,7 +1792,8 @@ Tree layout file explorer for Emacs
     (setq yas-triggers-in-field t)
 
     (yas-reload-all)
-    (yas-global-mode 1))
+    :hook
+    (after-init . yas-global-mode))
   (use-package yasnippet-snippets)
 #+end_src
 
@@ -1791,7 +1811,6 @@ Tree layout file explorer for Emacs
 **** Python
 #+begin_src emacs-lisp
   (use-package python
-    :defer t
     :config
     ;; Stop the spam!
     ;; Let Emacs guess Python indent silently
@@ -1887,134 +1906,138 @@ heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/module
 **** Meow
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
-    (use-package meow
-      :init
-      (defun meow-setup ()
-        (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-        (meow-motion-overwrite-define-key
-         '("j" . meow-next)
-         '("k" . meow-prev)
-         '("<escape>" . ignore))
-        (meow-leader-define-key
-         ;; KEYPAD is the state used for executing commands without modifier keys.
+  (use-package meow
+    :demand t
+    :init
+    (defun meow-setup ()
+      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+      (meow-motion-overwrite-define-key
+       '("j" . meow-next)
+       '("k" . meow-prev)
+       '("<escape>" . ignore))
+      (meow-leader-define-key
+       ;; KEYPAD is the state used for executing commands without modifier keys.
 
-         ;; Entering KEYPAD state by pressing SPC in NORMAL or MOTION state.
+       ;; Entering KEYPAD state by pressing SPC in NORMAL or MOTION state.
 
-         ;; In KEYPAD state, single keys will be translated, and the first key will decide how it starts:
+       ;; In KEYPAD state, single keys will be translated, and the first key will decide how it starts:
 
-         ;;     Start with x / h / c / m / g will begin with C-x / C-h / C-c / M- / C-M- respectively.
-         ;;     Any other key will start with itself, and temporarily activate the leader keymap.
+       ;;     Start with x / h / c / m / g will begin with C-x / C-h / C-c / M- / C-M- respectively.
+       ;;     Any other key will start with itself, and temporarily activate the leader keymap.
 
-         ;; The following keys will act according to following rules:
+       ;; The following keys will act according to following rules:
 
-         ;;     m will be translated to M-.
-         ;;     g will be translated to C-M-.
-         ;;     Any key following a prefix like m or g is interpreted as C-<key>.
-         ;;     SPC stands for literal prefix, means that the key will not be modified with C-.
-         ;;     If the translation results in an undefined binding, the last key will fallback to an unmodified version. (e.g. If C-c C-a is undefined, fallback to C-c a)
-         ;; SPC j/k will run the original command in MOTION state.
-         '("j" . "H-j")
-         '("k" . "H-k")
-         ;; my keymaps
-         (cons "b" (cons "buffer" my/buffer-map))
-         (cons "g" (cons "goto" goto-map))
-         (cons "h" (cons "help" help-map))
-         (cons "p" (cons "project" project-prefix-map))
-         ;;(cons "p <TAB>" (cons "tabspaces" tabspaces-command-map))
-         (cons "s" (cons "search" search-map))
-         (cons "t" (cons "toggle" my/toggle-map))
-         (cons "v" (cons "version-control" my/version-control-map))
-         (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
-         (cons "x" (cons "mode" mode-specific-map))
-         ;; Use SPC (0-9) for digit arguments.
-         '("1" . meow-digit-argument)
-         '("2" . meow-digit-argument)
-         '("3" . meow-digit-argument)
-         '("4" . meow-digit-argument)
-         '("5" . meow-digit-argument)
-         '("6" . meow-digit-argument)
-         '("7" . meow-digit-argument)
-         '("8" . meow-digit-argument)
-         '("9" . meow-digit-argument)
-         '("0" . meow-digit-argument)
-         '("/" . meow-keypad-describe-key)
-         '("?" . meow-cheatsheet))
-        (meow-normal-define-key
-         '("0" . meow-expand-0)
-         '("9" . meow-expand-9)
-         '("8" . meow-expand-8)
-         '("7" . meow-expand-7)
-         '("6" . meow-expand-6)
-         '("5" . meow-expand-5)
-         '("4" . meow-expand-4)
-         '("3" . meow-expand-3)
-         '("2" . meow-expand-2)
-         '("1" . meow-expand-1)
-         '("-" . negative-argument)
-         '(";" . meow-reverse)
-         '("," . meow-inner-of-thing)
-         '("." . meow-bounds-of-thing)
-         '("[" . meow-beginning-of-thing)
-         '("]" . meow-end-of-thing)
-         '("a" . meow-append)
-         '("A" . meow-open-below)
-         '("b" . meow-back-word)
-         '("B" . meow-back-symbol)
-         '("c" . meow-change)
-         '("C" . comment-or-uncomment-region)
-         '("d" . meow-delete)
-         '("D" . meow-backward-delete)
-         '("e" . meow-next-word)
-         '("E" . meow-next-symbol)
-         '("f" . meow-find)
-         '("<escape>" . meow-cancel-selection)
-         '("G" . meow-grab)
-         '("h" . meow-left)
-         '("H" . meow-left-expand)
-         '("i" . meow-insert)
-         '("I" . meow-open-above)
-         '("j" . meow-next)
-         '("J" . meow-next-expand)
-         '("k" . meow-prev)
-         '("K" . meow-prev-expand)
-         '("l" . meow-right)
-         '("L" . meow-right-expand)
-         '("m" . meow-join)
-         '("n" . meow-search)
-         '("o" . meow-block)
-         '("O" . meow-to-block)
-         '("p" . meow-yank)
-         '("q" . meow-quit)
-         '("Q" . meow-goto-line)
-         '("r" . meow-replace)
-         '("R" . meow-swap-grab)
-         '("s" . meow-kill)
-         '("t" . meow-till)
-         '("u" . meow-undo)
-         '("U" . meow-undo-in-selection)
-         '("v" . meow-visit)
-         '("w" . meow-mark-word)
-         '("W" . meow-mark-symbol)
-         '("x" . meow-line)
-         '("X" . meow-goto-line)
-         '("y" . meow-save)
-         '("Y" . meow-sync-grab)
-         '("z" . meow-pop-selection)
-         '("=" . meow-indent)
-         '("'" . repeat))
-        (meow-global-mode 1))
-      (setq my-meow-leader-keymap (make-sparse-keymap))
-      :custom
-      (meow-keypad-start-keys . ())
-      (meow-keypad-meta-prefix . nil)
-      (meow-keypad-ctrl-meta-prefix . nil)
-      (meow-keypad-literal-prefix . nil)
-      (meow-keypad-self-insert-undefined . nil)
-      ;;(meow-use-clipboard . t)
-      :config
-      ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
-      (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
-      (meow-setup))
+       ;;     m will be translated to M-.
+       ;;     g will be translated to C-M-.
+       ;;     Any key following a prefix like m or g is interpreted as C-<key>.
+       ;;     SPC stands for literal prefix, means that the key will not be modified with C-.
+       ;;     If the translation results in an undefined binding, the last key will fallback to an unmodified version. (e.g. If C-c C-a is undefined, fallback to C-c a)
+       ;; SPC j/k will run the original command in MOTION state.
+       '("j" . "H-j")
+       '("k" . "H-k")
+       ;; my keymaps
+       (cons "b" (cons "buffer" my/buffer-map))
+       (cons "g" (cons "goto" goto-map))
+       (cons "h" (cons "help" help-map))
+       (cons "p" (cons "project" project-prefix-map))
+       ;;(cons "p <TAB>" (cons "tabspaces" tabspaces-command-map))
+       (cons "s" (cons "search" search-map))
+       (cons "t" (cons "toggle" my/toggle-map))
+       (cons "v" (cons "version-control" my/version-control-map))
+       (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
+       (cons "x" (cons "mode" mode-specific-map))
+       ;; Use SPC (0-9) for digit arguments.
+       '("1" . meow-digit-argument)
+       '("2" . meow-digit-argument)
+       '("3" . meow-digit-argument)
+       '("4" . meow-digit-argument)
+       '("5" . meow-digit-argument)
+       '("6" . meow-digit-argument)
+       '("7" . meow-digit-argument)
+       '("8" . meow-digit-argument)
+       '("9" . meow-digit-argument)
+       '("0" . meow-digit-argument)
+       '("/" . meow-keypad-describe-key)
+       '("?" . meow-cheatsheet))
+      (meow-normal-define-key
+       '("0" . meow-expand-0)
+       '("9" . meow-expand-9)
+       '("8" . meow-expand-8)
+       '("7" . meow-expand-7)
+       '("6" . meow-expand-6)
+       '("5" . meow-expand-5)
+       '("4" . meow-expand-4)
+       '("3" . meow-expand-3)
+       '("2" . meow-expand-2)
+       '("1" . meow-expand-1)
+       '("-" . negative-argument)
+       '(";" . meow-reverse)
+       '("," . meow-inner-of-thing)
+       '("." . meow-bounds-of-thing)
+       '("[" . meow-beginning-of-thing)
+       '("]" . meow-end-of-thing)
+       '("a" . meow-append)
+       '("A" . meow-open-below)
+       '("b" . meow-back-word)
+       '("B" . meow-back-symbol)
+       '("c" . meow-change)
+       '("C" . comment-or-uncomment-region)
+       '("d" . meow-delete)
+       '("D" . meow-backward-delete)
+       '("e" . meow-next-word)
+       '("E" . meow-next-symbol)
+       '("f" . meow-find)
+       '("<escape>" . meow-cancel-selection)
+       '("G" . meow-grab)
+       '("h" . meow-left)
+       '("H" . meow-left-expand)
+       '("i" . meow-insert)
+       '("I" . meow-open-above)
+       '("j" . meow-next)
+       '("J" . meow-next-expand)
+       '("k" . meow-prev)
+       '("K" . meow-prev-expand)
+       '("l" . meow-right)
+       '("L" . meow-right-expand)
+       '("m" . meow-join)
+       '("n" . meow-search)
+       '("o" . meow-block)
+       '("O" . meow-to-block)
+       '("p" . meow-yank)
+       '("q" . meow-quit)
+       '("Q" . meow-goto-line)
+       '("r" . meow-replace)
+       '("R" . meow-swap-grab)
+       '("s" . meow-kill)
+       '("t" . meow-till)
+       '("u" . meow-undo)
+       '("U" . meow-undo-in-selection)
+       '("v" . meow-visit)
+       '("w" . meow-mark-word)
+       '("W" . meow-mark-symbol)
+       '("x" . meow-line)
+       '("X" . meow-goto-line)
+       '("y" . meow-save)
+       '("Y" . meow-sync-grab)
+       '("z" . meow-pop-selection)
+       '("=" . meow-indent)
+       '("'" . repeat))
+      (meow-global-mode 1))
+    (setq my-meow-leader-keymap (make-sparse-keymap))
+    :custom
+    (meow-keypad-start-keys . ())
+    (meow-keypad-meta-prefix . nil)
+    (meow-keypad-ctrl-meta-prefix . nil)
+    (meow-keypad-literal-prefix . nil)
+    (meow-keypad-self-insert-undefined . nil)
+    ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
+    ;;(meow-use-clipboard . t)
+    :config
+    ;(with-eval-after-load 'git-timemachine
+    ;;(add-to-list 'meow-mode-state-list '(git-timemachine-mode . motion))
+    ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
+    (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
+    (meow-setup))
 #+END_SRC
 
 **** Which Key
