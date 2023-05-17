@@ -1,46 +1,58 @@
 #+TITLE: Emacs Literate Configuration
 #+AUTHOR: Marcel Arpogaus
 #+PROPERTY: header-args :tangle yes
+#+STARTUP: show2levels
 #+auto_tangle: t
 
 * Configuration
-:PROPERTIES:
-:VISIBILITY: children
-:END:
 
 ** Table of Contents                                               :TOC_3_gh:
 - [[#configuration][Configuration]]
   - [[#about-this-file][About this file]]
-  - [[#references][References]]
+  - [[#to-dos][To-dos]]
+    - [[#add-debugger][Add debugger]]
+    - [[#add-doom-snippets][Add doom snippets?]]
+    - [[#keybindings][Keybindings]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
     - [[#personal-information][Personal Information]]
     - [[#paths][Paths]]
     - [[#emacs-configuration][Emacs Configuration]]
+    - [[#keymaps][Keymaps]]
   - [[#packages][Packages]]
     - [[#ui][UI]]
-    - [[#modus-themes][Modus Themes]]
     - [[#org][Org]]
     - [[#tools][Tools]]
     - [[#completion][Completion]]
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
-    - [[#keybindings][Keybindings]]
+    - [[#keybindings-1][Keybindings]]
   - [[#post-initialization][Post Initialization]]
 
 ** About this file
-This is an Emacs literate configuration template. It contains the basic structure
-of a literate config along with some optimizations to ensure a fast load time.
+This Emacs literate configuration has been inspired by the following projects:
 
-** References
-The folliwing Setteinge were inspired by:
+- [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
 - [[https://github.com/rougier/dotemacs][GitHub - rougier/dotemacs: Litterate configuration for GNU Emacs]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
 - [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
   
+** To-dos
+
+*** TODO Add debugger
+- [[https://github.com/emacs-lsp/dap-mode][GitHub - emacs-lsp/dap-mode: Emacs Debug Adapter Protocol]]
+- [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][Python, debbuging with poetry + pyenv - DAP Mode]]
+
+*** TODO Add doom snippets?
+- [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
+
+*** TODO Keybindings
+- [[https://github.com/abo-abo/hydra][GitHub - abo-abo/hydra: make Emacs bindings that stick around]]
+- [[https://github.com/magit/transient][GitHub - magit/transient: Transient commands]]
+
 ** Emacs Initialization
 *** Settings
 We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time. 
@@ -74,23 +86,26 @@ if you would like to see any and all byte compiler warnings.
 **** straight.el bootstrap code
 #+begin_src emacs-lisp
   (eval-and-compile
-  ;; Optimze startup time
-  ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
-  (if (and (executable-find "watchexec") (executable-find "python3"))
-      (setq straight-check-for-modifications '(watch-files find-when-checking))
-    (setq straight-check-for-modifications '(check-on-save find-when-checking)))
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 6))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage)))
+    ;; Optimze startup time
+    ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
+    ;; (if (and (executable-find "watchexec") (executable-find "python3"))
+    ;;     (setq straight-check-for-modifications '(watch-files find-when-checking))
+    ;;   (setq straight-check-for-modifications '(check-on-save find-when-checking)))
+    ;;disable checking (for speedup).
+    (setq straight-check-for-modifications nil)
+
+    (defvar bootstrap-version)
+    (let ((bootstrap-file
+           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+          (bootstrap-version 6))
+      (unless (file-exists-p bootstrap-file)
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage)))
 
   ;; Load the helper package for commands like `straight-x-clean-unused-repos'
   (require 'straight-x)
@@ -115,7 +130,6 @@ Let's set some variables with basic user information.
 #+BEGIN_SRC emacs-lisp
   (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
   (setq org-brain-path (concat org-directory "brain/"))
-  (setq project-list-file '("~/Projekte"))
   (setq projectile-project-search-path '("~/Projekte"))
   (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
 
@@ -246,11 +260,12 @@ Let's set some variables with basic user information.
     (dolist (mode '(text-mode-hook
                     conf-mode-hook
                     org-mode-hook))
-      (add-hook mode (lambda () (flyspell-mode 1))))
-    (add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode 1)))
+      (add-hook mode (lambda () (flyspell-mode))))
+    (add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
 
     ;; Don't pop up UI dialogs when prompting
-    (setq use-dialog-box nil)
+    (setq use-dialog-box nil
+          use-file-dialog nil)
 
     ;; Revert buffers when the underlying file has changed
     (global-auto-revert-mode 1)
@@ -265,12 +280,27 @@ Let's set some variables with basic user information.
 
     ;; Change re-builder syntax
     ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
-    (setq reb-re-syntax 'string))
+    (setq reb-re-syntax 'string)
+
+    ;; Default shell in term
+    (unless (not (file-exists-p "/bin/zsh"))
+      (setq-default shell-file-name "/bin/zsh")
+      (setq explicit-shell-file-name "/bin/zsh")))
 #+end_src
+
+*** Keymaps
+#+BEGIN_SRC emacs-lisp
+  (use-package emacs
+    :config
+    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+    (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
+    (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+    (defvar my/toggle-map (make-sparse-keymap) "key-map for version control"))
+      #+END_SRC
 
 ** Packages
 *** UI
-*** Modus Themes
+**** Modus Themes
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
 
@@ -455,7 +485,7 @@ want is prioritized instead.
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :defer t
-    :hook (org-mode . org-indent-mode)
+    ;; :hook (org-mode . org-indent-mode)
     :config
     (setq org-ellipsis " ▾"
           org-src-fontify-natively t
@@ -770,18 +800,17 @@ A simple command that takes a URL from the clipboard and inserts an org-mode lin
     :after org)
 #+END_SRC
 
-**** org-modern 
+**** org-modern
 This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-modern
     :hook (org-mode . global-org-modern-mode)
-    :after org
+    ;;:after org
     :custom
     (org-modern-star '("◉" "○" "◇"))
-    
     :config
-    ;; (setq org-modern-label-border 0.3)
+    (setq org-modern-label-border 0.3)
 
     (setq
      ;; Edit settings
@@ -794,7 +823,7 @@ This package implements a modern style for your Org buffers using font locking a
      ;; Org styling, hide markup etc.
      org-hide-emphasis-markers t
      org-pretty-entities t
-     org-ellipsis "…"
+     ;; org-ellipsis " ▾"
 
      ;; Agenda styling
      org-agenda-tags-column 0
@@ -835,26 +864,21 @@ Server start.
       (server-start)))
 #+end_src
 
-**** Which Key
-
-The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
-
-#+begin_src emacs-lisp
-  (use-package which-key
-    :config
-    (setq which-key-idle-delay 0.2)
-    (which-key-mode))
-#+end_src
-
 **** Helpful
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
 It is a bit slow to load so we do need load it explicitely.
 
 #+begin_src emacs-lisp
   (use-package helpful
-    :config
-                                          ; Focus new help windows when opened
-    (setq help-window-select t))
+    :bind
+    (([remap describe-function] . helpful-function)
+     ([remap describe-symbol] . helpful-symbol)
+     ([remap describe-variable] . helpful-variable)
+     ([remap describe-command] . helpful-command)
+     ([remap describe-key] . helpful-key)
+     ("C-h K" . describe-keymap)
+     :map helpful-mode-map
+     ([remap revert-buffer] . helpful-update)))
 #+end_src
 **** Undo Tree
 
@@ -1078,48 +1102,37 @@ additional featureful completion commands
   ;; Example configuration for Consult
   (use-package consult
     ;; Replace bindings. Lazily loaded due by `use-package'.
-    :bind (;; C-c bindings in `mode-specific-map'
-           ("C-c M-x" . consult-mode-command)
-           ("C-c h" . consult-history)
-           ("C-c k" . consult-kmacro)
-           ("C-c m" . consult-man)
-           ("C-c i" . consult-info)
-           ([remap Info-search] . consult-info)
-           ;; C-x bindings in `ctl-x-map'
-           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-           ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-           ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-           ;; Custom M-# bindings for fast register access
-           ("M-#" . consult-register-load)
-           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-           ("C-M-#" . consult-register)
-           ;; Other custom bindings
+    :bind (([remap Info-search] . consult-info)
            ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           :map my/buffer-map
+           ("b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("w" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("f" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           :map project-prefix-map
+           ("b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+           :map goto-map
            ;; M-g bindings in `goto-map'
-           ("M-g e" . consult-compile-error)
-           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-           ("M-g g" . consult-goto-line)             ;; orig. goto-line
-           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-           ("M-g m" . consult-mark)
-           ("M-g k" . consult-global-mark)
-           ("M-g i" . consult-imenu)
-           ("M-g I" . consult-imenu-multi)
-           ;; M-s bindings in `search-map'
-           ("M-s d" . consult-find)
-           ("M-s D" . consult-locate)
-           ("M-s g" . consult-grep)
-           ("M-s G" . consult-git-grep)
-           ("M-s r" . consult-ripgrep)
-           ("M-s l" . consult-line)
-           ("M-s L" . consult-line-multi)
-           ("M-s k" . consult-keep-lines)
-           ("M-s u" . consult-focus-lines)
+           ("e" . consult-compile-error)
+           ("f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g" . consult-goto-line)           ;; orig. goto-line
+           ("o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("m" . consult-mark)
+           ("k" . consult-global-mark)
+           ("i" . consult-imenu)
+           ("I" . consult-imenu-multi)
+           :map search-map
+           ("d" . consult-find)
+           ("D" . consult-locate)
+           ("g" . consult-grep)
+           ("G" . consult-git-grep)
+           ("r" . consult-ripgrep)
+           ("l" . consult-line)
+           ("L" . consult-line-multi)
+           ("k" . consult-keep-lines)
+           ("u" . consult-focus-lines)
            ;; Isearch integration
-           ("M-s e" . consult-isearch-history)
+           ("e" . consult-isearch-history)
            :map isearch-mode-map
            ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
            ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
@@ -1180,9 +1193,10 @@ additional featureful completion commands
     ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
     ;; Configure a different project root function.
-    (autoload 'projectile-project-root "projectile")
-    (setq consult-project-function (lambda (_) (projectile-project-root))))
-#+end_src
+    (with-eval-after-load 'projectile
+      (autoload 'projectile-project-root "projectile")
+      (setq consult-project-function (lambda (_) (projectile-project-root)))))
+      #+end_src
 **** Corfu
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
@@ -1212,13 +1226,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
     (corfu-preview-current t)    ;; Disable current candidate preview
     ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    (corfu-on-exact-match nil)     ;; Configure handling of exact matches
     ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-
-    ;; Enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
 
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
@@ -1250,28 +1259,29 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (setq completion-styles '(orderless basic)
           completion-category-defaults nil
           completion-category-overrides '((file (styles . (partial-completion))))))
-                #+END_SRC
+#+END_SRC
 **** Cape
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
   (use-package cape
     ;; Bind dedicated completion commands
     ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-    :bind (("C-c p p" . completion-at-point) ;; capf
-           ("C-c p t" . complete-tag)        ;; etags
-           ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-           ("C-c p h" . cape-history)
-           ("C-c p f" . cape-file)
-           ("C-c p k" . cape-keyword)
-           ("C-c p s" . cape-symbol)
-           ("C-c p a" . cape-abbrev)
-           ("C-c p l" . cape-line)
-           ("C-c p w" . cape-dict)
-           ("C-c p \\" . cape-tex)
-           ("C-c p _" . cape-tex)
-           ("C-c p ^" . cape-tex)
-           ("C-c p &" . cape-sgml)
-           ("C-c p r" . cape-rfc1345))
+    :bind (:map my/completion-map
+                ("p" . completion-at-point) ;; capf
+                ("t" . complete-tag)        ;; etags
+                ("d" . cape-dabbrev)        ;; or dabbrev-completion
+                ("h" . cape-history)
+                ("f" . cape-file)
+                ("k" . cape-keyword)
+                ("s" . cape-symbol)
+                ("a" . cape-abbrev)
+                ("l" . cape-line)
+                ("w" . cape-dict)
+                ("\\" . cape-tex)
+                ("_" . cape-tex)
+                ("^" . cape-tex)
+                ("&" . cape-sgml)
+                ("r" . cape-rfc1345))
     :init
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;; NOTE: The order matters!
@@ -1299,9 +1309,9 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 
   (use-package cape-yasnippet
     :after cape
-    :straight (cape-yasnippet :type git :host github :repo "elken/cape-yasnippet")
-;;    :custom
-;;    (cape-yasnippet-lookup-by ’name)
+    :straight (:type git :host github :repo "elken/cape-yasnippet")
+    ;;    :custom
+    ;;    (cape-yasnippet-lookup-by ’name)
     :config
     (add-to-list 'completion-at-point-functions #'cape-yasnippet))
 #+end_src
@@ -1375,49 +1385,57 @@ Citar provides a highly-configurable completing-read front-end to browse and act
 #+end_src
 
 *** Version Control
-
 **** Magit
 The magical git client. Let's load magit only when one of the several entry pont
 functions we invoke regularly outside of magit is called.
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
-    :commands (magit-status magit-blame magit-log-buffer-file magit-log-all))
+    :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
+    :bind
+    (:map my/version-control-map
+          ("F"  . magit-fetch-all)
+          ("P"  . magit-push-current)
+          ("b"  . magit-branch)
+          ("b"  . magit-branch-or-checkout)
+          ("c"  . magit-commit)
+          ("d"  . magit-diff-unstaged)
+          ("f"  . magit-fetch)
+          ("la" . magit-log-all)
+          ("lc" . magit-log-current)
+          ("lf" . magit-log-buffer-file)
+          ("p"  . magit-pull-branch)
+          ("v"  . magit-status)
+          ("r"  . magit-rebase)))
 #+END_SRC
 
 **** GitGutter
 
 #+BEGIN_SRC emacs-lisp
-  (use-package git-gutter
+  (use-package git-gutter+
     :config
     ;;updates diff information in real-time
-    (setq git-gutter:update-interval 0.5)
+    (setq git-gutter+:update-interval 0.5)
 
     ;; If you enable global minor mode
-    (global-git-gutter-mode t)
-
+    (global-git-gutter+-mode t)
+    (repeat-mode)
     :bind
-    (("C-x C-g" . git-gutter)
-     ("C-x v =" . git-gutter:popup-hunk)
-
-     ;; Jump to next/previous hunk
-     ("C-x p" . git-gutter:previous-hunk)
-     ("C-x n" . git-gutter:next-hunk)
-
-     ;; Stage current hunk
-     ("C-x v s" . git-gutter:stage-hunk)
-
-     ;; Revert current hunk
-     ("C-x v r" . git-gutter:revert-hunk)
-
-     ;; Mark current hunk
-     ("C-x v SPC" . git-gutter:mark-hunk)))
-  (use-package git-gutter-fringe
-    :config
-    ;; (setq git-gutter-fr:side 'right-fringe)
-    (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+    (:repeat-map my/git-gutter-repeat-map
+                 ("n" . git-gutter+-next-hunk)
+                 ("p" . git-gutter+-previous-hunk)
+                 ("s" . git-gutter+-stage-hunks)
+                 ("r" . git-gutter+-revert-hunk)
+                 :exit
+                 ("c" . magit-commit-create)))
+    (use-package git-gutter-fringe+
+      ;;:after git-gutter+
+      :config
+      (setq git-gutter-fr+-side 'right-fringe)
+      ;; (define-fringe-bitmap 'git-gutter+-fr:added [224] nil nil '(center repeated))
+      ;; (define-fringe-bitmap 'git-gutter+-fr:modified [224] nil nil '(center repeated))
+      ;; (define-fringe-bitmap 'git-gutter+-fr:deleted [128 192 224 240] nil nil 'bottom)
+      (git-gutter-fr+-minimal))
 #+END_SRC
 
 *** Project Management
@@ -1456,25 +1474,71 @@ going to install it and make sure it's loaded immediately.
     (projectile-mode))
 #+END_SRC
 
-**** Project
-configure emacs native project.el
-
-**** tabspaces
-#+begin_src emacs-lisp 
-  (use-package tabspaces
-    ;; use this next line only if you also use straight, otherwise ignore it. 
-    :hook (after-init . tabspaces-mode) ;; use this only if you want the minor-mode loaded at startup. 
-    :commands (tabspaces-switch-or-create-workspace
-	       tabspaces-open-or-create-project-and-workspace)
-    :custom
-    (tabspaces-use-filtered-buffers-as-default t)
-    (tabspaces-default-tab "Default")
-    (tabspaces-remove-to-default t)
-    (tabspaces-include-buffers '("*scratch*"))
-    ;; sessions
-    (tabspaces-session t)
-    (tabspaces-session-auto-restore t))
+**** project
+#+begin_src emacs-lisp
+  (use-package project
+    :demand t)
 #+end_src
+**** tabspaces
+#+begin_src emacs-lisp
+    (use-package tabspaces
+      :demand t
+      :after project
+      :straight (:type git :host github :repo "mclear-tools/tabspaces")
+      :init
+      (defun my/tabspace-setup ()
+        "Set up tabspace at startup."
+        ;; Rename default tab to \`Home\'
+        (progn (tab-bar-rename-tab "Home"))
+        (tabspaces-mode))
+      ;; use this next line only if you also use straight, otherwise ignore it. 
+      :hook
+      (after-init . my/tabspace-setup)
+
+      :commands (tabspaces-switch-or-create-workspace
+                 tabspaces-open-or-create-project-and-workspace)
+      :bind
+      (;;([remap project-switch-project] . tabspaces-open-or-create-project-and-workspace)
+       ;;([remap project-switch-to-buffer] . tabspaces-switch-to-buffer)
+       ;;([remap project-kill-buffers] . tabspaces-kill-buffers-close-workspace)
+       :map project-prefix-map
+       ("k" . tabspaces-kill-buffers-close-workspace)
+       ("p" . tabspaces-open-or-create-project-and-workspace)
+       ("W" . tabspaces-project-switch-project-open-file)
+       ("w" . tabspaces-switch-or-create-workspace)
+       ("S" . tabspaces-save-session)
+       ("R" . tabspaces-restore-session))
+      :custom
+      (tabspaces-use-filtered-buffers-as-default t)
+      (tabspaces-default-tab "Default")
+      (tabspaces-remove-to-default t)
+      (tabspaces-include-buffers '("*scratch*"))
+      ;; sessions
+      (tabspaces-session t)
+      ;;(tabspaces-session-auto-restore t)
+      :config
+      ;; Filter Buffers for Consult-Buffer
+      (with-eval-after-load 'consult
+        ;; hide full buffer list (still available with "b" prefix)
+        (consult-customize consult--source-buffer :hidden t :default nil)
+        ;; set consult-workspace buffer list
+        (defvar consult--source-workspace
+          (list :name     "Workspace Buffers"
+                :narrow   ?w
+                :history  'buffer-name-history
+                :category 'buffer
+                :state    #'consult--buffer-state
+                :default  t
+                :items    (lambda () (consult--buffer-query
+                                      :predicate #'tabspaces--local-buffer-p
+                                      :sort 'visibility
+                                      :as #'buffer-name)))
+
+          "Set workspace buffer list for consult-buffer.")
+        (add-to-list 'consult-buffer-sources 'consult--source-workspace))
+
+      )
+    #+end_src
 
 **** Treemacs
 Tree layout file explorer for Emacs
@@ -1693,7 +1757,6 @@ Tree layout file explorer for Emacs
           lsp-ui-sideline-delay 0.05)
     (lsp-ui-doc-show))
 #+END_SRC
-    :ensure t
 
 **** eglot
 #+begin_src emacs-lisp
@@ -1712,7 +1775,7 @@ Tree layout file explorer for Emacs
     (yas-reload-all)
     (yas-global-mode 1))
   (use-package yasnippet-snippets)
-    #+end_src
+#+end_src
 
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
@@ -1768,7 +1831,7 @@ Tree layout file explorer for Emacs
                                           ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
                                           ;                                          (conda-env-activate-for-buffer))))
     )
-        #+end_src
+#+end_src
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
@@ -1821,102 +1884,147 @@ heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/module
     :config
     (evil-collection-init))
 #+end_src
-
 **** Meow
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
-  (use-package meow
-    :init
-    (defun meow-setup ()
-      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-      (meow-motion-overwrite-define-key
-       '("j" . meow-next)
-       '("k" . meow-prev)
-       '("<escape>" . ignore))
-      (meow-leader-define-key
-       ;; SPC j/k will run the original command in MOTION state.
-       '("j" . "H-j")
-       '("k" . "H-k")
-       ;; Use SPC (0-9) for digit arguments.
-       '("1" . meow-digit-argument)
-       '("2" . meow-digit-argument)
-       '("3" . meow-digit-argument)
-       '("4" . meow-digit-argument)
-       '("5" . meow-digit-argument)
-       '("6" . meow-digit-argument)
-       '("7" . meow-digit-argument)
-       '("8" . meow-digit-argument)
-       '("9" . meow-digit-argument)
-       '("0" . meow-digit-argument)
-       '("/" . meow-keypad-describe-key)
-       '("?" . meow-cheatsheet))
-      (meow-normal-define-key
-       '("0" . meow-expand-0)
-       '("9" . meow-expand-9)
-       '("8" . meow-expand-8)
-       '("7" . meow-expand-7)
-       '("6" . meow-expand-6)
-       '("5" . meow-expand-5)
-       '("4" . meow-expand-4)
-       '("3" . meow-expand-3)
-       '("2" . meow-expand-2)
-       '("1" . meow-expand-1)
-       '("-" . negative-argument)
-       '(";" . meow-reverse)
-       '("," . meow-inner-of-thing)
-       '("." . meow-bounds-of-thing)
-       '("[" . meow-beginning-of-thing)
-       '("]" . meow-end-of-thing)
-       '("a" . meow-append)
-       '("A" . meow-open-below)
-       '("b" . meow-back-word)
-       '("B" . meow-back-symbol)
-       '("c" . meow-change)
-       '("C" . comment-or-uncomment-region)
-       '("d" . meow-delete)
-       '("D" . meow-backward-delete)
-       '("e" . meow-next-word)
-       '("E" . meow-next-symbol)
-       '("f" . meow-find)
-       '("<escape>" . meow-cancel-selection)
-       '("G" . meow-grab)
-       '("h" . meow-left)
-       '("H" . meow-left-expand)
-       '("i" . meow-insert)
-       '("I" . meow-open-above)
-       '("j" . meow-next)
-       '("J" . meow-next-expand)
-       '("k" . meow-prev)
-       '("K" . meow-prev-expand)
-       '("l" . meow-right)
-       '("L" . meow-right-expand)
-       '("m" . meow-join)
-       '("n" . meow-search)
-       '("o" . meow-block)
-       '("O" . meow-to-block)
-       '("p" . meow-yank)
-       '("q" . meow-quit)
-       '("Q" . meow-goto-line)
-       '("r" . meow-replace)
-       '("R" . meow-swap-grab)
-       '("s" . meow-kill)
-       '("t" . meow-till)
-       '("u" . meow-undo)
-       '("U" . meow-undo-in-selection)
-       '("v" . meow-visit)
-       '("w" . meow-mark-word)
-       '("W" . meow-mark-symbol)
-       '("x" . meow-line)
-       '("X" . meow-goto-line)
-       '("y" . meow-save)
-       '("Y" . meow-sync-grab)
-       '("z" . meow-pop-selection)
-       '("=" . meow-indent)
-       '("'" . repeat)))
-    :config
-    (meow-setup)
-    (meow-global-mode 1))
+    (use-package meow
+      :init
+      (defun meow-setup ()
+        (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+        (meow-motion-overwrite-define-key
+         '("j" . meow-next)
+         '("k" . meow-prev)
+         '("<escape>" . ignore))
+        (meow-leader-define-key
+         ;; KEYPAD is the state used for executing commands without modifier keys.
+
+         ;; Entering KEYPAD state by pressing SPC in NORMAL or MOTION state.
+
+         ;; In KEYPAD state, single keys will be translated, and the first key will decide how it starts:
+
+         ;;     Start with x / h / c / m / g will begin with C-x / C-h / C-c / M- / C-M- respectively.
+         ;;     Any other key will start with itself, and temporarily activate the leader keymap.
+
+         ;; The following keys will act according to following rules:
+
+         ;;     m will be translated to M-.
+         ;;     g will be translated to C-M-.
+         ;;     Any key following a prefix like m or g is interpreted as C-<key>.
+         ;;     SPC stands for literal prefix, means that the key will not be modified with C-.
+         ;;     If the translation results in an undefined binding, the last key will fallback to an unmodified version. (e.g. If C-c C-a is undefined, fallback to C-c a)
+         ;; SPC j/k will run the original command in MOTION state.
+         '("j" . "H-j")
+         '("k" . "H-k")
+         ;; my keymaps
+         (cons "b" (cons "buffer" my/buffer-map))
+         (cons "g" (cons "goto" goto-map))
+         (cons "h" (cons "help" help-map))
+         (cons "p" (cons "project" project-prefix-map))
+         ;;(cons "p <TAB>" (cons "tabspaces" tabspaces-command-map))
+         (cons "s" (cons "search" search-map))
+         (cons "t" (cons "toggle" my/toggle-map))
+         (cons "v" (cons "version-control" my/version-control-map))
+         (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
+         (cons "x" (cons "mode" mode-specific-map))
+         ;; Use SPC (0-9) for digit arguments.
+         '("1" . meow-digit-argument)
+         '("2" . meow-digit-argument)
+         '("3" . meow-digit-argument)
+         '("4" . meow-digit-argument)
+         '("5" . meow-digit-argument)
+         '("6" . meow-digit-argument)
+         '("7" . meow-digit-argument)
+         '("8" . meow-digit-argument)
+         '("9" . meow-digit-argument)
+         '("0" . meow-digit-argument)
+         '("/" . meow-keypad-describe-key)
+         '("?" . meow-cheatsheet))
+        (meow-normal-define-key
+         '("0" . meow-expand-0)
+         '("9" . meow-expand-9)
+         '("8" . meow-expand-8)
+         '("7" . meow-expand-7)
+         '("6" . meow-expand-6)
+         '("5" . meow-expand-5)
+         '("4" . meow-expand-4)
+         '("3" . meow-expand-3)
+         '("2" . meow-expand-2)
+         '("1" . meow-expand-1)
+         '("-" . negative-argument)
+         '(";" . meow-reverse)
+         '("," . meow-inner-of-thing)
+         '("." . meow-bounds-of-thing)
+         '("[" . meow-beginning-of-thing)
+         '("]" . meow-end-of-thing)
+         '("a" . meow-append)
+         '("A" . meow-open-below)
+         '("b" . meow-back-word)
+         '("B" . meow-back-symbol)
+         '("c" . meow-change)
+         '("C" . comment-or-uncomment-region)
+         '("d" . meow-delete)
+         '("D" . meow-backward-delete)
+         '("e" . meow-next-word)
+         '("E" . meow-next-symbol)
+         '("f" . meow-find)
+         '("<escape>" . meow-cancel-selection)
+         '("G" . meow-grab)
+         '("h" . meow-left)
+         '("H" . meow-left-expand)
+         '("i" . meow-insert)
+         '("I" . meow-open-above)
+         '("j" . meow-next)
+         '("J" . meow-next-expand)
+         '("k" . meow-prev)
+         '("K" . meow-prev-expand)
+         '("l" . meow-right)
+         '("L" . meow-right-expand)
+         '("m" . meow-join)
+         '("n" . meow-search)
+         '("o" . meow-block)
+         '("O" . meow-to-block)
+         '("p" . meow-yank)
+         '("q" . meow-quit)
+         '("Q" . meow-goto-line)
+         '("r" . meow-replace)
+         '("R" . meow-swap-grab)
+         '("s" . meow-kill)
+         '("t" . meow-till)
+         '("u" . meow-undo)
+         '("U" . meow-undo-in-selection)
+         '("v" . meow-visit)
+         '("w" . meow-mark-word)
+         '("W" . meow-mark-symbol)
+         '("x" . meow-line)
+         '("X" . meow-goto-line)
+         '("y" . meow-save)
+         '("Y" . meow-sync-grab)
+         '("z" . meow-pop-selection)
+         '("=" . meow-indent)
+         '("'" . repeat))
+        (meow-global-mode 1))
+      (setq my-meow-leader-keymap (make-sparse-keymap))
+      :custom
+      (meow-keypad-start-keys . ())
+      (meow-keypad-meta-prefix . nil)
+      (meow-keypad-ctrl-meta-prefix . nil)
+      (meow-keypad-literal-prefix . nil)
+      (meow-keypad-self-insert-undefined . nil)
+      ;;(meow-use-clipboard . t)
+      :config
+      ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
+      (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
+      (meow-setup))
 #+END_SRC
+
+**** Which Key
+The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+#+begin_src emacs-lisp
+  (use-package which-key
+    :config
+    (setq which-key-idle-delay 0.1)
+    (which-key-mode))
+#+end_src
 
 ** Post Initialization
 Let's lower our GC thresholds back down to a sane level.
