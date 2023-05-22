@@ -30,7 +30,6 @@
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
     - [[#keybindings-1][Keybindings]]
-  - [[#post-initialization][Post Initialization]]
 
 ** About this file
 This Emacs literate configuration has been inspired by the following projects:
@@ -62,19 +61,26 @@ We're going to increase the gc-cons-threshold to a very high number to decrease 
 We'll lower this value significantly after initialization has completed.
 We don't want to keep this value too high or it will result in long GC pauses during normal usage.
 
+Taken from: https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
+
 #+BEGIN_SRC emacs-lisp
   (eval-and-compile
     (setq gc-cons-threshold (* 100 1000 1000)
-          gc-cons-percentage 0.6))
+          gc-cons-percentage 0.6)
+    ;; Let's lower our GC thresholds back down to a sane level.
+    (add-hook 'after-init-hook (lambda ()
+                                 ;; restore after startup
+                                 (setq gc-cons-threshold (* 2 1000 1000)
+                                       gc-cons-percentage 0.1)))
 
-  ;; Profile emacs startup
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (message "*** Emacs loaded in %s with %d garbage collections."
-                       (format "%.2f seconds"
-                               (float-time
-                                (time-subtract after-init-time before-init-time)))
-                       gcs-done)))
+    ;; Profile emacs startup
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                (message "*** Emacs loaded in %s with %d garbage collections."
+                         (format "%.2f seconds"
+                                 (float-time
+                                  (time-subtract after-init-time before-init-time)))
+                         gcs-done))))
 #+END_SRC
 
 Disable certain byte compiler warnings to cut down on the noise. This is a personal choice and can be removed
@@ -116,9 +122,12 @@ if you would like to see any and all byte compiler warnings.
 
 **** install and configure use-packege
 #+BEGIN_SRC emacs-lisp
-  (setq straight-use-package-by-default t
-        use-package-always-defer t)
-  (straight-use-package 'use-package)
+  (eval-and-compile
+    (setq straight-use-package-by-default t
+          use-package-always-defer t)
+    (straight-use-package 'use-package))
+
+    (require 'bind-key)
 #+END_SRC
 
 *** Personal Information
@@ -296,6 +305,7 @@ Let's set some variables with basic user information.
 #+BEGIN_SRC emacs-lisp
   (use-package emacs
     :init
+    (defvar my/git-gutter-repeat-map (make-sparse-keymap) "key-map for version control commands")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
     (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
@@ -394,6 +404,7 @@ A fancy and fast mode-line inspired by minimalism design.
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
   (use-package ascii-art-to-unicode
+    :after org-brain
     :config
     (defface aa2u-face '((t . nil))
       "Face for aa2u box drawing characters")
@@ -405,12 +416,11 @@ Make org-brain-visualize-mode look a bit nicer.
         (add-to-list 'face-remapping-alist
                      '(aa2u-face . org-brain-wires))
         (ignore-errors (aa2u (point-min) (point-max)))))
-    (with-eval-after-load 'org-brain
-      (add-hook 'org-brain-after-visualize-hook #'aa2u-org-brain-buffer)))
+    :hook
+    (org-brain-after-visualize . aa2u-org-brain-buffer))
 #+end_src
 
 **** Ligatures
-
 #+BEGIN_SRC emacs-lisp
   (use-package ligature
     :config
@@ -482,7 +492,8 @@ Make org-brain-visualize-mode look a bit nicer.
                               "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
-    (global-ligature-mode t))
+    :hook
+    (after-init . global-ligature-mode))
 #+END_SRC
 
 *** Org
@@ -707,23 +718,36 @@ want is prioritized instead.
     (evil-org-agenda-set-keys))
 #+end_src
 
+**** org-noter
+
+#+begin_src emacs-lisp
+  (use-package org-noter
+    :after org
+    :config
+    (setq
+     ;; The WM can handle splits
+     org-noter-notes-window-location 'other-frame
+     ;; Please stop opening frames
+     org-noter-always-create-frame nil
+     ;; I want to see the whole file
+     org-noter-hide-other nil
+     ;; Everything is relative to the main notes file
+     ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
+     )
+    :hook
+    ;; Org-noter’s purpose is to let you create notes that are kept in sync when
+    ;; you scroll through the [PDF etc] document
+    (org-noter-insert-heading . org-id-get-create))
+#+end_src
+
 **** org-brain
 #+begin_src emacs-lisp
   (use-package org-brain
-    :after (org org-noter)
+    :after org org-noter
     :init
     ;; For Evil users
     (with-eval-after-load 'evil
       (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
-    :config
-    (setq org-id-track-globally t)
-    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
-    (add-hook 'before-save-hook #'org-brain-ensure-ids-in-buffer)
-    (setq org-brain-visualize-default-choices 'all)
-    (setq org-brain-title-max-length 24)
-    (setq org-brain-include-file-entries t
-          org-brain-file-entries-use-title t)
-
     ;; from org brain README
     ;; Here’s a command which uses org-cliplink to add a link from the clipboard
     ;; as an org-brain resource.
@@ -731,7 +755,7 @@ want is prioritized instead.
     ;; Here I’ve bound it to L in org-brain-visualize.
     (defun org-brain-cliplink-resource ()
       "Add a URL from the clipboard as an org-brain resource.
-  Suggest the URL title as a description for resource."
+    Suggest the URL title as a description for resource."
       (interactive)
       (let ((url (org-cliplink-clipboard-content)))
         (org-brain-add-resource
@@ -739,12 +763,9 @@ want is prioritized instead.
          (org-cliplink-retrieve-title-synchronously url)
          t)))
 
-    ;; Org-noter’s purpose is to let you create notes that are kept in sync when
-    ;; you scroll through the [PDF etc] document
-    (add-hook 'org-noter-insert-heading-hook #'org-id-get-create)
     (defun org-brain-open-org-noter (entry)
       "Open `org-noter' on the ENTRY.
-  If run interactively, get ENTRY from context."
+    If run interactively, get ENTRY from context."
       (interactive (list (org-brain-entry-at-pt)))
       (org-with-point-at (org-brain-entry-marker entry)
         (org-noter)))
@@ -762,31 +783,24 @@ want is prioritized instead.
                              (all-the-icons-icon-for-url link))
                             (t
                              (all-the-icons-icon-for-file link))))))
-    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
+
     ;; Allows you to edit entries directly from org-brain-visualize
-    ;; (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode)
+    :config
+    (setq org-id-track-globally t)
+    (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+    (setq org-brain-visualize-default-choices 'all)
+    (setq org-brain-title-max-length 24)
+    (setq org-brain-include-file-entries t
+          org-brain-file-entries-use-title t)
+    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
     ;;:bind (:map org-brain-visualize-mode-map
     ;;      "L" . org-brain-cliplink-resource
     ;;      "C-c n" . org-brain-open-org-noter)
-    )
-#+end_src
-
-**** org-noter
-
-#+begin_src emacs-lisp
-  (use-package org-noter
-    :after (org pdf-tools)
-    :config
-    (setq
-     ;; The WM can handle splits
-     org-noter-notes-window-location 'other-frame
-     ;; Please stop opening frames
-     org-noter-always-create-frame nil
-     ;; I want to see the whole file
-     org-noter-hide-other nil
-     ;; Everything is relative to the main notes file
-     ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
-     ))
+    :commands
+    (org-brain-visualize)
+    :hook
+    ;; (org-brain-visualize-mode . org-brain-polymode)
+    (before-save . org-brain-ensure-ids-in-buffer))
 #+end_src
 
 **** toc-org
@@ -794,9 +808,10 @@ Let's install and load the =toc-org= package after org mode is loaded. This is t
 package that automatically generates an up to date table of contents for us.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package toc-org
-    :after org
-    :init (add-hook 'org-mode-hook #'toc-org-enable))
+    (use-package toc-org
+      :after org
+      :hook
+      (org-mode . toc-org-enable))
 #+END_SRC
 
 **** org-cliplink
@@ -1256,10 +1271,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
     :config
-    (add-hook 'eshell-mode-hook
-              (lambda ()
-                (setq-local corfu-auto nil)
-                (corfu-mode)))
 
     (when (fboundp 'straight-use-package)
       (add-to-list 'load-path
@@ -1272,8 +1283,11 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 
     (eldoc-add-command #'corfu-insert)
     :hook
-    (after-init . global-corfu-mode)
-    (after-init . corfu-popupinfo-mode))
+    ((after-init . global-corfu-mode)
+     (after-init . corfu-popupinfo-mode)
+     (eshell-mode-hook . (lambda ()
+                           (setq-local corfu-auto nil)
+                           (corfu-mode)))))
 #+END_SRC
 
 **** Cape
@@ -1397,7 +1411,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     )
   (use-package citar-embark
     :after citar embark
-    :no-require
     :config (citar-embark-mode))
 #+end_src
 
@@ -1429,8 +1442,9 @@ functions we invoke regularly outside of magit is called.
 #+begin_src emacs-lisp
   (use-package git-timemachine
     ;;:straight (:build (:not native-compile))
-    :config
-    (add-hook 'git-timemachine-mode-hook (lambda ()(sleep-for 0 100)(meow-motion-mode)))
+    :hook
+    ;; TODO: Fix me
+    (git-timemachine-mode . (lambda ()(setq-local meow-mode-state-list nil)(meow-motion-mode)))
     :bind
     (:map my/version-control-map
           ("t" . git-timemachine)))
@@ -1444,7 +1458,6 @@ functions we invoke regularly outside of magit is called.
     (setq git-gutter+:update-interval 0.5)
 
     ;; If you enable global minor mode
-    (global-git-gutter+-mode t)
     (repeat-mode)
     :bind
     (:repeat-map my/git-gutter-repeat-map
@@ -1453,15 +1466,17 @@ functions we invoke regularly outside of magit is called.
                  ("s" . git-gutter+-stage-hunks)
                  ("r" . git-gutter+-revert-hunk)
                  :exit
-                 ("c" . magit-commit-create)))
-    (use-package git-gutter-fringe+
-      ;;:after git-gutter+
-      :config
-      (setq git-gutter-fr+-side 'right-fringe)
-      ;; (define-fringe-bitmap 'git-gutter+-fr:added [224] nil nil '(center repeated))
-      ;; (define-fringe-bitmap 'git-gutter+-fr:modified [224] nil nil '(center repeated))
-      ;; (define-fringe-bitmap 'git-gutter+-fr:deleted [128 192 224 240] nil nil 'bottom)
-      (git-gutter-fr+-minimal))
+                 ("c" . magit-commit-create))
+    :hook
+    (after-init . global-git-gutter+-mode))
+  (use-package git-gutter-fringe+
+    :config
+    (setq git-gutter-fr+-side 'right-fringe)
+    ;; (define-fringe-bitmap 'git-gutter+-fr:added [224] nil nil '(center repeated))
+    ;; (define-fringe-bitmap 'git-gutter+-fr:modified [224] nil nil '(center repeated))
+    ;; (define-fringe-bitmap 'git-gutter+-fr:deleted [128 192 224 240] nil nil 'bottom)
+    :hook
+    (after-init . git-gutter-fr+-minimal))
 #+END_SRC
 
 *** Project Management
@@ -1501,7 +1516,7 @@ going to install it and make sure it's loaded immediately.
 #+END_SRC
 
 **** tabspaces
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package tabspaces
     :straight (:type git :host github :repo "mclear-tools/tabspaces")
     :init
@@ -1536,6 +1551,10 @@ going to install it and make sure it's loaded immediately.
     (tabspaces-session t)
     ;;(tabspaces-session-auto-restore t)
     :config
+    (setq tab-bar-new-button-show nil)  ;; do not show add-new button
+    (setq tab-bar-close-button-show nil)  ;; do not show close button
+    ;;(setq tab-bar-separator "")  ;; no space between tabs
+
     ;; Filter Buffers for Consult-Buffer
     (with-eval-after-load 'consult
       ;; hide full buffer list (still available with "b" prefix)
@@ -1558,7 +1577,39 @@ going to install it and make sure it's loaded immediately.
 
     )
     #+end_src
+    
+**** project-tab-groups
+#+begin_src emacs-lisp
+  (use-package tab-bar
+    :straight nil
+    :commands tab-bar-mode
+    :config
+    (setq tab-bar-close-button-show t
+          tab-bar-new-button-show nil
+          tab-bar-separator ""
+          tab-bar-close-button (propertize " × "
+                                           'close-tab t
+                                           :help "Click to close tab"))
+    (let ((bg (face-attribute 'default :background))
+          (fg (face-attribute 'default :foreground))
+          (base (face-attribute 'mode-line :background))
+          (box-width (/ (line-pixel-height) 3)))
+      (set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
+      (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
+      (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
+  (use-package project-tab-groups
+    :after tab-bar
+    :hook (after-init . project-tab-groups-mode))
+#+end_src
 
+**** tab-bar-echo-area
+#+begin_src emacs-lisp
+(use-package tab-bar-echo-area
+  :hook (after-init . tab-bar-echo-area-mode)
+  :bind (:map tab-prefix-map
+              ("c" . tab-bar-echo-area-display-tab-name)
+              ("P" . tab-bar-echo-area-display-tab-names)))
+#+end_src
 **** Treemacs
 Tree layout file explorer for Emacs
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -1800,17 +1851,23 @@ Tree layout file explorer for Emacs
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
-    :init (global-flycheck-mode))
+    :hook (after-init . global-flycheck-mode))
 #+END_SRC
 
 **** Format All
 #+begin_src emacs-lisp
-  (use-package format-all)
+  (use-package format-all
+    ;;:hook (prog-mode . format-all-mode)
+    :bind
+    (:map my/toggle-map
+          ("f" . format-all-buffer)))
 #+end_src
 
 **** Python
 #+begin_src emacs-lisp
   (use-package python
+    :mode ("\\.py\\'" . python-mode)
+    :interpreter ("python" . python-mode)
     :config
     ;; Stop the spam!
     ;; Let Emacs guess Python indent silently
@@ -1850,7 +1907,7 @@ Tree layout file explorer for Emacs
                                           ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
                                           ;                                          (conda-env-activate-for-buffer))))
     )
-#+end_src
+  #+end_src
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
@@ -2033,7 +2090,7 @@ Meow is yet another modal editing mode for Emacs.
     ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
     ;;(meow-use-clipboard . t)
     :config
-    ;(with-eval-after-load 'git-timemachine
+                                          ;(with-eval-after-load 'git-timemachine
     ;;(add-to-list 'meow-mode-state-list '(git-timemachine-mode . motion))
     ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
     (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
@@ -2046,13 +2103,7 @@ The mode displays the key bindings following your currently entered incomplete c
   (use-package which-key
     :config
     (setq which-key-idle-delay 0.1)
-    (which-key-mode))
+    :hook
+    (after-init . which-key-mode))
 #+end_src
 
-** Post Initialization
-Let's lower our GC thresholds back down to a sane level.
-
-#+BEGIN_SRC emacs-lisp
-  (setq gc-cons-threshold (* 2 1000 1000)
-        gc-cons-percentage 0.1)
-#+END_SRC
