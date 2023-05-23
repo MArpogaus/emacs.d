@@ -1255,13 +1255,13 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; Optional customizations
     :custom
     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto nil)               ;; Enable auto completion
+    (corfu-auto t)                 ;; Enable auto completion
     (corfu-auto-prefix 1)          ;; Complete with less prefix keys)
     (corfu-auto-delay 0.0)         ;; No delay for completion
     (corfu-echo-documentation 0.25);; Echo docs for current completion option
-    ;; (corfu-separator ?\s)          ;; Orderless field separator
+    (corfu-separator ?\s)          ;; Orderless field separator
     (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
     (corfu-preview-current t)    ;; Disable current candidate preview
     ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
     (corfu-on-exact-match nil)     ;; Configure handling of exact matches
@@ -1960,6 +1960,15 @@ heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/module
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
   (use-package meow
+    :demand t
+    :custom
+    (meow-keypad-start-keys . ())
+    (meow-keypad-meta-prefix . nil)
+    (meow-keypad-ctrl-meta-prefix . nil)
+    (meow-keypad-literal-prefix . nil)
+    (meow-keypad-self-insert-undefined . nil)
+    ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
+    ;;(meow-use-clipboard . t)
     :config
     (defun meow-setup ()
       (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
@@ -1997,7 +2006,7 @@ Meow is yet another modal editing mode for Emacs.
        (cons "t" (cons "toggle" my/toggle-map))
        (cons "v" (cons "version-control" my/version-control-map))
        (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
-       (cons "x" (cons "mode" mode-specific-map))
+       (cons "m" (cons "mode" ctl-x-map))
        ;; Use SPC (0-9) for digit arguments.
        '("1" . meow-digit-argument)
        '("2" . meow-digit-argument)
@@ -2103,26 +2112,19 @@ Meow is yet another modal editing mode for Emacs.
 
     ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
     (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
-    :custom
-    (meow-keypad-start-keys . ())
-    (meow-keypad-meta-prefix . nil)
-    (meow-keypad-ctrl-meta-prefix . nil)
-    (meow-keypad-literal-prefix . nil)
-    (meow-keypad-self-insert-undefined . nil)
-    ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
-    ;;(meow-use-clipboard . t)
+    (meow-setup)
     :hook
-    ((after-init . meow-setup)
-     (git-timemachine-mode . my/meow-git-timemachine-hook)))
+    (git-timemachine-mode . my/meow-git-timemachine-hook))
 #+END_SRC
 
 **** Which Key
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
   (use-package which-key
+    :after meow
+    :demand t
     :config
     (setq which-key-idle-delay 0.1)
-    :hook
-    (after-init . which-key-mode))
+    (which-key-mode))
 #+end_src
 
