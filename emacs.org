@@ -1441,10 +1441,6 @@ functions we invoke regularly outside of magit is called.
 **** git-timemachine
 #+begin_src emacs-lisp
   (use-package git-timemachine
-    ;;:straight (:build (:not native-compile))
-    :hook
-    ;; TODO: Fix me
-    (git-timemachine-mode . (lambda ()(setq-local meow-mode-state-list nil)(meow-motion-mode)))
     :bind
     (:map my/version-control-map
           ("t" . git-timemachine)))
@@ -1964,8 +1960,7 @@ heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/module
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
   (use-package meow
-    :demand t
-    :init
+    :config
     (defun meow-setup ()
       (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
       (meow-motion-overwrite-define-key
@@ -2080,7 +2075,34 @@ Meow is yet another modal editing mode for Emacs.
        '("=" . meow-indent)
        '("'" . repeat))
       (meow-global-mode 1))
+    ;; Buffer-local variable to specify the desired Meow state
+    (defvar my/meow-desired-state nil
+      "Buffer-local variable to specify the desired Meow state.")
+
+    ;; Function to set the buffer-local value of my/meow-desired-state
+    (defun my/meow-set-desired-state (state)
+      "Set the buffer-local variable 'my/meow-desired-state' to the specified state."
+      (setq-local my/meow-desired-state state))
+
+    ;; Advice function to modify 'meow--mode-get-state' based on 'my/meow-desired-state'
+    (defun my/meow-mode-get-state-advice (orig-func &rest args)
+      "Advice function to modify 'meow--mode-get-state' based on 'my/meow-desired-state'."
+      (if my/meow-desired-state
+          my/meow-desired-state
+        (apply orig-func args)))
+
+    ;; Apply advice to 'meow--mode-get-state'
+    (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
+
+    ;; Hook to set my/meow-desired-state to 'motion' when entering git-timemachine mode
+    (defun my/meow-git-timemachine-hook ()
+      "Hook to set my/meow-desired-state to 'motion' when entering git-timemachine mode."
+      (my/meow-set-desired-state 'motion))
+
     (setq my-meow-leader-keymap (make-sparse-keymap))
+
+    ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
+    (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
     :custom
     (meow-keypad-start-keys . ())
     (meow-keypad-meta-prefix . nil)
@@ -2089,12 +2111,9 @@ Meow is yet another modal editing mode for Emacs.
     (meow-keypad-self-insert-undefined . nil)
     ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
     ;;(meow-use-clipboard . t)
-    :config
-                                          ;(with-eval-after-load 'git-timemachine
-    ;;(add-to-list 'meow-mode-state-list '(git-timemachine-mode . motion))
-    ;; (setq meow-keypad-leader-dispatch 'my-meow-leader-keymap)
-    (add-to-list 'meow-keymap-alist `('leader . my-meow-leader-keymap))
-    (meow-setup))
+    :hook
+    ((after-init . meow-setup)
+     (git-timemachine-mode . my/meow-git-timemachine-hook)))
 #+END_SRC
 
 **** Which Key
