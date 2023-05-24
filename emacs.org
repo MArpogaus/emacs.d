@@ -8,7 +8,8 @@
 
 ** Table of Contents                                               :TOC_3_gh:
 - [[#configuration][Configuration]]
-  - [[#about-this-file][About this file]]
+  - [[#references][References]]
+  - [[#conventional-headers-for-emacs-libraries][Conventional Headers for Emacs Libraries]]
   - [[#to-dos][To-dos]]
     - [[#add-debugger][Add debugger]]
     - [[#add-doom-snippets][Add doom snippets?]]
@@ -30,8 +31,9 @@
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
     - [[#keybindings-1][Keybindings]]
+  - [[#conventional-library-footer][Conventional Library Footer]]
 
-** About this file
+** References
 This Emacs literate configuration has been inspired by the following projects:
 
 - [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
@@ -39,7 +41,22 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
 - [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
-  
+- [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
+   
+** Conventional Headers for Emacs Libraries
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
+#+begin_src emacs-lisp
+    ;;; emacs.el --- Emacs configuration  -*- lexical-binding: t; -*-
+  ;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+  ;; Copyright (C) 2010-2021 Marcel Arpogaus
+
+  ;; Author: Marcel Arpogaus
+  ;; Keywords: internal
+  ;; URL: https://github.com/MArpogaus/emacs.d/
+
+  ;; This file is not part of GNU Emacs.
+#+end_src
 ** To-dos
 
 *** TODO Add debugger
@@ -53,7 +70,11 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://github.com/abo-abo/hydra][GitHub - abo-abo/hydra: make Emacs bindings that stick around]]
 - [[https://github.com/magit/transient][GitHub - magit/transient: Transient commands]]
   
-*** TODO Fix git timemachine
+*** DONE Fix git timemachine
+CLOSED: [2023-05-24 Wed 08:55]
+:PROPERTIES:
+:ACTIVATED: [2023-05-24]
+:END:
 need meow-motion-mode!
 ** Emacs Initialization
 *** Settings
@@ -115,9 +136,6 @@ if you would like to see any and all byte compiler warnings.
           (goto-char (point-max))
           (eval-print-last-sexp)))
       (load bootstrap-file nil 'nomessage)))
-
-  ;; Load the helper package for commands like `straight-x-clean-unused-repos'
-  (require 'straight-x)
 #+end_src
 
 **** install and configure use-packege
@@ -127,31 +145,31 @@ if you would like to see any and all byte compiler warnings.
           use-package-always-defer t)
     (straight-use-package 'use-package))
 
-    (require 'bind-key)
-#+END_SRC
+  (require 'bind-key)
+    #+END_SRC
 
 *** Personal Information
 Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Marcel Arpogaus"
-        user-mail-address "marcel.arpogaus@gmail.com")
+        user-mail-address "znepry.necbtnhf@tznvy.pbz")
 #+END_SRC
 
 *** Paths
 #+BEGIN_SRC emacs-lisp
-    (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
-    (setq org-brain-path (concat org-directory "brain/"))
-    (setq projectile-project-search-path '("~/Projekte"))
-    (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
+  (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+  (setq org-brain-path (concat org-directory "brain/"))
+  (setq projectile-project-search-path '("~/Projekte"))
+  (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
 
-    ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-    (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-          url-history-file (expand-file-name "url/history" user-emacs-directory))
+  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+        url-history-file (expand-file-name "url/history" user-emacs-directory))
 
-    ;; Use no-littering to automatically set common paths to the new user-emacs-directory
-    (use-package no-littering
-      :demand t)
+  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
+  (use-package no-littering
+    :demand t)
 #+end_src
 
 *** Emacs Configuration
@@ -205,6 +223,9 @@ Let's set some variables with basic user information.
 
     ;; Record cursor position from one session ot the other
     (save-place-mode 1)
+
+    ;; Enable repate mode
+    (repeat-mode 1)
 
     ;; Text
     ;; Pretty self-explanatory
@@ -299,7 +320,7 @@ Let's set some variables with basic user information.
     (unless (not (file-exists-p "/bin/zsh"))
       (setq-default shell-file-name "/bin/zsh")
       (setq explicit-shell-file-name "/bin/zsh")))
-  #+end_src
+#+end_src
 
 *** Keymaps
 #+BEGIN_SRC emacs-lisp
@@ -359,10 +380,9 @@ https://protesilaos.com/emacs/modus-themes
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
   (use-package nerd-icons)
-#+END_SRC
+  #+END_SRC
 **** doom-modline
 A fancy and fast mode-line inspired by minimalism design.
-
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
     :init
@@ -808,10 +828,10 @@ Let's install and load the =toc-org= package after org mode is loaded. This is t
 package that automatically generates an up to date table of contents for us.
 
 #+BEGIN_SRC emacs-lisp
-    (use-package toc-org
-      :after org
-      :hook
-      (org-mode . toc-org-enable))
+  (use-package toc-org
+    :after org
+    :hook
+    (org-mode . toc-org-enable))
 #+END_SRC
 
 **** org-cliplink
@@ -1093,7 +1113,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+END_SRC
 
 **** orderless
- Emacs completion style that matches multiple regexps in any order 
+Emacs completion style that matches multiple regexps in any order 
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
     :init
@@ -1214,7 +1234,7 @@ additional featureful completion commands
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
-     consult-theme :preview-key '(:debounce 0.2 any)
+     ;;     consult-theme :preview-key '(:debounce 0.2 any)
      consult-ripgrep consult-git-grep consult-grep
      consult-bookmark consult-recent-file consult-xref
      consult--source-bookmark consult--source-file-register
@@ -1234,7 +1254,7 @@ additional featureful completion commands
     (with-eval-after-load 'projectile
       (autoload 'projectile-project-root "projectile")
       (setq consult-project-function (lambda (_) (projectile-project-root)))))
-      #+end_src
+#+end_src
 **** Corfu
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
@@ -1452,9 +1472,6 @@ functions we invoke regularly outside of magit is called.
     :config
     ;;updates diff information in real-time
     (setq git-gutter+:update-interval 0.5)
-
-    ;; If you enable global minor mode
-    (repeat-mode)
     :bind
     (:repeat-map my/git-gutter-repeat-map
                  ("n" . git-gutter+-next-hunk)
@@ -1572,7 +1589,7 @@ going to install it and make sure it's loaded immediately.
       (add-to-list 'consult-buffer-sources 'consult--source-workspace))
 
     )
-    #+end_src
+#+end_src
     
 **** project-tab-groups
 #+begin_src emacs-lisp
@@ -1600,11 +1617,11 @@ going to install it and make sure it's loaded immediately.
 
 **** tab-bar-echo-area
 #+begin_src emacs-lisp
-(use-package tab-bar-echo-area
-  :hook (after-init . tab-bar-echo-area-mode)
-  :bind (:map tab-prefix-map
-              ("c" . tab-bar-echo-area-display-tab-name)
-              ("P" . tab-bar-echo-area-display-tab-names)))
+  (use-package tab-bar-echo-area
+    :hook (after-init . tab-bar-echo-area-mode)
+    :bind (:map tab-prefix-map
+                ("c" . tab-bar-echo-area-display-tab-name)
+                ("P" . tab-bar-echo-area-display-tab-names)))
 #+end_src
 **** Treemacs
 Tree layout file explorer for Emacs
@@ -1903,7 +1920,7 @@ Tree layout file explorer for Emacs
                                           ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
                                           ;                                          (conda-env-activate-for-buffer))))
     )
-  #+end_src
+#+end_src
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
@@ -2128,3 +2145,8 @@ The mode displays the key bindings following your currently entered incomplete c
     (which-key-mode))
 #+end_src
 
+** Conventional Library Footer
+#+begin_src emacs-lisp :tangle yes
+  (provide 'emacs.el)
+  ;;; emacs.el ends here
+#+end_src
