@@ -1041,6 +1041,38 @@ Paren mode for highlighting matcing paranthesis
     (prog-mode . show-paren-mode))
 #+end_src
 
+**** ChatGPT
+#+begin_src emacs-lisp
+  (use-package gptel
+    :config
+    (setq gptel-default-mode 'org-mode)
+    :commands (gptel gptel-send))
+#+end_src
+
+**** ediff
+The ediff package is utilized to handle file differences in emacs.
+We will tweak the Emacs built-in ediff configuration a bit.
+[[https://panadestein.github.io/emacsd/#org5917c00][Emacs literate configuration]]
+
+#+begin_src emacs-lisp
+  (use-package ediff
+    :config
+    (defvar my-ediff-original-windows nil)
+    (defun my-store-pre-ediff-winconfig ()
+      "This function stores the current window configuration before opening ediff."
+      (setq my-ediff-original-windows (current-window-configuration)))
+    (defun my-restore-pre-ediff-winconfig ()
+      "This function resets the original window arrangement."
+      (set-window-configuration my-ediff-original-windows))
+    :hook
+    ((ediff-before-setup . my-store-pre-ediff-winconfig)
+     (ediff-quit . my-restore-pre-ediff-winconfig))
+    :config
+    (setq ediff-window-setup-function 'ediff-setup-windows-plain
+          ediff-split-window-function 'split-window-horizontally))
+#+end_src
+
+
 *** Completion
 **** Vertico
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
