@@ -1274,17 +1274,17 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 
     ;; Optional customizations
     :custom
-    (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                 ;; Enable auto completion
-    (corfu-auto-prefix 1)          ;; Complete with less prefix keys)
-    (corfu-auto-delay 0.0)         ;; No delay for completion
-    (corfu-echo-documentation 0.25);; Echo docs for current completion option
-    (corfu-separator ?\s)          ;; Orderless field separator
-    (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-    (corfu-preview-current t)    ;; Disable current candidate preview
+    (corfu-cycle t)                 ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                  ;; Enable auto completion
+    (corfu-auto-prefix 1)           ;; Complete with less prefix keys)
+    (corfu-auto-delay 0.0)          ;; No delay for completion
+    (corfu-echo-documentation 0.25) ;; Echo docs for current completion option
+    (corfu-separator ?\s)           ;; Orderless field separator
+    (corfu-quit-at-boundary nil)    ;; Never quit at completion boundary
+    (corfu-quit-no-match t)         ;; Never quit, even if there is no match
+    (corfu-preview-current t)       ;; Disable current candidate preview
     ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    (corfu-on-exact-match nil)      ;; Configure handling of exact matches
     ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
     ;; Recommended: Enable Corfu globally.
@@ -1842,6 +1842,27 @@ Tree layout file explorer for Emacs
     (lsp-ui-doc-show))
 #+END_SRC
 
+**** tree-sitter
+This is an Emacs Lisp binding for tree-sitter, an incremental parsing library. It requires Emacs 25.1 or above, built with dynamic module support.
+
+It aims to be the foundation for a new breed of Emacs packages that understand code structurally. For example:
+
+ * Faster, fine-grained code highlighting.
+ * More flexible code folding.
+ * Structural editing (like Paredit, or even better) for non-Lisp code.
+ * More informative indexing for imenu.
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package tree-sitter
+    :config
+    (global-tree-sitter-mode)
+    :hook
+    (tree-sitter-after-on . tree-sitter-hl-mode))
+
+  (use-package tree-sitter-langs
+    :straight t
+    :after tree-sitter)
+#+end_src
 **** eglot
 #+begin_src emacs-lisp
   (use-package eglot
@@ -1921,6 +1942,7 @@ Tree layout file explorer for Emacs
                                           ;                                          (conda-env-activate-for-buffer))))
     )
 #+end_src
+
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
