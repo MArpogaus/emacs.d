@@ -1943,6 +1943,32 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
     )
 #+end_src
 
+**** yaml
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :mode "\\.ya?ml\\'")
+#+end_src
+**** lua
+#+begin_src emacs-lisp
+(use-package lua-mode
+    :mode "\\.lua\\'")
+#+end_src
+**** latex
+#+begin_src emacs-lisp
+  (use-package auctex
+    :mode ("\\.tex\\'" . latex-mode)
+    :commands (latex-mode LaTeX-mode plain-tex-mode)
+    :hook
+    ((LaTeX-mode-hook . LaTeX-preview-setup)
+     (LaTeX-mode-hook . LaTeX-math-mode)
+     (LaTeX-mode-hook . flyspell-mode)
+     (LaTeX-mode-hook . turn-on-reftex))
+    :config
+    (setq TeX-auto-save t
+          TeX-parse-self t
+          TeX-save-query nil
+          TeX-PDF-mode t))
+          #+end_src
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
