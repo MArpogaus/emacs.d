@@ -114,6 +114,8 @@ if you would like to see any and all byte compiler warnings.
 *** Package Management
 
 **** straight.el bootstrap code
+This section provides the bootstrap code for =straight.el=, a package manager for Emacs. The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality. Here's the code:
+
 #+begin_src emacs-lisp
   (eval-and-compile
     ;; Optimze startup time
@@ -137,16 +139,19 @@ if you would like to see any and all byte compiler warnings.
           (eval-print-last-sexp)))
       (load bootstrap-file nil 'nomessage)))
 #+end_src
+**** install and configure use-package
 
-**** install and configure use-packege
-#+BEGIN_SRC emacs-lisp
+Lets install and configure =use-package= and use =straight= as the underlying package manager.
+We also load =bind-key= here which is used by =use-package= for keybindings.
+
+#+begin_src emacs-lisp
   (eval-and-compile
     (setq straight-use-package-by-default t
           use-package-always-defer t)
     (straight-use-package 'use-package))
 
   (require 'bind-key)
-    #+END_SRC
+#+end_src
 
 *** Personal Information
 Let's set some variables with basic user information.
