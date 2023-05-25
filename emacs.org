@@ -163,21 +163,20 @@ Let's set some variables with basic user information.
 #+END_SRC
 
 *** Paths
+Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 #+BEGIN_SRC emacs-lisp
-  (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
-  (setq org-brain-path (concat org-directory "brain/"))
-  (setq projectile-project-search-path '("~/Projekte"))
-  (setq custom-snippets-dir (expand-file-name "templates/" user-emacs-directory))
-
-  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-        url-history-file (expand-file-name "url/history" user-emacs-directory))
-
-  ;; Use no-littering to automatically set common paths to the new user-emacs-directory
   (use-package no-littering
-    :demand t)
-#+end_src
+    :demand t
+    :init
+    (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+    (setq org-brain-path (concat org-directory "brain/"))
+    (setq projectile-project-search-path '("~/Projekte"))
+    (setq custom-snippets-dir (expand-file-name "snippets/" user-emacs-directory))
 
+    ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+    (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
+          url-history-file (expand-file-name "url/history" user-emacs-directory)))
+#+end_src
 *** Emacs Configuration
 #+begin_src emacs-lisp
   (use-package emacs
@@ -328,7 +327,6 @@ Let's set some variables with basic user information.
       (setq explicit-shell-file-name "/bin/zsh")))
 #+end_src
 
- 
 *** Keymaps
 
 This section initializes various keymaps used for different purposes.

@@ -1,0 +1,50 @@
+# source required bash lib modules
+source bash_lib_cli.sh    # parse_args, print_usage
+source bash_lib_std.sh    # exec_log
+source bash_lib_util.sh   # chk_deps
+
+# exit if a simple command fails '-e'
+# exit if a undefined variable is accessed '-u'
+# exit if a command in pipe returns non zero '-o pipefail'
+# print commands being executed '-x'
+set -euo pipefail #-x
+
+# CONFIGURATION ###############################################################
+# name for logfile /dev/null to disable logging
+LOG_NAME=\${SCRIPT_NAME}_\$NOW.log
+LOG_NAME=\${SCRIPT_NAME}.log
+
+# script dependencies
+#DEPS="$DEPS wget"
+
+# configure cli switches
+SWS['h']='display this help text'
+
+# configure cli options
+#OPTS['test_cli']='test cli parsing'
+
+# configure cli arguments
+#ARGS['ARG1']="test argument 1"
+#ARGS_OPT['OPTARG1']="optional test argument 1"
+
+# custom variables and functions
+#...
+
+## START SCRIPT ###############################################################
+script_start
+
+# check dependencies
+chk_deps \$DEPS
+
+# parse arguments 
+parse_args "$@" # && { print_usage; exit 0; } 
+[[ \${sw_h} ]] && { print_usage; exit 0; } 
+
+# execute command
+exec_log 'test 1' \
+  'ls -la'
+
+$0
+
+## END SCRIPT #################################################################
+script_end
