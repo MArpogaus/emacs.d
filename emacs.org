@@ -30,6 +30,7 @@
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
+    - [[#yaml][yaml]]
     - [[#keybindings-1][Keybindings]]
   - [[#conventional-library-footer][Conventional Library Footer]]
 
@@ -42,7 +43,7 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
-   
+  
 ** Conventional Headers for Emacs Libraries
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+begin_src emacs-lisp
@@ -327,6 +328,7 @@ Let's set some variables with basic user information.
       (setq explicit-shell-file-name "/bin/zsh")))
 #+end_src
 
+ 
 *** Keymaps
 
 This section initializes various keymaps used for different purposes.
@@ -433,7 +435,7 @@ https://protesilaos.com/emacs/modus-themes
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
   (use-package nerd-icons)
-  #+END_SRC
+#+END_SRC
 **** all-the-icons
 
 #+begin_src emacs-lisp
@@ -2116,8 +2118,7 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
                                           ;                                          (conda-env-activate-for-buffer))))
     )
 #+end_src
-
-**** yaml
+*** yaml
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
