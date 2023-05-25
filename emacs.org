@@ -434,6 +434,13 @@ A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
   (use-package nerd-icons)
   #+END_SRC
+**** all-the-icons
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :if (display-graphic-p))
+#+end_src
+
 **** doom-modline
 A fancy and fast mode-line inspired by minimalism design.
 #+BEGIN_SRC emacs-lisp
@@ -466,13 +473,31 @@ A fancy and fast mode-line inspired by minimalism design.
     :hook
     (after-init . doom-modeline-mode))
 #+END_SRC
+**** dashboard
+#+begin_src emacs-lisp :tangle no
+  (use-package dashboard
+    :after all-the-icons
+    :config
+    ;; Content is not centered by default. To center, set
+    (setq dashboard-center-content t)
 
-**** all-the-icons
-#+begin_src emacs-lisp
-  (use-package all-the-icons
-    :if (display-graphic-p))
+    ;; To disable shortcut "jump" indicators for each section, set
+    (setq dashboard-show-shortcuts nil)
+    (setq dashboard-projects-backend 'project-el)
+    (setq dashboard-items '((recents  . 5)
+                            (bookmarks . 5)
+                            (projects . 5)
+                            (agenda . 5)
+                            (registers . 5)))
+    (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
+    (setq dashboard-display-icons-p t) ;; display icons on both GUI and terminal
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-set-navigator t) ;; show navigator below the banner:
+    (setq dashboard-set-footer nil) ;; disable footer
+    :hook
+    (init-hook . dashboard-setup-startup-hook))
 #+end_src
-
 **** ascii-art-to-unicode
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
