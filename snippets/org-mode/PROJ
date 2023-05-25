@@ -1,0 +1,19 @@
+PROJ $1 [/] :${2:$$(downcase yas-text)}:
+  :PROPERTIES:
+  :CATEGORY: ${2:$(upcase (concat " " yas-text))}
+  :VISIBILITY: hide
+  :COOKIE_DATA: recursive todo
+  :END:
+  `(make-string (1+ (org-current-level)) ?*)` Information                                                             :info:
+    :PROPERTIES:
+    :VISIBILITY: hide
+    :END:
+  `(make-string (1+ (org-current-level)) ?*)` Notes                                                                  :notes:
+    :PROPERTIES:
+    :VISIBILITY: hide
+    :END:
+  `(make-string (1+ (org-current-level)) ?*)` Tasks                                                                  :tasks:
+    :PROPERTIES:
+    :VISIBILITY: content
+    :END:
+    `(make-string (+ 2 (org-current-level)) ?*)` $3
