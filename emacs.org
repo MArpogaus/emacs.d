@@ -1617,9 +1617,8 @@ going to install it and make sure it's loaded immediately.
                                        'modus-themes-fg-blue
                                      'modus-themes-fg-blue-faint) :foreground)))
         (concat
-         (propertize " "
-                     'face (list :inherit face
-                                 :height 0.3
+         (propertize "M"
+                     'face (list :height 0.3
                                  :foreground color
                                  :background color
                                  :box color))
@@ -1632,11 +1631,11 @@ going to install it and make sure it's loaded immediately.
                            tab-bar-close-button)
                       ""))
           'face face))))
-    (setq tab-bar-tab-name-format-function 'my/tab-bar-tab-name-format)
+    (setq tab-bar-tab-name-format-function 'my/tab-bar-tab-name-format))
 
-    (use-package project-tab-groups
-      :after tab-bar
-      :hook (after-init . project-tab-groups-mode))
+  (use-package project-tab-groups
+    :after tab-bar
+    :hook (after-init . project-tab-groups-mode))
 #+end_src
 
 **** tab-bar-echo-area
