@@ -30,6 +30,10 @@
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
+- [[#faster-fine-grained-code-highlighting][Faster, fine-grained code highlighting.]]
+- [[#more-flexible-code-folding][More flexible code folding.]]
+- [[#structural-editing-like-paredit-or-even-better-for-non-lisp-code][Structural editing (like Paredit, or even better) for non-Lisp code.]]
+- [[#more-informative-indexing-for-imenu][More informative indexing for imenu.]]
     - [[#keybindings-1][Keybindings]]
   - [[#conventional-library-footer][Conventional Library Footer]]
 
@@ -118,7 +122,9 @@ This section provides the bootstrap code for =straight.el=, a package manager fo
 
 #+begin_src emacs-lisp
   (eval-and-compile
-    ;; Optimze startup time
+  ;; prevent package.el loading packages prior to their init-file loading.
+(setq package-enable-at-startup nil)
+  ;; Optimze startup time
     ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
     ;; (if (and (executable-find "watchexec") (executable-find "python3"))
     ;;     (setq straight-check-for-modifications '(watch-files find-when-checking))
@@ -410,17 +416,10 @@ https://protesilaos.com/emacs/modus-themes
     ;; Load the theme of your choice.
     (load-theme 'modus-operandi :no-confirm)
 
-    ;; (define-key global-map (kbd "<f5>") #'modus-themes-toggle
-
-    ;; Choose some fonts
-    ;; (set-face-attribute 'default nil :family "Iosevka")
-    ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
-    ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
-
     ;; Add frame borders and window dividers
-    (modify-all-frames-parameters
-     '((right-divider-width . 20)
-       (internal-border-width . 20)))
+    ;(modify-all-frames-parameters
+    ; '((right-divider-width . 20)
+    ;   (internal-border-width . 20)))
     (dolist (face '(window-divider
                     window-divider-first-pixel
                     window-divider-last-pixel))
@@ -1127,7 +1126,7 @@ Highlighting of the current line (native mode)
 #+begin_src emacs-lisp
   (use-package hl-line
     :hook
-    (after-init . global-hl-line-mode))
+    ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
 
 **** Parenthesis
@@ -1792,40 +1791,35 @@ going to install it and make sure it's loaded immediately.
           tab-bar-close-button (propertize " × "
                                            'close-tab t
                                            :help "Click to close tab"))
-    ;; (let ((bg (face-attribute 'default :background))
-    ;;       (fg (face-attribute 'default :foreground))
-    ;;       (base (face-attribute 'mode-line :background))
-    ;;       (box-width (/ (line-pixel-height) 3)))
-    ;;   (set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
-    ;;   (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
-    ;;   (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
-    (defun my/tab-bar-tab-name-format (tab i)
-      (let ((current-p (eq (car tab) 'current-tab))
-            (face (funcall tab-bar-tab-face-function tab))
-            (color (face-attribute (if (eq (car tab) 'current-tab)
-                                       'modus-themes-fg-blue
-                                     'modus-themes-fg-blue-faint) :foreground)))
+    (defun my/set-tab-faces ()
+        (let ((bg (face-attribute 'default :background))
+              (fg (face-attribute 'default :foreground))
+              (base (face-attribute 'mode-line :background))
+              (box-width (/ (line-pixel-height) 3)))
+          (set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
+          (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
+          (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
+
+    (defun my/tab-bar-tab-name-format-around (orig-fun tab i)
+      (let ((color (face-attribute (if (eq (car tab) 'current-tab)
+                                       'mode-line-emphasis
+                                     'mode-line-inactive) :foreground)))
         (concat
          (propertize "M"
                      'face (list :height 0.3
                                  :foreground color
                                  :background color
                                  :box color))
-         (propertize
-          (concat (if tab-bar-tab-hints (format "%d " i) "")
-                  (format " %s " (alist-get 'name tab))
-                  (or (and tab-bar-close-button-show
-                           (not (eq tab-bar-close-button-show
-                                    (if current-p 'non-selected 'selected)))
-                           tab-bar-close-button)
-                      ""))
-          'face face))))
-    (setq tab-bar-tab-name-format-function 'my/tab-bar-tab-name-format))
+         (funcall orig-fun tab i))))
+
+    (advice-add 'tab-bar-tab-name-format-default :around #'my/tab-bar-tab-name-format-around)
+    :hook
+    (modus-themes-post-load . my/set-tab-faces))
 
   (use-package project-tab-groups
     :after tab-bar
     :hook (after-init . project-tab-groups-mode))
-#+end_src
+    #+end_src
 
 **** tab-bar-echo-area
 #+begin_src emacs-lisp
@@ -2059,10 +2053,10 @@ This is an Emacs Lisp binding for tree-sitter, an incremental parsing library. I
 
 It aims to be the foundation for a new breed of Emacs packages that understand code structurally. For example:
 
- * Faster, fine-grained code highlighting.
- * More flexible code folding.
- * Structural editing (like Paredit, or even better) for non-Lisp code.
- * More informative indexing for imenu.
+* Faster, fine-grained code highlighting.
+* More flexible code folding.
+* Structural editing (like Paredit, or even better) for non-Lisp code.
+* More informative indexing for imenu.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package tree-sitter
@@ -2161,7 +2155,7 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 #+end_src
 ***** lua
 #+begin_src emacs-lisp
-(use-package lua-mode
+  (use-package lua-mode
     :mode "\\.lua\\'")
 #+end_src
 ***** latex
@@ -2179,11 +2173,11 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
           TeX-parse-self t
           TeX-save-query nil
           TeX-PDF-mode t))
-          #+end_src
+#+end_src
 **** markdown
 #+begin_src emacs-lisp
-(use-package markdown-mode
-  :mode "\\.md\\'")
+  (use-package markdown-mode
+    :mode "\\.md\\'")
 #+end_src
 *** Keybindings
 **** Evil
