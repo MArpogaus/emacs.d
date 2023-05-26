@@ -30,7 +30,6 @@
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
-    - [[#yaml][yaml]]
     - [[#keybindings-1][Keybindings]]
   - [[#conventional-library-footer][Conventional Library Footer]]
 
@@ -966,7 +965,33 @@ Server start.
     (unless (server-running-p)
       (server-start)))
 #+end_src
+**** tramp
+remote file editing through ssh/scp.
+#+begin_src emacs-lisp
+  (use-package tramp                                        
+    :straight nil                                             
+    :custom                                                 
+    (tramp-default-method "ssh")
+    (tramp-encoding-shell "/usr/bin/zsh")
+    :config
+    (setq remote-file-name-inhibit-cache nil)
+    (setq vc-ignore-dir-regexp               
+          (format "%s\\|%s"                  
+                  vc-ignore-dir-regexp       
+                  tramp-file-name-regexp))
+    (add-to-list 'tramp-connection-properties
+                 (list (regexp-quote "/sshx:user@host:")
+                       "remote-shell" "/bin/bash"))
 
+    (setq tramp-verbose 1))                  
+
+  (use-package tramp-sh                                     
+    :straight nil                                             
+    :config
+    ;; TRAMP does not normally retain this remote path after login.
+    ;; However, tramp-own-remote-path preserves the path value, which can be used to update tramp-remote-path.
+    (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+#+end_src
 **** Helpful
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
 It is a bit slow to load so we do need load it explicitely.
@@ -1225,13 +1250,26 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 Emacs completion style that matches multiple regexps in any order 
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
+    :after vertico
     :init
+    ;; In combination with Orderless or other non-prefix completion styles like substring or flex,
+    ;; host names and user names are not made available for completion after entering /ssh:.
+    (defun basic-remote-try-completion (string table pred point)
+      (and (vertico--remote-p string)
+           (completion-basic-try-completion string table pred point)))
+    (defun basic-remote-all-completions (string table pred point)
+      (and (vertico--remote-p string)
+           (completion-basic-all-completions string table pred point)))
+    (add-to-list
+     'completion-styles-alist
+     '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
+  
     ;; Configure a custom style dispatcher (see the Consult wiki)
     ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
     ;;       orderless-component-separator #'orderless-escapable-split-on-space)
     (setq completion-styles '(orderless basic)
           completion-category-defaults nil
-          completion-category-overrides '((file (styles . (partial-completion))))))
+          completion-category-overrides '((file (styles basic-remote partial-completion)))))
 #+END_SRC
 **** Embark
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
@@ -2116,17 +2154,17 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
                                           ;                                          (conda-env-activate-for-buffer))))
     )
 #+end_src
-*** yaml
+**** yaml
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
 #+end_src
-**** lua
+***** lua
 #+begin_src emacs-lisp
 (use-package lua-mode
     :mode "\\.lua\\'")
 #+end_src
-**** latex
+***** latex
 #+begin_src emacs-lisp
   (use-package auctex
     :mode ("\\.tex\\'" . latex-mode)
@@ -2142,6 +2180,11 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
           TeX-save-query nil
           TeX-PDF-mode t))
           #+end_src
+**** markdown
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :mode "\\.md\\'")
+#+end_src
 *** Keybindings
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
