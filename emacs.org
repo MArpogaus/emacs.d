@@ -42,7 +42,6 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
-  
 ** Conventional Headers for Emacs Libraries
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+begin_src emacs-lisp
@@ -78,7 +77,7 @@ CLOSED: [2023-05-24 Wed 08:55]
 need meow-motion-mode!
 ** Emacs Initialization
 *** Settings
-We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time. 
+We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time.
 We'll lower this value significantly after initialization has completed.
 We don't want to keep this value too high or it will result in long GC pauses during normal usage.
 
@@ -295,13 +294,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Override some modes which derive from the above
     (dolist (mode '(org-mode-hook))
       (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-    ;; Enables spellchecker
-    (dolist (mode '(text-mode-hook
-                    conf-mode-hook
-                    org-mode-hook))
-      (add-hook mode (lambda () (flyspell-mode))))
-    (add-hook 'prog-mode-hook (lambda () (flyspell-prog-mode)))
 
     ;; Don't pop up UI dialogs when prompting
     (setq use-dialog-box nil
@@ -1170,6 +1162,20 @@ We will tweak the Emacs built-in ediff configuration a bit.
           ediff-split-window-function 'split-window-horizontally))
 #+end_src
 
+**** flyspell
+#+begin_src emacs-lisp
+  (use-package flyspell
+    :straight nil
+    :hook
+    (((text-mode conf-mode org-mode) . flyspell-mode)
+     (prog-mode . flyspell-prog-mode)))
+
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
+                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
+                ([mouse-1] . flyspell-correct-at-point)))
+#+end_src
 *** Completion
 **** Vertico
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
@@ -2095,12 +2101,12 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
 #+end_src
-***** lua
+**** lua
 #+begin_src emacs-lisp
   (use-package lua-mode
     :mode "\\.lua\\'")
 #+end_src
-***** latex
+**** latex
 #+begin_src emacs-lisp
   (use-package auctex
     :mode ("\\.tex\\'" . latex-mode)
@@ -2125,7 +2131,7 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 **** Evil
 Install, automatically load, and enable evil. It's like vim, but better!
 
-heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]] 
+heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]]
 
 #+begin_src emacs-lisp :tangle no
   (use-package evil
