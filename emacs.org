@@ -260,7 +260,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
                     scroll-margin 2                 ; Add a margin when scrolling vertically
                     recenter-positions '(5 bottom))) ; Set re-centering positions
     ;; Typography
-    (setq-default fill-column 80                          ; Default line width 
+    (setq-default fill-column 80                          ; Default line width
                   sentence-end-double-space nil           ; Use a single space after dots
                   bidi-paragraph-direction 'left-to-right ; Faster
                   truncate-string-ellipsis "…")           ; Nicer ellipsis
@@ -422,9 +422,8 @@ https://protesilaos.com/emacs/modus-themes
     (load-theme 'modus-operandi :no-confirm)
 
     ;; Add frame borders and window dividers
-    ;(modify-all-frames-parameters
-    ; '((right-divider-width . 20)
-    ;   (internal-border-width . 20)))
+    (modify-all-frames-parameters
+     '((internal-border-width . 20)))
     (dolist (face '(window-divider
                     window-divider-first-pixel
                     window-divider-last-pixel))
@@ -474,7 +473,7 @@ A fancy and fast mode-line inspired by minimalism design.
     (setq doom-modeline-checker-simple-format t)
 
     :hook
-    (after-init . doom-modeline-mode))
+    (emacs-startup . doom-modeline-mode))
 #+END_SRC
 **** dashboard
 #+begin_src emacs-lisp :tangle no
@@ -821,7 +820,7 @@ want is prioritized instead.
 #+begin_src emacs-lisp
   (use-package evil-org
     :after org
-    :requires evil 
+    :requires evil
     :hook (org-mode . evil-org-mode)
     :config
     (require 'evil-org-agenda)
@@ -981,29 +980,21 @@ Server start.
 **** tramp
 remote file editing through ssh/scp.
 #+begin_src emacs-lisp
-  (use-package tramp                                        
-    :straight nil                                             
-    :custom                                                 
-    (tramp-default-method "ssh")
-    (tramp-encoding-shell "/usr/bin/zsh")
+  (use-package tramp
+    :straight nil
+    :custom
+    (setq tramp-default-method "ssh")
+    (setq tramp-encoding-shell "/usr/bin/zsh")
     :config
+    ;;(setq tramp-verbose 1)
     (setq remote-file-name-inhibit-cache nil)
-    (setq vc-ignore-dir-regexp               
-          (format "%s\\|%s"                  
-                  vc-ignore-dir-regexp       
+    (setq vc-ignore-dir-regexp
+          (format "%s\\|%s"
+                  vc-ignore-dir-regexp
                   tramp-file-name-regexp))
     (add-to-list 'tramp-connection-properties
                  (list (regexp-quote "/sshx:user@host:")
-                       "remote-shell" "/bin/bash"))
-
-    (setq tramp-verbose 1))                  
-
-  (use-package tramp-sh                                     
-    :straight nil                                             
-    :config
-    ;; TRAMP does not normally retain this remote path after login.
-    ;; However, tramp-own-remote-path preserves the path value, which can be used to update tramp-remote-path.
-    (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+                       "remote-shell" "/bin/bash")))
 #+end_src
 **** Helpful
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
@@ -1084,12 +1075,12 @@ It is a bit slow to load so we do need load it explicitely.
           '(kill-ring
             command-history
             set-variable-value-history
-            custom-variable-history   
-            query-replace-history     
-            read-expression-history   
-            minibuffer-history        
-            read-char-history         
-            face-name-history         
+            custom-variable-history
+            query-replace-history
+            read-expression-history
+            minibuffer-history
+            read-char-history
+            face-name-history
             bookmark-history
             file-name-history))
 
@@ -1103,7 +1094,7 @@ It is a bit slow to load so we do need load it explicitely.
     (put 'face-name-history          'history-length 25)
     (put 'bookmark-history           'history-length 25)
 
-    ;; No duplicates in history  
+    ;; No duplicates in history
     (setq history-delete-duplicates t)
 
     :hook
@@ -1207,7 +1198,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
 #+end_src
 *** Completion
 **** Vertico
-Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. 
+Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
 
 #+BEGIN_SRC emacs-lisp
   ;; Enable vertico
@@ -1277,7 +1268,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+END_SRC
 
 **** orderless
-Emacs completion style that matches multiple regexps in any order 
+Emacs completion style that matches multiple regexps in any order
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
     :after vertico
@@ -1293,7 +1284,7 @@ Emacs completion style that matches multiple regexps in any order
     (add-to-list
      'completion-styles-alist
      '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
-  
+
     ;; Configure a custom style dispatcher (see the Consult wiki)
     ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
     ;;       orderless-component-separator #'orderless-escapable-split-on-space)
@@ -2030,10 +2021,10 @@ This is an Emacs Lisp binding for tree-sitter, an incremental parsing library. I
 
 It aims to be the foundation for a new breed of Emacs packages that understand code structurally. For example:
 
- - Faster, fine-grained code highlighting.
- - More flexible code folding.
- - Structural editing (like Paredit, or even better) for non-Lisp code.
- - More informative indexing for imenu.
+- Faster, fine-grained code highlighting.
+- More flexible code folding.
+- Structural editing (like Paredit, or even better) for non-Lisp code.
+- More informative indexing for imenu.
 
 #+begin_src emacs-lisp :tangle yes
   (use-package tree-sitter
