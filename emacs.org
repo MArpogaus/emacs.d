@@ -1655,8 +1655,7 @@ functions we invoke regularly outside of magit is called.
     (:map my/version-control-map
           ("t" . git-timemachine)))
 #+end_src
-**** GitGutter
-
+**** git-gutter
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter+
     :config
@@ -1667,6 +1666,7 @@ functions we invoke regularly outside of magit is called.
                  ("n" . git-gutter+-next-hunk)
                  ("p" . git-gutter+-previous-hunk)
                  ("s" . git-gutter+-stage-hunks)
+                 ("d" . git-gutter+-show-hunk-inline-at-point)
                  ("r" . git-gutter+-revert-hunk)
                  :exit
                  ("c" . magit-commit-create))
@@ -1679,7 +1679,7 @@ functions we invoke regularly outside of magit is called.
     ;; (define-fringe-bitmap 'git-gutter+-fr:modified [224] nil nil '(center repeated))
     ;; (define-fringe-bitmap 'git-gutter+-fr:deleted [128 192 224 240] nil nil 'bottom)
     :hook
-    (after-init . git-gutter-fr+-minimal))
+    (global-git-gutter+-mode . git-gutter-fr+-minimal))
 #+END_SRC
 
 *** Project Management
