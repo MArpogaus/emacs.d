@@ -353,6 +353,10 @@ This section initializes various keymaps used for different purposes.
 
     ;; toggle commands
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+
+    ;; opening recent files ne buffer frame etc
+    (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+
     :bind
     (:map my/buffer-map
           ("e" . eval-buffer)
@@ -385,8 +389,12 @@ This section initializes various keymaps used for different purposes.
           ("f" . find-file)
           ("d" . delete-file)
           ("r" . reaname-file)
-          ("w" . write-file)))
-          #+END_SRC
+          ("w" . write-file)
+          :map my/open-map
+          ("f" . make-frame)
+          ("i". ielm)
+          ("r" . recentf-open-file)))
+    #+END_SRC
 
 ** Packages
 *** UI
@@ -399,7 +407,7 @@ https://protesilaos.com/emacs/modus-themes
     :demand t
     :bind
     (:map my/toggle-map
-          ("m" . modus-themes-toggle))
+          ("t" . modus-themes-toggle))
     :config
     ;; Minimal UI
     (menu-bar-mode -1)
@@ -1145,6 +1153,9 @@ Paren mode for highlighting matcing paranthesis
   (use-package gptel
     :config
     (setq gptel-default-mode 'org-mode)
+    :bind
+    (:map my/open-map
+          ("c". gptel))
     :commands (gptel gptel-send))
 #+end_src
 
@@ -2234,6 +2245,7 @@ Meow is yet another modal editing mode for Emacs.
        (cons "f" (cons "file" my/file-map))
        (cons "g" (cons "goto" goto-map))
        (cons "h" (cons "help" help-map))
+       (cons "o" (cons "open" my/open-map))
        (cons "p" (cons "project" project-prefix-map))
        ;;(cons "p <TAB>" (cons "tabspaces" tabspaces-command-map))
        (cons "s" (cons "search" search-map))
@@ -2276,7 +2288,7 @@ Meow is yet another modal editing mode for Emacs.
        '("b" . meow-back-word)
        '("B" . meow-back-symbol)
        '("c" . meow-change)
-       '("C" . comment-or-uncomment-region)
+       '("C" . meow-comment)
        '("d" . meow-delete)
        '("D" . meow-backward-delete)
        '("e" . meow-next-word)
