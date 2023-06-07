@@ -596,7 +596,16 @@ Make org-brain-visualize-mode look a bit nicer.
     :hook
     (after-init . global-ligature-mode))
 #+END_SRC
-
+**** visual-fill-column
+#+begin_src emacs-lisp
+  (use-package visual-fill-column
+    :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
+    #+end_src
+**** writeroom-mode
+#+begin_src emacs-lisp
+  (use-package writeroom-mode
+    :bind (:map my/toggle-map ("z" . writeroom-mode)))
+#+end_src
 *** Org
 **** Org
 Let's include a newer version of org-mode than the one that is built in. We're going
