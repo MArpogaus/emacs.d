@@ -18,6 +18,7 @@
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
+    - [[#benchmark-init][benchmark init]]
     - [[#personal-information][Personal Information]]
     - [[#paths][Paths]]
     - [[#emacs-configuration][Emacs Configuration]]
@@ -152,6 +153,14 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
     (straight-use-package 'use-package))
 
   (require 'bind-key)
+#+end_src
+
+*** benchmark init
+#+begin_src emacs-lisp :tangle no
+  (use-package benchmark-init
+  :demand t
+  ;; To disable collection of benchmark data after init is done.
+  :hook (after-init . benchmark-init/deactivate))
 #+end_src
 
 *** Personal Information
