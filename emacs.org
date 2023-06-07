@@ -69,7 +69,7 @@ This Emacs literate configuration has been inspired by the following projects:
 *** TODO Keybindings
 - [[https://github.com/abo-abo/hydra][GitHub - abo-abo/hydra: make Emacs bindings that stick around]]
 - [[https://github.com/magit/transient][GitHub - magit/transient: Transient commands]]
-  
+
 *** DONE Fix git timemachine
 CLOSED: [2023-05-24 Wed 08:55]
 :PROPERTIES:
@@ -1712,127 +1712,64 @@ going to install it and make sure it's loaded immediately.
     (projectile-mode))
 #+END_SRC
 
-**** tabspaces
-#+begin_src emacs-lisp :tangle no
-  (use-package tabspaces
-    :straight (:type git :host github :repo "mclear-tools/tabspaces")
-    :init
-    (defun my/tabspace-setup ()
-      "Set up tabspace at startup."
-      ;; Rename default tab to \`Home\'
-      (progn (tab-bar-rename-tab "Home"))
-      (tabspaces-mode))
-    ;; use this next line only if you also use straight, otherwise ignore it. 
-    :hook
-    (after-init . my/tabspace-setup)
-    :commands
-    (tabspaces-switch-or-create-workspace
-     tabspaces-open-or-create-project-and-workspace)
-    :bind
-    (;;([remap project-switch-project] . tabspaces-open-or-create-project-and-workspace)
-     ;;([remap project-switch-to-buffer] . tabspaces-switch-to-buffer)
-     ;;([remap project-kill-buffers] . tabspaces-kill-buffers-close-workspace)
-     :map project-prefix-map
-     ("k" . tabspaces-kill-buffers-close-workspace)
-     ("p" . tabspaces-open-or-create-project-and-workspace)
-     ("W" . tabspaces-project-switch-project-open-file)
-     ("w" . tabspaces-switch-or-create-workspace)
-     ("S" . tabspaces-save-session)
-     ("R" . tabspaces-restore-session))
-    :custom
-    (tabspaces-use-filtered-buffers-as-default t)
-    (tabspaces-default-tab "Default")
-    (tabspaces-remove-to-default t)
-    (tabspaces-include-buffers '("*scratch*"))
-    ;; sessions
-    (tabspaces-session t)
-    ;;(tabspaces-session-auto-restore t)
-    :config
-    (setq tab-bar-new-button-show nil)  ;; do not show add-new button
-    (setq tab-bar-close-button-show nil)  ;; do not show close button
-    ;;(setq tab-bar-separator "")  ;; no space between tabs
-
-    ;; Filter Buffers for Consult-Buffer
-    (with-eval-after-load 'consult
-      ;; hide full buffer list (still available with "b" prefix)
-      (consult-customize consult--source-buffer :hidden t :default nil)
-      ;; set consult-workspace buffer list
-      (defvar consult--source-workspace
-        (list :name     "Workspace Buffers"
-              :narrow   ?w
-              :history  'buffer-name-history
-              :category 'buffer
-              :state    #'consult--buffer-state
-              :default  t
-              :items    (lambda () (consult--buffer-query
-                                    :predicate #'tabspaces--local-buffer-p
-                                    :sort 'visibility
-                                    :as #'buffer-name)))
-
-        "Set workspace buffer list for consult-buffer.")
-      (add-to-list 'consult-buffer-sources 'consult--source-workspace))
-
-    )
-#+end_src
-    
 **** project-tab-groups
 #+begin_src emacs-lisp
-    (use-package tab-bar
-      :straight nil
-      :commands tab-bar-mode
-      :config
-      (tab-group "  ")
-      (setq tab-bar-close-button-show t
-            tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups)
-            tab-bar-separator ""
-            tab-bar-close-button (propertize " × "
-                                             'close-tab t
-                                             :help "Click to close tab")) 
-      (defun my/set-tab-faces ()
-        (let ((bg (face-attribute 'default :background))
-              (fg (face-attribute 'default :foreground))
-              (base (face-attribute 'mode-line :background))
-              (box-width (/ (line-pixel-height) 3)))
-          ;;(set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
-          (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
-          (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
-      (my/set-tab-faces)
+  (use-package tab-bar
+    :straight nil
+    :commands tab-bar-mode
+    :config
+    (tab-group "  ")
+    (setq tab-bar-close-button-show t
+          tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups)
+          tab-bar-separator ""
+          tab-bar-close-button (propertize " × "
+                                           'close-tab t
+                                           :help "Click to close tab"))
+    (defun my/set-tab-faces ()
+      (let ((bg (face-attribute 'default :background))
+            (fg (face-attribute 'default :foreground))
+            (base (face-attribute 'mode-line :background))
+            (box-width (/ (line-pixel-height) 3)))
+        ;;(set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
+        (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
+        (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
+    (my/set-tab-faces)
 
-      ;; (defun my/tab-bar-tab-format-around (orig-fun tab i)
-      ;;   (let ((color (face-attribute (if (eq (car tab) 'current-tab)
-      ;;                                    'mode-line-emphasis
-      ;;                                  'mode-line-inactive) :foreground)))
-      ;;     (concat
-      ;;      (propertize "A"
-      ;;                  'face (list :height 0.3
-      ;;                              ;;:foreground color
-      ;;                              :background color
-      ;;                              :box color))
-      ;;      (funcall orig-fun tab i)
-      ;;      )))
+    ;; (defun my/tab-bar-tab-format-around (orig-fun tab i)
+    ;;   (let ((color (face-attribute (if (eq (car tab) 'current-tab)
+    ;;                                    'mode-line-emphasis
+    ;;                                  'mode-line-inactive) :foreground)))
+    ;;     (concat
+    ;;      (propertize "A"
+    ;;                  'face (list :height 0.3
+    ;;                              ;;:foreground color
+    ;;                              :background color
+    ;;                              :box color))
+    ;;      (funcall orig-fun tab i)
+    ;;      )))
 
-      ;(advice-add 'tab-bar-tab-group-format-default :around #'my/tab-bar-tab-format-around)
+                                          ;(advice-add 'tab-bar-tab-group-format-default :around #'my/tab-bar-tab-format-around)
 
-      (defun my/tab-bar-tab-name-around (orig-fun)
-        (format " %s " (funcall orig-fun)))
-      (advice-add 'tab-bar-tab-name-current :around #'my/tab-bar-tab-name-around)
+    (defun my/tab-bar-tab-name-around (orig-fun)
+      (format " %s " (funcall orig-fun)))
+    (advice-add 'tab-bar-tab-name-current :around #'my/tab-bar-tab-name-around)
 
-      :hook
-      ((modus-themes-post-load . my/set-tab-faces))
-      (after-init . tab-bar-mode))
-    (use-package tab-bar-echo-area
-      :hook (after-init . tab-bar-echo-area-mode)
-      :bind (:map tab-prefix-map
-                  ("c" . tab-bar-echo-area-display-tab-name)
-                  ("P" . tab-bar-echo-area-display-tab-names)))
-    (use-package project-tab-groups
-      :after tab-bar
-      :config
-      (setq tab-group-name-template "  %s")
-      (with-eval-after-load 'tab-bar-echo-area
-        (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
-        (tab-bar-echo-area-apply-display-tab-names-advice))
-      :hook (after-init . project-tab-groups-mode))
+    :hook
+    ((modus-themes-post-load . my/set-tab-faces))
+    (after-init . tab-bar-mode))
+  (use-package tab-bar-echo-area
+    :hook (after-init . tab-bar-echo-area-mode)
+    :bind (:map tab-prefix-map
+                ("c" . tab-bar-echo-area-display-tab-name)
+                ("P" . tab-bar-echo-area-display-tab-names)))
+  (use-package project-tab-groups
+    :after tab-bar
+    :config
+    (setq tab-group-name-template "  %s")
+    (with-eval-after-load 'tab-bar-echo-area
+      (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
+      (tab-bar-echo-area-apply-display-tab-names-advice))
+    :hook (after-init . project-tab-groups-mode))
     #+end_src
 **** Treemacs
 Tree layout file explorer for Emacs
