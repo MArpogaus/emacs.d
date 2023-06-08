@@ -2026,7 +2026,7 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 - Structural editing (like Paredit, or even better) for non-Lisp code.
 - More informative indexing for imenu.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
   (use-package tree-sitter
     :config
     (global-tree-sitter-mode)
@@ -2377,7 +2377,7 @@ The mode displays the key bindings following your currently entered incomplete c
 #+end_src
 
 ** Conventional Library Footer
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp
   (provide 'emacs.el)
   ;;; emacs.el ends here
 #+end_src
