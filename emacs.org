@@ -1744,7 +1744,7 @@ going to install it and make sure it's loaded immediately.
     :straight nil
     :commands tab-bar-mode
     :config
-    (tab-group "  ")
+    (tab-group "")
     (setq tab-bar-close-button-show t
           tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups)
           tab-bar-separator ""
@@ -1756,29 +1756,29 @@ going to install it and make sure it's loaded immediately.
             (fg (face-attribute 'default :foreground))
             (base (face-attribute 'mode-line :background))
             (box-width (/ (line-pixel-height) 3)))
-        ;;(set-face-attribute 'tab-bar nil :background base :foreground fg :height 1.0 :inherit nil :box (list :line-width -1 :color base))
         (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
         (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base))))
     (my/set-tab-faces)
 
-    ;; (defun my/tab-bar-tab-format-around (orig-fun tab i)
-    ;;   (let ((color (face-attribute (if (eq (car tab) 'current-tab)
-    ;;                                    'mode-line-emphasis
-    ;;                                  'mode-line-inactive) :foreground)))
-    ;;     (concat
-    ;;      (propertize "A"
-    ;;                  'face (list :height 0.3
-    ;;                              ;;:foreground color
-    ;;                              :background color
-    ;;                              :box color))
-    ;;      (funcall orig-fun tab i)
-    ;;      )))
+    (defun my/tab-bar-tab-name-current-filter-return (str)
+      (format "%s " str))
+    (advice-add 'tab-bar-tab-name-current :filter-return #'my/tab-bar-tab-name-current-filter-return)
 
-                                          ;(advice-add 'tab-bar-tab-group-format-default :around #'my/tab-bar-tab-format-around)
+    (defun my/tab-bar-tab-group-default-filter-return (str)
+      (format " %s " str))
+    (advice-add 'tab-bar-tab-group-default :filter-return #'my/tab-bar-tab-group-default-filter-return)
 
-    (defun my/tab-bar-tab-name-around (orig-fun)
-      (format " %s " (funcall orig-fun)))
-    (advice-add 'tab-bar-tab-name-current :around #'my/tab-bar-tab-name-around)
+    (defun my/tab-bar--format-tab-group-around (orig-fun tab i &rest rest)
+      (let ((color (face-attribute (if (eq (car tab) 'current-tab)
+                                       'mode-line-emphasis
+                                     'tab-bar-tab-group-inactive) :foreground)))
+        (cons `(,(intern (format "group-sep-%i" i)) menu-item
+                ,(propertize " " 'face (list :height 0.2
+                                             :foreground color
+                                             :background color))
+                ignore)
+              (funcall orig-fun tab i rest))))
+    (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
 
     :hook
     ((modus-themes-post-load . my/set-tab-faces))
@@ -1791,7 +1791,7 @@ going to install it and make sure it's loaded immediately.
   (use-package project-tab-groups
     :after tab-bar
     :config
-    (setq tab-group-name-template "  %s")
+    (setq tab-group-name-template " %s")
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
