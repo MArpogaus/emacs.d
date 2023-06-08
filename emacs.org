@@ -2210,9 +2210,11 @@ Meow is yet another modal editing mode for Emacs.
     (meow-keypad-ctrl-meta-prefix . nil)
     (meow-keypad-literal-prefix . nil)
     (meow-keypad-self-insert-undefined . nil)
-    ;; (meow-mode-state-list . (meow-mode-state-list . '(git-timemachine-mode . motion)))
-    ;;(meow-use-clipboard . t)
+
     :config
+    ;; use system clipboard
+    (setq meow-use-clipboard t)
+
     (defun meow-setup ()
       (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
       (meow-motion-overwrite-define-key
