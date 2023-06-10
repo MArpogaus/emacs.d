@@ -1899,6 +1899,12 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
+   :config
+    ;; Let diff-hl have left fringe, flycheck can have right fringe
+    (setq flycheck-indication-mode 'right-fringe)
+    ;; A non-descript, left-pointing arrow
+    (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
+      [16 48 112 240 112 48 16] nil nil 'center)
     :hook (after-init . global-flycheck-mode))
 #+END_SRC
 
