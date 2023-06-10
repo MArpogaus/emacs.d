@@ -1747,16 +1747,19 @@ functions we invoke regularly outside of magit is called.
       (format " %s " str))
     (advice-add 'tab-bar-tab-group-default :filter-return #'my/tab-bar-tab-group-default-filter-return)
 
-    (defun my/tab-bar--format-tab-group-around (orig-fun tab i &rest rest)
-      (let ((color (face-attribute (if (eq (car tab) 'current-tab)
+    (defun my/tab-bar--format-tab-group-around (orig-fun tab i &optional current-p)
+      (let ((color (face-attribute (if current-p
                                        'mode-line-emphasis
                                      'tab-bar-tab-group-inactive) :foreground)))
-        (cons `(,(intern (format "group-sep-%i" i)) menu-item
-                ,(propertize " " 'face (list :height 0.2
-                                             :foreground color
-                                             :background color))
-                ignore)
-              (funcall orig-fun tab i rest))))
+        (append (cons `(,(intern (format "group-sep-%i" i)) menu-item
+                        ,(propertize " " 'face (list :height (if current-p 0.3 0.2)
+                                                     :foreground color
+                                                     :background color))
+                        ignore)
+                      (funcall orig-fun tab i current-p))
+                (when current-p (list`(,(intern (format "group-arrow-%i" i)) menu-item
+                                       ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
+                                       ignore))))))
     (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
 
     :hook
