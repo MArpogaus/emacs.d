@@ -1765,11 +1765,6 @@ functions we invoke regularly outside of magit is called.
     :hook
     ((modus-themes-post-load . my/set-tab-faces))
     (after-init . tab-bar-mode))
-  (use-package tab-bar-echo-area
-    :hook (after-init . tab-bar-echo-area-mode)
-    :bind (:map tab-prefix-map
-                ("c" . tab-bar-echo-area-display-tab-name)
-                ("P" . tab-bar-echo-area-display-tab-names)))
   (use-package project-tab-groups
     :after tab-bar
     :config
