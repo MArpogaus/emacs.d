@@ -346,10 +346,11 @@ This section initializes various keymaps used for different purposes.
     ;; completion commands
     (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
 
-    ;; file, buffer and window commands
+    ;; file, buffer, window and workspace commands
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
 
     ;; toggle commands
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
@@ -366,9 +367,16 @@ This section initializes various keymaps used for different purposes.
           ("r" . revert-buffer)
           ("e" . eval-buffer)
           ("s" . save-buffer)
-          :map my/window-map
+          :repeat-map my/window-map
+          ("n" . next-window-any-frame)
+          ("p" . previous-window-any-frame)
           ("k" . delete-window)
           ("K" . kill-buffer-and-window)
+          ("+" . enlarge-window)
+          ("-" . shrink-window)
+          ("*" . enlarge-window-horizontally)
+          ("’" . shrink-window-horizontally)
+          :exit
           ("=" . balance-windows)
           ("r" . split-window-right)
           ("b" . split-window-below)
@@ -376,8 +384,6 @@ This section initializes various keymaps used for different purposes.
           ("t" . split-window-top)
           ("v" . split-window-vertically)
           ("h" . split-window-horizontally)
-          ("p" . previous-window-any-frame)
-          ("n" . next-widnow-any-frame)
           ("m" . delete-other-windows)
           ("m" . delete-other-windows)
           ("M" . delete-other-windows-vertically)
@@ -393,6 +399,7 @@ This section initializes various keymaps used for different purposes.
           :map my/open-map
           ("f" . make-frame)
           ("i". ielm)
+          ("s" . eshell)
           ("r" . recentf-open-file)))
     #+END_SRC
 
@@ -1742,14 +1749,22 @@ going to install it and make sure it's loaded immediately.
 #+begin_src emacs-lisp
   (use-package tab-bar
     :straight nil
-    :commands tab-bar-mode
+    :bind
+    (:repeat-map my/workspace-map
+          ("p" . tab-previous)
+          ("n" . tab-next)
+          ("P" . tab-bar-move-tab-backward)
+          ("N". tab-bar-move-tab)
+          :exit
+          ("k" . tab-close-group))
     :config
     (tab-group "")
     (setq tab-bar-close-button-show t
           tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups)
           tab-bar-separator ""
-          tab-bar-close-button (propertize " × "
+          tab-bar-close-button (propertize "×"
                                            'close-tab t
+                                           'face 'tab-bar-tab-default
                                            :help "Click to close tab"))
     (defun my/set-tab-faces ()
       (let ((bg (face-attribute 'default :background))
@@ -1761,7 +1776,7 @@ going to install it and make sure it's loaded immediately.
     (my/set-tab-faces)
 
     (defun my/tab-bar-tab-name-current-filter-return (str)
-      (format "%s " str))
+      (format " %s " str))
     (advice-add 'tab-bar-tab-name-current :filter-return #'my/tab-bar-tab-name-current-filter-return)
 
     (defun my/tab-bar-tab-group-default-filter-return (str)
@@ -2249,6 +2264,7 @@ Meow is yet another modal editing mode for Emacs.
        (cons "h" (cons "help" help-map))
        (cons "o" (cons "open" my/open-map))
        (cons "p" (cons "project" project-prefix-map))
+       (cons "pw" (cons "workspace" my/workspace-map))
        ;;(cons "p <TAB>" (cons "tabspaces" tabspaces-command-map))
        (cons "s" (cons "search" search-map))
        (cons "t" (cons "toggle" my/toggle-map))
