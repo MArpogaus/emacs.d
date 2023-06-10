@@ -86,7 +86,7 @@ Taken from: https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-du
 
 #+BEGIN_SRC emacs-lisp
   (eval-and-compile
-    (setq gc-cons-threshold (* 100 1000 1000)
+    (setq gc-cons-threshold most-positive-fixnum
           gc-cons-percentage 0.6)
     ;; Let's lower our GC thresholds back down to a sane level.
     (add-hook 'after-init-hook (lambda ()
@@ -456,7 +456,7 @@ A Library for Nerd Font icons. Required for modline icons.
     :if (display-graphic-p))
 #+end_src
 
-**** doom-modline
+**** doom-modeline
 A fancy and fast mode-line inspired by minimalism design.
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
@@ -829,17 +829,6 @@ want is prioritized instead.
     :hook (org-mode . org-appear-mode))
 #+end_src
 
-**** evil-org-mode
-#+begin_src emacs-lisp
-  (use-package evil-org
-    :after org
-    :requires evil
-    :hook (org-mode . evil-org-mode)
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-#+end_src
-
 **** org-noter
 
 #+begin_src emacs-lisp
@@ -867,9 +856,6 @@ want is prioritized instead.
   (use-package org-brain
     :after org org-noter
     :init
-    ;; For Evil users
-    (with-eval-after-load 'evil
-      (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
     ;; from org brain README
     ;; Here’s a command which uses org-cliplink to add a link from the clipboard
     ;; as an org-brain resource.
@@ -984,7 +970,7 @@ This package implements a modern style for your Org buffers using font locking a
 
 Server start.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package server
     :config
     (unless (server-running-p)
@@ -1069,8 +1055,7 @@ It is a bit slow to load so we do need load it explicitely.
     :config
     (add-to-list 'recentf-exclude
                  (recentf-expand-file-name no-littering-var-directory))
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-etc-directory))
+    (setq recentf-keep '(file-remote-p file-readable-p))
     (setq recentf-max-menu-items 10
           recentf-max-saved-items 100)
 
@@ -1724,41 +1709,6 @@ functions we invoke regularly outside of magit is called.
   #+END_SRC
 
 *** Project Management
-**** Perspective
-Workspaces
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package perspective
-    ;; :bind (("C-M-k" . persp-switch)
-    ;;        ("C-c w w" . persp-list-buffers) ; or use a nicer switcher, see below
-    ;;        ("C-M-n" . persp-next)
-    ;;        ("C-x k" . persp-kill-buffer*))
-    :custom
-    (persp-initial-frame-name "Main")
-    (persp-mode-prefix-key (kbd "C-c w")) ; pick your own prefix key here
-    :init
-    (persp-mode))
-#+END_SRC
-
-**** Projectile
-Projectile is a quick and easy project management package that "just works". We're
-going to install it and make sure it's loaded immediately.
-
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package projectile
-    :after perspective
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :config
-    (defun my/switch-project-action ()
-      "Switch to a workspace with the project name and start `magit-status'."
-      (persp-switch (projectile-project-name))
-      ;; (magit-status-setup-buffer)
-      (projectile-find-file))
-    (setq projectile-switch-project-action #'my/switch-project-action)
-    (projectile-mode))
-#+END_SRC
-
 **** project-tab-groups
 #+begin_src emacs-lisp
   (use-package tab-bar
@@ -1826,120 +1776,6 @@ going to install it and make sure it's loaded immediately.
       (tab-bar-echo-area-apply-display-tab-names-advice))
     :hook (after-init . project-tab-groups-mode))
     #+end_src
-**** Treemacs
-Tree layout file explorer for Emacs
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package treemacs
-    :init
-    (with-eval-after-load 'winum
-      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-    :config
-    (progn
-      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-            treemacs-deferred-git-apply-delay        0.5
-            treemacs-directory-name-transformer      #'identity
-            treemacs-display-in-side-window          t
-            treemacs-eldoc-display                   'simple
-            treemacs-file-event-delay                2000
-            treemacs-file-extension-regex            treemacs-last-period-regex-value
-            treemacs-file-follow-delay               0.2
-            treemacs-file-name-transformer           #'identity
-            treemacs-follow-after-init               t
-            treemacs-expand-after-init               t
-            treemacs-find-workspace-method           'find-for-file-or-pick-first
-
-            treemacs-git-command-pipe                ""
-            treemacs-goto-tag-strategy               'refetch-index
-            treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-            treemacs-hide-dot-git-directory          t
-            treemacs-indentation                     2
-            treemacs-indentation-string              " "
-            treemacs-is-never-other-window           nil
-            treemacs-max-git-entries                 5000
-            treemacs-missing-project-action          'ask
-            treemacs-move-forward-on-expand          nil
-            treemacs-no-png-images                   nil
-            treemacs-no-delete-other-windows         t
-            treemacs-project-follow-cleanup          nil
-            treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-            treemacs-position                        'left
-            treemacs-read-string-input               'from-child-frame
-            treemacs-recenter-distance               0.1
-            treemacs-recenter-after-file-follow      nil
-            treemacs-recenter-after-tag-follow       nil
-            treemacs-recenter-after-project-jump     'always
-            treemacs-recenter-after-project-expand   'on-distance
-            treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-            treemacs-project-follow-into-home        nil
-            treemacs-show-cursor                     nil
-            treemacs-show-hidden-files               t
-            treemacs-silent-filewatch                nil
-            treemacs-silent-refresh                  nil
-            treemacs-sorting                         'alphabetic-asc
-            treemacs-select-when-already-in-treemacs 'move-back
-            treemacs-space-between-root-nodes        t
-            treemacs-tag-follow-cleanup              t
-            treemacs-tag-follow-delay                1.5
-            treemacs-text-scale                      nil
-            treemacs-user-mode-line-format           nil
-            treemacs-user-header-line-format         nil
-            treemacs-wide-toggle-width               70
-            treemacs-width                           35
-            treemacs-width-increment                 1
-            treemacs-width-is-initially-locked       t
-            treemacs-workspace-switch-cleanup        nil)
-
-      ;; The default width and height of the icons is 22 pixels. If you are
-      ;; using a Hi-DPI display, uncomment this to double the icon size.
-      ;;(treemacs-resize-icons 44)
-
-      (treemacs-follow-mode t)
-      (treemacs-filewatch-mode t)
-      (treemacs-fringe-indicator-mode 'always)
-      (when treemacs-python-executable
-        (treemacs-git-commit-diff-mode t))
-
-      (pcase (cons (not (null (executable-find "git")))
-                   (not (null treemacs-python-executable)))
-        (`(t . t)
-         (treemacs-git-mode 'deferred))
-        (`(t . _)
-         (treemacs-git-mode 'simple)))
-
-      (treemacs-hide-gitignored-files-mode nil))
-    :bind
-    (:map global-map
-          ("M-0"       . treemacs-select-window)
-          ("C-x t 1"   . treemacs-delete-other-windows)
-          ("C-x t t"   . treemacs)
-          ("C-x t d"   . treemacs-select-directory)
-          ("C-x t B"   . treemacs-bookmark)
-          ("C-x t C-t" . treemacs-find-file)
-          ("C-x t M-t" . treemacs-find-tag)))
-
-  (use-package treemacs-evil
-    :after (treemacs evil)
-    :requires evil)
-
-  (use-package treemacs-projectile
-    :after (treemacs projectile))
-
-  (use-package treemacs-icons-dired
-    :hook (dired-mode . treemacs-icons-dired-enable-once))
-
-  (use-package treemacs-magit
-    :after (treemacs magit))
-
-  (use-package treemacs-perspectivep ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs perspective) ;;or perspective vs. persp-mode
-    :config (treemacs-set-scope-type 'Perspectives))
-
-  (use-package treemacs-all-the-icons
-    :after (treemacs all-the-icons)
-    :config
-    (treemacs-load-theme "all-the-icons"))
-#+END_SRC
-
 **** speedbar
 #+begin_src emacs-lisp
   (use-package sr-speedbar
@@ -2020,31 +1856,6 @@ Tree layout file explorer for Emacs
 #+end_src
 
 *** Programming
-**** lsp
-#+BEGIN_SRC emacs-lisp :tangle no
-  (use-package lsp-mode
-    :commands lsp
-    :hook ((c++-mode python-mode java-mode js-mode) . lsp-deferred)
-    :bind (:map lsp-mode-map
-                ("TAB" . completion-at-point))
-    :custom (lsp-headerline-breadcrumb-enable nil))
-
-  (use-package lsp-ui
-    :hook (lsp-mode . lsp-ui-mode)
-    :commands lsp-ui-mode
-    :config
-    (setq lsp-ui-sideline-enable t
-          lsp-ui-sideline-show-hover nil
-          lsp-ui-doc-position 'bottom
-          lsp-ui-doc-enable nil
-          lsp-ui-doc-header t
-          lsp-ui-doc-include-signature t
-          lsp-ui-doc-border (face-foreground 'default)
-          lsp-ui-sideline-show-code-actions t
-          lsp-ui-sideline-delay 0.05)
-    (lsp-ui-doc-show))
-#+END_SRC
-
 **** tree-sitter
 This is an Emacs Lisp binding for tree-sitter, an incremental parsing library. It requires Emacs 25.1 or above, built with dynamic module support.
 
@@ -2177,57 +1988,6 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
     :mode "\\.md\\'")
 #+end_src
 *** Keybindings
-**** Evil
-Install, automatically load, and enable evil. It's like vim, but better!
-
-heavily inspired by: [[https://github.com/doomemacs/doomemacs/blob/master/modules/editor/evil/config.el][doomemacs/config.el at master]]
-
-#+begin_src emacs-lisp :tangle no
-  (use-package evil
-    :init
-    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
-    (setq evil-want-keybinding nil)
-    :preface
-    (setq evil-ex-search-vim-style-regexp t
-          evil-ex-visual-char-range t  ; column range for ex commands
-          evil-mode-line-format 'nil
-          ;; more vim-like behavior
-          evil-symbol-word-search t
-          ;; if the current state is obvious from the cursor's color/shape, then
-          ;; we won't need superfluous indicators to do it instead.
-          evil-default-cursor '+evil-default-cursor-fn
-          evil-normal-state-cursor 'box
-          evil-emacs-state-cursor  '(box +evil-emacs-cursor-fn)
-          evil-insert-state-cursor 'bar
-          evil-visual-state-cursor 'hollow
-          ;; Only do highlighting in selected window so that Emacs has less work
-          ;; to do highlighting them all.
-          evil-ex-interactive-search-highlight 'selected-window
-          ;; It's infuriating that innocuous "beginning of line" or "end of line"
-          ;; errors will abort macros, so suppress them:
-          evil-kbd-macro-suppress-motion-error t
-          evil-undo-system 'undo-tree)
-    :config
-    (evil-select-search-module 'evil-search-module 'evil-search)
-
-    ;; PERF: Stop copying the selection to the clipboard each time the cursor
-    ;; moves in visual mode. Why? Because on most non-X systems (and in terminals
-    ;; with clipboard plugins like xclip.el active), Emacs will spin up a new
-    ;; process to communicate with the clipboard for each movement. On Windows,
-    ;; older versions of macOS (pre-vfork), and Waylang (without pgtk), this is
-    ;; super expensive and can lead to freezing and/or zombie processes.
-    ;;
-    ;; UX: It also clobbers clipboard managers (see emacs-evil/evil#336).
-    (setq evil-visual-update-x-selection-p nil)
-    (evil-mode 1))
-
-  ;; This is a collection of Evil bindings for the parts of Emacs that Evil does not cover properly by default, such as help-mode, M-x calendar, Eshell and more.
-  (use-package evil-collection
-    :after evil
-    :requires evil
-    :config
-    (evil-collection-init))
-#+end_src
 **** Meow
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
