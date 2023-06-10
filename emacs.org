@@ -197,7 +197,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
      inhibit-startup-message t              ; Disable startup message
      inhibit-startup-echo-area-message t    ; Disable initial echo message
      initial-scratch-message ""             ; Empty the initial *scratch* buffer
-     initial-buffer-choice t                ; Open *scratch* buffer at init
+     ;; initial-buffer-choice t                ; Open *scratch* buffer at init
      display-line-numbers-type t)
 
     ;; Encoding
@@ -476,29 +476,29 @@ A fancy and fast mode-line inspired by minimalism design.
     (emacs-startup . doom-modeline-mode))
 #+END_SRC
 **** dashboard
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package dashboard
-    :after all-the-icons
-    :config
+    :demand t
+    :init
     ;; Content is not centered by default. To center, set
     (setq dashboard-center-content t)
+
+    ;; display an alternative emacs logo
+    (setq dashboard-startup-banner 'logo)
 
     ;; To disable shortcut "jump" indicators for each section, set
     (setq dashboard-show-shortcuts nil)
     (setq dashboard-projects-backend 'project-el)
-    (setq dashboard-items '((recents  . 5)
-                            (bookmarks . 5)
-                            (projects . 5)
-                            (agenda . 5)
-                            (registers . 5)))
+    (setq dashboard-items '((recents  . 10)
+                            (projects . 10)))
     (setq dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
     (setq dashboard-display-icons-p t) ;; display icons on both GUI and terminal
     (setq dashboard-set-heading-icons t)
     (setq dashboard-set-file-icons t)
     (setq dashboard-set-navigator t) ;; show navigator below the banner:
     (setq dashboard-set-footer nil) ;; disable footer
-    :hook
-    (init-hook . dashboard-setup-startup-hook))
+    :config
+    (dashboard-setup-startup-hook))
 #+end_src
 **** ascii-art-to-unicode
 Make org-brain-visualize-mode look a bit nicer.
