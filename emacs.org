@@ -323,6 +323,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
     (setq reb-re-syntax 'string)
 
+    ;; disable native compiler warnings
+    (setq comp-async-report-warnings-errors nil)
+
+    ;; DOOM: add some space between fringe it and buffer.
+    (setq-default fringes-outside-margins t)
+
     ;; Default shell in term
     (unless (not (file-exists-p "/bin/zsh"))
       (setq-default shell-file-name "/bin/zsh")
@@ -1684,30 +1690,38 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 **** git-gutter
 #+BEGIN_SRC emacs-lisp
-  (use-package git-gutter+
+  (use-package git-gutter-fringe
+    :demand t
+    :custom
+    (git-gutter:ask-p . nil)
     :config
-    ;;updates diff information in real-time
-    (setq git-gutter+:update-interval 0.5)
+    (setq git-gutter:disabled-modes '(fundamental-mode image-mode pdf-view-mode))
+    ;; (setq git-gutter-fr:side 'right-fringe)
+    (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+
+    ;;update interval for diff information
+    (setq git-gutter:update-interval 0.5)
+
+    ;; PERF: Only enable the backends that are available, so it doesn't have to
+    ;;   check when opening each buffer.
+    (setq git-gutter:handled-backends
+          (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
+                                       :key #'symbol-name)))
     :bind
     (:repeat-map my/git-gutter-repeat-map
-                 ("n" . git-gutter+-next-hunk)
-                 ("p" . git-gutter+-previous-hunk)
-                 ("s" . git-gutter+-stage-hunks)
-                 ("d" . git-gutter+-show-hunk-inline-at-point)
-                 ("r" . git-gutter+-revert-hunk)
+                 ("n" . git-gutter:next-hunk)
+                 ("p" . git-gutter:previous-hunk)
+                 ("s" . git-gutter:stage-hunk)
+                 ("d" . git-gutter:popup-hunk)
+                 ("r" . git-gutter:revert-hunk)
                  :exit
                  ("c" . magit-commit-create))
     :hook
-    (after-init . global-git-gutter+-mode))
-  (use-package git-gutter-fringe+
-    :config
-    (setq git-gutter-fr+-side 'right-fringe)
-    ;; (define-fringe-bitmap 'git-gutter+-fr:added [224] nil nil '(center repeated))
-    ;; (define-fringe-bitmap 'git-gutter+-fr:modified [224] nil nil '(center repeated))
-    ;; (define-fringe-bitmap 'git-gutter+-fr:deleted [128 192 224 240] nil nil 'bottom)
-    :hook
-    (global-git-gutter+-mode . git-gutter-fr+-minimal))
-#+END_SRC
+    ((after-init . global-git-gutter-mode)
+     (focus-in . git-gutter:update-all-windows)))
+  #+END_SRC
 
 *** Project Management
 **** Perspective
