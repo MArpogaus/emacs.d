@@ -1520,7 +1520,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
     :config
-
     (when (fboundp 'straight-use-package)
       (add-to-list 'load-path
                    (expand-file-name "straight/build/corfu/extensions"
@@ -1531,6 +1530,23 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (require 'corfu-popupinfo)
 
     (eldoc-add-command #'corfu-insert)
+
+    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
+    (add-hook 'eshell-mode-hook
+              (lambda ()
+                (setq-local corfu-auto nil)
+                (corfu-mode)))
+
+    ;; fix uneeded duble return in eshell
+    (defun corfu-send-shell (&rest _)
+      "Send completion candidate when inside comint/eshell."
+      (cond
+       ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+        (eshell-send-input))
+       ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+        (comint-send-input))))
+
+    (advice-add #'corfu-insert :after #'corfu-send-shell)
     :hook
     ((after-init . global-corfu-mode)
      (after-init . corfu-popupinfo-mode)
@@ -1568,7 +1584,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     (add-to-list 'completion-at-point-functions #'cape-file)
     (add-to-list 'completion-at-point-functions #'cape-elisp-block)
     ;;(add-to-list 'completion-at-point-functions #'cape-history)
-    ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
     (add-to-list 'completion-at-point-functions #'cape-tex)
     ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
     ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
