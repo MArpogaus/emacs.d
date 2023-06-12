@@ -638,19 +638,45 @@ want is prioritized instead.
           org-return-follows-link t
           org-mouse-1-follows-link t
           ;; Display links as the description provided
-          org-link-descriptive t)
-
-
-    (setq org-agenda-files
+          org-link-descriptive t
+          ;; Agenda files
+          org-agenda-files
           (mapcar 'file-truename
-                  (file-expand-wildcards (concat org-directory "agenda/*.org"))))
-
-    ;; Refile
-    (setq org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
+                  (file-expand-wildcards (concat org-directory "agenda/*.org")))
+          ;; Refile
+          org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
                                (,(concat org-directory "agenda/projects.org") :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
                                (,(concat org-directory "agenda/someday.org") :level . 1)
                                (,(concat org-directory "agenda/literature.org") :maxlevel . 2)
                                (,(concat org-directory "agenda/scheduled.org") :maxlevel . 2)))
+    ;; This has been inspired by https://github.com/rougier/emacs-gtd
+    ;; and https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
+    ;; In order to filter out certain tags from custom agendas we define convenience
+    ;; functions found here: https://stackoverflow.com/questions/10074016/org-mode-filter-on-tag-in-agenda-view/33444799#33444799
+    (defun my/org-match-at-point-p (match)
+      "Return non-nil if headline at point matches MATCH.
+  Here MATCH is a match string of the same format used by
+  `org-tags-view'."
+      (funcall (cdr (org-make-tags-matcher match))
+               (org-get-todo-state)
+               (org-get-tags)
+               (org-reduced-level (org-current-level))))
+
+    (defun my/org-agenda-skip-without-match (match)
+      "Skip current headline unless it matches MATCH.
+
+  Return nil if headline containing point matches MATCH (which
+  should be a match string of the same format used by
+  `org-tags-view').  If headline does not match, return the
+  position of the next headline in current buffer.
+
+  Intended for use with `org-agenda-skip-function', where this will
+  skip exactly those headlines that do not match."
+      (save-excursion
+        (unless (org-at-heading-p) (org-back-to-heading))
+        (let ((next-headline (save-excursion
+                               (or (outline-next-heading) (point-max)))))
+          (if (my/org-match-at-point-p match) nil next-headline))))
 
     ;; Save the corresponding buffers
     (defun gtd-save-org-buffers ()
@@ -666,11 +692,6 @@ want is prioritized instead.
     (advice-add 'org-refile :after
                 (lambda (&rest _)
                   (gtd-save-org-buffers)))
-
-    ;; Wie gehts das??
-    ;; (defun gtd-sort-tasks (&rest ignore)
-    ;;   (org-sort-list nil ?x))
-    ;; (add-hook 'org-after-todo-state-change-hook #'gtd-sort-tasks)
 
     ;; Todo
     (setq org-todo-keywords
@@ -814,7 +835,7 @@ want is prioritized instead.
 
     (with-eval-after-load 'ox-extra
       (ox-extras-activate '(ignore-headlines))))
-#+END_SRC
+        #+END_SRC
 **** org-auto-tangle
 #+BEGIN_SRC emacs-lisp
   (use-package org-auto-tangle
