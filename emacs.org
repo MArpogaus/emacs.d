@@ -11,10 +11,6 @@
   - [[#references][References]]
   - [[#conventional-headers-for-emacs-libraries][Conventional Headers for Emacs Libraries]]
   - [[#to-dos][To-dos]]
-    - [[#add-debugger][Add debugger]]
-    - [[#add-doom-snippets][Add doom snippets?]]
-    - [[#keybindings][Keybindings]]
-    - [[#fix-git-timemachine][Fix git timemachine]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#settings][Settings]]
     - [[#package-management][Package Management]]
@@ -31,7 +27,7 @@
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
-    - [[#keybindings-1][Keybindings]]
+    - [[#keybindings][Keybindings]]
   - [[#conventional-library-footer][Conventional Library Footer]]
 
 ** References
@@ -57,12 +53,12 @@ This Emacs literate configuration has been inspired by the following projects:
 
   ;; This file is not part of GNU Emacs.
 #+end_src
-** To-dos
-
+** To-dos :noexport_1:
 *** TODO Add debugger
 - [[https://github.com/emacs-lsp/dap-mode][GitHub - emacs-lsp/dap-mode: Emacs Debug Adapter Protocol]]
 - [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][Python, debbuging with poetry + pyenv - DAP Mode]]
 
+*** TODO Add iPython shell command
 *** TODO Add doom snippets?
 - [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
 
@@ -118,9 +114,7 @@ This section provides the bootstrap code for =straight.el=, a package manager fo
 
 #+begin_src emacs-lisp
   (eval-and-compile
-  ;; prevent package.el loading packages prior to their init-file loading.
-(setq package-enable-at-startup nil)
-  ;; Optimze startup time
+    ;; Optimze startup time
     ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
     ;; (if (and (executable-find "watchexec") (executable-find "python3"))
     ;;     (setq straight-check-for-modifications '(watch-files find-when-checking))
@@ -158,9 +152,9 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
 *** benchmark init
 #+begin_src emacs-lisp :tangle no
   (use-package benchmark-init
-  :demand t
-  ;; To disable collection of benchmark data after init is done.
-  :hook (after-init . benchmark-init/deactivate))
+    :demand t
+    ;; To disable collection of benchmark data after init is done.
+    :hook (after-init . benchmark-init/deactivate))
 #+end_src
 
 *** Personal Information
@@ -407,7 +401,7 @@ This section initializes various keymaps used for different purposes.
           ("i". ielm)
           ("s" . eshell)
           ("r" . recentf-open-file)))
-    #+END_SRC
+#+END_SRC
 
 ** Packages
 *** UI
@@ -612,7 +606,7 @@ Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
   (use-package visual-fill-column
     :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
-    #+end_src
+#+end_src
 **** writeroom-mode
 #+begin_src emacs-lisp
   (use-package writeroom-mode
@@ -835,7 +829,7 @@ want is prioritized instead.
 
     (with-eval-after-load 'ox-extra
       (ox-extras-activate '(ignore-headlines))))
-        #+END_SRC
+#+END_SRC
 **** org-auto-tangle
 #+BEGIN_SRC emacs-lisp
   (use-package org-auto-tangle
@@ -1463,7 +1457,7 @@ additional featureful completion commands
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
-     ;;     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-theme :preview-key '(:debounce 0.2 any)
      consult-ripgrep consult-git-grep consult-grep
      consult-bookmark consult-recent-file consult-xref
      consult--source-bookmark consult--source-file-register
@@ -1743,7 +1737,7 @@ functions we invoke regularly outside of magit is called.
     :hook
     ((after-init . global-git-gutter-mode)
      (focus-in . git-gutter:update-all-windows)))
-  #+END_SRC
+#+END_SRC
 
 *** Project Management
 **** project-tab-groups
@@ -1752,12 +1746,12 @@ functions we invoke regularly outside of magit is called.
     :straight nil
     :bind
     (:repeat-map my/workspace-map
-          ("p" . tab-previous)
-          ("n" . tab-next)
-          ("P" . tab-bar-move-tab-backward)
-          ("N". tab-bar-move-tab)
-          :exit
-          ("k" . tab-close-group))
+                 ("p" . tab-previous)
+                 ("n" . tab-next)
+                 ("P" . tab-bar-move-tab-backward)
+                 ("N". tab-bar-move-tab)
+                 :exit
+                 ("k" . tab-close-group))
     :config
     (tab-group "")
     (setq tab-bar-close-button-show t
@@ -1810,14 +1804,14 @@ functions we invoke regularly outside of magit is called.
     ;; We need to update the provided advice for kill project buffers to find
     ;; the tab group with our custom format
     (defun my/project-tab-groups--project-kill-buffers-advice-oveerwrite (orig-fun &rest args)
-    "Call ORIG-FUN with ARGS, then close the current tab group, if any."
-    (when (apply orig-fun args)
-      (when-let ((tab-group-name (funcall tab-bar-tab-group-function
-                                          (tab-bar--current-tab-find))))
-        (tab-bar-close-group-tabs tab-group-name))))
+      "Call ORIG-FUN with ARGS, then close the current tab group, if any."
+      (when (apply orig-fun args)
+        (when-let ((tab-group-name (funcall tab-bar-tab-group-function
+                                            (tab-bar--current-tab-find))))
+          (tab-bar-close-group-tabs tab-group-name))))
 
     (advice-add 'project-tab-groups--project-kill-buffers-advice :override 'my/project-tab-groups--project-kill-buffers-advice-oveerwrite)
-  
+
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
@@ -1946,7 +1940,7 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 **** Flycheck
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
-   :config
+    :config
     ;; Let diff-hl have left fringe, flycheck can have right fringe
     (setq flycheck-indication-mode 'right-fringe)
     ;; A non-descript, left-pointing arrow
@@ -1970,7 +1964,6 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
     :mode ("\\.py\\'" . python-mode)
     :interpreter ("python" . python-mode)
     :config
-    ;; Stop the spam!
     ;; Let Emacs guess Python indent silently
     (setq python-indent-guess-indent-offset t
           python-indent-guess-indent-offset-verbose nil)
@@ -1983,7 +1976,6 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 
   (use-package pyimport
     :after python)
-
 
   (use-package py-isort
     :after python)
@@ -2097,7 +2089,8 @@ Meow is yet another modal editing mode for Emacs.
        (cons "t" (cons "toggle" my/toggle-map))
        (cons "v" (cons "version-control" my/version-control-map))
        (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
-       (cons "m" (cons "mode" ctl-x-map))
+       (cons "x" (cons "ctl-x" ctl-x-map))
+       '("m" . "C-c")
        ;; Use SPC (0-9) for digit arguments.
        '("1" . meow-digit-argument)
        '("2" . meow-digit-argument)
