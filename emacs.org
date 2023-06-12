@@ -1769,6 +1769,18 @@ functions we invoke regularly outside of magit is called.
     :after tab-bar
     :config
     (setq tab-group-name-template " %s")
+
+    ;; We need to update the provided advice for kill project buffers to find
+    ;; the tab group with our custom format
+    (defun my/project-tab-groups--project-kill-buffers-advice-oveerwrite (orig-fun &rest args)
+    "Call ORIG-FUN with ARGS, then close the current tab group, if any."
+    (when (apply orig-fun args)
+      (when-let ((tab-group-name (funcall tab-bar-tab-group-function
+                                          (tab-bar--current-tab-find))))
+        (tab-bar-close-group-tabs tab-group-name))))
+
+    (advice-add 'project-tab-groups--project-kill-buffers-advice :override 'my/project-tab-groups--project-kill-buffers-advice-oveerwrite)
+  
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
