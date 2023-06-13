@@ -349,6 +349,7 @@ This section initializes various keymaps used for different purposes.
 
     ;; file, buffer, window and workspace commands
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+    (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
     (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
@@ -368,6 +369,10 @@ This section initializes various keymaps used for different purposes.
           ("r" . revert-buffer)
           ("e" . eval-buffer)
           ("s" . save-buffer)
+          :repeat-map my/buffer-scale-map
+          ("+" . text-scale-increase)
+          ("-" . text-scale-decrease)
+          ("=" . text-scale-adjust)
           :repeat-map my/window-map
           ("n" . next-window-any-frame)
           ("p" . previous-window-any-frame)
@@ -1076,7 +1081,7 @@ It is a bit slow to load so we do need load it explicitely.
           recentf-max-saved-items 100)
 
     :hook
-    (after-init . recentf-mode ))
+    (after-init . recentf-mode))
 #+end_src
 **** Savehist
 #+begin_src emacs-lisp
@@ -1383,6 +1388,13 @@ additional featureful completion commands
 #+begin_src emacs-lisp
   ;; Example configuration for Consult
   (use-package consult
+    :functions
+    (consult-theme consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     consult-register-window consult-register-format)
+
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind (([remap Info-search] . consult-info)
            ("M-y" . consult-yank-pop)                ;; orig. yank-pop
@@ -2078,6 +2090,7 @@ Meow is yet another modal editing mode for Emacs.
        '("k" . "H-k")
        ;; my keymaps
        (cons "b" (cons "buffer" my/buffer-map))
+       (cons "bz" (cons "scale" my/buffer-scale-map))
        (cons "w" (cons "window" my/window-map))
        (cons "f" (cons "file" my/file-map))
        (cons "g" (cons "goto" goto-map))
