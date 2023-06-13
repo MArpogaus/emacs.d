@@ -172,6 +172,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :demand t
     :init
     (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
+    (setq org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib")))
     (setq org-brain-path (concat org-directory "brain/"))
     (setq projectile-project-search-path '("~/Projekte"))
     (setq custom-snippets-dir (expand-file-name "snippets/" user-emacs-directory))
@@ -1610,11 +1611,12 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
-    :after all-the-icons
+    :after all-the-icons embark org
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
+    (citar-bibliography org-cite-global-bibliography)
     :hook
     (LaTeX-mode . citar-capf-setup)
     (org-mode . citar-capf-setup)
@@ -1628,8 +1630,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
        :function #'citar-has-notes
        :padding "  "
        :tag "has:notes"))
-    (setq citar-bibliography org-cite-global-bibliography
-          citar-at-point-function 'embark-act
+    (setq citar-at-point-function 'embark-act
           citar-indicators
           (list citar-indicator-files ; plain text
                 citar-indicator-notes-icons) ; icon
@@ -1640,7 +1641,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
                                                       "#+SOURCE: ${doi url}\n"
                                                       "#+CUSTOM_ID: ${=key= id}\n"
                                                       "#+cite_export: biblatex ieee\n"
-                                                      (concat "#+bibliography: " citar-bibliography "\n\n")
+                                                      (concat "#+bibliography: " (car citar-bibliography) "\n\n")
                                                       "* Notes :ignore:\n"
                                                       ":PROPERTIES:\n"
                                                       ":NOTER_DOCUMENT: ${file} \n"
@@ -1816,7 +1817,7 @@ functions we invoke regularly outside of magit is called.
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
     :hook (after-init . project-tab-groups-mode))
-    #+end_src
+#+end_src
 **** speedbar
 #+begin_src emacs-lisp
   (use-package sr-speedbar
