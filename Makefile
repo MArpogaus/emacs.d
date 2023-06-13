@@ -4,7 +4,7 @@ emacs.el:
 %.elc: %.el
 	@emacs -Q -l early-init.el --batch --eval '(byte-compile-file "$<")'
 
-all: init.elc emacs.elc
+all: init.elc emacs.elc early-init.elc
 
 .PHONY: clean
 
