@@ -1011,41 +1011,16 @@ It is a bit slow to load so we do need load it explicitely.
      :map helpful-mode-map
      ([remap revert-buffer] . helpful-update)))
 #+end_src
-**** Undo Tree
-
+**** vundo
 #+begin_src emacs-lisp
-  (use-package undo-tree
-    ;; Branching & persistent undo
-    :custom (undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo-tree-hist/"))))
+  (use-package vundo
+    :bind
+    (:map my/open-map
+          ("u". vundo))
     :config
-    (setq undo-tree-visualizer-diff t
-          undo-tree-auto-save-history t
-          undo-tree-enable-undo-in-region t
-          ;; Increase undo limits to avoid emacs prematurely truncating the undo
-          ;; history and corrupting the tree. This is larger than the undo-fu
-          ;; defaults because undo-tree trees consume exponentially more space,
-          ;; and then some when `undo-tree-enable-undo-in-region' is involved. See
-          ;; syl20bnr/spacemacs#12110
-          undo-limit 800000           ; 800kb (default is 160kb)
-          undo-strong-limit 12000000  ; 12mb  (default is 240kb)
-          undo-outer-limit 128000000) ; 128mb (default is 24mb)
-
-    ;; Compress undo-tree history files with zstd, if available. File size isn't
-    ;; the (only) concern here: the file IO barrier is slow for Emacs to cross;
-    ;; reading a tiny file and piping it in-memory through zstd is *slightly*
-    ;; faster than Emacs reading the entire undo-tree file from the get go (on
-    ;; SSDs). Whether or not that's true in practice, we still enjoy zstd's ~80%
-    ;; file savings (these files add up over time and zstd is so incredibly fast).
-    (when (executable-find "zstd")
-      (defun my/add_zst_ext (file)
-        (concat file ".zst"))
-      (advice-add 'my/add_zst_ext
-                  :filter-return #'undo-tree-make-history-save-file-name))
-
-    :hook
-    (after-init . global-undo-tree-mode))
+    (when (display-graphic-p)
+      (setq vundo-glyph-alist vundo-unicode-symbols)))
 #+end_src
-
 **** Recent files
 
 50 Recents files with some exclusion (regex patterns).
@@ -2171,7 +2146,7 @@ Meow is yet another modal editing mode for Emacs.
        '("q" . meow-quit)
        '("Q" . meow-goto-line)
        '("r" . meow-replace)
-       '("R" . meow-swap-grab)
+       '("R" . undo-redo)
        '("s" . meow-kill)
        '("t" . meow-till)
        '("u" . meow-undo)
