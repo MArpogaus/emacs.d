@@ -624,6 +624,8 @@ Let's include a newer version of org-mode than the one that is built in. We're g
 to manually remove the org directories from the load path, to ensure the version we
 want is prioritized instead.
 
+Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
+
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :config
@@ -638,66 +640,13 @@ want is prioritized instead.
           org-return-follows-link t
           org-mouse-1-follows-link t
           ;; Display links as the description provided
-          org-link-descriptive t
-          ;; Agenda files
-          org-agenda-files
-          (mapcar 'file-truename
-                  (file-expand-wildcards (concat org-directory "agenda/*.org")))
-          ;; Refile
-          org-refile-targets `((,(concat org-directory "agenda/agenda.org") :maxlevel . 3)
-                               (,(concat org-directory "agenda/projects.org") :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
-                               (,(concat org-directory "agenda/someday.org") :level . 1)
-                               (,(concat org-directory "agenda/literature.org") :maxlevel . 2)
-                               (,(concat org-directory "agenda/scheduled.org") :maxlevel . 2)))
-    ;; This has been inspired by https://github.com/rougier/emacs-gtd
-    ;; and https://emacs.cafe/emacs/orgmode/gtd/2017/06/30/orgmode-gtd.html
-    ;; In order to filter out certain tags from custom agendas we define convenience
-    ;; functions found here: https://stackoverflow.com/questions/10074016/org-mode-filter-on-tag-in-agenda-view/33444799#33444799
-    (defun my/org-match-at-point-p (match)
-      "Return non-nil if headline at point matches MATCH.
-  Here MATCH is a match string of the same format used by
-  `org-tags-view'."
-      (funcall (cdr (org-make-tags-matcher match))
-               (org-get-todo-state)
-               (org-get-tags)
-               (org-reduced-level (org-current-level))))
-
-    (defun my/org-agenda-skip-without-match (match)
-      "Skip current headline unless it matches MATCH.
-
-  Return nil if headline containing point matches MATCH (which
-  should be a match string of the same format used by
-  `org-tags-view').  If headline does not match, return the
-  position of the next headline in current buffer.
-
-  Intended for use with `org-agenda-skip-function', where this will
-  skip exactly those headlines that do not match."
-      (save-excursion
-        (unless (org-at-heading-p) (org-back-to-heading))
-        (let ((next-headline (save-excursion
-                               (or (outline-next-heading) (point-max)))))
-          (if (my/org-match-at-point-p match) nil next-headline))))
-
-    ;; Save the corresponding buffers
-    (defun gtd-save-org-buffers ()
-      "Save `org-agenda-files' buffers without user confirmation. See also `org-save-all-org-buffers'"
-      (interactive)
-      (message "Saving org-agenda-files buffers...")
-      (save-some-buffers t (lambda ()
-                             (when (member (buffer-file-name) org-agenda-files)
-                               t)))
-      (message "Saving org-agenda-files buffers... done"))
-
-    ;; Add it after refile
-    (advice-add 'org-refile :after
-                (lambda (&rest _)
-                  (gtd-save-org-buffers)))
+          org-link-descriptive t)
 
     ;; Todo
     (setq org-todo-keywords
           '((sequence
-             "TODO(t)"  ; A task that needs doing & is ready to do
              "PROJ(p)"  ; A project, which usually contains other tasks
+             "TODO(t)"  ; A task that needs doing & is ready to do
              "NEXT(n)"  ; Next task in a project
              "STRT(s)"  ; A task that is in progress
              "WAIT(w)"  ; Something external is holding up this task
@@ -718,15 +667,22 @@ want is prioritized instead.
             ("WAIT" . +org-todo-onhold)
             ("HOLD" . +org-todo-onhold)
             ("PROJ" . +org-todo-project)))
-    (defun log-todo-next-creation-date (&rest ignore)
+
+    ;; https://github.com/rougier/emacs-gtd#activating-tasks
+    (defun my/log-todo-next-creation-date (&rest ignore)
       "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
       (when (and (string= (org-get-todo-state) "NEXT")
                  (not (org-entry-get nil "ACTIVATED")))
         (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
-    (add-hook 'org-after-todo-state-change-hook #'log-todo-next-creation-date)
+    (add-hook 'org-after-todo-state-change-hook #'my/log-todo-next-creation-date)
 
-    ;; Add timstamp to items when doen
+    ;; Add timstamp to items when done
     (setq org-log-done 'time)
+
+    ;; Agenda
+    (setq org-agenda-files
+          (mapcar 'file-truename
+                  (file-expand-wildcards (concat org-directory "agenda/*.org"))))
 
     ;; Agenda
     (setq org-agenda-custom-commands
@@ -735,16 +691,19 @@ want is prioritized instead.
                       ((org-agenda-span 'day)
                        (org-agenda-start-day "today")
                        (org-agenda-skip-function
-                        '(or (org-agenda-skip-entry-if 'deadline)
-                             (my/org-agenda-skip-without-match "-groceries")
-                             (my/org-agenda-skip-without-match "-social")))
+                        '(org-agenda-skip-entry-if 'deadline))
                        (org-deadline-warning-days 0)))
+              (todo "PROJ"
+                    ((org-agenda-skip-function
+                      '(org-agenda-skip-subtree-if 'nottodo '("NEXT" "STRT")))
+                     (org-agenda-overriding-header "Active Projects:")))
               (todo "STRT"
                     ((org-agenda-skip-function
                       '(org-agenda-skip-entry-if 'deadline))
                      (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
                      (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                     (org-agenda-overriding-header "\nActive Tasks\n")))
+                     (org-agenda-overriding-header "\nActive Tasks\n")
+                     ))  ; Exclude entries with LITERATURE category
               (todo "NEXT"
                     ((org-agenda-skip-function
                       '(org-agenda-skip-entry-if 'deadline))
@@ -768,31 +727,47 @@ want is prioritized instead.
                      (org-agenda-prefix-format "  %i %-12:c [%e] ")
                      (org-agenda-overriding-header "\nPaused Tasks\n")))
               (tags "CLOSED>=\"<today>\""
-                    ((org-agenda-overriding-header "\nCompleted today\n")))))
-            ("G" "Shopping List" tags-todo "groceries"
-             ((org-agenda-tags-todo-honor-ignore-options t)
-              (org-agenda-skip-deadline-prewarning-if-scheduled t)
-              (org-agenda-todo-ignore-scheduled 'future)
-              (org-agenda-sorting-strategy '(scheduled-up))
-              (org-agenda-prefix-format "%s")))
+                    ((org-agenda-overriding-header "\nCompleted today\n"))))
+             ((org-agenda-category-filter-preset '("-LITERATURE"))))
             ("l" "Literature" tags-todo "literature"
              ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-              (org-agenda-prefix-format "  %i %-12:c [%e] ")))
-            ("p" "Social"
-             ((agenda ""
-                      ((org-agenda-span 'week)
-                       (org-agenda-start-day "today")
-                       (org-agenda-skip-function
-                        '(or (org-agenda-skip-entry-if 'deadline)
-                             (my/org-agenda-skip-without-match "-groceries")))
-                       (org-deadline-warning-days 0)))
-              (tags-todo "social"
-                         ((org-agenda-tags-todo-honor-ignore-options t)
-                          (org-agenda-skip-deadline-prewarning-if-scheduled t)
-                          (org-agenda-todo-ignore-scheduled 'future)
-                          (org-agenda-sorting-strategy '(scheduled-up))
-                          (org-agenda-prefix-format "%s"))))))
-          )
+              (org-agenda-prefix-format "  %i %-12:c [%e] ")))))
+
+    ;; Capture
+    (setq org-capture-templates
+          `(("i" "Inbox" entry  (file "agenda/inbox.org")
+             ,(concat "* TODO %?\n"
+                      "/Entered on/ %U"))
+            ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
+             ,(concat "* %? :meeting:\n"
+                      "<%<%Y-%m-%d %a %H:00>>"))
+            ("n" "Note" entry  (file "notes.org")
+             ,(concat "* Note (%a)\n"
+                      "/Entered on/ %U\n" "\n" "%?"))))
+
+    ;; Refile and Archive
+    (setq org-refile-use-outline-path 'file
+          org-outline-path-complete-in-steps nil
+          org-refile-targets `((,(expand-file-name  "agenda/agenda.org" org-directory) :maxlevel . 3)
+                               (,(expand-file-name  "agenda/projects.org" org-directory) :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
+                               (,(expand-file-name  "agenda/literature.org" org-directory) :maxlevel . 2)
+                               (,(expand-file-name  "agenda/scheduled.org" org-directory) :maxlevel . 2)))
+    ;; Save the corresponding buffers
+    (defun my/gtd-save-org-buffers ()
+      "Save `org-agenda-files' buffers without user confirmation.
+        See also `org-save-all-org-buffers'"
+      (interactive)
+      (message "Saving org-agenda-files buffers...")
+      (save-some-buffers t (lambda () 
+                             (when (member (buffer-file-name) org-agenda-files) 
+                               t)))
+      (message "Saving org-agenda-files buffers... done"))
+
+    ;; Add it after refile
+    (advice-add 'org-refile :after
+                (lambda (&rest _)
+                  (my/gtd-save-org-buffers)))
+
     ;; archive all DONE tasks in subtree
     ;; https://stackoverflow.com/questions/6997387
     (defun org-archive-done-tasks ()
@@ -802,7 +777,8 @@ want is prioritized instead.
          (org-archive-subtree)
          (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
        "/DONE" 'tree))
-    ;; Org LaTeX language support
+
+    ;; Org LaTeX support
     ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
     (add-to-list 'org-latex-packages-alist
                  '("AUTO" "babel" t ("pdflatex")))
@@ -834,7 +810,10 @@ want is prioritized instead.
                    '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 
     (with-eval-after-load 'ox-extra
-      (ox-extras-activate '(ignore-headlines))))
+      (ox-extras-activate '(ignore-headlines)))
+    :bind
+    (:map my/open-map
+          ("a" . org-agenda)))
 #+END_SRC
 **** org-auto-tangle
 #+BEGIN_SRC emacs-lisp
@@ -1390,10 +1369,10 @@ additional featureful completion commands
   (use-package consult
     :functions
     (consult-theme consult-ripgrep consult-git-grep consult-grep
-     consult-bookmark consult-recent-file consult-xref
-     consult--source-bookmark consult--source-file-register
-     consult--source-recent-file consult--source-project-recent-file
-     consult-register-window consult-register-format)
+                   consult-bookmark consult-recent-file consult-xref
+                   consult--source-bookmark consult--source-file-register
+                   consult--source-recent-file consult--source-project-recent-file
+                   consult-register-window consult-register-format)
 
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind (([remap Info-search] . consult-info)
@@ -1633,6 +1612,24 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     (LaTeX-mode . citar-capf-setup)
     (org-mode . citar-capf-setup)
     :config
+    (defvar citar-indicator-files-icons
+      (citar-indicator-create
+       :symbol (all-the-icons-faicon
+                "file-o"
+                :face 'all-the-icons-green
+                :v-adjust -0.1)
+       :function #'citar-has-files
+       :padding "  " ; need this because the default padding is too low for these icons
+       :tag "has:files"))
+    (defvar citar-indicator-links-icons
+      (citar-indicator-create
+       :symbol (all-the-icons-octicon
+                "link"
+                :face 'all-the-icons-orange
+                :v-adjust 0.01)
+       :function #'citar-has-links
+       :padding "  "
+       :tag "has:links"))
     (defvar citar-indicator-notes-icons
       (citar-indicator-create
        :symbol (all-the-icons-material
@@ -1642,10 +1639,20 @@ Citar provides a highly-configurable completing-read front-end to browse and act
        :function #'citar-has-notes
        :padding "  "
        :tag "has:notes"))
+    (defvar citar-indicator-cited-icons
+      (citar-indicator-create
+       :symbol (all-the-icons-faicon
+                "circle-o"
+                :face 'all-the-icon-green)
+       :function #'citar-is-cited
+       :padding "  "
+       :tag "is:cited"))
     (setq citar-at-point-function 'embark-act
           citar-indicators
-          (list citar-indicator-files ; plain text
-                citar-indicator-notes-icons) ; icon
+          (list citar-indicator-files-icons
+                citar-indicator-links-icons
+                citar-indicator-notes-icons
+                citar-indicator-cited-icons)
           citar-notes-paths (list (concat org-directory "brain/bib_notes/"))
           ctar-notes-template-multiple-files '(concat "#+TITLE: ${title}\n"
                                                       "#+AUTHOR: ${author editor}\n"
@@ -1672,9 +1679,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
                             (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
                             (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
                             (note . ,(eval ctar-notes-template-multiple-files)))
-          citar-symbols `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) . " ")
-                          (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) . " ")
-                          (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) . " "))
           citar-symbol-separator "  ")
 
     ;; optional: org-cite-insert is also bound to C-c C-x C-@
@@ -1900,8 +1904,7 @@ functions we invoke regularly outside of magit is called.
       ".markdown"
       ".org"
       ".txt"
-      "README"
-      ))
+      "README"))
 
         ;;; make speedbar update automaticaly, and dont use ugly icons(images)
     (setq-default speedbar-update-flag t)
@@ -2105,6 +2108,7 @@ Meow is yet another modal editing mode for Emacs.
        (cons "vg" (cons "git-gutter" my/git-gutter-repeat-map))
        (cons "x" (cons "ctl-x" ctl-x-map))
        '("m" . "C-c")
+       '("c" . org-capture)
        ;; Use SPC (0-9) for digit arguments.
        '("1" . meow-digit-argument)
        '("2" . meow-digit-argument)
