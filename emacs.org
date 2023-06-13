@@ -1687,6 +1687,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     )
   (use-package citar-embark
     :after citar embark
+    :demand t
     :config (citar-embark-mode))
 #+end_src
 
