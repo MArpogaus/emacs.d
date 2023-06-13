@@ -1553,7 +1553,6 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     ;;(add-to-list 'completion-at-point-functions #'cape-dict)
     ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
 
-
     ;; The advices are only needed on Emacs 28 and older.
     (when (< emacs-major-version 29)
       ;; Silence the pcomplete capf, no errors or messages!
@@ -1562,17 +1561,50 @@ Cape provides Completion At Point Extensions which can be used in combination wi
       ;; Ensure that pcomplete does not write to the buffer
       ;; and behaves as a pure `completion-at-point-function'.
       (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
-
-  (use-package cape-yasnippet
-    :demand t
-    :after cape
-    :straight (:type git :host github :repo "elken/cape-yasnippet")
-    ;;    :custom
-    ;;    (cape-yasnippet-lookup-by ’name)
-    :config
-    (add-to-list 'completion-at-point-functions #'cape-yasnippet))
 #+end_src
 
+**** Tempel
+Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
+
+#+begin_src emacs-lisp
+  ;; Configure Tempel
+  (use-package tempel
+    ;; Require trigger prefix before template name when completing.
+    :custom
+    (tempel-trigger-prefix ">")
+
+    :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+           ("M-*" . tempel-insert))
+
+    :init
+ texq   ;; Setup completion at point
+    (defun tempel-setup-capf ()
+      ;; Add the Tempel Capf to `completion-at-point-functions'.
+      ;; `tempel-expand' only triggers on exact matches. Alternatively use
+      ;; `tempel-complete' if you want to see all matches, but then you
+      ;; should also configure `tempel-trigger-prefix', such that Tempel
+      ;; does not trigger too often when you don't expect it. NOTE: We add
+      ;; `tempel-expand' *before* the main programming mode Capf, such
+      ;; that it will be tried first.
+      (setq-local completion-at-point-functions
+                  (cons #'tempel-expand
+                        completion-at-point-functions)))
+
+    :hook
+    (conf-mode . tempel-setup-capf)
+    (prog-mode . tempel-setup-capf)
+    (text-mode . tempel-setup-capf)
+
+    ;; Optionally make the Tempel templates available to Abbrev,
+    ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+    ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+    ;; (global-tempel-abbrev-mode)
+    )
+
+  ;; Optional: Add tempel-collection.
+  ;; The package is young and doesn't have comprehensive coverage.
+  (use-package tempel-collection)
+    #+end_src
 **** Citar
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
@@ -1914,19 +1946,6 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 #+begin_src emacs-lisp
   (use-package eglot
     :hook (python-mode . eglot-ensure))
-#+end_src
-
-**** yasnippets
-#+begin_src emacs-lisp
-  (use-package yasnippet
-    :config
-    (add-to-list 'yas-snippet-dirs custom-snippets-dir)
-    (setq yas-triggers-in-field t)
-
-    (yas-reload-all)
-    :hook
-    (after-init . yas-global-mode))
-  (use-package yasnippet-snippets)
 #+end_src
 
 **** Flycheck
