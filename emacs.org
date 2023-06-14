@@ -174,7 +174,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (setq org-directory (concat (getenv "HOME") "/Notes/org/"))
     (setq org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib")))
     (setq org-brain-path (concat org-directory "brain/"))
-    (setq projectile-project-search-path '("~/Projekte"))
     (setq custom-snippets-dir (expand-file-name "snippets/" user-emacs-directory))
 
     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
@@ -741,7 +740,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
             ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
              ,(concat "* %? :meeting:\n"
                       "<%<%Y-%m-%d %a %H:00>>"))
-            ("n" "Note" entry  (file "notes.org")
+            ("n" "Note" entry  (file "agenda/notes.org")
              ,(concat "* Note (%a)\n"
                       "/Entered on/ %U\n" "\n" "%?"))))
 
@@ -758,8 +757,8 @@ Agenda view and task management has been inspired by https://github.com/rougier/
         See also `org-save-all-org-buffers'"
       (interactive)
       (message "Saving org-agenda-files buffers...")
-      (save-some-buffers t (lambda () 
-                             (when (member (buffer-file-name) org-agenda-files) 
+      (save-some-buffers t (lambda ()
+                             (when (member (buffer-file-name) org-agenda-files)
                                t)))
       (message "Saving org-agenda-files buffers... done"))
 
