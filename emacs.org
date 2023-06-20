@@ -1178,9 +1178,15 @@ We will tweak the Emacs built-in ediff configuration a bit.
 #+begin_src emacs-lisp
   (use-package flyspell
     :straight nil
+    :config
+    (defun my/restart-flyspell-mode ()
+      (when flyspell-mode
+        (flyspell-mode-off)
+        (flyspell-mode-on)))
     :hook
     (((text-mode conf-mode org-mode) . flyspell-mode)
-     (prog-mode . flyspell-prog-mode)))
+     (prog-mode . flyspell-prog-mode)
+     (ispell-change-dictionary . restart-flyspell-mode)))
 
   (use-package flyspell-correct
     :after flyspell
