@@ -175,6 +175,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (setq org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib")))
     (setq org-brain-path (concat org-directory "brain/"))
     (setq custom-snippets-dir (expand-file-name "snippets/" user-emacs-directory))
+    (setq my/templates-path (expand-file-name "templates.eld" user-emacs-directory))
 
     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
     (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
@@ -1571,13 +1572,14 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     ;; Require trigger prefix before template name when completing.
     :custom
     (tempel-trigger-prefix ">")
+    (tempel-path my/templates-path)
 
     :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
            ("M-*" . tempel-insert))
 
-    :init
- texq   ;; Setup completion at point
-    (defun tempel-setup-capf ()
+    :config
+    ;; Setup completion at point
+    (defun my/tempel-setup-capf ()
       ;; Add the Tempel Capf to `completion-at-point-functions'.
       ;; `tempel-expand' only triggers on exact matches. Alternatively use
       ;; `tempel-complete' if you want to see all matches, but then you
@@ -1586,14 +1588,13 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
       ;; `tempel-expand' *before* the main programming mode Capf, such
       ;; that it will be tried first.
       (setq-local completion-at-point-functions
-                  (cons #'tempel-expand
+                  (cons #'tempel-complete
                         completion-at-point-functions)))
 
     :hook
-    (conf-mode . tempel-setup-capf)
-    (prog-mode . tempel-setup-capf)
-    (text-mode . tempel-setup-capf)
-
+    ((conf-mode . my/tempel-setup-capf)
+     (prog-mode . my/tempel-setup-capf)
+     (text-mode . my/tempel-setup-capf))
     ;; Optionally make the Tempel templates available to Abbrev,
     ;; either locally or globally. `expand-abbrev' is bound to C-x '.
     ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
@@ -1603,7 +1604,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
   ;; Optional: Add tempel-collection.
   ;; The package is young and doesn't have comprehensive coverage.
   (use-package tempel-collection)
-    #+end_src
+     #+end_src
 **** Citar
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
