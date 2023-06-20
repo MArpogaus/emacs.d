@@ -1868,7 +1868,7 @@ functions we invoke regularly outside of magit is called.
     (:map my/toggle-map
           ("s" . sr-speedbar-toggle))
     :config
-        ;;; set some sane defaults, can be easily extended by user
+    ;; set some sane defaults, can be easily extended by user
     (setq-default speedbar-frame-parameters
                   '((name . "speedbar")
                     (title . "speedbar")
@@ -1879,54 +1879,54 @@ functions we invoke regularly outside of magit is called.
                     (unsplittable . t)
                     (left-fringe . 10)))
 
-        ;;; list of supported file-extensions
+    ;; list of supported file-extensions
     ;; feel free to add to this list
     (speedbar-add-supported-extension
      (list
-        ;;;; lua and fennel(lisp that transpiles to lua)
+      ;; lua and fennel(lisp that transpiles to lua)
       ".lua"
       ".fnl"
       ".fennel"
-        ;;;; shellscript
+      ;; shellscript
       ".sh"
       ".bash";;is this ever used?
-        ;;;; web languages
-        ;;;;; Hyper-Text-markup-language(html) and php
+      ;; web languages
+      ;; Hyper-Text-markup-language(html) and php
       ".php"
       ".html"
       ".htm"
-        ;;;;; ecma(java/type)-script
+      ;; ecma(java/type)-script
       ".js"
       ".json"
       ".ts"
-        ;;;;; stylasheets
+      ;; stylasheets
       ".css"
       ".less"
       ".scss"
       ".sass"
-        ;;;; c/c++ and makefiles
+      ;; c/c++ and makefiles
       ".c"
       ".cpp"
       ".h"
       "makefile"
       "MAKEFILE"
       "Makefile"
-        ;;;; runs on JVM, java,kotlin etc
+      ;; runs on JVM, java,kotlin etc
       ".java"
       ".kt";;this is for kotlin
       ".mvn"
       ".gradle" ".properties";; this is for gradle-projects
       ".clj";;lisp on the JVM
-        ;;;; lisps
+      ;; lisps
       ".cl"
       ".el"
       ".scm"
       ".lisp"
-        ;;;; configuration
+      ;; configuration
       ".yaml"
       ".toml"
       ;; json is already in this list
-        ;;;; notes,markup and orgmode
+      ;; notes,markup and orgmode
       ".md"
       ".markdown"
       ".org"
