@@ -184,17 +184,13 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 *** Emacs Configuration
 #+begin_src emacs-lisp
   (use-package emacs
-    :init
+    :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (setq-default
-     inhibit-startup-screen t               ; Disable start-up screen
-     inhibit-startup-message t              ; Disable startup message
-     inhibit-startup-echo-area-message t    ; Disable initial echo message
-     initial-scratch-message ""             ; Empty the initial *scratch* buffer
-     ;; initial-buffer-choice t                ; Open *scratch* buffer at init
-     display-line-numbers-type t)
-
+    (inhibit-startup-screen t)               ; Disable start-up screen
+    (inhibit-startup-message t)              ; Disable startup message
+    (inhibit-startup-echo-area-message t)    ; Disable initial echo message
+    (initial-scratch-message "")             ; Empty the initial *scratch* buffer
     ;; Encoding
     ;; We tell emacs to use UTF-8 encoding as much as possible.
     (set-default-coding-systems 'utf-8)     ; Default to utf-8 encoding
@@ -202,20 +198,19 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (set-terminal-coding-system 'utf-8)     ; Set coding system of terminal output
     (set-keyboard-coding-system 'utf-8)     ; Set coding system for keyboard input on TERMINAL
     (set-language-environment "English")    ; Set up multilingual environment
-
+    :init
     ;; Recovery
     ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
     (setq auto-save-list-file-prefix ; Prefix for generating auto-save-list-file-name
-          (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
-          auto-save-default t        ; Auto-save every buffer that visits a file
-          auto-save-timeout 20       ; Number of seconds between auto-save
-          auto-save-interval 200)    ; Number of keystrokes between auto-saves
+	  (expand-file-name ".auto-save-list/.saves-" user-emacs-directory)
+	  auto-save-default t        ; Auto-save every buffer that visits a file
+	  auto-save-timeout 20       ; Number of seconds between auto-save
+	  auto-save-interval 200)    ; Number of keystrokes between auto-saves
 
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
     (defun unpropertize-kill-ring ()
       (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-    (add-hook 'kill-emacs-hook 'unpropertize-kill-ring)
 
     ;; Customization File
     ;; Since init.el will be generated from this file, we save customization in a dedicated file.
@@ -224,26 +219,20 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
-    (setq-default cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
-                  cursor-type '(hbar . 2)            ; Underline-shaped cursor
-                  cursor-intangible-mode t           ; Enforce cursor intangibility
-                  x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
+    (setq cursor-in-non-selected-windows nil ; Hide the cursor in inactive windows
+	  cursor-type '(hbar . 2)            ; Underline-shaped cursor
+	  cursor-intangible-mode t           ; Enforce cursor intangibility
+	  x-stretch-cursor nil)              ; Don't stretch cursor to the glyph width
     (blink-cursor-mode 0)                            ; Still cursor
-
-    ;; Record cursor position from one session ot the other
-    (save-place-mode 1)
-
-    ;; Enable repate mode
-    (repeat-mode 1)
 
     ;; Text
     ;; Pretty self-explanatory
-    (setq-default use-short-answers t                     ; Replace yes/no prompts with y/n
-                  confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
+    (setq use-short-answers t                     ; Replace yes/no prompts with y/n
+	  confirm-nonexistent-file-or-buffer nil) ; Ok to visit non existent files
 
     ;; Mouse
-    ;; Mouse behavior can be finely controlled using the [[help:mouse-avoidance-mode][mouse-avoidance-mode]].
-    (setq-default mouse-yank-at-point t) ; Yank at point rather than pointer
+    ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
+    (setq mouse-yank-at-point t) ; Yank at point rather than pointer
     (mouse-avoidance-mode 'exile)        ; Avoid collision of mouse with point
 
     ;; Mouse active in tty mode.
@@ -251,85 +240,121 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
       (xterm-mouse-mode 1)
       ;; Scroll
       ;; Smoother scrolling.
-      (setq-default scroll-conservatively 101       ; Avoid recentering when scrolling far
-                    scroll-margin 2                 ; Add a margin when scrolling vertically
-                    recenter-positions '(5 bottom))) ; Set re-centering positions
+      (setq scroll-conservatively 101       ; Avoid recentering when scrolling far
+	    scroll-margin 2                 ; Add a margin when scrolling vertically
+	    recenter-positions '(5 bottom))) ; Set re-centering positions
+
     ;; Typography
-    (setq-default fill-column 80                          ; Default line width
-                  sentence-end-double-space nil           ; Use a single space after dots
-                  bidi-paragraph-direction 'left-to-right ; Faster
-                  truncate-string-ellipsis "…")           ; Nicer ellipsis
+    (setq fill-column 80                          ; Default line width
+	  sentence-end-double-space nil           ; Use a single space after dots
+	  bidi-paragraph-direction 'left-to-right ; Faster
+	  truncate-string-ellipsis "…")           ; Nicer ellipsis
 
     ;; Default mode
     ;; Default & initial mode is text.
-    (setq-default initial-major-mode 'text-mode   ; Initial mode is text
-                  default-major-mode 'text-mode)  ; Default mode is text
-
-    ;; Visual line mode for prog and text modes
-    (add-hook 'text-mode-hook 'visual-line-mode)
-    (add-hook 'prog-mode-hook 'visual-line-mode)
+    (setq initial-major-mode 'text-mode   ; Initial mode is text
+	  default-major-mode 'text-mode)  ; Default mode is text
 
     ;; Tabulations
     ;; No tabulation, ever.
-    (setq-default indent-tabs-mode nil        ; Stop using tabs to indent
-                  tab-always-indent 'complete ; Indent first then try completions
-                  tab-width 4)                ; Smaller width for tab characters
-
-    ;; time-stamp in header
-    ;; Update time stamp in Headr when file is saved
-    (setq
-     time-stamp-active t          ; do enable time-stamps
-     time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)") ; date format
-    (add-hook 'write-file-functions 'time-stamp) ; update when saving
-
-    ;;ESC Cancels All
-    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-    ;; Line numbers
-    ;; Enable line numbers and customize their format.
-    (column-number-mode)
-
-    ;; Enable line numbers for some modes
-    (dolist (mode '(text-mode-hook
-                    prog-mode-hook
-                    conf-mode-hook))
-      (add-hook mode (lambda () (display-line-numbers-mode 1))))
-
-    ;; Override some modes which derive from the above
-    (dolist (mode '(org-mode-hook))
-      (add-hook mode (lambda () (display-line-numbers-mode 0))))
+    (setq indent-tabs-mode nil        ; Stop using tabs to indent
+	  tab-always-indent 'complete ; Indent first then try completions
+	  tab-width 4)                ; Smaller width for tab characters
 
     ;; Don't pop up UI dialogs when prompting
     (setq use-dialog-box nil
-          use-file-dialog nil)
-
-    ;; Revert buffers when the underlying file has changed
-    (global-auto-revert-mode 1)
-    ;; Revert Dired and other buffers
-    (setq global-auto-revert-non-file-buffers t)
-
-    ;; auto-insert matching bracket
-    (electric-pair-mode 1)
-
-    ;; auto-insert matching quotes
-    (electric-quote-mode 1)
-
-    ;; Change re-builder syntax
-    ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
-    (setq reb-re-syntax 'string)
+	  use-file-dialog nil)
 
     ;; disable native compiler warnings
-    (setq comp-async-report-warnings-errors nil)
+    (setq native-comp-async-report-warnings-errors nil)
 
     ;; DOOM: add some space between fringe it and buffer.
-    (setq-default fringes-outside-margins t)
+    (setq fringes-outside-margins t)
 
-    ;; Default shell in term
-    (unless (not (file-exists-p "/bin/zsh"))
-      (setq-default shell-file-name "/bin/zsh")
-      (setq explicit-shell-file-name "/bin/zsh")))
+    :bind
+    ;;ESC Cancels All
+    (("<escape>" . keyboard-escape-quit))
+
+    :hook
+    ;; Enable word wrapping
+    (((prog-mode conf-mode text-mode) . visual-line-mode)
+     ;; display column number in modeline
+     ((prog-mode conf-mode) . column-number-mode)
+     (kill-emacs . unpropertize-kill-ring)))
+
+  ;; Automatically update file timestamps when file is saved
+  (use-package time-stamp
+    :custom
+    (time-stamp-active t)
+    (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
+    :hook
+    (write-file . time-stamp))
+
+  ;; Record cursor position from one session to the other
+  (use-package saveplace
+    :hook
+    (after-init . save-place-mode))
+
+  ;; Enable repeat maps
+  (use-package repeat
+    :hook
+    (after-init . repeat-mode))
+
+  ;; Enable line numbers for some modes
+  (use-package display-line-numbers
+    :hook
+    (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
+     ;; disable for org mode
+     (org-mode . (lambda () (display-line-numbers-mode 0)))))
+
+  ;; Automatically add closing parentheses, quotes, etc.
+  (use-package elec-pair
+    :hook
+    ((prog-mode conf-mode) . electric-pair-mode))
+
+  ;; Revert buffers when the underlying file has changed
+  (use-package autorevert
+    :config
+    ;; Revert Dired and other buffers
+    (setq global-auto-revert-non-file-buffers t)
+    :hook
+    (after-init . global-auto-revert-mode))
+
+  ;; Change re-builder syntax
+  ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
+  (use-package re-builder
+    :custom
+    (reb-re-syntax 'string))
+
+  ;; Navigate between windows with Shift-arrow
+  ;; (use-package windmove
+  ;;   :demand t
+  ;;   :config
+  ;;   (when (fboundp 'windmove-default-keybindings)
+  ;;     (windmove-default-keybindings)))
+
+  ;; Replace selected text when typing
+  (use-package delsel
+    :hook
+    ((prog-mode conf-mode text-mode) . delete-selection-mode))
+
+  ;; Code folding commands
+  (use-package hideshow
+    :hook
+    ((prog-mode conf-mode) . hs-minor-mode))
+
+  ;; Major mode for interacting with a terminal
+  (use-package term
+    :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
+    :custom
+    (shell-file-name "/bin/zsh")
+    (explicit-shell-file-name "/bin/zsh"))
+
+  ;; Undo and redo changes to window configuration
+  (use-package winner
+    :hook
+    (after-init . winner-mode))
 #+end_src
-
 *** Keymaps
 
 This section initializes various keymaps used for different purposes.
