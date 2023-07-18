@@ -150,7 +150,7 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
 #+end_src
 
 *** benchmark init
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
   (use-package benchmark-init
     :demand t
     ;; To disable collection of benchmark data after init is done.
@@ -323,6 +323,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
   ;; Change re-builder syntax
   ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
   (use-package re-builder
+    :commands re-builder
     :custom
     (reb-re-syntax 'string))
 
@@ -345,6 +346,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
   ;; Major mode for interacting with a terminal
   (use-package term
+    :commands term
     :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
     :custom
     (shell-file-name "/bin/zsh")
