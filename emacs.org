@@ -2141,11 +2141,12 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
     (conda-env-initialize-interactive-shells)
     ;; if you want eshell support, include:
     (conda-env-initialize-eshell)
+    (conda-env-activate "dev310")
     ;; enable auto-activation
     ;; (conda-env-autoactivate-mode t)
     ;; if you want to automatically activate a conda environment on the opening of a file:
-					  ;(add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-					  ;                                          (conda-env-activate-for-buffer))))
+    ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+    ;; 					     (conda-env-activate-for-buffer))))
     )
 #+end_src
 **** yaml
