@@ -2016,7 +2016,9 @@ functions we invoke regularly outside of magit is called.
       ".markdown"
       ".org"
       ".txt"
-      "README"))
+      "README"
+      ;; Jupyter Notebooks
+      ".ipynb"))
 
     ;; Increase the indentation for better useability.
     (setq speedbar-indentation-width 3)
