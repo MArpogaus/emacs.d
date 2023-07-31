@@ -814,7 +814,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     ;; Save the corresponding buffers
     (defun my/gtd-save-org-buffers ()
       "Save `org-agenda-files' buffers without user confirmation.
-	See also `org-save-all-org-buffers'"
+	    See also `org-save-all-org-buffers'"
       (interactive)
       (message "Saving org-agenda-files buffers...")
       (save-some-buffers t (lambda ()
@@ -1151,13 +1151,15 @@ It is a bit slow to load so we do need load it explicitely.
 #+end_src
 
 **** Exec Path From Shell
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :config
-    (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize)))
+    (defun my/copy-ssh-env ()
+      (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+      (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+      (exec-path-from-shell-initialize))
+    :hook
+    (magit-credential . my/copy-ssh-env))
 #+end_src
 
 **** Highlighting current line
