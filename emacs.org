@@ -426,8 +426,9 @@ This section initializes various keymaps used for different purposes.
 		 :map my/open-map
 		 ("F" . make-frame)
 		 ("i" . ielm)
-		 ("s" . eshell)
+		 ("e" . eshell)
 		 ("t" . term)
+		 ("s" . scratch-buffer)
 		 :map my/toggle-map
 		 ("h" . hs-toggle-hiding)
 		 :repeat-map my/buffer-scale-map
@@ -1970,30 +1971,33 @@ functions we invoke regularly outside of magit is called.
     :straight nil
     :bind
     (:repeat-map my/workspace-map
-		 ("p" . tab-previous)
-		 ("n" . tab-next)
-		 ("P" . tab-bar-move-tab-backward)
-		 ("N". tab-bar-move-tab)
-		 :exit
-		 ("k" . tab-close-group))
+                 ("p" . tab-previous)
+                 ("n" . tab-next)
+                 ("P" . tab-bar-move-tab-backward)
+                 ("N". tab-bar-move-tab)
+                 :exit
+                 ("k" . tab-close-group))
+    :custom
+    (tab-bar-close-button-show t)
+    (tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups))
+    (tab-bar-separator "")
+    (tab-bar-close-button (propertize "×"
+                                      'close-tab t
+                                      'face 'tab-bar-tab-default
+                                      :help "Click to close tab"))
+    (tab-bar-auto-width nil)
     :config
     (tab-group "")
-    (setq tab-bar-close-button-show t
-	  tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups)
-	  tab-bar-separator ""
-	  tab-bar-close-button (propertize "×"
-					   'close-tab t
-					   'face 'tab-bar-tab-default
-					   :help "Click to close tab"))
-    (defun my/set-tab-faces ()
+    (defun my/set-tab-faces (&rest r)
       (if (display-graphic-p)
-	  (let ((bg (face-attribute 'default :background))
-		(fg (face-attribute 'default :foreground))
-		(base (face-attribute 'mode-line :background))
-		(box-width (/ (line-pixel-height) 3)))
-	    (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
-	    (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base)))))
-    (my/set-tab-faces)
+          (let ((bg (face-attribute 'default :background))
+                (fg (face-attribute 'default :foreground))
+                (base (face-attribute 'mode-line :background))
+                (box-width (/ (line-pixel-height) 3)))
+            (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
+            (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base)))))
+
+    (advice-add 'load-theme :after #'my/set-tab-faces)
 
     (defun my/tab-bar-tab-name-current-filter-return (str)
       (format " %s " str))
@@ -2005,36 +2009,36 @@ functions we invoke regularly outside of magit is called.
 
     (defun my/tab-bar--format-tab-group-around (orig-fun tab i &optional current-p)
       (let ((color (face-attribute (if current-p
-				       'mode-line-emphasis
-				     'tab-bar-tab-group-inactive) :foreground)))
-	(append (cons `(,(intern (format "group-sep-%i" i)) menu-item
-			,(propertize " " 'face (list :height (if current-p 0.3 0.2)
-						     :foreground color
-						     :background color))
-			ignore)
-		      (funcall orig-fun tab i current-p))
-		(when current-p (list`(,(intern (format "group-arrow-%i" i)) menu-item
-				       ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
-				       ignore))))))
+                                       'mode-line-emphasis
+                                     'tab-bar-tab-group-inactive) :foreground)))
+        (append (cons `(,(intern (format "group-sep-%i" i)) menu-item
+                        ,(propertize " " 'face (list :height (if current-p 0.3 0.2)
+                                                     :foreground color
+                                                     :background color))
+                        ignore)
+                      (funcall orig-fun tab i current-p))
+                (when current-p (list`(,(intern (format "group-arrow-%i" i)) menu-item
+                                       ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
+                                       ignore))))))
     (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
-
     :hook
-    ((modus-themes-post-load . my/set-tab-faces)
-     (after-init . tab-bar-mode)))
+    ((after-init . tab-bar-mode)
+     (tab-bar-mode . my/set-tab-faces)))
+
   (use-package project-tab-groups
     :after tab-bar
     :config
     (if (display-graphic-p)
-	(setq tab-group-name-template " %s"))
+        (setq tab-group-name-template " %s"))
 
     ;; We need to update the provided advice for kill project buffers to find
     ;; the tab group with our custom format
     (defun my/project-tab-groups--project-kill-buffers-advice-overwrite (orig-fun &rest args)
       "Call ORIG-FUN with ARGS, then close the current tab group, if any."
       (when (apply orig-fun args)
-	(when-let ((tab-group-name (funcall tab-bar-tab-group-function
-					    (tab-bar--current-tab-find))))
-	  (tab-bar-close-group-tabs tab-group-name))))
+        (when-let ((tab-group-name (funcall tab-bar-tab-group-function
+                                            (tab-bar--current-tab-find))))
+          (tab-bar-close-group-tabs tab-group-name))))
 
     (advice-add 'project-tab-groups--project-kill-buffers-advice :override 'my/project-tab-groups--project-kill-buffers-advice-overwrite)
 
@@ -2180,16 +2184,79 @@ It aims to be the foundation for a new breed of Emacs packages that understand c
 - Structural editing (like Paredit, or even better) for non-Lisp code.
 - More informative indexing for imenu.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package tree-sitter
+    :if (< emacs-major-version 29)
     :config
     (global-tree-sitter-mode)
     :hook
     (tree-sitter-after-on . tree-sitter-hl-mode))
 
   (use-package tree-sitter-langs
-    :straight t
+    :requires tree-sitter
     :after tree-sitter)
+#+end_src
+
+**** treesit
+built-in tree-sitter integration for Emacs
+#+begin_src emacs-lisp
+  (use-package treesit
+    :if (>= emacs-major-version 29)
+    :straight nil
+    :config
+    (defun my/setup-install-grammars ()
+      "Install Tree-sitter grammars if they are absent."
+      (interactive)
+      (dolist (grammar
+	       '((css "https://github.com/tree-sitter/tree-sitter-css")
+		 (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
+		 (python "https://github.com/tree-sitter/tree-sitter-python")
+		 (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+		 (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+	(add-to-list 'treesit-language-source-alist grammar)
+	;; Only install `grammar' if we don't already have it
+	;; installed. However, if you want to *update* a grammar then
+	;; this obviously prevents that from happening.
+	(unless (treesit-language-available-p (car grammar))
+	  (treesit-install-language-grammar (car grammar)))))
+
+    ;; Optional, but recommended. Tree-sitter enabled major modes are
+    ;; distinct from their ordinary counterparts.
+    ;;
+    ;; You can remap major modes with `major-mode-remap-alist'. Note
+    ;; that this does *not* extend to hooks! Make sure you migrate them
+    ;; also
+    (dolist (mapping '((python-mode . python-ts-mode)
+		       (css-mode . css-ts-mode)
+		       (typescript-mode . tsx-ts-mode)
+		       (js-mode . js-ts-mode)
+		       (css-mode . css-ts-mode)
+		       (yaml-mode . yaml-ts-mode)))
+      (add-to-list 'major-mode-remap-alist mapping))
+
+    (my/setup-install-grammars))
+#+end_src
+
+**** Combobulate
+Structured Editing and Navigation in Emacs 
+#+begin_src emacs-lisp
+  (use-package combobulate
+    :requires treesit
+    :custom
+    ;; You can customize Combobulate's key prefix here.
+    ;; Note that you may have to restart Emacs for this to take effect!
+    (combobulate-key-prefix "C-c o")
+
+    ;; Optional, but recommended.
+    ;;
+    ;; You can manually enable Combobulate with `M-x
+    ;; combobulate-mode'.
+    :hook ((python-ts-mode . combobulate-mode)
+	   (js-ts-mode . combobulate-mode)
+	   (css-ts-mode . combobulate-mode)
+	   (yaml-ts-mode . combobulate-mode)
+	   (typescript-ts-mode . combobulate-mode)
+	   (tsx-ts-mode . combobulate-mode)))
 #+end_src
 **** eglot
 #+begin_src emacs-lisp
