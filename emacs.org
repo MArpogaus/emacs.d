@@ -470,29 +470,29 @@ https://protesilaos.com/emacs/modus-themes
     :bind
     (:map my/toggle-map
 	  ("t" . modus-themes-toggle))
-    :config
+    :custom
     ;; Minimal UI
-    (menu-bar-mode -1)
-    (tool-bar-mode -1)
-    (scroll-bar-mode -1)
+    (menu-bar-mode nil)
+    (tool-bar-mode nil)
+    (scroll-bar-mode nil)
 
     ;; Add all your customizations prior to loading the themes
-    (setq modus-themes-italic-constructs t
-	  modus-themes-bold-constructs nil)
+    (modus-themes-italic-constructs t)
+    (modus-themes-bold-constructs nil)
 
+    :config
     ;; Load the theme of your choice.
-    (load-theme 'modus-operandi :no-confirm)
-
-    ;; Add frame borders and window dividers
-    (modify-all-frames-parameters
-     '((internal-border-width . 20)))
-    (dolist (face '(window-divider
-		    window-divider-first-pixel
-		    window-divider-last-pixel))
-      (face-spec-reset-face face)
-      (set-face-foreground face (face-attribute 'default :background)))
-    (set-face-background 'fringe (face-attribute 'default :background)))
+    (load-theme 'modus-operandi :no-confirm))
 #+END_SRC
+**** spacious-padding
+Increase the padding/spacing of GNU Emacs frames and windows. 
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    :custom
+    (spacious-padding-widths '(:internal-border-width 15 :right-divider-width 10 :scroll-bar-width 8))
+    :hook
+    (emacs-startup . spacious-padding-mode))
+#+end_src
 **** nerd-icons
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
