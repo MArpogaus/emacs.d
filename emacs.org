@@ -261,7 +261,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
     ;; DOOM: add some space between fringe it and buffer.
     (fringes-outside-margins t)
-    :init
+    :config
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
     (defun unpropertize-kill-ring ()
@@ -277,10 +277,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (("<escape>" . keyboard-escape-quit))
 
     :hook
-    ;; Enable word wrapping
-    (((prog-mode conf-mode text-mode) . visual-line-mode)
-     ;; display column number in modeline
-     ((prog-mode conf-mode) . column-number-mode)
+    (((prog-mode conf-mode) . column-number-mode)
      (kill-emacs . unpropertize-kill-ring)))
 
   ;; Automatically update file timestamps when file is saved
@@ -928,7 +925,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 #+begin_src emacs-lisp
   (use-package org-brain
     :after org org-noter
-    :init
+    :config
     ;; from org brain README
     ;; Here’s a command which uses org-cliplink to add a link from the clipboard
     ;; as an org-brain resource.
@@ -939,33 +936,33 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     Suggest the URL title as a description for resource."
       (interactive)
       (let ((url (org-cliplink-clipboard-content)))
-	(org-brain-add-resource
-	 url
-	 (org-cliplink-retrieve-title-synchronously url)
-	 t)))
+        (org-brain-add-resource
+         url
+         (org-cliplink-retrieve-title-synchronously url)
+         t)))
 
     (defun org-brain-open-org-noter (entry)
       "Open `org-noter' on the ENTRY.
     If run interactively, get ENTRY from context."
       (interactive (list (org-brain-entry-at-pt)))
       (org-with-point-at (org-brain-entry-marker entry)
-	(org-noter)))
+        (org-noter)))
 
     (defun org-brain-insert-resource-icon (link)
       "Insert an icon, based on content of org-mode LINK."
       (insert (format "%s "
-		      (cond ((string-prefix-p "brain:" link)
-			     (all-the-icons-fileicon "brain"))
-			    ((string-prefix-p "info:" link)
-			     (all-the-icons-octicon "info"))
-			    ((string-prefix-p "help:" link)
-			     (all-the-icons-material "help"))
-			    ((string-prefix-p "http" link)
-			     (all-the-icons-icon-for-url link))
-			    (t
-			     (all-the-icons-icon-for-file link))))))
+                      (cond ((string-prefix-p "brain:" link)
+                             (all-the-icons-fileicon "brain"))
+                            ((string-prefix-p "info:" link)
+                             (all-the-icons-octicon "info"))
+                            ((string-prefix-p "help:" link)
+                             (all-the-icons-material "help"))
+                            ((string-prefix-p "http" link)
+                             (all-the-icons-icon-for-url link))
+                            (t
+                             (all-the-icons-icon-for-file link))))))
 
-    ;; Allows you to edit entries directly from org-brain-visualize
+    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
     :custom
     (org-id-track-globally t)
     (org-id-locations-file (expand-file-name "/org-id-locations" user-emacs-directory))
@@ -973,15 +970,9 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     (org-brain-title-max-length 24)
     (org-brain-include-file-entries t)
     (org-brain-file-entries-use-title t)
-    :config
-    (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
-    ;;:bind (:map org-brain-visualize-mode-map
-    ;;      "L" . org-brain-cliplink-resource
-    ;;      "C-c n" . org-brain-open-org-noter)
     :commands
     org-brain-visualize
     :hook
-    ;; (org-brain-visualize-mode . org-brain-polymode)
     (before-save . org-brain-ensure-ids-in-buffer))
 #+end_src
 
@@ -1419,8 +1410,8 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :after vertico
     :custom
     (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-    :init
-    (marginalia-mode))
+    :hook
+    (vertico-mode . marginalia-mode))
 #+END_SRC
 
 **** orderless
@@ -1428,15 +1419,15 @@ Emacs completion style that matches multiple regexps in any order
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
     :after vertico
-    :init
+    :config
     ;; In combination with Orderless or other non-prefix completion styles like substring or flex,
     ;; host names and user names are not made available for completion after entering /ssh:.
     (defun basic-remote-try-completion (string table pred point)
       (and (vertico--remote-p string)
-	   (completion-basic-try-completion string table pred point)))
+           (completion-basic-try-completion string table pred point)))
     (defun basic-remote-all-completions (string table pred point)
       (and (vertico--remote-p string)
-	   (completion-basic-all-completions string table pred point)))
+           (completion-basic-all-completions string table pred point)))
     (add-to-list
      'completion-styles-alist
      '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
@@ -1455,63 +1446,63 @@ Embark makes it easy to choose a command to run based on what is near point, bot
      ;; ("C-:" . embark-dwim)        ;; good alternative: M-.
      ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-    :init
+    :custom
     ;; Optionally replace the key help with a completing-read interface
-    (setq prefix-help-command #'embark-prefix-help-command)
+    (prefix-help-command #'embark-prefix-help-command)
 
+    :config
     ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
     ;; strategy, if you want to see the documentation from multiple providers.
     (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
     ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-    :config
     ;; Hide the mode line of the Embark live/completions buffers
     (add-to-list 'display-buffer-alist
-		 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-		   nil
-		   (window-parameters (mode-line-format . none))))
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none))))
 
     ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
     ;; Users desiring a more compact display can use which-key instead with the following configuration:
     ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
     (with-eval-after-load 'which-key
       (defun embark-which-key-indicator ()
-	"An embark indicator that displays keymaps using which-key.
+        "An embark indicator that displays keymaps using which-key.
   The which-key help message will show the type and value of the
   current target followed by an ellipsis if there are further
   targets."
-	(lambda (&optional keymap targets prefix)
-	  (if (null keymap)
-	      (which-key--hide-popup-ignore-command)
-	    (which-key--show-keymap
-	     (if (eq (plist-get (car targets) :type) 'embark-become)
-		 "Become"
-	       (format "Act on %s '%s'%s"
-		       (plist-get (car targets) :type)
-		       (embark--truncate-target (plist-get (car targets) :target))
-		       (if (cdr targets) "…" "")))
-	     (if prefix
-		 (pcase (lookup-key keymap prefix 'accept-default)
-		   ((and (pred keymapp) km) km)
-		   (_ (key-binding prefix 'accept-default)))
-	       keymap)
-	     nil nil t (lambda (binding)
-			 (not (string-suffix-p "-argument" (cdr binding))))))))
+        (lambda (&optional keymap targets prefix)
+          (if (null keymap)
+              (which-key--hide-popup-ignore-command)
+            (which-key--show-keymap
+             (if (eq (plist-get (car targets) :type) 'embark-become)
+                 "Become"
+               (format "Act on %s '%s'%s"
+                       (plist-get (car targets) :type)
+                       (embark--truncate-target (plist-get (car targets) :target))
+                       (if (cdr targets) "…" "")))
+             (if prefix
+                 (pcase (lookup-key keymap prefix 'accept-default)
+                   ((and (pred keymapp) km) km)
+                   (_ (key-binding prefix 'accept-default)))
+               keymap)
+             nil nil t (lambda (binding)
+                         (not (string-suffix-p "-argument" (cdr binding))))))))
 
       (setq embark-indicators
-	    '(embark-which-key-indicator
-	      embark-highlight-indicator
-	      embark-isearch-highlight-indicator))
+            '(embark-which-key-indicator
+              embark-highlight-indicator
+              embark-isearch-highlight-indicator))
 
       (defun embark-hide-which-key-indicator (fn &rest args)
-	"Hide the which-key indicator immediately when using the completing-read prompter."
-	(which-key--hide-popup-ignore-command)
-	(let ((embark-indicators
-	       (remq #'embark-which-key-indicator embark-indicators)))
-	  (apply fn args)))
+        "Hide the which-key indicator immediately when using the completing-read prompter."
+        (which-key--hide-popup-ignore-command)
+        (let ((embark-indicators
+               (remq #'embark-which-key-indicator embark-indicators)))
+          (apply fn args)))
 
       (advice-add #'embark-completing-read-prompter
-		  :around #'embark-hide-which-key-indicator)))
+                  :around #'embark-hide-which-key-indicator)))
 
   ;; Consult users will also want the embark-consult package.
   (use-package embark-consult
@@ -1524,90 +1515,79 @@ additional featureful completion commands
 #+begin_src emacs-lisp
   ;; Example configuration for Consult
   (use-package consult
-    :functions
-    (consult-customize consult-theme consult-ripgrep consult-git-grep consult-grep
-		       consult-bookmark consult-recent-file consult-xref
-		       consult--source-bookmark consult--source-file-register
-		       consult--source-recent-file consult--source-project-recent-file
-		       consult-register-window consult-register-format)
-
+    :no-require t
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind (([remap Info-search] . consult-info)
-	   ([remap recentf-open] . consult-recent-file)
-	   ([remap bookmark-jump]                 . consult-bookmark)
-	   ([remap goto-line]                     . consult-goto-line)
-	   ([remap imenu]                         . consult-imenu)
-	   ([remap locate]                        . consult-locate)
-	   ([remap load-theme]                    . consult-theme)
-	   ([remap man]                           . consult-man)
-	   ([remap recentf-open-files]            . consult-recent-file)
-	   ([remap switch-to-buffer]              . consult-buffer)
-	   ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
-	   ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
-	   ([remap yank-pop]                      . consult-yank-pop)
-	   ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-	   :map my/buffer-map
-	   ("b" . consult-buffer)                ;; orig. switch-to-buffer
-	   ("w" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-	   ("f" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-	   :map project-prefix-map
-	   ("b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-	   :map goto-map
-	   ;; M-g bindings in `goto-map'
-	   ("e" . consult-compile-error)
-	   ("f" . consult-flymake)               ;; Alternative: consult-flycheck
-	   ("g" . consult-goto-line)             ;; orig. goto-line
-	   ("o" . consult-outline)               ;; Alternative: consult-org-heading
-	   ("m" . consult-mark)
-	   ("k" . consult-global-mark)
-	   ("i" . consult-imenu)
-	   ("I" . consult-imenu-multi)
-	   :map search-map
-	   ("d" . consult-find)
-	   ("D" . consult-locate)
-	   ("g" . consult-grep)
-	   ("G" . consult-git-grep)
-	   ("r" . consult-ripgrep)
-	   ("l" . consult-line)
-	   ("L" . consult-line-multi)
-	   ("k" . consult-keep-lines)
-	   ("u" . consult-focus-lines)
-	   ;; Isearch integration
-	   ("e" . consult-isearch-history)
-	   :map isearch-mode-map
-	   ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-	   ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-	   ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-	   ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-	   ;; Minibuffer history
-	   :map minibuffer-local-map
-	   ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-	   ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+           ([remap recentf-open] . consult-recent-file)
+           ([remap bookmark-jump]                 . consult-bookmark)
+           ([remap goto-line]                     . consult-goto-line)
+           ([remap imenu]                         . consult-imenu)
+           ([remap locate]                        . consult-locate)
+           ([remap load-theme]                    . consult-theme)
+           ([remap man]                           . consult-man)
+           ([remap recentf-open-files]            . consult-recent-file)
+           ([remap switch-to-buffer]              . consult-buffer)
+           ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
+           ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
+           ([remap yank-pop]                      . consult-yank-pop)
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           :map my/buffer-map
+           ("b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("w" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("f" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           :map project-prefix-map
+           ("b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+           :map goto-map
+           ;; M-g bindings in `goto-map'
+           ("e" . consult-compile-error)
+           ("f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("g" . consult-goto-line)             ;; orig. goto-line
+           ("o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("m" . consult-mark)
+           ("k" . consult-global-mark)
+           ("i" . consult-imenu)
+           ("I" . consult-imenu-multi)
+           :map search-map
+           ("d" . consult-find)
+           ("D" . consult-locate)
+           ("g" . consult-grep)
+           ("G" . consult-git-grep)
+           ("r" . consult-ripgrep)
+           ("l" . consult-line)
+           ("L" . consult-line-multi)
+           ("k" . consult-keep-lines)
+           ("u" . consult-focus-lines)
+           ;; Isearch integration
+           ("e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+           ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+           ;; Minibuffer history
+           :map minibuffer-local-map
+           ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+           ("M-r" . consult-history))                ;; orig. previous-matching-history-element
 
-    ;; Enable automatic preview at point in the *Completions* buffer. This is
-    ;; relevant when you use the default completion UI.
-    ;; :hook (completion-list-mode . consult-preview-at-point-mode)
-
-    ;; The :init configuration is always executed (Not lazy)
-    :init
-
+    :custom
     ;; Optionally configure the register formatting. This improves the register
     ;; preview for `consult-register', `consult-register-load',
     ;; `consult-register-store' and the Emacs built-ins.
-    (setq register-preview-delay 0.5
-	  register-preview-function #'consult-register-format)
+    (register-preview-delay 0.5)
+    (register-preview-function #'consult-register-format)
 
+    ;; Use Consult to select xref locations with preview
+    (xref-show-xrefs-function #'consult-xref)
+    (xref-show-definitions-function #'consult-xref)
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (consult-narrow-key "<") ;; "C-+"
+
+    :config
     ;; Optionally tweak the register preview window.
     ;; This adds thin lines, sorting and hides the mode line of the window.
     (advice-add #'register-preview :override #'consult-register-window)
-
-    ;; Use Consult to select xref locations with preview
-    (setq xref-show-xrefs-function #'consult-xref
-	  xref-show-definitions-function #'consult-xref)
-
-    ;; Configure other variables and modes in the :config section,
-    ;; after lazily loading the package.
-    :config
 
     ;; Optionally configure preview. The default value
     ;; is 'any, such that any key triggers the preview.
@@ -1616,22 +1596,14 @@ additional featureful completion commands
     ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
-    (consult-customize
-     consult-theme :preview-key '(:debounce 0.2 any)
-     consult-ripgrep consult-git-grep consult-grep
-     consult-bookmark consult-recent-file consult-xref
-     consult--source-bookmark consult--source-file-register
-     consult--source-recent-file consult--source-project-recent-file
-     ;; :preview-key "M-."
-     :preview-key '(:debounce 0.4 any))
-
-    ;; Optionally configure the narrowing key.
-    ;; Both < and C-+ work reasonably well.
-    (setq consult-narrow-key "<") ;; "C-+"
-
-    ;; Optionally make narrowing help available in the minibuffer.
-    ;; You may want to use `embark-prefix-help-command' or which-key instead.
-    ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+    ;; (consult-customize
+    ;;  consult-theme :preview-key '(:debounce 0.2 any)
+    ;;  consult-ripgrep consult-git-grep consult-grep
+    ;;  consult-bookmark consult-recent-file consult-xref
+    ;;  consult--source-bookmark consult--source-file-register
+    ;;  consult--source-recent-file consult--source-project-recent-file
+    ;;  ;; :preview-key "M-."
+    ;;  :preview-key '(:debounce 0.4 any))
 
     ;; Configure a different project root function.
     (with-eval-after-load 'projectile
@@ -1649,7 +1621,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
     ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
     (read-extended-command-predicate
-	  #'command-completion-default-include-p)
+     #'command-completion-default-include-p)
 
     ;; Enable indentation+completion using the TAB key.
     ;; `completion-at-point' is often bound to M-TAB.
@@ -1673,40 +1645,35 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
     :config
-    (when (fboundp 'straight-use-package)
-      (add-to-list 'load-path
-		   (expand-file-name "straight/build/corfu/extensions"
-				     straight-base-dir)))
-    (require 'corfu-popupinfo)
-
     (eldoc-add-command #'corfu-insert)
-
-    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
-    (add-hook 'eshell-mode-hook
-	      (lambda ()
-		(setq-local corfu-auto nil)
-		(corfu-mode)))
 
     ;; fix uneeded duble return in eshell
     (defun corfu-send-shell (&rest _)
       "Send completion candidate when inside comint/eshell."
       (cond
        ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-	(eshell-send-input))
+        (eshell-send-input))
        ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-	(comint-send-input))))
+        (comint-send-input))))
 
     (advice-add #'corfu-insert :after #'corfu-send-shell)
     :hook
     ((after-init . global-corfu-mode)
-     (after-init . corfu-popupinfo-mode)
+    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
      (eshell-mode-hook . (lambda ()
-			   (setq-local corfu-auto nil)
-			   (corfu-mode)))))
+                           (setq-local corfu-auto nil)
+                           (corfu-mode)))))
+
   (use-package corfu-terminal
     :if (display-graphic-p)
     :hook
     (after-init . corfu-terminal-mode))
+
+  (use-package corfu-popupinfo
+    :straight nil
+    :after corfu
+    :hook
+    (after-init . corfu-popupinfo-mode))
 #+END_SRC
 
 **** Cape
@@ -1802,7 +1769,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
-    :after all-the-icons embark org
+    :after all-the-icons org
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
@@ -1829,9 +1796,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
                                         "** Bibliography :ignore:\n"
                                         ))))
     (citar-symbol-separator "  ")
-    :hook
-    ((LaTeX-mode . citar-capf-setup)
-     (org-mode . citar-capf-setup))
     :config
     (defvar citar-indicator-files-icons
       (citar-indicator-create
@@ -1876,9 +1840,11 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     ;; optional: org-cite-insert is also bound to C-c C-x C-@
     ;;:bind
     ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
-    )
+    :hook
+    ((LaTeX-mode . citar-capf-setup)
+     (org-mode . citar-capf-setup)))
   (use-package citar-embark
-    :after citar embark
+    :after citar
     :hook
     (after-init . citar-embark-mode))
 #+end_src
