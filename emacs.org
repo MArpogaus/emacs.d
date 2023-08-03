@@ -337,11 +337,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
 
-  ;; Code folding commands
-  (use-package hideshow
-    :hook
-    ((prog-mode conf-mode) . hs-minor-mode))
-
   ;; Major mode for interacting with a terminal
   (use-package term
     :commands term
@@ -405,55 +400,53 @@ This section initializes various keymaps used for different purposes.
     ;;    (define-key my/leader-map "x" (cons "C-x" ctl-x-map))
 
     (bind-keys   :map my/buffer-map
-		 ("e" . eval-buffer)
-		 ("k" . kill-this-buffer)
-		 ("K" . kill-buffer)
-		 ("c" . clone-buffer)
-		 ("r" . revert-buffer)
-		 ("e" . eval-buffer)
-		 ("s" . save-buffer)
-		 :map my/file-map
-		 ("f" . find-file)
-		 ("F" . find-file-other-window)
-		 ("d" . find-dired)
-		 ("c" . copy-file)
-		 ("f" . find-file)
-		 ("d" . delete-file)
-		 ("r" . reaname-file)
-		 ("w" . write-file)
-		 :map my/open-map
-		 ("F" . make-frame)
-		 ("i" . ielm)
-		 ("e" . eshell)
-		 ("t" . term)
-		 ("s" . scratch-buffer)
-		 :map my/toggle-map
-		 ("h" . hs-toggle-hiding)
-		 :repeat-map my/buffer-scale-map
-		 ("+" . text-scale-increase)
-		 ("-" . text-scale-decrease)
-		 ("=" . text-scale-adjust)
-		 :repeat-map my/window-map
-		 ("n" . next-window-any-frame)
-		 ("p" . previous-window-any-frame)
-		 ("k" . delete-window)
-		 ("K" . kill-buffer-and-window)
-		 ("+" . enlarge-window)
-		 ("-" . shrink-window)
-		 ("*" . enlarge-window-horizontally)
-		 ("’" . shrink-window-horizontally)
-		 :exit
-		 ("=" . balance-windows)
-		 ("r" . split-window-right)
-		 ("b" . split-window-below)
-		 ("l" . split-window-left)
-		 ("t" . split-window-top)
-		 ("v" . split-window-vertically)
-		 ("h" . split-window-horizontally)
-		 ("m" . delete-other-windows)
-		 ("m" . delete-other-windows)
-		 ("M" . delete-other-windows-vertically)
-		 ))
+                 ("e" . eval-buffer)
+                 ("k" . kill-this-buffer)
+                 ("K" . kill-buffer)
+                 ("c" . clone-buffer)
+                 ("r" . revert-buffer)
+                 ("e" . eval-buffer)
+                 ("s" . save-buffer)
+                 :map my/file-map
+                 ("f" . find-file)
+                 ("F" . find-file-other-window)
+                 ("d" . find-dired)
+                 ("c" . copy-file)
+                 ("f" . find-file)
+                 ("d" . delete-file)
+                 ("r" . reaname-file)
+                 ("w" . write-file)
+                 :map my/open-map
+                 ("F" . make-frame)
+                 ("i" . ielm)
+                 ("e" . eshell)
+                 ("t" . term)
+                 ("s" . scratch-buffer)
+                 :repeat-map my/buffer-scale-map
+                 ("+" . text-scale-increase)
+                 ("-" . text-scale-decrease)
+                 ("=" . text-scale-adjust)
+                 :repeat-map my/window-map
+                 ("n" . next-window-any-frame)
+                 ("p" . previous-window-any-frame)
+                 ("k" . delete-window)
+                 ("K" . kill-buffer-and-window)
+                 ("+" . enlarge-window)
+                 ("-" . shrink-window)
+                 ("*" . enlarge-window-horizontally)
+                 ("’" . shrink-window-horizontally)
+                 :exit
+                 ("=" . balance-windows)
+                 ("r" . split-window-right)
+                 ("b" . split-window-below)
+                 ("l" . split-window-left)
+                 ("t" . split-window-top)
+                 ("v" . split-window-vertically)
+                 ("h" . split-window-horizontally)
+                 ("m" . delete-other-windows)
+                 ("m" . delete-other-windows)
+                 ("M" . delete-other-windows-vertically)
+                 ))
 #+END_SRC
 
 ** Packages
@@ -2127,17 +2120,17 @@ built-in tree-sitter integration for Emacs
       "Install Tree-sitter grammars if they are absent."
       (interactive)
       (dolist (grammar
-	       '((css "https://github.com/tree-sitter/tree-sitter-css")
-		 (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
-		 (python "https://github.com/tree-sitter/tree-sitter-python")
-		 (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-		 (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-	(add-to-list 'treesit-language-source-alist grammar)
-	;; Only install `grammar' if we don't already have it
-	;; installed. However, if you want to *update* a grammar then
-	;; this obviously prevents that from happening.
-	(unless (treesit-language-available-p (car grammar))
-	  (treesit-install-language-grammar (car grammar)))))
+               '((css "https://github.com/tree-sitter/tree-sitter-css")
+                 (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
+                 (python "https://github.com/tree-sitter/tree-sitter-python")
+                 (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+                 (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+        (add-to-list 'treesit-language-source-alist grammar)
+        ;; Only install `grammar' if we don't already have it
+        ;; installed. However, if you want to *update* a grammar then
+        ;; this obviously prevents that from happening.
+        (unless (treesit-language-available-p (car grammar))
+          (treesit-install-language-grammar (car grammar)))))
 
     ;; Optional, but recommended. Tree-sitter enabled major modes are
     ;; distinct from their ordinary counterparts.
@@ -2146,41 +2139,45 @@ built-in tree-sitter integration for Emacs
     ;; that this does *not* extend to hooks! Make sure you migrate them
     ;; also
     (dolist (mapping '((python-mode . python-ts-mode)
-		       (css-mode . css-ts-mode)
-		       (typescript-mode . tsx-ts-mode)
-		       (js-mode . js-ts-mode)
-		       (css-mode . css-ts-mode)
-		       (yaml-mode . yaml-ts-mode)))
+                       (css-mode . css-ts-mode)
+                       (typescript-mode . tsx-ts-mode)
+                       (js-mode . js-ts-mode)
+                       (css-mode . css-ts-mode)
+                       (yaml-mode . yaml-ts-mode)))
       (add-to-list 'major-mode-remap-alist mapping))
 
-    (my/setup-install-grammars))
+    :hook
+    (after-init . my/setup-install-grammars))
 #+end_src
 
 **** Combobulate
 Structured Editing and Navigation in Emacs 
 #+begin_src emacs-lisp
   (use-package combobulate
-    :requires treesit
+    :after treesit
     :custom
     ;; You can customize Combobulate's key prefix here.
     ;; Note that you may have to restart Emacs for this to take effect!
-    (combobulate-key-prefix "C-c o")
+    (combobulate-key-prefix "c")
+    :config
+    (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
 
     ;; Optional, but recommended.
     ;;
     ;; You can manually enable Combobulate with `M-x
     ;; combobulate-mode'.
-    :hook ((python-ts-mode . combobulate-mode)
-	   (js-ts-mode . combobulate-mode)
-	   (css-ts-mode . combobulate-mode)
-	   (yaml-ts-mode . combobulate-mode)
-	   (typescript-ts-mode . combobulate-mode)
-	   (tsx-ts-mode . combobulate-mode)))
+    :hook
+    ((python-ts-mode . combobulate-mode)
+     (js-ts-mode . combobulate-mode)
+     (css-ts-mode . combobulate-mode)
+     (yaml-ts-mode . combobulate-mode)
+     (typescript-ts-mode . combobulate-mode)
+     (tsx-ts-mode . combobulate-mode)))
 #+end_src
 **** eglot
 #+begin_src emacs-lisp
   (use-package eglot
-    :hook (python-mode . eglot-ensure))
+    :hook ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 
 **** Flycheck
