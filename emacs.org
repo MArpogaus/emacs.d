@@ -88,21 +88,21 @@ Taken from: https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-du
 #+BEGIN_SRC emacs-lisp
   (eval-and-compile
     (setq gc-cons-threshold most-positive-fixnum
-	  gc-cons-percentage 0.6)
+          gc-cons-percentage 0.6)
     ;; Let's lower our GC thresholds back down to a sane level.
     (add-hook 'after-init-hook (lambda ()
-				 ;; restore after startup
-				 (setq gc-cons-threshold (* 2 1000 1000)
-				       gc-cons-percentage 0.1)))
+                                 ;; restore after startup
+                                 (setq gc-cons-threshold (* 2 1000 1000)
+                                       gc-cons-percentage 0.1)))
 
     ;; Profile emacs startup
     (add-hook 'emacs-startup-hook
-	      (lambda ()
-		(message "*** Emacs loaded in %s with %d garbage collections."
-			 (format "%.2f seconds"
-				 (float-time
-				  (time-subtract after-init-time before-init-time)))
-			 gcs-done))))
+              (lambda ()
+                (message "*** Emacs loaded in %s with %d garbage collections."
+                         (format "%.2f seconds"
+                                 (float-time
+                                  (time-subtract after-init-time before-init-time)))
+                         gcs-done))))
 #+END_SRC
 
 Disable certain byte compiler warnings to cut down on the noise. This is a personal choice and can be removed
@@ -129,15 +129,15 @@ This section provides the bootstrap code for =straight.el=, a package manager fo
 
     (defvar bootstrap-version)
     (let ((bootstrap-file
-	   (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-	  (bootstrap-version 6))
+           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+          (bootstrap-version 6))
       (unless (file-exists-p bootstrap-file)
-	(with-current-buffer
-	    (url-retrieve-synchronously
-	     "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	     'silent 'inhibit-cookies)
-	  (goto-char (point-max))
-	  (eval-print-last-sexp)))
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
       (load bootstrap-file nil 'nomessage)))
 #+end_src
 **** install and configure use-package
@@ -148,7 +148,7 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
 #+begin_src emacs-lisp
   (eval-and-compile
     (setq straight-use-package-by-default t
-	  use-package-always-defer t)
+          use-package-always-defer t)
     (straight-use-package 'use-package))
 
   (require 'bind-key)
@@ -167,7 +167,7 @@ Let's set some variables with basic user information.
 
 #+BEGIN_SRC emacs-lisp
   (setq user-full-name "Marcel Arpogaus"
-	user-mail-address "znepry.necbtnhf@tznvy.pbz")
+        user-mail-address "znepry.necbtnhf@tznvy.pbz")
 #+END_SRC
 
 *** Paths
@@ -177,13 +177,13 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :demand t
     :init
     (setq org-directory (concat (getenv "HOME") "/Notes/org/")
-	  org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib"))
-	  org-brain-path (concat org-directory "brain/")
-	  my/templates-path (expand-file-name "templates.eld" user-emacs-directory))
+          org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib"))
+          org-brain-path (concat org-directory "brain/")
+          my/templates-path (expand-file-name "templates.eld" user-emacs-directory))
 
     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
     (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-	  url-history-file (expand-file-name "url/history" user-emacs-directory)))
+          url-history-file (expand-file-name "url/history" user-emacs-directory)))
 #+end_src
 *** Emacs Configuration
 #+begin_src emacs-lisp
@@ -460,7 +460,7 @@ https://protesilaos.com/emacs/modus-themes
     :demand t
     :bind
     (:map my/toggle-map
-	  ("t" . modus-themes-toggle))
+          ("t" . modus-themes-toggle))
     :custom
     ;; Minimal UI
     (menu-bar-mode nil)
@@ -540,7 +540,7 @@ A fancy and fast mode-line inspired by minimalism design.
     (dashboard-show-shortcuts nil)
     (dashboard-projects-backend 'project-el)
     (dashboard-items '((recents  . 10)
-		       (projects . 10)))
+                       (projects . 10)))
     (dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
     (dashboard-display-icons-p (display-graphic-p))
     (dashboard-set-heading-icons (display-graphic-p))
@@ -559,13 +559,13 @@ Make org-brain-visualize-mode look a bit nicer.
     (defface aa2u-face '((t . nil))
       "Face for aa2u box drawing characters")
     (advice-add #'aa2u-1c :filter-return
-		(lambda (str) (propertize str 'face 'aa2u-face)))
+                (lambda (str) (propertize str 'face 'aa2u-face)))
     (defun aa2u-org-brain-buffer ()
       (let ((inhibit-read-only t))
-	(make-local-variable 'face-remapping-alist)
-	(add-to-list 'face-remapping-alist
-		     '(aa2u-face . org-brain-wires))
-	(ignore-errors (aa2u (point-min) (point-max)))))
+        (make-local-variable 'face-remapping-alist)
+        (add-to-list 'face-remapping-alist
+                     '(aa2u-face . org-brain-wires))
+        (ignore-errors (aa2u (point-min) (point-max)))))
     :hook
     (org-brain-after-visualize . aa2u-org-brain-buffer))
 #+end_src
@@ -583,63 +583,63 @@ Make org-brain-visualize-mode look a bit nicer.
     (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
     ;; Enable all Cascadia and Fira Code ligatures in programming modes
     (ligature-set-ligatures '(prog-mode org-mode)
-			    '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-			      ;; =:= =!=
-			      ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-			      ;; ;; ;;;
-			      (";" (rx (+ ";")))
-			      ;; && &&&
-			      ("&" (rx (+ "&")))
-			      ;; !! !!! !. !: !!. != !== !~
-			      ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-			      ;; ?? ??? ?:  ?=  ?.
-			      ("?" (rx (or ":" "=" "\." (+ "?"))))
-			      ;; %% %%%
-			      ("%" (rx (+ "%")))
-			      ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-			      ;; |->>-||-<<-| |- |== ||=||
-			      ;; |==>>==<<==<=>==//==/=!==:===>
-			      ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-					      "-" "=" ))))
-			      ;; \\ \\\ \/
-			      ("\\" (rx (or "/" (+ "\\"))))
-			      ;; ++ +++ ++++ +>
-			      ("+" (rx (or ">" (+ "+"))))
-			      ;; :: ::: :::: :> :< := :// ::=
-			      (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-			      ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-			      ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-					      "="))))
-			      ;; .. ... .... .= .- .? ..= ..<
-			      ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-			      ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-			      ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-			      ;; *> */ *)  ** *** ****
-			      ("*" (rx (or ">" "/" ")" (+ "*"))))
-			      ;; www wwww
-			      ("w" (rx (+ "w")))
-			      ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-			      ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-			      ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-			      ;; << <<< <<<<
-			      ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-					      "-"  "/" "|" "="))))
-			      ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-			      ;; >> >>> >>>>
-			      (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-			      ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-			      ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-					   (+ "#"))))
-			      ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-			      ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-			      ;; __ ___ ____ _|_ __|____|_
-			      ("_" (rx (+ (or "_" "|"))))
-			      ;; Fira code: 0xFF 0x12
-			      ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-			      ;; Fira code:
-			      "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-			      ;; The few not covered by the regexps.
-			      "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                              ;; =:= =!=
+                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                              ;; ;; ;;;
+                              (";" (rx (+ ";")))
+                              ;; && &&&
+                              ("&" (rx (+ "&")))
+                              ;; !! !!! !. !: !!. != !== !~
+                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                              ;; ?? ??? ?:  ?=  ?.
+                              ("?" (rx (or ":" "=" "\." (+ "?"))))
+                              ;; %% %%%
+                              ("%" (rx (+ "%")))
+                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                              ;; |->>-||-<<-| |- |== ||=||
+                              ;; |==>>==<<==<=>==//==/=!==:===>
+                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                              "-" "=" ))))
+                              ;; \\ \\\ \/
+                              ("\\" (rx (or "/" (+ "\\"))))
+                              ;; ++ +++ ++++ +>
+                              ("+" (rx (or ">" (+ "+"))))
+                              ;; :: ::: :::: :> :< := :// ::=
+                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                              "="))))
+                              ;; .. ... .... .= .- .? ..= ..<
+                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                              ;; *> */ *)  ** *** ****
+                              ("*" (rx (or ">" "/" ")" (+ "*"))))
+                              ;; www wwww
+                              ("w" (rx (+ "w")))
+                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                              ;; << <<< <<<<
+                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                              "-"  "/" "|" "="))))
+                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                              ;; >> >>> >>>>
+                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                           (+ "#"))))
+                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                              ;; __ ___ ____ _|_ __|____|_
+                              ("_" (rx (+ (or "_" "|"))))
+                              ;; Fira code: 0xFF 0x12
+                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                              ;; Fira code:
+                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                              ;; The few not covered by the regexps.
+                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
     :hook
@@ -664,9 +664,9 @@ When working with many windows at the same time, each window has a size that is 
     (golden-ratio-auto-scale t)
     :config
     (add-to-list 'golden-ratio-inhibit-functions
-		 (lambda ()
-		   (and which-key--buffer
-			(window-live-p (get-buffer-window which-key--buffer)))))
+                 (lambda ()
+                   (and which-key--buffer
+                        (window-live-p (get-buffer-window which-key--buffer)))))
     :hook
     (after-init . golden-ratio-mode))
 #+end_src
@@ -1042,12 +1042,12 @@ remote file editing through ssh/scp.
     (remote-file-name-inhibit-cache nil)
     (vc-ignore-dir-regexp
      (format "%s\\|%s"
-	     vc-ignore-dir-regexp
-	     tramp-file-name-regexp))
+             vc-ignore-dir-regexp
+             tramp-file-name-regexp))
     :config
     (add-to-list 'tramp-connection-properties
-		 (list (regexp-quote "/sshx:user@host:")
-		       "remote-shell" "/bin/bash")))
+                 (list (regexp-quote "/sshx:user@host:")
+                       "remote-shell" "/bin/bash")))
 #+end_src
 **** Helpful
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
@@ -1070,7 +1070,7 @@ It is a bit slow to load so we do need load it explicitely.
   (use-package vundo
     :bind
     (:map my/open-map
-	  ("u". vundo))
+          ("u". vundo))
     :config
     (when (display-graphic-p)
       (setq vundo-glyph-alist vundo-unicode-symbols)))
@@ -1087,10 +1087,10 @@ It is a bit slow to load so we do need load it explicitely.
     (recentf-max-saved-items 100)
     :config
     (add-to-list 'recentf-exclude
-		 (recentf-expand-file-name no-littering-var-directory))
+                 (recentf-expand-file-name no-littering-var-directory))
     :bind
     (:map my/open-map
-	  ("r" . recentf-open))
+          ("r" . recentf-open))
     :hook
     (after-init . recentf-mode))
 #+end_src
@@ -1183,7 +1183,7 @@ Paren mode for highlighting matcing paranthesis
     (gptel-default-mode 'org-mode)
     :bind
     (:map my/open-map
-	  ("c". gptel))
+          ("g". gptel))
     :commands (gptel gptel-send))
 #+end_src
 
@@ -1219,13 +1219,13 @@ We will tweak the Emacs built-in ediff configuration a bit.
     :config
     (ispell-set-spellchecker-params)
     (ispell-hunspell-add-multi-dic "en_US,de_DE"))
-  
+
   (use-package flyspell
     :config
     (defun my/restart-flyspell-mode ()
       (when flyspell-mode
-	(flyspell-mode-off)
-	(flyspell-mode-on)))
+        (flyspell-mode-off)
+        (flyspell-mode-on)))
     :hook
     (((text-mode conf-mode org-mode) . flyspell-mode)
      (prog-mode . flyspell-prog-mode)
@@ -1234,8 +1234,8 @@ We will tweak the Emacs built-in ediff configuration a bit.
   (use-package flyspell-correct
     :after flyspell
     :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-		:map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-		([mouse-1] . flyspell-correct-at-point)))
+                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
+                ([mouse-1] . flyspell-correct-at-point)))
 #+end_src
 
 **** elfeed
@@ -1244,113 +1244,113 @@ An Emacs web feeds client
   (use-package elfeed
     :bind
     (:map my/open-map
-	  ("f" . elfeed))
+          ("f" . elfeed))
     :config
     (setq elfeed-feeds
-	  '("https://github.com/domtronn/all-the-icons.el/releases.atom"
-	    "https://github.com/emacs-straight/ascii-art-to-unicode/releases.atom"
-	    "https://github.com/emacs-straight/auctex/releases.atom"
-	    "https://github.com/dholm/benchmark-init-el/releases.atom"
-	    "https://github.com/elken/cape-yasnippet/releases.atom"
-	    "https://github.com/minad/cape/releases.atom"
-	    "https://github.com/emacs-citar/citar/releases.atom"
-	    "https://github.com/andras-simonyi/citeproc-el/releases.atom"
-	    "https://github.com/emacs-straight/compat/releases.atom"
-	    "https://github.com/necaris/conda.el/releases.atom"
-	    "https://github.com/minad/consult/releases.atom"
-	    "https://codeberg.org/akib/emacs-corfu-terminal/releases.atom"
-	    "https://github.com/emacs-straight/corfu/releases.atom"
-	    "https://github.com/magnars/dash.el/releases.atom"
-	    "https://github.com/seagle0128/doom-modeline/releases.atom"
-	    "https://github.com/emacs-straight/eglot/releases.atom"
-	    "https://github.com/dimitri/el-get/releases.atom"
-	    "https://github.com/emacs-straight/eldoc/releases.atom"
-	    "https://github.com/Wilfred/elisp-refs/releases.atom"
-	    "https://github.com/emacs-tree-sitter/elisp-tree-sitter/releases.atom"
-	    "https://github.com/jwiegley/emacs-async/releases.atom"
-	    "https://github.com/emacs-dashboard/emacs-dashboard/releases.atom"
-	    "https://github.com/lassik/emacs-format-all-the-code/releases.atom"
-	    "https://github.com/lassik/emacs-language-id/releases.atom"
-	    "https://github.com/justbur/emacs-which-key/releases.atom"
-	    "https://github.com/emacs-straight/emacsmirror-mirror/releases.atom"
-	    "https://github.com/oantolin/embark/releases.atom"
-	    "https://github.com/cask/epl/releases.atom"
-	    "https://github.com/Somelauw/evil-org-mode/releases.atom"
-	    "https://github.com/emacs-evil/evil/releases.atom"
-	    "https://github.com/emacs-straight/external-completion/releases.atom"
-	    "https://github.com/rejeep/f.el/releases.atom"
-	    "https://github.com/flycheck/flycheck/releases.atom"
-	    "https://github.com/emacs-straight/flymake/releases.atom"
-	    "https://github.com/d12frosted/flyspell-correct/releases.atom"
-	    "https://github.com/nschum/fringe-helper.el/releases.atom"
-	    "https://github.com/nonsequitur/git-gutter-fringe-plus/releases.atom"
-	    "https://github.com/emacsorphanage/git-gutter-fringe/releases.atom"
-	    "https://github.com/nonsequitur/git-gutter-plus/releases.atom"
-	    "https://github.com/emacsorphanage/git-gutter/releases.atom"
-	    "https://codeberg.org/pidu/git-timemachine/releases.atom"
-	    "https://github.com/emacs-straight/gnu-elpa-mirror/releases.atom"
-	    "https://github.com/roman/golden-ratio.el/releases.atom"
-	    "https://github.com/emacs-evil/goto-chg/releases.atom"
-	    "https://github.com/karthink/gptel/releases.atom"
-	    "https://github.com/Wilfred/helpful/releases.atom"
-	    "https://github.com/purcell/inheritenv/releases.atom"
-	    "https://github.com/emacs-straight/jsonrpc/releases.atom"
-	    "https://github.com/emacs-straight/let-alist/releases.atom"
-	    "https://github.com/mickeynp/ligature.el/releases.atom"
-	    "https://github.com/immerrr/lua-mode/releases.atom"
-	    "https://github.com/magit/magit/releases.atom"
-	    "https://github.com/minad/marginalia/releases.atom"
-	    "https://github.com/jrblevin/markdown-mode/releases.atom"
-	    "https://github.com/melpa/melpa/releases.atom"
-	    "https://github.com/meow-edit/meow/releases.atom"
-	    "https://github.com/protesilaos/modus-themes/releases.atom"
-	    "https://github.com/rainstormstudio/nerd-icons.el/releases.atom"
-	    "https://github.com/emacscollective/no-littering/releases.atom"
-	    "https://github.com/douglasdavis/numpydoc.el/releases.atom"
-	    "https://github.com/oantolin/orderless/releases.atom"
-	    "https://github.com/awth13/org-appear/releases.atom"
-	    "https://github.com/yilkalargaw/org-auto-tangle/releases.atom"
-	    "https://github.com/Kungsgeten/org-brain/releases.atom"
-	    "https://github.com/rexim/org-cliplink/releases.atom"
-	    "https://github.com/minad/org-modern/releases.atom"
-	    "https://github.com/org-noter/org-noter/releases.atom"
-	    "https://github.com/emacs-straight/org-mode/releases.atom"
-	    "https://github.com/joostkremers/parsebib/releases.atom"
-	    "https://github.com/vedang/pdf-tools/releases.atom"
-	    "https://github.com/emacsorphanage/pkg-info/releases.atom"
-	    "https://codeberg.org/akib/emacs-popon/releases.atom"
-	    "https://github.com/kcyarn/pretty-speedbar/releases.atom"
-	    "https://github.com/fritzgrabo/project-tab-groups/releases.atom"
-	    "https://github.com/emacs-straight/project/releases.atom"
-	    "https://github.com/paetzke/py-isort.el/releases.atom"
-	    "https://github.com/Wilfred/pyimport/releases.atom"
-	    "https://github.com/pythonic-emacs/pythonic/releases.atom"
-	    "https://github.com/emacs-straight/queue/releases.atom"
-	    "https://github.com/magnars/s.el/releases.atom"
-	    "https://github.com/cask/shut-up/releases.atom"
-	    "https://github.com/emacsorphanage/sr-speedbar/releases.atom"
-	    "https://github.com/radian-software/straight.el/releases.atom"
-	    "https://github.com/akicho8/string-inflection/releases.atom"
-	    "https://github.com/fritzgrabo/tab-bar-echo-area/releases.atom"
-	    "https://github.com/emacsorphanage/tablist/releases.atom"
-	    "https://github.com/Crandel/tempel-collection/releases.atom"
-	    "https://github.com/minad/tempel/releases.atom"
-	    "https://github.com/snosov1/toc-org/releases.atom"
-	    "https://github.com/emacs-straight/tramp/releases.atom"
-	    "https://github.com/magit/transient/releases.atom"
-	    "https://github.com/emacs-tree-sitter/tree-sitter-langs/releases.atom"
-	    "https://github.com/emacs-straight/undo-tree/releases.atom"
-	    "https://github.com/jwiegley/use-package/releases.atom"
-	    "https://github.com/emacs-straight/vertico/releases.atom"
-	    "https://codeberg.org/joostkremers/visual-fill-column/releases.atom"
-	    "https://github.com/emacs-straight/vundo/releases.atom"
-	    "https://github.com/magit/with-editor/releases.atom"
-	    "https://github.com/joostkremers/writeroom-mode/releases.atom"
-	    "https://github.com/emacs-straight/xref/releases.atom"
-	    "https://github.com/yoshiki/yaml-mode/releases.atom"
-	    "https://github.com/AndreaCrotti/yasnippet-snippets/releases.atom"
-	    "https://github.com/joaotavora/yasnippet/releases.atom"
-	    "https://github.com/zenlang/zen-mode/releases.atom")))
+          '("https://github.com/domtronn/all-the-icons.el/releases.atom"
+            "https://github.com/emacs-straight/ascii-art-to-unicode/releases.atom"
+            "https://github.com/emacs-straight/auctex/releases.atom"
+            "https://github.com/dholm/benchmark-init-el/releases.atom"
+            "https://github.com/elken/cape-yasnippet/releases.atom"
+            "https://github.com/minad/cape/releases.atom"
+            "https://github.com/emacs-citar/citar/releases.atom"
+            "https://github.com/andras-simonyi/citeproc-el/releases.atom"
+            "https://github.com/emacs-straight/compat/releases.atom"
+            "https://github.com/necaris/conda.el/releases.atom"
+            "https://github.com/minad/consult/releases.atom"
+            "https://codeberg.org/akib/emacs-corfu-terminal/releases.atom"
+            "https://github.com/emacs-straight/corfu/releases.atom"
+            "https://github.com/magnars/dash.el/releases.atom"
+            "https://github.com/seagle0128/doom-modeline/releases.atom"
+            "https://github.com/emacs-straight/eglot/releases.atom"
+            "https://github.com/dimitri/el-get/releases.atom"
+            "https://github.com/emacs-straight/eldoc/releases.atom"
+            "https://github.com/Wilfred/elisp-refs/releases.atom"
+            "https://github.com/emacs-tree-sitter/elisp-tree-sitter/releases.atom"
+            "https://github.com/jwiegley/emacs-async/releases.atom"
+            "https://github.com/emacs-dashboard/emacs-dashboard/releases.atom"
+            "https://github.com/lassik/emacs-format-all-the-code/releases.atom"
+            "https://github.com/lassik/emacs-language-id/releases.atom"
+            "https://github.com/justbur/emacs-which-key/releases.atom"
+            "https://github.com/emacs-straight/emacsmirror-mirror/releases.atom"
+            "https://github.com/oantolin/embark/releases.atom"
+            "https://github.com/cask/epl/releases.atom"
+            "https://github.com/Somelauw/evil-org-mode/releases.atom"
+            "https://github.com/emacs-evil/evil/releases.atom"
+            "https://github.com/emacs-straight/external-completion/releases.atom"
+            "https://github.com/rejeep/f.el/releases.atom"
+            "https://github.com/flycheck/flycheck/releases.atom"
+            "https://github.com/emacs-straight/flymake/releases.atom"
+            "https://github.com/d12frosted/flyspell-correct/releases.atom"
+            "https://github.com/nschum/fringe-helper.el/releases.atom"
+            "https://github.com/nonsequitur/git-gutter-fringe-plus/releases.atom"
+            "https://github.com/emacsorphanage/git-gutter-fringe/releases.atom"
+            "https://github.com/nonsequitur/git-gutter-plus/releases.atom"
+            "https://github.com/emacsorphanage/git-gutter/releases.atom"
+            "https://codeberg.org/pidu/git-timemachine/releases.atom"
+            "https://github.com/emacs-straight/gnu-elpa-mirror/releases.atom"
+            "https://github.com/roman/golden-ratio.el/releases.atom"
+            "https://github.com/emacs-evil/goto-chg/releases.atom"
+            "https://github.com/karthink/gptel/releases.atom"
+            "https://github.com/Wilfred/helpful/releases.atom"
+            "https://github.com/purcell/inheritenv/releases.atom"
+            "https://github.com/emacs-straight/jsonrpc/releases.atom"
+            "https://github.com/emacs-straight/let-alist/releases.atom"
+            "https://github.com/mickeynp/ligature.el/releases.atom"
+            "https://github.com/immerrr/lua-mode/releases.atom"
+            "https://github.com/magit/magit/releases.atom"
+            "https://github.com/minad/marginalia/releases.atom"
+            "https://github.com/jrblevin/markdown-mode/releases.atom"
+            "https://github.com/melpa/melpa/releases.atom"
+            "https://github.com/meow-edit/meow/releases.atom"
+            "https://github.com/protesilaos/modus-themes/releases.atom"
+            "https://github.com/rainstormstudio/nerd-icons.el/releases.atom"
+            "https://github.com/emacscollective/no-littering/releases.atom"
+            "https://github.com/douglasdavis/numpydoc.el/releases.atom"
+            "https://github.com/oantolin/orderless/releases.atom"
+            "https://github.com/awth13/org-appear/releases.atom"
+            "https://github.com/yilkalargaw/org-auto-tangle/releases.atom"
+            "https://github.com/Kungsgeten/org-brain/releases.atom"
+            "https://github.com/rexim/org-cliplink/releases.atom"
+            "https://github.com/minad/org-modern/releases.atom"
+            "https://github.com/org-noter/org-noter/releases.atom"
+            "https://github.com/emacs-straight/org-mode/releases.atom"
+            "https://github.com/joostkremers/parsebib/releases.atom"
+            "https://github.com/vedang/pdf-tools/releases.atom"
+            "https://github.com/emacsorphanage/pkg-info/releases.atom"
+            "https://codeberg.org/akib/emacs-popon/releases.atom"
+            "https://github.com/kcyarn/pretty-speedbar/releases.atom"
+            "https://github.com/fritzgrabo/project-tab-groups/releases.atom"
+            "https://github.com/emacs-straight/project/releases.atom"
+            "https://github.com/paetzke/py-isort.el/releases.atom"
+            "https://github.com/Wilfred/pyimport/releases.atom"
+            "https://github.com/pythonic-emacs/pythonic/releases.atom"
+            "https://github.com/emacs-straight/queue/releases.atom"
+            "https://github.com/magnars/s.el/releases.atom"
+            "https://github.com/cask/shut-up/releases.atom"
+            "https://github.com/emacsorphanage/sr-speedbar/releases.atom"
+            "https://github.com/radian-software/straight.el/releases.atom"
+            "https://github.com/akicho8/string-inflection/releases.atom"
+            "https://github.com/fritzgrabo/tab-bar-echo-area/releases.atom"
+            "https://github.com/emacsorphanage/tablist/releases.atom"
+            "https://github.com/Crandel/tempel-collection/releases.atom"
+            "https://github.com/minad/tempel/releases.atom"
+            "https://github.com/snosov1/toc-org/releases.atom"
+            "https://github.com/emacs-straight/tramp/releases.atom"
+            "https://github.com/magit/transient/releases.atom"
+            "https://github.com/emacs-tree-sitter/tree-sitter-langs/releases.atom"
+            "https://github.com/emacs-straight/undo-tree/releases.atom"
+            "https://github.com/jwiegley/use-package/releases.atom"
+            "https://github.com/emacs-straight/vertico/releases.atom"
+            "https://codeberg.org/joostkremers/visual-fill-column/releases.atom"
+            "https://github.com/emacs-straight/vundo/releases.atom"
+            "https://github.com/magit/with-editor/releases.atom"
+            "https://github.com/joostkremers/writeroom-mode/releases.atom"
+            "https://github.com/emacs-straight/xref/releases.atom"
+            "https://github.com/yoshiki/yaml-mode/releases.atom"
+            "https://github.com/AndreaCrotti/yasnippet-snippets/releases.atom"
+            "https://github.com/joaotavora/yasnippet/releases.atom"
+            "https://github.com/zenlang/zen-mode/releases.atom")))
 #+end_src
 *** Completion
 **** Vertico
@@ -1391,7 +1391,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
-  
+
   (use-package vertico-directory
     :straight nil
     :after vertico)
@@ -1652,7 +1652,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (advice-add #'corfu-insert :after #'corfu-send-shell)
     :hook
     ((after-init . global-corfu-mode)
-    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
+     ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
      (eshell-mode-hook . (lambda ()
                            (setq-local corfu-auto nil)
                            (corfu-mode)))))
@@ -1676,21 +1676,21 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     ;; Bind dedicated completion commands
     ;; Alternative prefix keys: C-c p, M-p, M-+, ...
     :bind (:map my/completion-map
-		("p" . completion-at-point) ;; capf
-		("t" . complete-tag)        ;; etags
-		("d" . cape-dabbrev)        ;; or dabbrev-completion
-		("h" . cape-history)
-		("f" . cape-file)
-		("k" . cape-keyword)
-		("s" . cape-symbol)
-		("a" . cape-abbrev)
-		("l" . cape-line)
-		("w" . cape-dict)
-		("\\" . cape-tex)
-		("_" . cape-tex)
-		("^" . cape-tex)
-		("&" . cape-sgml)
-		("r" . cape-rfc1345))
+                ("p" . completion-at-point) ;; capf
+                ("t" . complete-tag)        ;; etags
+                ("d" . cape-dabbrev)        ;; or dabbrev-completion
+                ("h" . cape-history)
+                ("f" . cape-file)
+                ("k" . cape-keyword)
+                ("s" . cape-symbol)
+                ("a" . cape-abbrev)
+                ("l" . cape-line)
+                ("w" . cape-dict)
+                ("\\" . cape-tex)
+                ("_" . cape-tex)
+                ("^" . cape-tex)
+                ("&" . cape-sgml)
+                ("r" . cape-rfc1345))
     :init
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;; NOTE: The order matters!
@@ -1728,7 +1728,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     (tempel-path my/templates-path)
 
     :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-	   ("M-*" . tempel-insert))
+           ("M-*" . tempel-insert))
 
     :config
     ;; Setup completion at point
@@ -1741,8 +1741,8 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
       ;; `tempel-expand' *before* the main programming mode Capf, such
       ;; that it will be tried first.
       (setq-local completion-at-point-functions
-		  (cons #'tempel-complete
-			completion-at-point-functions)))
+                  (cons #'tempel-complete
+                        completion-at-point-functions)))
 
     :hook
     ((conf-mode . my/tempel-setup-capf)
@@ -1758,6 +1758,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
   ;; The package is young and doesn't have comprehensive coverage.
   (use-package tempel-collection)
 #+end_src
+
 **** Citar
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
@@ -1852,27 +1853,28 @@ functions we invoke regularly outside of magit is called.
     :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
     :bind
     (:map my/version-control-map
-	  ("F"  . magit-fetch-all)
-	  ("P"  . magit-push-current)
-	  ("b"  . magit-branch)
-	  ("b"  . magit-branch-or-checkout)
-	  ("c"  . magit-commit)
-	  ("d"  . magit-diff-unstaged)
-	  ("f"  . magit-fetch)
-	  ("la" . magit-log-all)
-	  ("lc" . magit-log-current)
-	  ("lf" . magit-log-buffer-file)
-	  ("p"  . magit-pull-branch)
-	  ("v"  . magit-status)
-	  ("r"  . magit-rebase)))
+          ("F"  . magit-fetch-all)
+          ("P"  . magit-push-current)
+          ("b"  . magit-branch)
+          ("b"  . magit-branch-or-checkout)
+          ("c"  . magit-commit)
+          ("d"  . magit-diff-unstaged)
+          ("f"  . magit-fetch)
+          ("la" . magit-log-all)
+          ("lc" . magit-log-current)
+          ("lf" . magit-log-buffer-file)
+          ("p"  . magit-pull-branch)
+          ("v"  . magit-status)
+          ("r"  . magit-rebase)))
 #+END_SRC
 **** git-timemachine
 #+begin_src emacs-lisp
   (use-package git-timemachine
     :bind
     (:map my/version-control-map
-	  ("t" . git-timemachine)))
+          ("t" . git-timemachine)))
 #+end_src
+
 **** git-gutter
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter-fringe
@@ -1887,20 +1889,20 @@ functions we invoke regularly outside of magit is called.
     ;;   check when opening each buffer.
     (git-gutter:handled-backends
      (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
-				  :key #'symbol-name)))
+                                  :key #'symbol-name)))
     :config
     (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
     :bind
     (:repeat-map my/git-gutter-repeat-map
-		 ("n" . git-gutter:next-hunk)
-		 ("p" . git-gutter:previous-hunk)
-		 ("s" . git-gutter:stage-hunk)
-		 ("d" . git-gutter:popup-hunk)
-		 ("r" . git-gutter:revert-hunk)
-		 :exit
-		 ("c" . magit-commit-create))
+                 ("n" . git-gutter:next-hunk)
+                 ("p" . git-gutter:previous-hunk)
+                 ("s" . git-gutter:stage-hunk)
+                 ("d" . git-gutter:popup-hunk)
+                 ("r" . git-gutter:revert-hunk)
+                 :exit
+                 ("c" . magit-commit-create))
     :hook
     ((after-init . global-git-gutter-mode)
      (focus-in . git-gutter:update-all-windows)))
@@ -2067,16 +2069,16 @@ functions we invoke regularly outside of magit is called.
 
     :hook
     ((speedbar-mode . (lambda()
-			;; Disable word wrapping in speedbar if you always enable it globally.
-			(visual-line-mode 0) 
-			;; Change speedbar's text size.  May need to alter the icon size if you change size.
-			(text-scale-adjust -1)))))
+                        ;; Disable word wrapping in speedbar if you always enable it globally.
+                        (visual-line-mode 0) 
+                        ;; Change speedbar's text size.  May need to alter the icon size if you change size.
+                        (text-scale-adjust -1)))))
   (use-package sr-speedbar
     :custom
     (sr-speedbar-right-side nil)
     :bind
     (:map my/toggle-map
-	  ("s" . sr-speedbar-toggle)))
+          ("s" . sr-speedbar-toggle)))
 
   ;; (use-package pretty-speedbar
   ;;   :demand t
@@ -2199,7 +2201,7 @@ Structured Editing and Navigation in Emacs
     ;;:hook (prog-mode . format-all-mode)
     :bind
     (:map my/toggle-map
-	  ("f" . format-all-buffer)))
+          ("f" . format-all-buffer)))
 #+end_src
 
 **** Python
@@ -2218,7 +2220,7 @@ Structured Editing and Navigation in Emacs
     ;; Default to Python 3. Prefer the versioned Python binaries since some
     ;; systems link the unversioned one to Python 2.
     (when (and (executable-find "python3")
-	       (string= python-shell-interpreter "python"))
+               (string= python-shell-interpreter "python"))
       (setq python-shell-interpreter "python3")))
 
   (use-package pyimport
@@ -2249,6 +2251,7 @@ Structured Editing and Navigation in Emacs
     ;; 					     (conda-env-activate-for-buffer))))
     )
 #+end_src
+
 **** yaml
 #+begin_src emacs-lisp
   (use-package yaml-mode
@@ -2310,8 +2313,8 @@ Meow is yet another modal editing mode for Emacs.
     (defun my/meow-mode-get-state-advice (orig-func &rest args)
       "Advice function to modify 'meow--mode-get-state' based on 'my/meow-desired-state'."
       (if my/meow-desired-state
-	  my/meow-desired-state
-	(apply orig-func args)))
+          my/meow-desired-state
+        (apply orig-func args)))
 
     ;; Apply advice to 'meow--mode-get-state'
     (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
@@ -2324,90 +2327,90 @@ Meow is yet another modal editing mode for Emacs.
     (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
     :bind
     (:map meow-motion-state-keymap
-	  ("j" . meow-next)
-	  ("k" . meow-prev)
-	  ("<escape>" . ignore)
-	  :map my/leader-map
-	  ;; ("j" . "H-j")
-	  ;; ("k" . "H-k")
-	  ;; ("x" ("C-x" . ctl-x-map))
-	  ;;("m" . (lambda ()(meow--execute-kbd-macro "C-c")))
-	  ;; Use SPC (0-9) for digit arguments.
-	  ("1" . meow-digit-argument)
-	  ("2" . meow-digit-argument)
-	  ("3" . meow-digit-argument)
-	  ("4" . meow-digit-argument)
-	  ("5" . meow-digit-argument)
-	  ("6" . meow-digit-argument)
-	  ("7" . meow-digit-argument)
-	  ("8" . meow-digit-argument)
-	  ("9" . meow-digit-argument)
-	  ("0" . meow-digit-argument)
-	  ("/" . meow-keypad-describe-key)
-	  ("?" . meow-cheatsheet)
-	  :map meow-normal-state-keymap
-	  ("0" . meow-expand-0)
-	  ("9" . meow-expand-9)
-	  ("8" . meow-expand-8)
-	  ("7" . meow-expand-7)
-	  ("6" . meow-expand-6)
-	  ("5" . meow-expand-5)
-	  ("4" . meow-expand-4)
-	  ("3" . meow-expand-3)
-	  ("2" . meow-expand-2)
-	  ("1" . meow-expand-1)
-	  ("-" . negative-argument)
-	  (";" . meow-reverse)
-	  ("," . meow-inner-of-thing)
-	  ("." . meow-bounds-of-thing)
-	  ("[" . meow-beginning-of-thing)
-	  ("]" . meow-end-of-thing)
-	  ("a" . meow-append)
-	  ("A" . meow-open-below)
-	  ("b" . meow-back-word)
-	  ("B" . meow-back-symbol)
-	  ("c" . meow-change)
-	  ("C" . meow-comment)
-	  ("d" . meow-delete)
-	  ("D" . meow-backward-delete)
-	  ("e" . meow-next-word)
-	  ("E" . meow-next-symbol)
-	  ("f" . meow-find)
-	  ("<escape>" . meow-cancel-selection)
-	  ("G" . meow-grab)
-	  ("h" . meow-left)
-	  ("H" . meow-left-expand)
-	  ("i" . meow-insert)
-	  ("I" . meow-open-above)
-	  ("j" . meow-next)
-	  ("J" . meow-next-expand)
-	  ("k" . meow-prev)
-	  ("K" . meow-prev-expand)
-	  ("l" . meow-right)
-	  ("L" . meow-right-expand)
-	  ("m" . meow-join)
-	  ("n" . meow-search)
-	  ("o" . meow-block)
-	  ("O" . meow-to-block)
-	  ("p" . meow-yank)
-	  ("q" . meow-quit)
-	  ("Q" . meow-goto-line)
-	  ("r" . meow-replace)
-	  ("R" . undo-redo)
-	  ("s" . meow-kill)
-	  ("t" . meow-till)
-	  ("u" . meow-undo)
-	  ("U" . meow-undo-in-selection)
-	  ("v" . meow-visit)
-	  ("w" . meow-mark-word)
-	  ("W" . meow-mark-symbol)
-	  ("x" . meow-line)
-	  ("X" . meow-goto-line)
-	  ("y" . meow-save)
-	  ("Y" . meow-sync-grab)
-	  ("z" . meow-pop-selection)
-	  ("=" . meow-indent)
-	  ("'" . repeat))
+          ("j" . meow-next)
+          ("k" . meow-prev)
+          ("<escape>" . ignore)
+          :map my/leader-map
+          ;; ("j" . "H-j")
+          ;; ("k" . "H-k")
+          ;; ("x" ("C-x" . ctl-x-map))
+          ;;("m" . (lambda ()(meow--execute-kbd-macro "C-c")))
+          ;; Use SPC (0-9) for digit arguments.
+          ("1" . meow-digit-argument)
+          ("2" . meow-digit-argument)
+          ("3" . meow-digit-argument)
+          ("4" . meow-digit-argument)
+          ("5" . meow-digit-argument)
+          ("6" . meow-digit-argument)
+          ("7" . meow-digit-argument)
+          ("8" . meow-digit-argument)
+          ("9" . meow-digit-argument)
+          ("0" . meow-digit-argument)
+          ("/" . meow-keypad-describe-key)
+          ("?" . meow-cheatsheet)
+          :map meow-normal-state-keymap
+          ("0" . meow-expand-0)
+          ("9" . meow-expand-9)
+          ("8" . meow-expand-8)
+          ("7" . meow-expand-7)
+          ("6" . meow-expand-6)
+          ("5" . meow-expand-5)
+          ("4" . meow-expand-4)
+          ("3" . meow-expand-3)
+          ("2" . meow-expand-2)
+          ("1" . meow-expand-1)
+          ("-" . negative-argument)
+          (";" . meow-reverse)
+          ("," . meow-inner-of-thing)
+          ("." . meow-bounds-of-thing)
+          ("[" . meow-beginning-of-thing)
+          ("]" . meow-end-of-thing)
+          ("a" . meow-append)
+          ("A" . meow-open-below)
+          ("b" . meow-back-word)
+          ("B" . meow-back-symbol)
+          ("c" . meow-change)
+          ("C" . meow-comment)
+          ("d" . meow-delete)
+          ("D" . meow-backward-delete)
+          ("e" . meow-next-word)
+          ("E" . meow-next-symbol)
+          ("f" . meow-find)
+          ("<escape>" . meow-cancel-selection)
+          ("G" . meow-grab)
+          ("h" . meow-left)
+          ("H" . meow-left-expand)
+          ("i" . meow-insert)
+          ("I" . meow-open-above)
+          ("j" . meow-next)
+          ("J" . meow-next-expand)
+          ("k" . meow-prev)
+          ("K" . meow-prev-expand)
+          ("l" . meow-right)
+          ("L" . meow-right-expand)
+          ("m" . meow-join)
+          ("n" . meow-search)
+          ("o" . meow-block)
+          ("O" . meow-to-block)
+          ("p" . meow-yank)
+          ("q" . meow-quit)
+          ("Q" . meow-goto-line)
+          ("r" . meow-replace)
+          ("R" . undo-redo)
+          ("s" . meow-kill)
+          ("t" . meow-till)
+          ("u" . meow-undo)
+          ("U" . meow-undo-in-selection)
+          ("v" . meow-visit)
+          ("w" . meow-mark-word)
+          ("W" . meow-mark-symbol)
+          ("x" . meow-line)
+          ("X" . meow-goto-line)
+          ("y" . meow-save)
+          ("Y" . meow-sync-grab)
+          ("z" . meow-pop-selection)
+          ("=" . meow-indent)
+          ("'" . repeat))
     :hook
     ((git-timemachine-mode . my/meow-git-timemachine-hook)
      (after-init . meow-global-mode)))
