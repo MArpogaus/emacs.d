@@ -59,7 +59,7 @@ org-mode
  "#+OPTIONS: toc:nil" n n
  "| Ort | Webex |" n
  "| Zeit | [" (format-time-string "%Y-%m-%d %a")" 11:00] - [" (format-time-string "%Y-%m-%d %a") " 12:00] |" n
- "| Teilnehmende | "(p "Adrian Minde, Benedikt Köpfer, Frederik Mayer, Manuele Linke, Marcel Arpogaus") "|" n
+ "| Teilnehmende | " p "|" n
  "| Protokoll | Marcel Arpogaus |" n n
  "+TOC: headlines 2" n n
  "* " r n n
