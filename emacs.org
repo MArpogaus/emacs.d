@@ -446,7 +446,7 @@ Make org-brain-visualize-mode look a bit nicer.
 #+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
-#+begin_src
+ #+begin_src emacs-lisp
   (use-package display-line-numbers
     :hook
     (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
@@ -623,7 +623,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 *** UX
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed
-#+begin_src
+#+begin_src emacs-lisp
   (use-package autorevert
     :custom
     ;; Revert Dired and other buffers
@@ -634,7 +634,7 @@ Revert buffers when the underlying file has changed
 
 **** delsel :build_in:
 Replace selected text when typing
-#+begin_src
+#+begin_src emacs-lisp
   (use-package delsel
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
@@ -642,7 +642,7 @@ Replace selected text when typing
 
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
-#+begin_src
+#+begin_src emacs-lisp
   (use-package elec-pair
     :hook
     ((prog-mode conf-mode) . electric-pair-mode))
@@ -698,7 +698,7 @@ Paren mode for highlighting matcing paranthesis
 
 **** repeat :build_in:
 Enable repeat maps
-#+begin_src
+#+begin_src emacs-lisp
   (use-package repeat
     :hook
     (after-init . repeat-mode))
@@ -751,7 +751,7 @@ Enable repeat maps
 
 **** saveplace :build_in:
 Record cursor position from one session to the other
-#+begin_src
+#+begin_src emacs-lisp
   (use-package saveplace
     :hook
     (after-init . save-place-mode))
@@ -759,7 +759,7 @@ Record cursor position from one session to the other
 
 **** time-stamp :build_in:
 Automatically update file timestamps when file is saved
-#+begin_src
+#+begin_src emacs-lisp
   (use-package time-stamp
     :custom
     (time-stamp-active t)
@@ -780,7 +780,7 @@ Navigate between windows with Shift-arrow
 
 **** winner :build_in:
 Undo and redo changes to window configuration
-#+begin_src
+#+begin_src emacs-lisp
   (use-package winner
     :hook
     (after-init . winner-mode))
@@ -1376,7 +1376,7 @@ It is a bit slow to load so we do need load it explicitely.
 
 **** re-builder :build_in:
 Change re-builder syntax
-#+begin_src
+#+begin_src emacs-lisp
   ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
   (use-package re-builder
     :commands re-builder
@@ -1396,7 +1396,7 @@ Server start.
 #+end_src
 **** term :build_in:
 Major mode for interacting with a terminal
-#+begin_src
+#+begin_src emacs-lisp
   (use-package term
     :commands term
     :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
