@@ -11,6 +11,8 @@
   - [[#references][References]]
   - [[#conventional-headers-for-emacs-libraries][Conventional Headers for Emacs Libraries]]
   - [[#to-dos][To-dos]]
+  - [[#notes][Notes]]
+    - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#optimize-startup][Optimize Startup]]
     - [[#package-management][Package Management]]
@@ -64,19 +66,18 @@ This Emacs literate configuration has been inspired by the following projects:
 *** TODO Add iPython shell command
 *** TODO Add doom snippets?
 - [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
-
-*** TODO Keybindings
-- [[https://github.com/abo-abo/hydra][GitHub - abo-abo/hydra: make Emacs bindings that stick around]]
-- [[https://github.com/magit/transient][GitHub - magit/transient: Transient commands]]
-
-*** DONE Fix git timemachine
-CLOSED: [2023-05-24 Wed 08:55]
-:PROPERTIES:
-:ACTIVATED: [2023-05-24]
-:END:
-need meow-motion-mode!
 *** TODO anzu
 https://github.com/emacsorphanage/anzu
+** Notes
+*** Add git url to pkg headlines
+#+begin_src bash
+  for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
+      url=$(git -C ~/.emacs.d/straight/repos/*$p* remote get-url origin)
+      if [ $? -eq 0 ]; then
+          sed "s|\*\*\*\* $p|**** [[$url][$p]]|" -i emacs.org
+      fi;
+  done
+#+end_src
 
 ** Emacs Initialization
 *** Optimize Startup
@@ -390,14 +391,14 @@ This section initializes various keymaps used for different purposes.
 
 ** Configure Packages
 *** UI
-**** all-the-icons
+**** [[https://github.com/domtronn/all-the-icons.el.git][all-the-icons]]
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
     :no-require t)
 #+end_src
 
-**** ascii-art-to-unicode
+**** [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
   (use-package ascii-art-to-unicode
@@ -419,7 +420,7 @@ Make org-brain-visualize-mode look a bit nicer.
     (org-brain-after-visualize . aa2u-org-brain-buffer))
 #+end_src
 
-**** dashboard
+**** [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
 #+begin_src emacs-lisp
   (use-package dashboard
     :no-require t
@@ -454,7 +455,7 @@ Enable line numbers for some modes
      (org-mode . (lambda () (display-line-numbers-mode 0)))))
 #+end_src
 
-**** doom-modeline
+**** [[https://github.com/seagle0128/doom-modeline.git][doom-modeline]]
 A fancy and fast mode-line inspired by minimalism design.
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
@@ -496,7 +497,7 @@ Highlighting of the current line (native mode)
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
 
-**** ligatures
+**** [[https://github.com/mickeynp/ligature.el.git][ligature]]
 #+BEGIN_SRC emacs-lisp
   (use-package ligature
     :no-require t
@@ -572,7 +573,7 @@ Highlighting of the current line (native mode)
     :hook
     (after-init . global-ligature-mode))
 #+END_SRC
-**** modus-themes
+**** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
 
@@ -597,14 +598,14 @@ https://protesilaos.com/emacs/modus-themes
     ;; Load the theme of your choice.
     (load-theme 'modus-operandi :no-confirm))
 #+END_SRC
-**** nerd-icons
+**** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
   (use-package nerd-icons
     :no-require t)
 #+END_SRC
 
-**** spacious-padding
+**** [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
 Increase the padding/spacing of GNU Emacs frames and windows. 
 #+begin_src emacs-lisp
   (use-package spacious-padding
@@ -614,7 +615,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :hook
     (after-init . spacious-padding-mode))
 #+end_src
-**** visual-fill-column
+**** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
 #+begin_src emacs-lisp
   (use-package visual-fill-column
     :no-require t
@@ -667,7 +668,7 @@ Automatically add closing parentheses, quotes, etc.
     :hook
     (after-init . recentf-mode))
 #+end_src
-**** golden-ratio
+**** [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
 When working with many windows at the same time, each window has a size that is not convenient for editing.
 #+begin_src emacs-lisp
   (use-package golden-ratio
@@ -704,7 +705,7 @@ Enable repeat maps
     (after-init . repeat-mode))
 #+end_src
 
-**** rotate
+**** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 #+begin_src emacs-lisp
   (use-package rotate
     :no-require t
@@ -786,14 +787,14 @@ Undo and redo changes to window configuration
     (after-init . winner-mode))
 #+end_src
 
-**** writeroom-mode
+**** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 #+begin_src emacs-lisp
   (use-package writeroom-mode
     :no-require t
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
 *** Org
-**** org
+**** [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
 Let's include a newer version of org-mode than the one that is built in. We're going
 to manually remove the org directories from the load path, to ensure the version we
 want is prioritized instead.
@@ -1002,7 +1003,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :config
     (ox-extras-activate '(ignore-headlines)))
 #+END_SRC
-**** org-appear
+**** [[https://github.com/awth13/org-appear.git][org-appear]]
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
   (use-package org-appear
@@ -1011,14 +1012,14 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :hook (org-mode . org-appear-mode))
 #+end_src
 
-**** org-auto-tangle
+**** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
 #+BEGIN_SRC emacs-lisp
   (use-package org-auto-tangle
     :no-require t
     :after org
     :hook (org-mode . org-auto-tangle-mode))
 #+END_SRC
-**** org-brain
+**** [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
 #+begin_src emacs-lisp
   (use-package org-brain
     :no-require t
@@ -1075,7 +1076,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     (before-save . org-brain-ensure-ids-in-buffer))
 #+end_src
 
-**** org-cliplink
+**** [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
 
 #+BEGIN_SRC emacs-lisp
@@ -1084,7 +1085,7 @@ A simple command that takes a URL from the clipboard and inserts an org-mode lin
     :after org)
 #+END_SRC
 
-**** org-modern
+**** [[https://github.com/minad/org-modern.git][org-modern]]
 This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
 #+BEGIN_SRC emacs-lisp
@@ -1117,7 +1118,7 @@ This package implements a modern style for your Org buffers using font locking a
      org-agenda-current-time-string
      "⭠ now ─────────────────────────────────────────────────"))
 #+END_src
-**** org-noter
+**** [[https://github.com/org-noter/org-noter.git][org-noter]]
 
 #+begin_src emacs-lisp
   (use-package org-noter
@@ -1139,7 +1140,7 @@ This package implements a modern style for your Org buffers using font locking a
     (org-noter-insert-heading . org-id-get-create))
 #+end_src
 
-**** toc-org
+**** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Let's install and load the =toc-org= package after org mode is loaded. This is the
 package that automatically generates an up to date table of contents for us.
 
@@ -1152,7 +1153,7 @@ package that automatically generates an up to date table of contents for us.
 #+END_SRC
 
 *** Tools
-**** gptel
+**** [[https://github.com/karthink/gptel.git][gptel]]
 #+begin_src emacs-lisp
   (use-package gptel
     :no-require t
@@ -1187,7 +1188,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
     (ediff-split-window-function 'split-window-horizontally))
 #+end_src
 
-**** elfeed
+**** [[https://github.com/skeeto/elfeed.git][elfeed]]
 An Emacs web feeds client 
 #+begin_src emacs-lisp
   (use-package elfeed
@@ -1302,7 +1303,7 @@ An Emacs web feeds client
             "https://github.com/joaotavora/yasnippet/releases.atom"
             "https://github.com/zenlang/zen-mode/releases.atom")))
 #+end_src
-**** exec-path-from-shell
+**** [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :no-require t
@@ -1344,7 +1345,7 @@ An Emacs web feeds client
                 ([mouse-1] . flyspell-correct-at-point)))
 #+end_src
 
-**** helpful
+**** [[https://github.com/Wilfred/helpful.git][helpful]]
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
 It is a bit slow to load so we do need load it explicitely.
 
@@ -1361,7 +1362,7 @@ It is a bit slow to load so we do need load it explicitely.
      :map helpful-mode-map
      ([remap revert-buffer] . helpful-update)))
 #+end_src
-**** pdf-tools
+**** [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -1423,7 +1424,7 @@ remote file editing through ssh/scp.
                  (list (regexp-quote "/sshx:user@host:")
                        "remote-shell" "/bin/bash")))
 #+end_src
-**** vundo
+**** [[https://github.com/emacs-straight/vundo.git][vundo]]
 #+begin_src emacs-lisp
   (use-package vundo
     :no-require t
@@ -1435,7 +1436,7 @@ remote file editing through ssh/scp.
       (setq vundo-glyph-alist vundo-unicode-symbols)))
 #+end_src
 *** Completion
-**** cape
+**** [[https://github.com/minad/cape.git][cape]]
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
   (use-package cape
@@ -1483,7 +1484,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
       (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
 #+end_src
 
-**** citar
+**** [[https://github.com/emacs-citar/citar.git][citar]]
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
@@ -1569,7 +1570,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     (after-init . citar-embark-mode))
 #+end_src
 
-**** consult
+**** [[https://github.com/minad/consult.git][consult]]
 additional featureful completion commands
 #+begin_src emacs-lisp
   ;; Example configuration for Consult
@@ -1669,7 +1670,7 @@ additional featureful completion commands
       (autoload 'projectile-project-root "projectile")
       (setq consult-project-function (lambda (_) (projectile-project-root)))))
 #+end_src
-**** corfu
+**** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
   (use-package corfu
@@ -1739,7 +1740,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (after-init . corfu-popupinfo-mode))
 #+END_SRC
 
-**** embark
+**** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
   (use-package embark
@@ -1817,7 +1818,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
-**** marginalia
+**** [[https://github.com/minad/marginalia.git][marginalia]]
 #+BEGIN_SRC emacs-lisp
   (use-package marginalia
     :no-require t
@@ -1828,7 +1829,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (vertico-mode . marginalia-mode))
 #+END_SRC
 
-**** orderless
+**** [[https://github.com/oantolin/orderless.git][orderless]]
 Emacs completion style that matches multiple regexps in any order
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
@@ -1854,7 +1855,7 @@ Emacs completion style that matches multiple regexps in any order
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles basic-remote partial-completion)))))
 #+END_SRC
-**** tempel
+**** [[https://github.com/minad/tempel.git][tempel]]
 Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
 
 #+begin_src emacs-lisp
@@ -1899,7 +1900,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     :no-require t)
 #+end_src
 
-**** vertico
+**** [[https://github.com/emacs-straight/vertico.git][vertico]]
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
 
 #+BEGIN_SRC emacs-lisp
@@ -1947,7 +1948,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+end_src
 
 *** Version Control
-**** git-gutter
+**** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter
     :no-require t
@@ -1985,7 +1986,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 #+END_SRC
 
-**** git-timemachine
+**** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 #+begin_src emacs-lisp
   (use-package git-timemachine
     :no-require t
@@ -1994,7 +1995,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
           ("t" . git-timemachine)))
 #+end_src
 
-**** magit
+**** [[https://github.com/magit/magit.git][magit]]
 The magical git client. Let's load magit only when one of the several entry pont
 functions we invoke regularly outside of magit is called.
 
@@ -2019,7 +2020,7 @@ functions we invoke regularly outside of magit is called.
           ("r"  . magit-rebase)))
 #+END_SRC
 *** Project Management
-**** project-tab-groups
+**** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 #+begin_src emacs-lisp
   (use-package tab-bar
     :straight nil
@@ -2103,7 +2104,7 @@ functions we invoke regularly outside of magit is called.
       (tab-bar-echo-area-apply-display-tab-names-advice))
     :hook (after-init . project-tab-groups-mode))
 #+end_src
-**** speedbar
+**** speedbar :build_in:
 #+begin_src emacs-lisp
   (use-package speedbar
     :custom
@@ -2201,7 +2202,7 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 
 *** Programming
-**** vombobulate
+**** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs 
 #+begin_src emacs-lisp
   (use-package combobulate
@@ -2226,13 +2227,13 @@ Structured Editing and Navigation in Emacs
      (typescript-ts-mode . combobulate-mode)
      (tsx-ts-mode . combobulate-mode)))
 #+end_src
-**** eglot
+**** [[https://github.com/emacs-straight/eglot.git][eglot]]
 #+begin_src emacs-lisp
   (use-package eglot
     :hook ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 
-**** flycheck
+**** [[https://github.com/flycheck/flycheck.git][flycheck]]
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
     :no-require t
@@ -2246,7 +2247,7 @@ Structured Editing and Navigation in Emacs
     :hook (after-init . global-flycheck-mode))
 #+END_SRC
 
-**** Format All
+**** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
 #+begin_src emacs-lisp
   (use-package format-all
     :no-require t
@@ -2256,7 +2257,7 @@ Structured Editing and Navigation in Emacs
           ("f" . format-all-buffer)))
 #+end_src
 
-**** latex
+**** [[https://github.com/emacs-straight/auctex.git][auctex]]
 #+begin_src emacs-lisp
   (use-package auctex
     :no-require t
@@ -2273,19 +2274,19 @@ Structured Editing and Navigation in Emacs
     (TeX-save-query nil)
     (TeX-PDF-mode t))
 #+end_src
-**** lua
+**** [[https://github.com/immerrr/lua-mode.git][lua]]
 #+begin_src emacs-lisp
   (use-package lua-mode
     :no-require t
     :mode "\\.lua\\'")
 #+end_src
-**** markdown
+**** [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 #+begin_src emacs-lisp
   (use-package markdown-mode
     :no-require t
     :mode "\\.md\\'")
 #+end_src
-**** python
+**** [[https://github.com/pythonic-emacs/pythonic.git][python]]
 #+begin_src emacs-lisp
   (use-package python
     :no-require t
@@ -2338,30 +2339,7 @@ Structured Editing and Navigation in Emacs
     )
 #+end_src
 
-**** tree-sitter
-This is an Emacs Lisp binding for tree-sitter, an incremental parsing library. It requires Emacs 25.1 or above, built with dynamic module support.
-
-It aims to be the foundation for a new breed of Emacs packages that understand code structurally. For example:
-
-- Faster, fine-grained code highlighting.
-- More flexible code folding.
-- Structural editing (like Paredit, or even better) for non-Lisp code.
-- More informative indexing for imenu.
-
-#+begin_src emacs-lisp :tangle no
-  (use-package tree-sitter
-    :if (< emacs-major-version 29)
-    :config
-    (global-tree-sitter-mode)
-    :hook
-    (tree-sitter-after-on . tree-sitter-hl-mode))
-
-  (use-package tree-sitter-langs
-    :requires tree-sitter
-    :after tree-sitter)
-#+end_src
-
-**** treesit
+**** treesit :build_in:
 built-in tree-sitter integration for Emacs
 #+begin_src emacs-lisp
   (use-package treesit
@@ -2403,14 +2381,14 @@ built-in tree-sitter integration for Emacs
     (after-init . my/setup-install-grammars))
 #+end_src
 
-**** yaml
+**** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :no-require t
     :mode "\\.ya?ml\\'")
 #+end_src
 *** Keybindings
-**** meow
+**** [[https://github.com/meow-edit/meow.git][meow]]
 Meow is yet another modal editing mode for Emacs.
 #+BEGIN_SRC emacs-lisp
   (use-package meow
@@ -2545,7 +2523,7 @@ Meow is yet another modal editing mode for Emacs.
      (after-init . meow-global-mode)))
 #+END_SRC
 
-**** which-key
+**** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
   (use-package which-key
