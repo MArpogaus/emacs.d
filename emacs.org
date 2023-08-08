@@ -443,74 +443,77 @@ Highlighting of the current line (native mode)
     :config
     ;; set Fira as default font
     (set-frame-font "Fira Code Light-10" nil t)
-    ;; Enable the "www" ligature in every possible major mode
-    (ligature-set-ligatures 't '("www"))
-    ;; Enable traditional ligature support in eww-mode, if the
-    ;; `variable-pitch' face supports it
-    (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
-    ;; Enable all Cascadia and Fira Code ligatures in programming modes
-    (ligature-set-ligatures '(prog-mode org-mode)
-                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                              ;; =:= =!=
-                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                              ;; ;; ;;;
-                              (";" (rx (+ ";")))
-                              ;; && &&&
-                              ("&" (rx (+ "&")))
-                              ;; !! !!! !. !: !!. != !== !~
-                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                              ;; ?? ??? ?:  ?=  ?.
-                              ("?" (rx (or ":" "=" "\." (+ "?"))))
-                              ;; %% %%%
-                              ("%" (rx (+ "%")))
-                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                              ;; |->>-||-<<-| |- |== ||=||
-                              ;; |==>>==<<==<=>==//==/=!==:===>
-                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                              "-" "=" ))))
-                              ;; \\ \\\ \/
-                              ("\\" (rx (or "/" (+ "\\"))))
-                              ;; ++ +++ ++++ +>
-                              ("+" (rx (or ">" (+ "+"))))
-                              ;; :: ::: :::: :> :< := :// ::=
-                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                              "="))))
-                              ;; .. ... .... .= .- .? ..= ..<
-                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                              ;; *> */ *)  ** *** ****
-                              ("*" (rx (or ">" "/" ")" (+ "*"))))
-                              ;; www wwww
-                              ("w" (rx (+ "w")))
-                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                              ;; << <<< <<<<
-                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                              "-"  "/" "|" "="))))
-                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                              ;; >> >>> >>>>
-                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                           (+ "#"))))
-                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                              ;; __ ___ ____ _|_ __|____|_
-                              ("_" (rx (+ (or "_" "|"))))
-                              ;; Fira code: 0xFF 0x12
-                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                              ;; Fira code:
-                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                              ;; The few not covered by the regexps.
-                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
+    :preface
+    (defun my/setup-ligatures ()
+      ;; Enable the "www" ligature in every possible major mode
+      (ligature-set-ligatures 't '("www"))
+      ;; Enable traditional ligature support in eww-mode, if the
+      ;; `variable-pitch' face supports it
+      (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
+      ;; Enable all Cascadia and Fira Code ligatures in programming modes
+      (ligature-set-ligatures '(prog-mode org-mode)
+                              '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+                                ;; =:= =!=
+                                ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+                                ;; ;; ;;;
+                                (";" (rx (+ ";")))
+                                ;; && &&&
+                                ("&" (rx (+ "&")))
+                                ;; !! !!! !. !: !!. != !== !~
+                                ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+                                ;; ?? ??? ?:  ?=  ?.
+                                ("?" (rx (or ":" "=" "\." (+ "?"))))
+                                ;; %% %%%
+                                ("%" (rx (+ "%")))
+                                ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+                                ;; |->>-||-<<-| |- |== ||=||
+                                ;; |==>>==<<==<=>==//==/=!==:===>
+                                ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                                                "-" "=" ))))
+                                ;; \\ \\\ \/
+                                ("\\" (rx (or "/" (+ "\\"))))
+                                ;; ++ +++ ++++ +>
+                                ("+" (rx (or ">" (+ "+"))))
+                                ;; :: ::: :::: :> :< := :// ::=
+                                (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+                                ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+                                ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                                                "="))))
+                                ;; .. ... .... .= .- .? ..= ..<
+                                ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+                                ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+                                ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+                                ;; *> */ *)  ** *** ****
+                                ("*" (rx (or ">" "/" ")" (+ "*"))))
+                                ;; www wwww
+                                ("w" (rx (+ "w")))
+                                ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+                                ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+                                ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+                                ;; << <<< <<<<
+                                ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                                                "-"  "/" "|" "="))))
+                                ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+                                ;; >> >>> >>>>
+                                (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+                                ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+                                ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                                             (+ "#"))))
+                                ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+                                ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+                                ;; __ ___ ____ _|_ __|____|_
+                                ("_" (rx (+ (or "_" "|"))))
+                                ;; Fira code: 0xFF 0x12
+                                ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+                                ;; Fira code:
+                                "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+                                ;; The few not covered by the regexps.
+                                "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+      ;; Enables ligature checks globally in all buffers. You can also do it
+      ;; per mode with `ligature-mode'.
+      (global-ligature-mode))
     :hook
-    (after-init . global-ligature-mode))
+    (after-init . my/setup-ligatures))
 #+END_SRC
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
@@ -1096,18 +1099,18 @@ We will tweak the Emacs built-in ediff configuration a bit.
   (use-package ediff
     :preface
     (defvar my-ediff-original-windows nil)
-    (defun my-store-pre-ediff-winconfig ()
+    (defun my/store-pre-ediff-winconfig ()
       "This function stores the current window configuration before opening ediff."
-      (setq my-ediff-original-windows (current-window-configuration)))
-    (defun my-restore-pre-ediff-winconfig ()
+      (setq my/ediff-original-windows (current-window-configuration)))
+    (defun my/restore-pre-ediff-winconfig ()
       "This function resets the original window arrangement."
-      (set-window-configuration my-ediff-original-windows))
-    :hook
-    ((ediff-before-setup . my-store-pre-ediff-winconfig)
-     (ediff-quit . my-restore-pre-ediff-winconfig))
+      (set-window-configuration my/ediff-original-windows))
     :custom
     (ediff-window-setup-function 'ediff-setup-windows-plain)
-    (ediff-split-window-function 'split-window-horizontally))
+    (ediff-split-window-function 'split-window-horizontally)
+    :hook
+    ((ediff-before-setup . my/store-pre-ediff-winconfig)
+     (ediff-quit . my/restore-pre-ediff-winconfig)))
 #+end_src
 
 **** [[https://github.com/skeeto/elfeed.git][elfeed]]
@@ -1566,14 +1569,14 @@ additional featureful completion commands
     ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
-    ;; (consult-customize
-    ;;  consult-theme :preview-key '(:debounce 0.2 any)
-    ;;  consult-ripgrep consult-git-grep consult-grep
-    ;;  consult-bookmark consult-recent-file consult-xref
-    ;;  consult--source-bookmark consult--source-file-register
-    ;;  consult--source-recent-file consult--source-project-recent-file
-    ;;  ;; :preview-key "M-."
-    ;;  :preview-key '(:debounce 0.4 any))
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; :preview-key "M-."
+     :preview-key '(:debounce 0.4 any))
 
     ;; Configure a different project root function.
     (with-eval-after-load 'projectile
@@ -1970,10 +1973,10 @@ functions we invoke regularly outside of magit is called.
       (advice-add 'load-theme :after #'my/set-tab-faces)
       (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
       (tab-group "")
+      (my/set-tab-faces)
       (tab-bar-mode))
     :hook
-    ((after-init . my/setup-tab-bar-mode)
-     (tab-bar-mode . my/set-tab-faces)))
+    (after-init . my/setup-tab-bar-mode))
 
   (use-package project-tab-groups
     :after tab-bar
