@@ -14,7 +14,6 @@
   - [[#notes][Notes]]
     - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
   - [[#emacs-initialization][Emacs Initialization]]
-    - [[#optimize-startup][Optimize Startup]]
     - [[#package-management][Package Management]]
     - [[#benchmark-startup][Benchmark startup]]
     - [[#personal-information][Personal Information]]
@@ -80,78 +79,23 @@ https://github.com/emacsorphanage/anzu
 #+end_src
 
 ** Emacs Initialization
-*** Optimize Startup
-We're going to increase the gc-cons-threshold to a very high number to decrease the load and compile time and add a hook to measure Emacs startup time.
-We'll lower this value significantly after initialization has completed.
-We don't want to keep this value too high or it will result in long GC pauses during normal usage.
-
-Taken from: https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
-
-#+BEGIN_SRC emacs-lisp
-  (eval-and-compile
-    (setq gc-cons-threshold most-positive-fixnum
-          gc-cons-percentage 0.6)
-    ;; Let's lower our GC thresholds back down to a sane level.
-    (add-hook 'after-init-hook (lambda ()
-                                 ;; restore after startup
-                                 (setq gc-cons-threshold (* 2 1000 1000)
-                                       gc-cons-percentage 0.1)))
-
-    ;; Profile emacs startup
-    (add-hook 'emacs-startup-hook
-              (lambda ()
-                (message "*** Emacs loaded in %s with %d garbage collections."
-                         (format "%.2f seconds"
-                                 (float-time
-                                  (time-subtract after-init-time before-init-time)))
-                         gcs-done))))
-#+END_SRC
-
-Disable certain byte compiler warnings to cut down on the noise. This is a personal choice and can be removed
-if you would like to see any and all byte compiler warnings.
-
-#+BEGIN_SRC emacs-lisp
-  (eval-when-compile
-    (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local)))
-#+END_SRC
-
 *** Package Management
-**** straight.el bootstrap code
-This section provides the bootstrap code for =straight.el=, a package manager for Emacs. The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality. Here's the code:
-
-#+begin_src emacs-lisp
-  (eval-and-compile
-    ;; Optimze startup time
-    ;; https://github.com/radian-software/straight.el#my-use-package-form-isnt-working-properly
-    ;; (if (and (executable-find "watchexec") (executable-find "python3"))
-    ;;     (setq straight-check-for-modifications '(watch-files find-when-checking))
-    ;;   (setq straight-check-for-modifications '(check-on-save find-when-checking)))
-    ;;disable checking (for speedup).
-    (setq straight-check-for-modifications nil)
-
-    (defvar bootstrap-version)
-    (let ((bootstrap-file
-           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-          (bootstrap-version 6))
-      (unless (file-exists-p bootstrap-file)
-        (with-current-buffer
-            (url-retrieve-synchronously
-             "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-             'silent 'inhibit-cookies)
-          (goto-char (point-max))
-          (eval-print-last-sexp)))
-      (load bootstrap-file nil 'nomessage)))
-#+end_src
 **** Install and configure use-package
 
 Lets install and configure =use-package= and use =straight= as the underlying package manager.
 We also load =bind-key= here which is used by =use-package= for keybindings.
 
 #+begin_src emacs-lisp
-  (eval-when-compile
-    (straight-use-package 'use-package)
-    (setq straight-use-package-by-default t
-          use-package-always-defer t))
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t
+        use-package-always-defer t)
+  ;; make use-package more verbose when ´‘--debug-init´ is passed
+  ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
+  (when init-file-debug
+    (setq use-package-verbose t
+          use-package-expand-minimally nil
+          use-package-compute-statistics t
+          debug-on-error t))
 
   (require 'bind-key)
 #+end_src
@@ -286,7 +230,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
      ;; display column number in modeline
      ((prog-mode conf-mode) . column-number-mode)
      (kill-emacs . unpropertize-kill-ring)))
-  #+end_src
+#+end_src
 
 *** Keymaps
 
@@ -394,15 +338,13 @@ This section initializes various keymaps used for different purposes.
 **** [[https://github.com/domtronn/all-the-icons.el.git][all-the-icons]]
 
 #+begin_src emacs-lisp
-  (use-package all-the-icons
-    :no-require t)
+  (use-package all-the-icons)
 #+end_src
 
 **** [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
   (use-package ascii-art-to-unicode
-    :no-require t
     :after org-brain
     :preface
     (defface aa2u-face '((t . nil))
@@ -423,7 +365,6 @@ Make org-brain-visualize-mode look a bit nicer.
 **** [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
 #+begin_src emacs-lisp
   (use-package dashboard
-    :no-require t
     :custom
     ;; Content is not centered by default. To center, set
     (dashboard-center-content t)
@@ -447,7 +388,7 @@ Make org-brain-visualize-mode look a bit nicer.
 #+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
- #+begin_src emacs-lisp
+#+begin_src emacs-lisp
   (use-package display-line-numbers
     :hook
     (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
@@ -459,7 +400,6 @@ Enable line numbers for some modes
 A fancy and fast mode-line inspired by minimalism design.
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
-    :no-require t
     :custom
     ;; If non-nil, cause imenu to see `doom-modeline' declarations.
     ;; This is done by adjusting `lisp-imenu-generic-expression' to
@@ -500,7 +440,6 @@ Highlighting of the current line (native mode)
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
 #+BEGIN_SRC emacs-lisp
   (use-package ligature
-    :no-require t
     :config
     ;; set Fira as default font
     (set-frame-font "Fira Code Light-10" nil t)
@@ -579,7 +518,6 @@ https://protesilaos.com/emacs/modus-themes
 
 #+BEGIN_SRC emacs-lisp
   (use-package modus-themes
-    :no-require t
     :demand t
     :bind
     (:map my/toggle-map
@@ -601,15 +539,13 @@ https://protesilaos.com/emacs/modus-themes
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
 #+BEGIN_SRC emacs-lisp
-  (use-package nerd-icons
-    :no-require t)
+  (use-package nerd-icons)
 #+END_SRC
 
 **** [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
 Increase the padding/spacing of GNU Emacs frames and windows. 
 #+begin_src emacs-lisp
   (use-package spacious-padding
-    :no-require t
     :custom
     (spacious-padding-widths '(:internal-border-width 15 :right-divider-width 10 :scroll-bar-width 8))
     :hook
@@ -618,7 +554,6 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 **** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
 #+begin_src emacs-lisp
   (use-package visual-fill-column
-    :no-require t
     :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
 #+end_src
 *** UX
@@ -631,7 +566,7 @@ Revert buffers when the underlying file has changed
     (global-auto-revert-non-file-buffers t)
     :hook
     (after-init . global-auto-revert-mode))
-  #+end_src
+#+end_src
 
 **** delsel :build_in:
 Replace selected text when typing
@@ -639,7 +574,7 @@ Replace selected text when typing
   (use-package delsel
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
-  #+end_src
+#+end_src
 
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
@@ -647,7 +582,7 @@ Automatically add closing parentheses, quotes, etc.
   (use-package elec-pair
     :hook
     ((prog-mode conf-mode) . electric-pair-mode))
-  #+end_src
+#+end_src
 
 **** fecentf :build_in:
 
@@ -672,7 +607,6 @@ Automatically add closing parentheses, quotes, etc.
 When working with many windows at the same time, each window has a size that is not convenient for editing.
 #+begin_src emacs-lisp
   (use-package golden-ratio
-    :no-require t
     :custom
     (golden-ratio-exclude-modes '(speedbar-mode vundo-mode))
     (golden-ratio-auto-scale t)
@@ -708,7 +642,6 @@ Enable repeat maps
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 #+begin_src emacs-lisp
   (use-package rotate
-    :no-require t
     :bind
     (:repeat-map my/window-map
                  ("R" . rotate-layout)
@@ -790,7 +723,6 @@ Undo and redo changes to window configuration
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 #+begin_src emacs-lisp
   (use-package writeroom-mode
-    :no-require t
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
 *** Org
@@ -803,7 +735,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :no-require t
     :custom
     (org-ellipsis " ▾")
     (org-src-fontify-natively t)
@@ -997,7 +928,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
                  '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 
   (use-package ox-extra
-    :no-require t
     :straight nil
     :after org
     :config
@@ -1007,7 +937,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
   (use-package org-appear
-    :no-require t
     :after org
     :hook (org-mode . org-appear-mode))
 #+end_src
@@ -1015,14 +944,12 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 **** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
 #+BEGIN_SRC emacs-lisp
   (use-package org-auto-tangle
-    :no-require t
     :after org
     :hook (org-mode . org-auto-tangle-mode))
 #+END_SRC
 **** [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
 #+begin_src emacs-lisp
   (use-package org-brain
-    :no-require t
     :after org org-noter
     :preface
     ;; from org brain README
@@ -1081,7 +1008,6 @@ A simple command that takes a URL from the clipboard and inserts an org-mode lin
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-cliplink
-    :no-require t
     :after org)
 #+END_SRC
 
@@ -1090,7 +1016,6 @@ This package implements a modern style for your Org buffers using font locking a
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-modern
-    :no-require t
     :hook (org-mode . global-org-modern-mode)
     ;;:after org
     :custom
@@ -1122,7 +1047,6 @@ This package implements a modern style for your Org buffers using font locking a
 
 #+begin_src emacs-lisp
   (use-package org-noter
-    :no-require t
     :after org
     :custom
     ;; The WM can handle splits
@@ -1146,7 +1070,6 @@ package that automatically generates an up to date table of contents for us.
 
 #+BEGIN_SRC emacs-lisp
   (use-package toc-org
-    :no-require t
     :after org
     :hook
     (org-mode . toc-org-enable))
@@ -1156,7 +1079,6 @@ package that automatically generates an up to date table of contents for us.
 **** [[https://github.com/karthink/gptel.git][gptel]]
 #+begin_src emacs-lisp
   (use-package gptel
-    :no-require t
     :custom
     (gptel-default-mode 'org-mode)
     :bind
@@ -1192,7 +1114,6 @@ We will tweak the Emacs built-in ediff configuration a bit.
 An Emacs web feeds client 
 #+begin_src emacs-lisp
   (use-package elfeed
-    :no-require t
     :bind
     (:map my/open-map
           ("f" . elfeed))
@@ -1306,7 +1227,6 @@ An Emacs web feeds client
 **** [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
-    :no-require t
     :config
     (defun my/copy-ssh-env ()
       (exec-path-from-shell-copy-env "SSH_AGENT_PID")
@@ -1318,31 +1238,28 @@ An Emacs web feeds client
 
 **** flyspell :build_in:
 #+begin_src emacs-lisp
-  (use-package ispell
-    :custom
-    (ispell-program-name "hunspell")
-    (ispell-dictionary "en_US,de_DE")
-    :config
-    (ispell-set-spellchecker-params)
-    (ispell-hunspell-add-multi-dic "en_US,de_DE"))
-
   (use-package flyspell
     :preface
     (defun my/restart-flyspell-mode ()
       (when flyspell-mode
         (flyspell-mode-off)
         (flyspell-mode-on)))
+    :config
+    (use-package ispell
+      :custom
+      (ispell-program-name "hunspell")
+      (ispell-dictionary "en_US,de_DE")
+      :config
+      (ispell-set-spellchecker-params)
+      (ispell-hunspell-add-multi-dic "en_US,de_DE"))
+    (use-package flyspell-correct
+      :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
+                  :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
+                  ([mouse-1] . flyspell-correct-at-point)))
     :hook
     (((text-mode conf-mode org-mode) . flyspell-mode)
      (prog-mode . flyspell-prog-mode)
      (ispell-change-dictionary . restart-flyspell-mode)))
-
-  (use-package flyspell-correct
-    :no-require t
-    :after flyspell
-    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-                ([mouse-1] . flyspell-correct-at-point)))
 #+end_src
 
 **** [[https://github.com/Wilfred/helpful.git][helpful]]
@@ -1351,7 +1268,6 @@ It is a bit slow to load so we do need load it explicitely.
 
 #+begin_src emacs-lisp
   (use-package helpful
-    :no-require t
     :bind
     (([remap describe-function] . helpful-function)
      ([remap describe-symbol] . helpful-symbol)
@@ -1366,7 +1282,6 @@ It is a bit slow to load so we do need load it explicitely.
 
 #+begin_src emacs-lisp
   (use-package pdf-tools
-    :no-require t
     :magic ("%PDF" . pdf-view-mode)
     :config
     (pdf-tools-install :no-query)
@@ -1427,7 +1342,6 @@ remote file editing through ssh/scp.
 **** [[https://github.com/emacs-straight/vundo.git][vundo]]
 #+begin_src emacs-lisp
   (use-package vundo
-    :no-require t
     :bind
     (:map my/open-map
           ("u". vundo))
@@ -1440,7 +1354,6 @@ remote file editing through ssh/scp.
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
   (use-package cape
-    :no-require t
     ;; Bind dedicated completion commands
     ;; Alternative prefix keys: C-c p, M-p, M-+, ...
     :bind (:map my/completion-map
@@ -1488,7 +1401,6 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
-    :no-require t
     :after all-the-icons org
     :custom
     (org-cite-insert-processor 'citar)
@@ -1564,7 +1476,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     ((LaTeX-mode . citar-capf-setup)
      (org-mode . citar-capf-setup)))
   (use-package citar-embark
-    :no-require t
     :after citar
     :hook
     (after-init . citar-embark-mode))
@@ -1575,7 +1486,6 @@ additional featureful completion commands
 #+begin_src emacs-lisp
   ;; Example configuration for Consult
   (use-package consult
-    :no-require t
     ;; Replace bindings. Lazily loaded due by `use-package'.
     :bind (([remap Info-search] . consult-info)
            ([remap recentf-open] . consult-recent-file)
@@ -1674,7 +1584,6 @@ additional featureful completion commands
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+BEGIN_SRC emacs-lisp
   (use-package corfu
-    :no-require t
     :custom
     ;; TAB cycle if there are only few candidates
     (completion-cycle-threshold 3)
@@ -1726,14 +1635,12 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
                            (corfu-mode)))))
 
   (use-package corfu-terminal
-    :no-require t
     :if (display-graphic-p)
     :after corfu
     :hook
     (after-init . corfu-terminal-mode))
 
   (use-package corfu-popupinfo
-    :no-require t
     :straight nil
     :after corfu
     :hook
@@ -1744,7 +1651,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
   (use-package embark
-    :no-require t
     :after which-key
     :bind
     (("C-." . embark-act)         ;; pick some comfortable binding
@@ -1813,7 +1719,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 
   ;; Consult users will also want the embark-consult package.
   (use-package embark-consult
-    :no-require t
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
@@ -1821,7 +1726,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 #+BEGIN_SRC emacs-lisp
   (use-package marginalia
-    :no-require t
     :after vertico
     :custom
     (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
@@ -1833,7 +1737,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 Emacs completion style that matches multiple regexps in any order
 #+BEGIN_SRC emacs-lisp
   (use-package orderless
-    :no-require t
     :after vertico
     :preface
     ;; In combination with Orderless or other non-prefix completion styles like substring or flex,
@@ -1861,7 +1764,6 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 #+begin_src emacs-lisp
   ;; Configure Tempel
   (use-package tempel
-    :no-require t
     ;; Require trigger prefix before template name when completing.
     :custom
     (tempel-trigger-prefix ">")
@@ -1896,8 +1798,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 
   ;; Optional: Add tempel-collection.
   ;; The package is young and doesn't have comprehensive coverage.
-  (use-package tempel-collection
-    :no-require t)
+  (use-package tempel-collection)
 #+end_src
 
 **** [[https://github.com/emacs-straight/vertico.git][vertico]]
@@ -1905,7 +1806,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
 #+BEGIN_SRC emacs-lisp
   (use-package vertico
-    :no-require t
     :custom
     ;; Show more candidates
     (vertico-count 20)
@@ -1942,7 +1842,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
      (after-init . vertico-mode)))
 
   (use-package vertico-directory
-    :no-require t
     :straight nil
     :after vertico)
 #+end_src
@@ -1951,7 +1850,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
 #+BEGIN_SRC emacs-lisp
   (use-package git-gutter
-    :no-require t
     :custom
     (git-gutter:ask-p . nil)
     (git-gutter:disabled-modes '(fundamental-mode image-mode pdf-view-mode))
@@ -1963,8 +1861,14 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     (git-gutter:handled-backends
      (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
                                   :key #'symbol-name)))
-    ;; :config
+    :config
     ;; (add-hook 'after-focus-change-function #'git-gutter:update-all-windows)
+    (use-package git-gutter-fringe
+      :demand t
+      :config
+      (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+      (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+      (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
     :bind
     (:repeat-map my/git-gutter-repeat-map
                  ("n" . git-gutter:next-hunk)
@@ -1976,20 +1880,11 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
                  ("c" . magit-commit-create))
     :hook
     (after-init . global-git-gutter-mode))
-  (use-package git-gutter-fringe
-    :no-require t
-    :demand t
-    :after git-gutter
-    :config
-    (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 #+END_SRC
 
 **** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 #+begin_src emacs-lisp
   (use-package git-timemachine
-    :no-require t
     :bind
     (:map my/version-control-map
           ("t" . git-timemachine)))
@@ -2001,7 +1896,6 @@ functions we invoke regularly outside of magit is called.
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
-    :no-require t
     :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
     :bind
     (:map my/version-control-map
@@ -2072,16 +1966,16 @@ functions we invoke regularly outside of magit is called.
                                        ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
                                        ignore))))))
 
-    :config
-    (advice-add 'load-theme :after #'my/set-tab-faces)
-    (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
-    (tab-group "")
+    (defun my/setup-tab-bar-mode nil
+      (advice-add 'load-theme :after #'my/set-tab-faces)
+      (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
+      (tab-group "")
+      (tab-bar-mode))
     :hook
-    ((after-init . tab-bar-mode)
+    ((after-init . my/setup-tab-bar-mode)
      (tab-bar-mode . my/set-tab-faces)))
 
   (use-package project-tab-groups
-    :no-require t
     :after tab-bar
     :preface
     ;; We need to update the provided advice for kill project buffers to find
@@ -2187,7 +2081,6 @@ functions we invoke regularly outside of magit is called.
                         ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                         (text-scale-adjust -1)))))
   (use-package sr-speedbar
-    :no-require t
     :custom
     (sr-speedbar-right-side nil)
     :bind
@@ -2206,7 +2099,6 @@ functions we invoke regularly outside of magit is called.
 Structured Editing and Navigation in Emacs 
 #+begin_src emacs-lisp
   (use-package combobulate
-    :no-require t
     :after treesit
     :custom
     ;; You can customize Combobulate's key prefix here.
@@ -2236,7 +2128,6 @@ Structured Editing and Navigation in Emacs
 **** [[https://github.com/flycheck/flycheck.git][flycheck]]
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
-    :no-require t
     :custom
     ;; Let diff-hl have left fringe, flycheck can have right fringe
     (flycheck-indication-mode 'right-fringe)
@@ -2250,7 +2141,6 @@ Structured Editing and Navigation in Emacs
 **** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
 #+begin_src emacs-lisp
   (use-package format-all
-    :no-require t
     ;;:hook (prog-mode . format-all-mode)
     :bind
     (:map my/toggle-map
@@ -2260,7 +2150,6 @@ Structured Editing and Navigation in Emacs
 **** [[https://github.com/emacs-straight/auctex.git][auctex]]
 #+begin_src emacs-lisp
   (use-package auctex
-    :no-require t
     :mode ("\\.tex\\'" . latex-mode)
     :commands (latex-mode LaTeX-mode plain-tex-mode)
     :hook
@@ -2277,19 +2166,16 @@ Structured Editing and Navigation in Emacs
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 #+begin_src emacs-lisp
   (use-package lua-mode
-    :no-require t
     :mode "\\.lua\\'")
 #+end_src
 **** [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 #+begin_src emacs-lisp
   (use-package markdown-mode
-    :no-require t
     :mode "\\.md\\'")
 #+end_src
 **** [[https://github.com/pythonic-emacs/pythonic.git][python]]
 #+begin_src emacs-lisp
   (use-package python
-    :no-require t
     :mode ("[./]flake8\\'" . conf-mode)
     :mode ("/Pipfile\\'" . conf-mode)
     :mode ("\\.py\\'" . python-mode)
@@ -2307,19 +2193,15 @@ Structured Editing and Navigation in Emacs
       (setq python-shell-interpreter "python3")))
 
   (use-package pyimport
-    :no-require t
     :after python)
 
   (use-package py-isort
-    :no-require t
     :after python)
 
   (use-package numpydoc
-    :no-require t
     :after python)
 
   (use-package conda
-    :no-require t
     :after python
     :custom
     ;; support for mambaforge envs
@@ -2343,7 +2225,6 @@ Structured Editing and Navigation in Emacs
 built-in tree-sitter integration for Emacs
 #+begin_src emacs-lisp
   (use-package treesit
-    :no-require t
     :if (>= emacs-major-version 29)
     :straight nil
     :config
@@ -2384,7 +2265,6 @@ built-in tree-sitter integration for Emacs
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 #+begin_src emacs-lisp
   (use-package yaml-mode
-    :no-require t
     :mode "\\.ya?ml\\'")
 #+end_src
 *** Keybindings
@@ -2430,7 +2310,6 @@ Meow is yet another modal editing mode for Emacs.
     :config
     ;; Apply advice to 'meow--mode-get-state'
     (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
-
     (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
     :bind
     (:map meow-motion-state-keymap
@@ -2527,7 +2406,6 @@ Meow is yet another modal editing mode for Emacs.
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
   (use-package which-key
-    :no-require t
     :after meow emacs
     :defer 0.1
     :custom
