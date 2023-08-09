@@ -1079,15 +1079,12 @@ package that automatically generates an up to date table of contents for us.
 #+END_SRC
 
 *** Tools
-**** [[https://github.com/karthink/gptel.git][gptel]]
+**** [[https://github.com/radian-software/ctrlf.git][ctrlf]]
 #+begin_src emacs-lisp
-  (use-package gptel
-    :custom
-    (gptel-default-mode 'org-mode)
-    :bind
-    (:map my/open-map
-          ("g". gptel))
-    :commands (gptel gptel-send))
+  (use-package ctrlf
+    :hook
+    ((after-init . ctrlf-mode)
+     (pdf-isearch-minor-mode . (lambda () (ctrlf-local-mode -1)))))
 #+end_src
 
 **** ediff :build_in:
