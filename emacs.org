@@ -2138,7 +2138,7 @@ Structured Editing and Navigation in Emacs
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
     :custom
-    ;; Let diff-hl have left fringe, flycheck can have right fringe
+    ;; Let git gutter have left fringe, flycheck can have right fringe
     (flycheck-indication-mode 'right-fringe)
     :config
     ;; A non-descript, left-pointing arrow
@@ -2146,6 +2146,15 @@ Structured Editing and Navigation in Emacs
       [16 48 112 240 112 48 16] nil nil 'center)
     :hook (after-init . global-flycheck-mode))
 #+END_SRC
+
+**** [[https://github.com/emacs-straight/flymake.git][flymake]]
+universal on-the-fly syntax checker for Emacs
+#+begin_src emacs-lisp
+  (use-package flymake
+    :custom
+    ;; Let git gutter have left fringe, flymake can have right fringe
+    (flymake-fringe-indicator-position 'right-fringe))
+#+end_src
 
 **** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
 #+begin_src emacs-lisp
