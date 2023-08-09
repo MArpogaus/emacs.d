@@ -2128,6 +2128,12 @@ Structured Editing and Navigation in Emacs
     :hook ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 
+**** [[https://github.com/millejoh/emacs-ipython-notebook][ein]]
+#+begin_src emacs-lisp
+  (use-package ein
+    :mode ("\\.ipynb\\'" . ein:ipynb-mode))
+#+end_src
+
 **** [[https://github.com/flycheck/flycheck.git][flycheck]]
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
