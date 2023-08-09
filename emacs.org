@@ -299,7 +299,7 @@ This section initializes various keymaps used for different purposes.
           ("c" . copy-file)
           ("f" . find-file)
           ("d" . delete-file)
-          ("r" . reaname-file)
+          ("r" . rename-file)
           ("w" . write-file)
           :map my/open-map
           ("F" . make-frame)
@@ -587,7 +587,7 @@ Automatically add closing parentheses, quotes, etc.
     ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
 
-**** fecentf :build_in:
+**** recentf :build_in:
 
 50 Recents files with some exclusion (regex patterns).
 
@@ -1243,7 +1243,8 @@ An Emacs web feeds client
     (defun my/restart-flyspell-mode ()
       (when flyspell-mode
         (flyspell-mode-off)
-        (flyspell-mode-on)))
+        (flyspell-mode-on)
+        (flyspell-buffer)))
     :config
     (use-package ispell
       :custom
@@ -1260,6 +1261,17 @@ An Emacs web feeds client
     (((text-mode conf-mode org-mode) . flyspell-mode)
      (prog-mode . flyspell-prog-mode)
      (ispell-change-dictionary . restart-flyspell-mode)))
+#+end_src
+
+**** [[https://github.com/karthink/gptel.git][gptel]]
+#+begin_src emacs-lisp
+  (use-package gptel
+    :custom
+    (gptel-default-mode 'org-mode)
+    :bind
+    (:map my/open-map
+          ("g". gptel))
+    :commands (gptel gptel-send))
 #+end_src
 
 **** [[https://github.com/Wilfred/helpful.git][helpful]]
@@ -2095,6 +2107,23 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 
 *** Programming
+**** [[https://github.com/emacs-straight/auctex.git][auctex]]
+#+begin_src emacs-lisp
+  (use-package auctex
+    :mode ("\\.tex\\'" . latex-mode)
+    :commands (latex-mode LaTeX-mode plain-tex-mode)
+    :hook
+    ((LaTeX-mode-hook . LaTeX-preview-setup)
+     (LaTeX-mode-hook . LaTeX-math-mode)
+     (LaTeX-mode-hook . flyspell-mode)
+     (LaTeX-mode-hook . turn-on-reftex))
+    :custom
+    (TeX-auto-save t)
+    (TeX-parse-self t)
+    (TeX-save-query nil)
+    (TeX-PDF-mode t))
+#+end_src
+
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs 
 #+begin_src emacs-lisp
@@ -2162,22 +2191,6 @@ universal on-the-fly syntax checker for Emacs
           ("f" . format-all-buffer)))
 #+end_src
 
-**** [[https://github.com/emacs-straight/auctex.git][auctex]]
-#+begin_src emacs-lisp
-  (use-package auctex
-    :mode ("\\.tex\\'" . latex-mode)
-    :commands (latex-mode LaTeX-mode plain-tex-mode)
-    :hook
-    ((LaTeX-mode-hook . LaTeX-preview-setup)
-     (LaTeX-mode-hook . LaTeX-math-mode)
-     (LaTeX-mode-hook . flyspell-mode)
-     (LaTeX-mode-hook . turn-on-reftex))
-    :custom
-    (TeX-auto-save t)
-    (TeX-parse-self t)
-    (TeX-save-query nil)
-    (TeX-PDF-mode t))
-#+end_src
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 #+begin_src emacs-lisp
   (use-package lua-mode
