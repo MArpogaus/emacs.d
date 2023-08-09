@@ -840,12 +840,12 @@ Agenda view and task management has been inspired by https://github.com/rougier/
      (mapcar 'file-truename
              (file-expand-wildcards (concat org-directory "agenda/*.org"))))
     ;; Refile and Archive
-    (org-refile-use-outline-path 'file
-                                 org-outline-path-complete-in-steps nil
-                                 org-refile-targets `((,(expand-file-name  "agenda/agenda.org" org-directory) :maxlevel . 3)
-                                                      (,(expand-file-name  "agenda/projects.org" org-directory) :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
-                                                      (,(expand-file-name  "agenda/literature.org" org-directory) :maxlevel . 2)
-                                                      (,(expand-file-name  "agenda/scheduled.org" org-directory) :maxlevel . 2)))
+    (org-refile-use-outline-path 'file)
+    (org-outline-path-complete-in-steps nil)
+    (org-refile-targets `((,(expand-file-name  "agenda/agenda.org" org-directory) :maxlevel . 3)
+                          (,(expand-file-name  "agenda/projects.org" org-directory) :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
+                          (,(expand-file-name  "agenda/literature.org" org-directory) :maxlevel . 2)
+                          (,(expand-file-name  "agenda/scheduled.org" org-directory) :maxlevel . 2)))
     (org-agenda-custom-commands
      '(("g" "Get Things Done (GTD)"
         ((agenda ""
