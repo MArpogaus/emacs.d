@@ -1,2 +1,0 @@
--- [ $1 ] ${1:$(make-string (- 72 (string-width yas-text)) ?-)}
-$2
