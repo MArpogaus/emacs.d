@@ -30,6 +30,9 @@
 ;; The following optimisatzion have been taken from:
 ;; https://github.com/mnewt/dotemacs/blob/master/early-init.el
 
+;; Default frame settings. This is actually maximized, not full screen.
+(push '(fullscreen . maximized) initial-frame-alist)
+
 ;; Resizing the Emacs frame can be a terribly expensive part of changing the
 ;; font. By inhibiting this, we easily halve startup times with fonts that are
 ;; larger than the system default.
