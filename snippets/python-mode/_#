@@ -1,1 +1,0 @@
-# ${1:$$(upcase yas-text)} ${1:$(make-string (- 76 (string-width yas-text)) ?#)}
