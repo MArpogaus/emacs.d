@@ -1504,13 +1504,12 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     ;; optional: org-cite-insert is also bound to C-c C-x C-@
     ;;:bind
     ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
+    (use-package citar-embark
+      :config
+      (citar-embark-mode))
     :hook
     ((LaTeX-mode . citar-capf-setup)
      (org-mode . citar-capf-setup)))
-  (use-package citar-embark
-    :after citar
-    :hook
-    (after-init . citar-embark-mode))
 #+end_src
 
 **** [[https://github.com/minad/consult.git][consult]]
