@@ -42,7 +42,7 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://github.com/zoliky/dotemacs][GitHub - zoliky/dotemacs: My GNU Emacs configuration.]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
-  
+
 ** Conventional Headers for Emacs Libraries
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+begin_src emacs-lisp
@@ -111,14 +111,14 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
 *** Personal Information
 Let's set some variables with basic user information.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (setq user-full-name "Marcel Arpogaus"
         user-mail-address "znepry.necbtnhf@tznvy.pbz")
-#+END_SRC
+#+end_src
 
 *** Paths
 Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package no-littering
     :demand t
     :init
@@ -236,7 +236,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
 This section initializes various keymaps used for different purposes.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   ;; setup keymaps
   (use-package emacs
     :preface
@@ -331,7 +331,7 @@ This section initializes various keymaps used for different purposes.
           ("m" . delete-other-windows)
           ("m" . delete-other-windows)
           ("M" . delete-other-windows-vertically)))
-#+END_SRC
+#+end_src
 
 ** Configure Packages
 *** UI
@@ -398,7 +398,7 @@ Enable line numbers for some modes
 
 **** [[https://github.com/seagle0128/doom-modeline.git][doom-modeline]]
 A fancy and fast mode-line inspired by minimalism design.
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package doom-modeline
     :custom
     ;; If non-nil, cause imenu to see `doom-modeline' declarations.
@@ -447,7 +447,8 @@ A fancy and fast mode-line inspired by minimalism design.
 
     :hook
     (after-init . doom-modeline-mode))
-#+END_SRC
+    #+end_src
+
 **** hl-line :build_in:
 
 Highlighting of the current line (native mode)
@@ -459,7 +460,7 @@ Highlighting of the current line (native mode)
 #+end_src
 
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package ligature
     :config
     ;; set Fira as default font
@@ -535,12 +536,12 @@ Highlighting of the current line (native mode)
       (global-ligature-mode))
     :hook
     (after-init . my/setup-ligatures))
-#+END_SRC
+#+end_src
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package modus-themes
     :demand t
     :bind
@@ -559,10 +560,10 @@ https://protesilaos.com/emacs/modus-themes
     :config
     ;; Load the theme of your choice.
     (load-theme 'modus-operandi :no-confirm))
-#+END_SRC
+#+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package nerd-icons)
 #+end_src
 
@@ -580,7 +581,7 @@ display LaTeX compilation information in the mode line
 #+end_src
 
 **** [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
-Increase the padding/spacing of GNU Emacs frames and windows. 
+Increase the padding/spacing of GNU Emacs frames and windows.
 #+begin_src emacs-lisp
   (use-package spacious-padding
     :custom
@@ -621,6 +622,53 @@ Automatically add closing parentheses, quotes, etc.
     ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
 
+**** [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
+When working with many windows at the same time, each window has a size that is not convenient for editing.
+#+begin_src emacs-lisp
+  (use-package golden-ratio
+    :custom
+    (golden-ratio-exclude-modes '(speedbar-mode vundo-mode minimap-sb-mode))
+    (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*"))
+    (golden-ratio-auto-scale t)
+    :config
+    (add-to-list 'golden-ratio-inhibit-functions
+                 (lambda ()
+                   (and which-key--buffer
+                        (window-live-p (get-buffer-window which-key--buffer)))))
+    :hook
+    (after-init . golden-ratio-mode))
+#+end_src
+**** [[https://github.com/dengste/minimap.git][minimap]]
+#+begin_src emacs-lisp
+  (use-package minimap
+    :custom
+    (minimap-window-location 'right)
+    (minimap-hide-fringes t)
+    (minimap-width-fraction 0.05)
+    :config
+    (with-eval-after-load 'golden-ratio
+      (add-to-list 'golden-ratio-inhibit-functions
+                   (lambda ()
+                     (and minimap-buffer-name
+                          (window-live-p (get-buffer-window minimap-buffer-name)))))
+      (add-to-list 'golden-ratio-exclude-buffer-names `(,minimap-buffer-name)))
+    :bind
+    (:map my/toggle-map
+          ("m" . minimap-mode)))
+          #+end_src
+**** paren :build_in:
+Paren mode for highlighting matcing paranthesis
+
+#+begin_src emacs-lisp
+  (use-package paren
+    :custom
+    (show-paren-style 'parenthesis)
+    (show-paren-when-point-in-periphery t)
+    (show-paren-when-point-inside-paren nil)
+    :hook
+    (prog-mode . show-paren-mode))
+#+end_src
+
 **** recentf :build_in:
 
 50 Recents files with some exclusion (regex patterns).
@@ -640,35 +688,6 @@ Automatically add closing parentheses, quotes, etc.
     :hook
     (after-init . recentf-mode))
 #+end_src
-**** [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
-When working with many windows at the same time, each window has a size that is not convenient for editing.
-#+begin_src emacs-lisp
-  (use-package golden-ratio
-    :custom
-    (golden-ratio-exclude-modes '(speedbar-mode vundo-mode minimap-sb-mode))
-    (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*"))
-    (golden-ratio-auto-scale t)
-    :config
-    (add-to-list 'golden-ratio-inhibit-functions
-                 (lambda ()
-                   (and which-key--buffer
-                        (window-live-p (get-buffer-window which-key--buffer)))))
-    :hook
-    (after-init . golden-ratio-mode))
-#+end_src
-**** paren :build_in:
-Paren mode for highlighting matcing paranthesis
-
-#+begin_src emacs-lisp
-  (use-package paren
-    :custom
-    (show-paren-style 'parenthesis)
-    (show-paren-when-point-in-periphery t)
-    (show-paren-when-point-inside-paren nil)
-    :hook
-    (prog-mode . show-paren-mode))
-#+end_src
-
 **** repeat :build_in:
 Enable repeat maps
 #+begin_src emacs-lisp
@@ -763,25 +782,6 @@ Undo and redo changes to window configuration
   (use-package writeroom-mode
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
-
-**** [[https://github.com/dengste/minimap.git][minimap]]
-#+begin_src emacs-lisp
-  (use-package minimap
-    :custom
-    (minimap-window-location 'right)
-    (minimap-hide-fringes t)
-    (minimap-width-fraction 0.05)
-    :config
-    (with-eval-after-load 'golden-ratio
-      (add-to-list 'golden-ratio-inhibit-functions
-                   (lambda ()
-                     (and minimap-buffer-name
-                          (window-live-p (get-buffer-window minimap-buffer-name)))))
-      (add-to-list 'golden-ratio-exclude-buffer-names `(,minimap-buffer-name)))
-    :bind
-    (:map my/toggle-map
-          ("m" . minimap-mode)))
-          #+end_src
 *** Org
 **** [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
 Let's include a newer version of org-mode than the one that is built in. We're going
@@ -790,7 +790,7 @@ want is prioritized instead.
 
 Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package org
     :custom
     (org-ellipsis " ▾")
@@ -989,7 +989,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :after org
     :config
     (ox-extras-activate '(ignore-headlines)))
-#+END_SRC
+#+end_src
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
@@ -999,11 +999,11 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 #+end_src
 
 **** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package org-auto-tangle
     :after org
     :hook (org-mode . org-auto-tangle-mode))
-#+END_SRC
+#+end_src
 **** [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
 #+begin_src emacs-lisp
   (use-package org-brain
@@ -1063,15 +1063,15 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 **** [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package org-cliplink
     :after org)
-#+END_SRC
+#+end_src
 
 **** [[https://github.com/minad/org-modern.git][org-modern]]
 This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package org-modern
     :hook (org-mode . global-org-modern-mode)
     ;;:after org
@@ -1099,7 +1099,7 @@ This package implements a modern style for your Org buffers using font locking a
        " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
      org-agenda-current-time-string
      "⭠ now ─────────────────────────────────────────────────"))
-#+END_src
+#+end_src
 **** [[https://github.com/org-noter/org-noter.git][org-noter]]
 
 #+begin_src emacs-lisp
@@ -1125,12 +1125,12 @@ This package implements a modern style for your Org buffers using font locking a
 Let's install and load the =toc-org= package after org mode is loaded. This is the
 package that automatically generates an up to date table of contents for us.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package toc-org
     :after org
     :hook
     (org-mode . toc-org-enable))
-#+END_SRC
+#+end_src
 
 *** Tools
 **** [[https://github.com/radian-software/ctrlf.git][ctrlf]]
@@ -1165,7 +1165,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
 #+end_src
 
 **** [[https://github.com/skeeto/elfeed.git][elfeed]]
-An Emacs web feeds client 
+An Emacs web feeds client
 #+begin_src emacs-lisp
   (use-package elfeed
     :bind
@@ -1647,7 +1647,7 @@ additional featureful completion commands
 #+end_src
 **** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package corfu
     :custom
     ;; TAB cycle if there are only few candidates
@@ -1710,7 +1710,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :after corfu
     :hook
     (after-init . corfu-popupinfo-mode))
-#+END_SRC
+#+end_src
 
 **** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
@@ -1789,18 +1789,18 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 #+end_src
 
 **** [[https://github.com/minad/marginalia.git][marginalia]]
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package marginalia
     :after vertico
     :custom
     (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
     :hook
     (vertico-mode . marginalia-mode))
-#+END_SRC
+#+end_src
 
 **** [[https://github.com/oantolin/orderless.git][orderless]]
 Emacs completion style that matches multiple regexps in any order
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package orderless
     :after vertico
     :preface
@@ -1822,7 +1822,7 @@ Emacs completion style that matches multiple regexps in any order
     (completion-styles '(orderless basic))
     (completion-category-defaults nil)
     (completion-category-overrides '((file (styles basic-remote partial-completion)))))
-#+END_SRC
+#+end_src
 **** [[https://github.com/minad/tempel.git][tempel]]
 Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
 
@@ -1869,7 +1869,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 **** [[https://github.com/emacs-straight/vertico.git][vertico]]
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package vertico
     :custom
     ;; Show more candidates
@@ -1913,7 +1913,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
 *** Version Control
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package git-gutter
     :custom
     (git-gutter:ask-p . nil)
@@ -1945,7 +1945,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
                  ("c" . magit-commit-create))
     :hook
     (after-init . global-git-gutter-mode))
-#+END_SRC
+#+end_src
 
 **** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 #+begin_src emacs-lisp
@@ -1959,7 +1959,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 The magical git client. Let's load magit only when one of the several entry pont
 functions we invoke regularly outside of magit is called.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package magit
     :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
     :bind
@@ -1977,7 +1977,7 @@ functions we invoke regularly outside of magit is called.
           ("p"  . magit-pull-branch)
           ("v"  . magit-status)
           ("r"  . magit-rebase)))
-#+END_SRC
+#+end_src
 *** Project Management
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 #+begin_src emacs-lisp
@@ -2142,7 +2142,7 @@ functions we invoke regularly outside of magit is called.
     :hook
     ((speedbar-mode . (lambda()
                         ;; Disable word wrapping in speedbar if you always enable it globally.
-                        (visual-line-mode 0) 
+                        (visual-line-mode 0)
                         ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                         (text-scale-adjust -1)))))
   (use-package sr-speedbar
@@ -2178,7 +2178,7 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
-Structured Editing and Navigation in Emacs 
+Structured Editing and Navigation in Emacs
 #+begin_src emacs-lisp
   (use-package combobulate
     :after treesit
@@ -2201,6 +2201,17 @@ Structured Editing and Navigation in Emacs
      (typescript-ts-mode . combobulate-mode)
      (tsx-ts-mode . combobulate-mode)))
 #+end_src
+**** docker
+#+begin_src emacs-lisp
+  (use-package docker
+    :commands docker)
+  (use-package dockerfile-mode
+    :mode "/Dockerfile\\'"
+    :mode "\\.dockerfile\\'")
+  (use-package tramp-container
+    :straight nil
+    :after docker)
+#+end_src
 **** [[https://github.com/emacs-straight/eglot.git][eglot]]
 #+begin_src emacs-lisp
   (use-package eglot
@@ -2214,7 +2225,7 @@ Structured Editing and Navigation in Emacs
 #+end_src
 
 **** [[https://github.com/flycheck/flycheck.git][flycheck]]
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package flycheck
     :custom
     ;; Let git gutter have left fringe, flycheck can have right fringe
@@ -2224,7 +2235,7 @@ Structured Editing and Navigation in Emacs
     (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
       [16 48 112 240 112 48 16] nil nil 'center)
     :hook (after-init . global-flycheck-mode))
-#+END_SRC
+#+end_src
 
 **** [[https://github.com/emacs-straight/flymake.git][flymake]]
 universal on-the-fly syntax checker for Emacs
@@ -2289,7 +2300,7 @@ universal on-the-fly syntax checker for Emacs
     ;; (conda-env-autoactivate-mode t)
     ;; if you want to automatically activate a conda environment on the opening of a file:
     ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-    ;; 					     (conda-env-activate-for-buffer))))
+    ;;                       (conda-env-activate-for-buffer))))
     )
 
   (use-package numpydoc
@@ -2302,7 +2313,7 @@ universal on-the-fly syntax checker for Emacs
     :after conda)
 #+end_src
 
-**** treesit :build_in:
+**** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
 built-in tree-sitter integration for Emacs
 #+begin_src emacs-lisp
   (use-package treesit-auto
@@ -2318,22 +2329,10 @@ built-in tree-sitter integration for Emacs
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
 #+end_src
-
-**** docker
-#+begin_src emacs-lisp
-  (use-package docker
-    :commands docker)
-  (use-package dockerfile-mode
-    :mode "/Dockerfile\\'"
-    :mode "\\.dockerfile\\'")
-  (use-package tramp-container
-    :straight nil
-    :after docker)
-#+end_src
 *** Keybindings
 **** [[https://github.com/meow-edit/meow.git][meow]]
 Meow is yet another modal editing mode for Emacs.
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package meow
     :demand t
     :custom
@@ -2463,7 +2462,7 @@ Meow is yet another modal editing mode for Emacs.
     :hook
     ((git-timemachine-mode . my/meow-git-timemachine-hook)
      (after-init . meow-global-mode)))
-#+END_SRC
+#+end_src
 
 **** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
