@@ -2183,9 +2183,9 @@ Structured Editing and Navigation in Emacs
   (use-package combobulate
     :after treesit
     :custom
-    ;; You can customize Combobulate's key prefix here.
-    ;; Note that you may have to restart Emacs for this to take effect!
-    (combobulate-key-prefix "c")
+    ;; ;; You can customize Combobulate's key prefix here.
+    ;; ;; Note that you may have to restart Emacs for this to take effect!
+    (combobulate-key-prefix "C-c o")
     :config
     (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
 
