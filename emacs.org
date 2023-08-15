@@ -2239,15 +2239,6 @@ universal on-the-fly syntax checker for Emacs
                (string= python-shell-interpreter "python"))
       (setq python-shell-interpreter "python3")))
 
-  (use-package pyimport
-    :after python)
-
-  (use-package py-isort
-    :after python)
-
-  (use-package numpydoc
-    :after python)
-
   (use-package conda
     :after python
     :custom
@@ -2266,6 +2257,15 @@ universal on-the-fly syntax checker for Emacs
     ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
     ;; 					     (conda-env-activate-for-buffer))))
     )
+
+  (use-package numpydoc
+    :after python)
+
+  (use-package pyimport
+    :after conda)
+
+  (use-package py-isort
+    :after conda)
 #+end_src
 
 **** treesit :build_in:
