@@ -2284,6 +2284,18 @@ built-in tree-sitter integration for Emacs
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
 #+end_src
+
+**** docker
+#+begin_src emacs-lisp
+  (use-package docker
+    :commands docker)
+  (use-package dockerfile-mode
+    :mode "/Dockerfile\\'"
+    :mode "\\.dockerfile\\'")
+  (use-package tramp-container
+    :straight nil
+    :after docker)
+#+end_src
 *** Keybindings
 **** [[https://github.com/meow-edit/meow.git][meow]]
 Meow is yet another modal editing mode for Emacs.
