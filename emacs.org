@@ -2231,7 +2231,9 @@ Structured Editing and Navigation in Emacs
     :commands docker)
   (use-package dockerfile-mode
     :mode "/Dockerfile\\'"
-    :mode "\\.dockerfile\\'")
+    :mode "/Containerfile\\'"
+    :mode "\\.dockerfile\\'"
+    :mode "\\.containerfile\\'")
   (use-package tramp-container
     :straight nil
     :after docker)
