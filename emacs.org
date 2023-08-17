@@ -123,10 +123,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
   (use-package no-littering
     :demand t
     :init
-    (setq org-directory (concat (getenv "HOME") "/Notes/org/")
-          org-cite-global-bibliography (file-expand-wildcards (concat org-directory "bib/*.bib"))
-          org-brain-path (concat org-directory "brain/")
-          my/templates-path (expand-file-name "templates.eld" user-emacs-directory))
+    (setq org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
+          org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory))
+          org-brain-path (expand-file-name "brain/" org-directory)
+          my/templates-path (expand-file-name "templates.eld" user-emacs-directory)
+          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+          custom-file (expand-file-name "custom.el" user-emacs-directory))
 
     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
     (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
@@ -216,9 +218,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
       (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
 
     :config
-    ;; Customization File
-    ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+    ;; Load customization File
     (load custom-file 'noerror 'nomessage)
 
     :bind
@@ -325,8 +325,6 @@ This section initializes various keymaps used for different purposes.
           ("=" . balance-windows)
           ("r" . split-window-right)
           ("b" . split-window-below)
-          ("l" . split-window-left)
-          ("t" . split-window-top)
           ("v" . split-window-vertically)
           ("h" . split-window-horizontally)
           ("m" . delete-other-windows)
@@ -448,7 +446,7 @@ A fancy and fast mode-line inspired by minimalism design.
 
     :hook
     (after-init . doom-modeline-mode))
-    #+end_src
+#+end_src
 
 **** hl-line :build_in:
 
@@ -465,7 +463,7 @@ Highlighting of the current line (native mode)
   (use-package ligature
     :config
     ;; set Fira as default font
-    (set-frame-font "Fira Code Light-10" nil t)
+    (set-frame-font "Fira Code-10" nil t)
     :preface
     (defun my/setup-ligatures ()
       ;; Enable the "www" ligature in every possible major mode
@@ -630,7 +628,7 @@ When working with many windows at the same time, each window has a size that is 
     :custom
     (golden-ratio-exclude-modes '(speedbar-mode vundo-mode minimap-sb-mode))
     (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*"))
-    (golden-ratio-auto-scale t)
+    ;; (golden-ratio-auto-scale t)
     :config
     (add-to-list 'golden-ratio-inhibit-functions
                  (lambda ()
@@ -656,7 +654,7 @@ When working with many windows at the same time, each window has a size that is 
     :bind
     (:map my/toggle-map
           ("m" . minimap-mode)))
-          #+end_src
+#+end_src
 **** paren :build_in:
 Paren mode for highlighting matcing paranthesis
 
@@ -990,7 +988,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :after org
     :config
     (ox-extras-activate '(ignore-headlines)))
-#+end_src
+          #+end_src
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
@@ -998,7 +996,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :after org
     :hook (org-mode . org-appear-mode))
 #+end_src
-
 **** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
 #+begin_src emacs-lisp
   (use-package org-auto-tangle
