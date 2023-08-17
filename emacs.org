@@ -86,7 +86,10 @@ Lets install and configure =use-package= and use =straight= as the underlying pa
 We also load =bind-key= here which is used by =use-package= for keybindings.
 
 #+begin_src emacs-lisp
-  (straight-use-package 'use-package)
+  (when (< emacs-major-version 29)
+    (straight-use-package 'use-package)
+    (use-package bind-key))
+
   (setq straight-use-package-by-default t
         use-package-always-defer t)
   ;; make use-package more verbose when ´‘--debug-init´ is passed
@@ -96,8 +99,6 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
           use-package-expand-minimally nil
           use-package-compute-statistics t
           debug-on-error t))
-
-  (require 'bind-key)
 #+end_src
 
 *** Benchmark startup
