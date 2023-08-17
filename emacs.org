@@ -1117,7 +1117,31 @@ This package implements a modern style for your Org buffers using font locking a
     ;; Org-noter’s purpose is to let you create notes that are kept in sync when
     ;; you scroll through the [PDF etc] document
     (org-noter-insert-heading . org-id-get-create))
-#+end_src
+    #+end_src
+
+**** [[https://github.com/marcinkoziej/org-pomodoro.git][org-pomodoro]]
+#+begin_src emacs-lisp
+  (use-package org-pomodoro
+    :custom
+    (org-pomodoro-audio-player (or (executable-find "paplay")
+                                   org-pomodoro-audio-player))
+    :config
+    (use-package alert
+      :config
+      (alert-add-rule :category "org-pomodoro"
+                      :style (cond (alert-growl-command
+                                    'growl)
+                                   (alert-notifier-command
+                                    'notifier)
+                                   (alert-libnotify-command
+                                    'libnotify)
+                                   (alert-default-style))))
+    :bind
+    (:map org-mode-map
+          ("C-c p" . org-pomodoro)
+          :map org-agenda-keymap
+          ("p" . org-pomodoro)))
+          #+end_src
 
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Let's install and load the =toc-org= package after org mode is loaded. This is the
