@@ -1684,31 +1684,47 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
        ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
         (comint-send-input))))
 
+    ;; Completing in the minibuffer
+    (defun corfu-enable-always-in-minibuffer ()
+      "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+      (unless (or (bound-and-true-p mct--active)
+                  (bound-and-true-p vertico--input)
+                  (eq (current-local-map) read-passwd-map))
+        ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+        (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                    corfu-popupinfo-delay nil)
+        (corfu-mode 1)))
+
     :config
+    (when (fboundp 'straight-use-package)
+      (add-to-list 'load-path
+                   (expand-file-name "straight/build/corfu/extensions"
+                                     straight-base-dir)))
+    (require 'corfu-popupinfo)
+    (eldoc-add-command #'corfu-insert)
+
+    ;; Completing in the Eshell or Shell
+    (advice-add #'corfu-insert :after #'corfu-send-shell)
+
+    :hook
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
-    (eldoc-add-command #'corfu-insert)
-    (advice-add #'corfu-insert :after #'corfu-send-shell)
-    :hook
     ((after-init . global-corfu-mode)
+     (after-init . corfu-popupinfo-mode)
      ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
      (eshell-mode-hook . (lambda ()
                            (setq-local corfu-auto nil)
-                           (corfu-mode)))))
+                           (corfu-mode)))
+     ;; Enable minibuffer completion
+     (minibuffer-setup . corfu-enable-always-in-minibuffer)))
 
   (use-package corfu-terminal
     :if (display-graphic-p)
     :after corfu
     :hook
     (after-init . corfu-terminal-mode))
-
-  (use-package corfu-popupinfo
-    :straight nil
-    :after corfu
-    :hook
-    (after-init . corfu-popupinfo-mode))
-#+end_src
+    #+end_src
 
 **** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
