@@ -1894,9 +1894,11 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
     ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
     (vertico-cycle t)
+
     ;; Do not allow the cursor in the minibuffer prompt
     (minibuffer-prompt-properties
      '(read-only t cursor-intangible t face minibuffer-prompt))
+
     ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
     ;; Vertico commands are hidden in normal buffers.
     (read-extended-command-predicate
@@ -1916,14 +1918,22 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
             (cdr args)))
     :config
     (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    ;; from: https://github.com/SystemCrafters/crafted-emacs/blob/c9ab29592b728954d3acc11d66e76cfbfbcb6189/modules/crafted-completion.el#L43
+    ;; Straight and Package bundle the vertico package differently. When
+    ;; using `package.el', the extensions are built into the package and
+    ;; available on the load-path. When using `straight.el', the
+    ;; extensions are not built into the package, so have to add that path
+    ;; to the load-path manually to enable the following require.
+    (when (fboundp 'straight-use-package)
+      (add-to-list 'load-path
+                   (expand-file-name "straight/build/vertico/extensions"
+                                     straight-base-dir)))
+    (require 'vertico-directory)
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
-
-  (use-package vertico-directory
-    :straight nil
-    :after vertico)
-#+end_src
+     #+end_src
 
 *** Version Control
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
