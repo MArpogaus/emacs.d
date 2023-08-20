@@ -835,61 +835,18 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     ;; Add timstamp to items when done
     (org-log-done 'time)
 
-    :preface
-    ;; https://github.com/rougier/emacs-gtd#activating-tasks
-    (defun my/log-todo-next-creation-date (&rest ignore)
-      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
-      (when (and (string= (org-get-todo-state) "NEXT")
-                 (not (org-entry-get nil "ACTIVATED")))
-        (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
-    ;; Save the corresponding buffers
-    (defun my/gtd-save-org-buffers ()
-      "Save `org-agenda-files' buffers without user confirmation.
-              See also `org-save-all-org-buffers'"
-      (interactive)
-      (message "Saving org-agenda-files buffers...")
-      (save-some-buffers t (lambda ()
-                             (when (member (buffer-file-name) org-agenda-files)
-                               t)))
-      (message "Saving org-agenda-files buffers... done"))
-    ;; archive all DONE tasks in subtree
-    ;; https://stackoverflow.com/questions/6997387
-    (defun org-archive-done-tasks ()
-      (interactive)
-      (org-map-entries
-       (lambda ()
-         (org-archive-subtree)
-         (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
-       "/DONE" 'tree))
-    :hook
-    (org-after-todo-state-change . my/log-todo-next-creation-date)
-    :config
-    (advice-add 'org-refile :after
-                (lambda (&rest _)
-                  (my/gtd-save-org-buffers))))
-
-  (use-package org-capture
-    :straight nil
-    :after org
-    :custom
+    ;; org capture
     (org-capture-templates
      `(("i" "Inbox" entry  (file "agenda/inbox.org")
         ,(concat "* TODO %?\n"
                  "/Entered on/ %U"))
        ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
-        ,(concat "* %? :meeting:\n"
-                 "<%<%Y-%m-%d %a %H:00>>"))
+        ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))
        ("n" "Note" entry  (file "agenda/notes.org")
         ,(concat "* Note (%a)\n"
                  "/Entered on/ %U\n" "\n" "%?"))))
-    :bind
-    (:map my/leader-map
-          ("c" . org-capture)))
 
-  (use-package org-agenda
-    :straight nil
-    :after org
-    :custom
+    ;; org-agenda
     (org-agenda-files
      (mapcar 'file-truename
              (file-expand-wildcards (concat org-directory "agenda/*.org"))))
@@ -947,8 +904,44 @@ Agenda view and task management has been inspired by https://github.com/rougier/
        ("l" "Literature" tags-todo "literature"
         ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
          (org-agenda-prefix-format "  %i %-12:c [%e] ")))))
+
+    :preface
+    ;; https://github.com/rougier/emacs-gtd#activating-tasks
+    (defun my/log-todo-next-creation-date (&rest ignore)
+      "Log NEXT creation time in the property drawer under the key 'ACTIVATED'"
+      (when (and (string= (org-get-todo-state) "NEXT")
+                 (not (org-entry-get nil "ACTIVATED")))
+        (org-entry-put nil "ACTIVATED" (format-time-string "[%Y-%m-%d]"))))
+    ;; Save the corresponding buffers
+    (defun my/gtd-save-org-buffers ()
+      "Save `org-agenda-files' buffers without user confirmation.
+              See also `org-save-all-org-buffers'"
+      (interactive)
+      (message "Saving org-agenda-files buffers...")
+      (save-some-buffers t (lambda ()
+                             (when (member (buffer-file-name) org-agenda-files)
+                               t)))
+      (message "Saving org-agenda-files buffers... done"))
+
+    ;; archive all DONE tasks in subtree
+    ;; https://stackoverflow.com/questions/6997387
+    (defun org-archive-done-tasks ()
+      (interactive)
+      (org-map-entries
+       (lambda ()
+         (org-archive-subtree)
+         (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
+       "/DONE" 'tree))
+    :hook
+    (org-after-todo-state-change . my/log-todo-next-creation-date)
+    :config
+    (advice-add 'org-refile :after
+                (lambda (&rest _)
+                  (my/gtd-save-org-buffers)))
     :bind
-    (:map my/open-map
+    (:map my/leader-map
+          ("c" . org-capture)
+          :map my/open-map
           ("a" . org-agenda)))
 
   (use-package ox-latex
@@ -989,7 +982,8 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :after org
     :config
     (ox-extras-activate '(ignore-headlines)))
-          #+end_src
+#+end_src
+
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
@@ -1073,13 +1067,13 @@ This package implements a modern style for your Org buffers using font locking a
 #+begin_src emacs-lisp
   (use-package org-modern
     :hook (org-mode . global-org-modern-mode)
-    ;;:after org
+    :after (:any org org-agenda)
     :custom
     (org-modern-star '("◉" "○" "◇"))
     (org-modern-label-border 0.3)
 
     ;; Edit settings
-    (org-auto-align-tags nil)
+    (org-auto-align-tags t)
     (org-tags-column 0)
     (org-catch-invisible-edits 'show-and-error)
     (org-special-ctrl-a/e t)
@@ -1099,6 +1093,7 @@ This package implements a modern style for your Org buffers using font locking a
      org-agenda-current-time-string
      "⭠ now ─────────────────────────────────────────────────"))
 #+end_src
+
 **** [[https://github.com/org-noter/org-noter.git][org-noter]]
 
 #+begin_src emacs-lisp
@@ -1118,7 +1113,7 @@ This package implements a modern style for your Org buffers using font locking a
     ;; Org-noter’s purpose is to let you create notes that are kept in sync when
     ;; you scroll through the [PDF etc] document
     (org-noter-insert-heading . org-id-get-create))
-    #+end_src
+#+end_src
 
 **** [[https://github.com/marcinkoziej/org-pomodoro.git][org-pomodoro]]
 #+begin_src emacs-lisp
@@ -1142,7 +1137,7 @@ This package implements a modern style for your Org buffers using font locking a
           ("C-c p" . org-pomodoro)
           :map org-agenda-keymap
           ("p" . org-pomodoro)))
-          #+end_src
+#+end_src
 
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Let's install and load the =toc-org= package after org mode is loaded. This is the
@@ -1749,7 +1744,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :after corfu
     :hook
     (after-init . corfu-terminal-mode))
-    #+end_src
+#+end_src
 
 **** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
@@ -1958,7 +1953,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
-     #+end_src
+#+end_src
 
 *** Version Control
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
