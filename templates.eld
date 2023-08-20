@@ -1,4 +1,5 @@
 python-mode sh-mode lua-mode
+python-ts-mode bash-ts-mode
 
 (header
  comment-start "-*- time-stamp-pattern: \"changed[\\s]+:[\\s]+%%$\"; -*-" n
@@ -17,7 +18,7 @@ python-mode sh-mode lua-mode
 
 (sep comment-start (s str) " " (make-string (- fill-column (length str) (length comment-start) (current-indentation) 1) (string-to-char comment-start)) n> r)
 
-sh-mode
+sh-mode bash-ts-mode
 
 (shebang "#!/usr/bin/env " (if (equal (file-name-extension (or (buffer-file-name) (buffer-name))) "zsh") "zsh" "bash") r)
 
