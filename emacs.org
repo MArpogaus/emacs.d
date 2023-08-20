@@ -548,11 +548,6 @@ https://protesilaos.com/emacs/modus-themes
     (:map my/toggle-map
           ("t" . modus-themes-toggle))
     :custom
-    ;; Minimal UI
-    (menu-bar-mode nil)
-    (tool-bar-mode nil)
-    (scroll-bar-mode nil)
-
     ;; Add all your customizations prior to loading the themes
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs nil)
