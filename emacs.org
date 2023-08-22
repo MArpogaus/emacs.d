@@ -335,12 +335,6 @@ This section initializes various keymaps used for different purposes.
 
 ** Configure Packages
 *** UI
-**** [[https://github.com/domtronn/all-the-icons.el.git][all-the-icons]]
-
-#+begin_src emacs-lisp
-  (use-package all-the-icons)
-#+end_src
-
 **** [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
@@ -377,7 +371,7 @@ Make org-brain-visualize-mode look a bit nicer.
     (dashboard-projects-backend 'project-el)
     (dashboard-items '((recents  . 10)
                        (projects . 10)))
-    (dashboard-icon-type 'all-the-icons) ;; use `all-the-icons' package
+    (dashboard-icon-type 'nerd-icons) ;; use `nerd-icons' package
     (dashboard-display-icons-p (display-graphic-p))
     (dashboard-set-heading-icons (display-graphic-p))
     (dashboard-set-file-icons (display-graphic-p))
@@ -1023,15 +1017,15 @@ Agenda view and task management has been inspired by https://github.com/rougier/
       "Insert an icon, based on content of org-mode LINK."
       (insert (format "%s "
                       (cond ((string-prefix-p "brain:" link)
-                             (all-the-icons-fileicon "brain"))
+                             (nerd-icons-flicon "brain"))
                             ((string-prefix-p "info:" link)
-                             (all-the-icons-octicon "info"))
+                             (nerd-icons-octicon "info"))
                             ((string-prefix-p "help:" link)
-                             (all-the-icons-material "help"))
+                             (nerd-icons-material "help"))
                             ((string-prefix-p "http" link)
-                             (all-the-icons-icon-for-url link))
+                             (nerd-icons-icon-for-url link))
                             (t
-                             (all-the-icons-icon-for-file link))))))
+                             (nerd-icons-icon-for-file link))))))
 
     :config
     (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
@@ -1186,8 +1180,7 @@ An Emacs web feeds client
           ("f" . elfeed))
     :config
     (setq elfeed-feeds
-          '("https://github.com/domtronn/all-the-icons.el/releases.atom"
-            "https://github.com/emacs-straight/ascii-art-to-unicode/releases.atom"
+          '("https://github.com/emacs-straight/ascii-art-to-unicode/releases.atom"
             "https://github.com/emacs-straight/auctex/releases.atom"
             "https://github.com/dholm/benchmark-init-el/releases.atom"
             "https://github.com/elken/cape-yasnippet/releases.atom"
@@ -1480,7 +1473,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
-    :after all-the-icons org
+    :after nerd-icons org
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
@@ -1510,36 +1503,36 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     :config
     (defvar citar-indicator-files-icons
       (citar-indicator-create
-       :symbol (all-the-icons-faicon
-                "file-o"
-                :face 'all-the-icons-green
+       :symbol (nerd-icons-faicon
+                "nf-fa-file_o"
+                :face 'nerd-icons-green
                 :v-adjust -0.1)
        :function #'citar-has-files
        :padding "  " ; need this because the default padding is too low for these icons
        :tag "has:files"))
     (defvar citar-indicator-links-icons
       (citar-indicator-create
-       :symbol (all-the-icons-octicon
-                "link"
-                :face 'all-the-icons-orange
+       :symbol (nerd-icons-octicon
+                "nf-oct-link"
+                :face 'nerd-icons-orange
                 :v-adjust 0.01)
        :function #'citar-has-links
        :padding "  "
        :tag "has:links"))
     (defvar citar-indicator-notes-icons
       (citar-indicator-create
-       :symbol (all-the-icons-material
-                "speaker_notes"
-                :face 'all-the-icons-blue
-                :v-adjust -0.3)
+       :symbol (nerd-icons-mdicon
+                "nf-md-pencil"
+                :face 'nerd-icons-blue
+                :v-adjust 0.01)
        :function #'citar-has-notes
        :padding "  "
        :tag "has:notes"))
     (defvar citar-indicator-cited-icons
       (citar-indicator-create
-       :symbol (all-the-icons-faicon
-                "circle-o"
-                :face 'all-the-icon-green)
+       :symbol (nerd-icons-faicon
+                "nf-fa-circle_o"
+                :face 'nerd-icons-green)
        :function #'citar-is-cited
        :padding "  "
        :tag "is:cited"))
