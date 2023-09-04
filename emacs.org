@@ -538,18 +538,13 @@ https://protesilaos.com/emacs/modus-themes
 
 #+begin_src emacs-lisp
   (use-package modus-themes
-    :demand t
     :bind
     (:map my/toggle-map
           ("t" . modus-themes-toggle))
     :custom
     ;; Add all your customizations prior to loading the themes
     (modus-themes-italic-constructs t)
-    (modus-themes-bold-constructs nil)
-
-    :config
-    ;; Load the theme of your choice.
-    (load-theme 'modus-operandi :no-confirm))
+    (modus-themes-bold-constructs nil))
 #+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
@@ -585,6 +580,14 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
 #+end_src
 *** UX
+**** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+#+begin_src emacs-lisp
+  (use-package auto-dark
+    :custom
+    (auto-dark-dark-theme 'modus-vivendi)
+    (auto-dark-light-theme 'modus-operandi)
+    :hook (after-init . auto-dark-mode))
+#+end_src
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed
 #+begin_src emacs-lisp
