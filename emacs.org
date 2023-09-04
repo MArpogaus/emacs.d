@@ -1483,13 +1483,12 @@ additional featureful completion commands
            ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
            ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
            ([remap yank-pop]                      . consult-yank-pop)
+           ([remap project-list-buffers]          . consult-project-buffer)
            ("M-y" . consult-yank-pop)                ;; orig. yank-pop
            :map my/buffer-map
            ("b" . consult-buffer)                ;; orig. switch-to-buffer
            ("w" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
            ("f" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-           :map project-prefix-map
-           ("b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
            :map goto-map
            ;; M-g bindings in `goto-map'
            ("e" . consult-compile-error)
