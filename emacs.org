@@ -323,15 +323,15 @@ This section initializes various keymaps used for different purposes.
           ("-" . shrink-window)
           ("*" . enlarge-window-horizontally)
           ("’" . shrink-window-horizontally)
-          :exit
-          ("=" . balance-windows)
           ("r" . split-window-right)
           ("b" . split-window-below)
           ("v" . split-window-vertically)
           ("h" . split-window-horizontally)
           ("m" . delete-other-windows)
           ("m" . delete-other-windows)
-          ("M" . delete-other-windows-vertically)))
+          ("M" . delete-other-windows-vertically)
+          :exit
+          ("=" . balance-windows)))
 #+end_src
 
 ** Configure Packages
