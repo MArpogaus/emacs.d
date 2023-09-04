@@ -1370,6 +1370,16 @@ Cape provides Completion At Point Extensions which can be used in combination wi
       ;; and behaves as a pure `completion-at-point-function'.
       (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
 #+end_src
+**** dabbrev :build_in:
+#+begin_src emacs-lisp
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+#+end_src
 
 **** [[https://github.com/emacs-citar/citar.git][citar]]
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
