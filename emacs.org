@@ -1574,7 +1574,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
   (use-package corfu
     :custom
     ;; TAB cycle if there are only few candidates
-    (completion-cycle-threshold 3)
+    (completion-cycle-threshold nil)
 
     ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
     ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
@@ -1586,22 +1586,19 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (tab-always-indent 'complete)
 
     ;; Additional Customisations
-    (corfu-cycle t)                 ;; Enable cycling for `corfu-next/previous'
-    (corfu-auto t)                  ;; Enable auto completion
-    (corfu-auto-prefix 1)           ;; Complete with less prefix keys)
-    (corfu-auto-delay 0.0)          ;; No delay for completion
-    (corfu-echo-documentation 0.25) ;; Echo docs for current completion option
-    (corfu-separator ?\s)           ;; Orderless field separator
-    (corfu-quit-at-boundary nil)    ;; Never quit at completion boundary
-    (corfu-quit-no-match t)         ;; Never quit, even if there is no match
-    (corfu-preview-current t)       ;; Disable current candidate preview
-    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-    (corfu-on-exact-match nil)      ;; Configure handling of exact matches
-    ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+    (corfu-cycle t)                  ;; Enable cycling for `corfu-next/previous'
+    ;;(corfu-auto t)                   ;; Enable auto completion
+    (corfu-quit-no-match 'separator) ;; Quit auto complete if there is no match
+    (corfu-auto-prefix 1)            ;; Complete with less prefix keys)
+    (corfu-auto-delay 0.0)           ;; No delay for completion
+    (corfu-popupinfo-delay 0.5)      ;; speed up documentation popup
+    (corfu-quit-at-boundary nil)     ;; Never quit at completion boundary
+    (corfu-preview-current t)        ;; Disable current candidate preview
+    (corfu-preselect 'directory)        ;; Preselect the prompt
 
     :preface
     ;; fix uneeded duble return in eshell
-    (defun corfu-send-shell (&rest _)
+    (defun my/corfu-send-shell (&rest _)
       "Send completion candidate when inside comint/eshell."
       (cond
        ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
@@ -1610,7 +1607,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
         (comint-send-input))))
 
     ;; Completing in the minibuffer
-    (defun corfu-enable-always-in-minibuffer ()
+    (defun my/corfu-enable-always-in-minibuffer ()
       "Enable Corfu in the minibuffer if Vertico/Mct are not active."
       (unless (or (bound-and-true-p mct--active)
                   (bound-and-true-p vertico--input)
@@ -1620,29 +1617,69 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
                     corfu-popupinfo-delay nil)
         (corfu-mode 1)))
 
+    ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
+    (defun my/corfu-spc-handler ()
+      (interactive)
+      (if current-prefix-arg
+          ;;we suppose that we want leave the word like that, so do a space
+          (progn
+            (corfu-quit)
+            (insert " "))
+        (if (and (= (char-before) corfu-separator)
+                 (or
+                  ;; check if space, return or nothing after
+                  (not (char-after))
+                  (= (char-after) ?\s)
+                  (= (char-after) ?\n)))
+            (progn
+              (corfu-insert)
+              (insert " "))
+          (corfu-insert-separator))))
     :config
     (when (fboundp 'straight-use-package)
       (add-to-list 'load-path
                    (expand-file-name "straight/build/corfu/extensions"
                                      straight-base-dir)))
+    (require 'corfu-echo)
+    (require 'corfu-history)
     (require 'corfu-popupinfo)
     (eldoc-add-command #'corfu-insert)
 
     ;; Completing in the Eshell or Shell
-    (advice-add #'corfu-insert :after #'corfu-send-shell)
-
+    (advice-add #'corfu-insert :after #'my/corfu-send-shell)
+    ;; Use TAB-and-Go completion
+    ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
+    (dolist (c (list (cons "." ".")
+                     (cons "," ",")
+                     (cons ":" ":")
+                     (cons ")" ")")
+                     (cons "}" "}")
+                     (cons "]" "]")))
+      (define-key corfu-map (kbd (car c)) `(lambda ()
+                                             (interactive)
+                                             (corfu-insert)
+                                             (insert ,(cdr c)))))
+    :bind
+    (:map corfu-map
+          ("TAB" . corfu-next)
+          ([tab] . corfu-next)
+          ("S-TAB" . corfu-previous)
+          ([backtab] . corfu-previous)
+          ("SPC" . my/corfu-spc-handler))
     :hook
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
     ((after-init . global-corfu-mode)
      (after-init . corfu-popupinfo-mode)
+     (after-init . corfu-echo-mode)
+     (after-init . corfu-history-mode)
      ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
      (eshell-mode-hook . (lambda ()
                            (setq-local corfu-auto nil)
                            (corfu-mode)))
      ;; Enable minibuffer completion
-     (minibuffer-setup . corfu-enable-always-in-minibuffer)))
+     (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
 
   (use-package corfu-terminal
     :if (display-graphic-p)
