@@ -1846,11 +1846,16 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
   (use-package tempel
     ;; Require trigger prefix before template name when completing.
     :custom
-    (tempel-trigger-prefix ">")
+    ;; (tempel-trigger-prefix ">")
     (tempel-path my/templates-path)
 
-    :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-           ("M-*" . tempel-insert))
+    :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
+           ("M-*" . tempel-insert)
+           :map tempel-map
+           ("TAB" . tempel-next)
+           ([tab] . tempel-next)
+           ("S-TAB" . tempel-previous)
+           ([backtab] . tempel-previous))
 
     :preface
     ;; Setup completion at point
@@ -1866,6 +1871,10 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
                   (cons #'tempel-complete
                         completion-at-point-functions)))
 
+    :config
+    ;; The package is young and doesn't have comprehensive coverage.
+    (use-package tempel-collection)
+
     :hook
     ((conf-mode . my/tempel-setup-capf)
      (prog-mode . my/tempel-setup-capf)
@@ -1875,10 +1884,6 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
     ;; (global-tempel-abbrev-mode)
     )
-
-  ;; Optional: Add tempel-collection.
-  ;; The package is young and doesn't have comprehensive coverage.
-  (use-package tempel-collection)
 #+end_src
 
 **** [[https://github.com/emacs-straight/vertico.git][vertico]]
