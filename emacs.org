@@ -1687,6 +1687,16 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :hook
     (after-init . corfu-terminal-mode))
 #+end_src
+**** dabbrev :build_in:
+#+begin_src emacs-lisp
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+#+end_src
 
 **** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
