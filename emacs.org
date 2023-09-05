@@ -1774,6 +1774,35 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
+**** [[https://github.com/emacs-straight/kind-icon.git][kind-icon]]
+#+begin_src emacs-lisp
+  (use-package kind-icon
+    :demand t
+    :after corfu
+    :custom
+    (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+**** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
+#+begin_src emacs-lisp
+  (use-package lsp-snippet-tempel
+    :straight (lsp-snippet-tempel :type git
+                                  :host github
+                                  :repo "svaante/lsp-snippet")
+    ;; :after (tempel eglot cape)
+    :preface
+    (defun my/eglot-capf ()
+      (setq-local completion-at-point-functions
+                  (cons (cape-super-capf
+                         #'tempel-complete
+                         #'eglot-completion-at-point
+                         #'cape-file)
+                        completion-at-point-functions)))
+    :hook
+    ((after-init . lsp-snippet-tempel-eglot-init)
+     (eglot-managed-mode . my/eglot-capf)))
+#+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 #+begin_src emacs-lisp
   (use-package marginalia
