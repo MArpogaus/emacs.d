@@ -71,7 +71,7 @@ This Emacs literate configuration has been inspired by the following projects:
 https://github.com/emacsorphanage/anzu
 ** Notes
 *** Add git url to pkg headlines
-#+begin_src bash
+#+begin_src bash :results none
   for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
       url=$(git -C ~/.emacs.d/straight/repos/*$p* remote get-url origin)
       if [ $? -eq 0 ]; then
