@@ -2222,6 +2222,19 @@ Structured Editing and Navigation in Emacs
     (eldoc-add-command-completions "paredit-")
     (eldoc-add-command-completions "combobulate-"))
 #+end_src
+**** [[https://github.com/garyo/ts-fold.git][ts-fold]]
+Code-folding using tree-sitter.
+Using the forked version with treesit support here
+#+begin_src emacs-lisp
+  (use-package ts-fold
+    :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
+    :bind
+    (:map my/toggle-map
+          ([tab] . ts-fold-toggle))
+    :hook
+    ((after-init . global-ts-fold-mode)
+     (after-init . global-ts-fold-indicators-mode)))
+#+end_src
 **** [[https://github.com/millejoh/emacs-ipython-notebook][ein]]
 #+begin_src emacs-lisp
   (use-package ein
