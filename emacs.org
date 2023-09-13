@@ -1610,12 +1610,13 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
                                              (corfu-insert)
                                              (insert ,(cdr c)))))
     :bind
-    (:map corfu-map
-          ("TAB" . corfu-next)
-          ([tab] . corfu-next)
-          ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous)
-          ("SPC" . my/corfu-spc-handler))
+    (("C-SPC" . completion-at-point)
+     :map corfu-map
+     ("TAB" . corfu-next)
+     ([tab] . corfu-next)
+     ("S-TAB" . corfu-previous)
+     ([backtab] . corfu-previous)
+     ("SPC" . my/corfu-spc-handler))
     :hook
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
