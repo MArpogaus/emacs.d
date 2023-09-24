@@ -1761,6 +1761,15 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :hook
     (vertico-mode . marginalia-mode))
 #+end_src
+**** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
+#+begin_src emacs-lisp
+  (use-package nerd-icons-completion
+    :after marginalia vertico
+    :config
+    (nerd-icons-completion-mode)
+    :hook
+    (marginalia-mode . nerd-icons-completion-marginalia-setup))
+#+end_src
 **** [[https://github.com/oantolin/orderless.git][orderless]]
 Emacs completion style that matches multiple regexps in any order
 #+begin_src emacs-lisp
