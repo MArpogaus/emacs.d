@@ -2168,6 +2168,43 @@ functions we invoke regularly outside of magit is called.
     (TeX-save-query nil)
     (TeX-PDF-mode t))
 #+end_src
+**** [[https://github.com/svaante/dape.git][dape]]
+#+begin_src emacs-lisp
+  (use-package dape
+    ;; Currently only on github
+    :straight (dape :type git :host github :repo "svaante/dape")
+    :config
+    ;; Add inline variable hints, this feature is highly experimental
+    ;; (setq dape-inline-variables t)
+
+    ;; To remove info buffer on startup
+    ;; (remove-hook 'dape-on-start-hooks 'dape-info)
+
+    ;; To remove repl buffer on startup
+    ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
+
+    ;; By default dape uses gdb keybinding prefix
+    ;; (setq dape-key-prefix "\C-x\C-a")
+
+    ;; Kill compile buffer on build success
+    ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
+
+    ;; Projectile users
+    ;; (setq dape-cwd-fn 'projectile-project-root)
+
+    ;; Add Debug Adapters
+    ;; https://github.com/svaante/dape#supported-debug-adapters
+    (add-to-list 'dape-configs
+                 `(debugpy
+                   modes (python-ts-mode python-mode)
+                   command "python3"
+                   command-args ("-m" "debugpy.adapter")
+                   :type "executable"
+                   :request "launch"
+                   :cwd dape-cwd-fn
+                   :program dape-find-file-buffer-default))
+    )
+#+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs
 #+begin_src emacs-lisp
