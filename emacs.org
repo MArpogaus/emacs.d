@@ -1633,10 +1633,22 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
 
   (use-package corfu-terminal
-    :if (display-graphic-p)
+    :if (not (display-graphic-p))
     :after corfu
     :hook
-    (after-init . corfu-terminal-mode))
+    (global-corfu-mode . corfu-terminal-mode))
+#+end_src
+**** [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]
+#+begin_src emacs-lisp
+  (use-package corfu-candidate-overlay
+    :straight (:type git
+                     :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay"
+                     :files (:defaults "*.el"))
+    :after corfu
+    :hook
+    ;; enable corfu-candidate-overlay mode globally
+    ;; this relies on having corfu-auto set to nil
+    (global-corfu-mode . corfu-candidate-overlay-mode))
 #+end_src
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
