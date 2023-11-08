@@ -365,7 +365,8 @@ Make org-brain-visualize-mode look a bit nicer.
     ;; To disable shortcut "jump" indicators for each section, set
     (dashboard-show-shortcuts nil)
     (dashboard-projects-backend 'project-el)
-    (dashboard-items '((recents  . 10)
+    (dashboard-items '((bookmarks . 20)
+                       (recents  . 10)
                        (projects . 10)))
     (dashboard-icon-type 'nerd-icons) ;; use `nerd-icons' package
     (dashboard-display-icons-p (display-graphic-p))
