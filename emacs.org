@@ -1750,7 +1750,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :straight (lsp-snippet-tempel :type git
                                   :host github
                                   :repo "svaante/lsp-snippet")
-    ;; :after (tempel eglot cape)
+    :after (tempel eglot cape)
     :preface
     (defun my/eglot-capf ()
       (setq-local completion-at-point-functions
@@ -1759,9 +1759,15 @@ Embark makes it easy to choose a command to run based on what is near point, bot
                          #'eglot-completion-at-point
                          #'cape-file)
                         completion-at-point-functions)))
+    :config
+    (when (feature 'tempel)
+      ;; Initialize lsp-snippet -> tempel in eglot
+      (lsp-snippet-tempel-eglot-init))
+    (when (feature 'yas-snippet)
+      ;; Initialize lsp-snippet -> yas-snippet in eglot
+      (lsp-snippet-yasnippet-eglot-init))
     :hook
-    ((after-init . lsp-snippet-tempel-eglot-init)
-     (eglot-managed-mode . my/eglot-capf)))
+    (eglot-managed-mode . my/eglot-capf))
 #+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 #+begin_src emacs-lisp
