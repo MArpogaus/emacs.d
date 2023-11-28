@@ -1727,10 +1727,11 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 **** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 #+begin_src emacs-lisp
   (use-package nerd-icons-corfu
-    :demand t
-    :after corfu
-    :config
-    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+    :preface
+    (defun my/add-nerd-icons-formatter nil
+      (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+    :hook
+    (corfu-mode . my/add-nerd-icons-formatter))
 #+end_src
 **** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 #+begin_src emacs-lisp
