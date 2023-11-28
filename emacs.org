@@ -60,10 +60,6 @@ This Emacs literate configuration has been inspired by the following projects:
   ;; This file is not part of GNU Emacs.
 #+end_src
 ** To-dos :noexport_1:
-*** TODO Add debugger
-- [[https://github.com/emacs-lsp/dap-mode][GitHub - emacs-lsp/dap-mode: Emacs Debug Adapter Protocol]]
-- [[https://emacs-lsp.github.io/dap-mode/page/python-poetry-pyenv/][Python, debbuging with poetry + pyenv - DAP Mode]]
-
 *** TODO Add iPython shell command
 *** TODO Add doom snippets?
 - [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
