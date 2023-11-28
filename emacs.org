@@ -2412,6 +2412,12 @@ universal on-the-fly syntax checker for Emacs
   (use-package numpydoc
     :after python)
 
+  (use-package sphinx-doc
+    :straight '(:type git :host github :repo "eanopolsky/sphinx-doc.el"
+                      :branch "square-brackets-in-return-types")
+    :hook
+    (python-mode . sphinx-doc-mode))
+
   (use-package pyimport
     :after conda)
 
