@@ -730,15 +730,6 @@ Automatically update file timestamps when file is saved
     :hook
     (before-save . time-stamp))
 #+end_src
-**** windmove :build_in:
-Navigate between windows with Shift-arrow
-#+begin_src emacs-lisp :tangel no
-  (use-package windmove
-    :demand t
-    :config
-    (when (fboundp 'windmove-default-keybindings)
-      (windmove-default-keybindings)))
-#+end_src
 **** winner :build_in:
 Undo and redo changes to window configuration
 #+begin_src emacs-lisp
