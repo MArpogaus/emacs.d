@@ -2567,12 +2567,10 @@ Meow is yet another modal editing mode for Emacs.
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
   (use-package which-key
-    :after meow emacs
-    :defer 0.1
     :custom
-    (which-key-idle-delay 0.1)
-    :config
-    (which-key-mode))
+    (which-key-idle-delay 0.0)
+    :hook
+    (meow-mode . which-key-mode))
 #+end_src
 ** Conventional Library Footer
 #+begin_src emacs-lisp
