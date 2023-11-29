@@ -2224,18 +2224,15 @@ functions we invoke regularly outside of magit is called.
                         (visual-line-mode 0)
                         ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                         (text-scale-adjust -1)))))
+#+end_src
+**** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
+#+begin_src emacs-lisp
   (use-package sr-speedbar
     :custom
     (sr-speedbar-right-side nil)
     :bind
     (:map my/toggle-map
           ("s" . sr-speedbar-toggle)))
-
-  ;; (use-package pretty-speedbar
-  ;;   :demand t
-  ;;   :custom
-  ;;   (pretty-speedbar-font "Symbols Nerd Font Mono")
-  ;;   )
 #+end_src
 *** Programming
 **** [[https://github.com/emacs-straight/auctex.git][auctex]]
