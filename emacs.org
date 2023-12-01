@@ -686,6 +686,9 @@ When working with many windows at the same time, each window has a size that is 
                  (lambda ()
                    (and which-key--buffer
                         (window-live-p (get-buffer-window which-key--buffer)))))
+    :bind
+    (:map my/toggle-map
+          ("g" . golden-ratio-mode))
     :hook
     (after-init . golden-ratio-mode))
 #+end_src
