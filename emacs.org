@@ -2642,6 +2642,7 @@ Meow is yet another modal editing mode for Emacs.
           ;; ("x" ("C-x" . ctl-x-map))
           ;;("m" . (lambda ()(meow--execute-kbd-macro "C-c")))
           ;; Use SPC (0-9) for digit arguments.
+          ("SPC" . project-list-buffers)
           ("1" . meow-digit-argument)
           ("2" . meow-digit-argument)
           ("3" . meow-digit-argument)
