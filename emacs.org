@@ -443,6 +443,29 @@ Highlighting of the current line (native mode)
     :hook
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
+**** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
+#+begin_src emacs-lisp
+  (use-package indent-bars
+    :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+    :custom
+    (indent-bars-treesit-support t)
+    (indent-bars-no-descend-string t)
+    (indent-bars-treesit-ignore-blank-lines-types '("module"))
+    (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+                                        list list_comprehension
+                                        dictionary dictionary_comprehension
+                                        parenthesized_expression subscript)))
+
+    (indent-bars-pattern ".")
+    (indent-bars-width-frac 0.2)
+    (indent-bars-pad-frac 0.1)
+    (indent-bars-zigzag nil)
+    (indent-bars-color-by-depth nil)
+    (indent-bars-highlight-current-depth '(:face default :blend 0.4))
+    (indent-bars-display-on-blank-lines nil)
+    :hook
+    ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
+#+end_src
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
 #+begin_src emacs-lisp
   (use-package ligature
