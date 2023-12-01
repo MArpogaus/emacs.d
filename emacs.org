@@ -698,7 +698,8 @@ When working with many windows at the same time, each window has a size that is 
     :custom
     (minimap-window-location 'right)
     (minimap-hide-fringes t)
-    (minimap-width-fraction 0.05)
+    (minimap-minimum-width 25)
+    (minimap-major-modes '(prog-mode conf-mode))
     :config
     (with-eval-after-load 'golden-ratio
       (add-to-list 'golden-ratio-inhibit-functions
