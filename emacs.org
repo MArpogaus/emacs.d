@@ -1381,7 +1381,7 @@ Emacs libvterm integration.
     (:map project-prefix-map
           ("t" . my/project-vterm)
           :map vterm-mode-map
-          ("C-<escape>" vterm-send-escape))
+          ("C-<escape>" . vterm-send-escape))
     :preface
     (defun my/project-vterm ()
       (interactive)
