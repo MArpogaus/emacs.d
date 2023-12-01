@@ -641,6 +641,7 @@ Replace selected text when typing
      :map my/toggle-map
      ("d" . dirvish-side)
      :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+     ([mouse-1] . dirvish-subtree-toggle-or-open)
      ("F" . dirvish-toggle-fullscreen)
      ("M-b" . dirvish-history-go-backward)
      ("M-e" . dirvish-emerge-menu)
@@ -662,7 +663,8 @@ Replace selected text when typing
      ("y"   . dirvish-yank-menu)
      ("z" . dirvish-show-history))
     :hook
-    (after-init . dirvish-override-dired-mode))
+    ((after-init . dirvish-override-dired-mode)
+     (dired-mode . (lambda nil (setq-local mouse-1-click-follows-link nil)))))
 #+end_src
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
@@ -1209,6 +1211,9 @@ package that automatically generates an up to date table of contents for us.
      "-l --almost-all --human-readable --group-directories-first --no-group")
     ;; kill all session buffers on quit
     (dirvish-reuse-session nil)
+    ;; Enable mouse drag-and-drop support
+    (dired-mouse-drag-files t)                   ; added in Emacs 29
+    (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
     :config
     (use-package dired-x
       :straight nil
@@ -1221,7 +1226,7 @@ package that automatically generates an up to date table of contents for us.
     :bind
     (:map my/open-map
           ("d" . dired)))
-          #+end_src
+#+end_src
 **** [[https://github.com/purcell/diredfl.git][diredfl]]
 #+begin_src emacs-lisp
   (use-package diredfl
