@@ -2071,13 +2071,8 @@ functions we invoke regularly outside of magit is called.
                  :exit
                  ("k" . tab-close-group))
     :custom
-    (tab-bar-close-button-show t)
     (tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups))
     (tab-bar-separator "")
-    (tab-bar-close-button (propertize "×"
-                                      'close-tab t
-                                      'face 'tab-bar-tab-default
-                                      :help "Click to close tab"))
     (tab-bar-auto-width nil)
     :preface
     (defun my/set-tab-faces (&rest r)
@@ -2090,32 +2085,46 @@ functions we invoke regularly outside of magit is called.
             (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base)))))
     (defun my/tab-bar-tab-name-current-filter-return (str)
       (format " %s " str))
-    (advice-add 'tab-bar-tab-name-current :filter-return #'my/tab-bar-tab-name-current-filter-return)
 
     (defun my/tab-bar-tab-group-default-filter-return (str)
       (format " %s " str))
-    (advice-add 'tab-bar-tab-group-default :filter-return #'my/tab-bar-tab-group-default-filter-return)
+
+    (defface tab-bar-tab-group-icon-current
+      '((t :inherit tab-bar-tab-group-current :family "Symbols Nerd Font Mono"))
+      "Face for active tab bar groups icon")
+    (defface tab-bar-tab-group-icon-inactive
+      '((t :inherit tab-bar-tab-group-inactive :family "Symbols Nerd Font Mono"))
+      "Face for active tab bar groups icon")
 
     (defun my/tab-bar--format-tab-group-around (orig-fun tab i &optional current-p)
-      (let ((color (face-attribute (if current-p
-                                       'mode-line-emphasis
-                                     'tab-bar-tab-group-inactive) :foreground)))
-        (append (cons `(,(intern (format "group-sep-%i" i)) menu-item
-                        ,(propertize " " 'face (list :height (if current-p 0.3 0.2)
-                                                     :foreground color
-                                                     :background color))
-                        ignore)
-                      (funcall orig-fun tab i current-p))
+      (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
+             (color (face-attribute (if current-p
+                                        'mode-line-emphasis
+                                      'tab-bar-tab-group-inactive) :foreground))
+             (group-sep (propertize " " 'face (list :height (if current-p 0.3 0.2)
+                                                    :foreground color
+                                                    :background color)))
+             (icon-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
+             (group-icon (propertize (if (equal tab-group-name " HOME ") " " " ") 'face icon-face))
+             )
+        (put-text-property 1 2 'face (if current-p 'tab-bar-tab-group-icon-current 'tab-bar-tab-group-icon-inactive) group-icon)
+        (append (list `(,(intern (format "group-sep-%i" i)) menu-item
+                        ,group-sep ignore)
+                      `(,(intern (format "group-icon-%i" i)) menu-item
+                        ,group-icon ignore))
+                (funcall orig-fun tab i current-p)
                 (when current-p (list`(,(intern (format "group-arrow-%i" i)) menu-item
                                        ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
                                        ignore))))))
 
     (defun my/setup-tab-bar-mode nil
+      (advice-add 'tab-bar-tab-name-current :filter-return #'my/tab-bar-tab-name-current-filter-return)
+      (advice-add 'tab-bar-tab-group-default :filter-return #'my/tab-bar-tab-group-default-filter-return)
       (advice-add 'load-theme :after #'my/set-tab-faces)
       (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
-      (tab-group "")
       (my/set-tab-faces)
-      (tab-bar-mode))
+      (tab-bar-mode)
+      (tab-group "HOME"))
     :hook
     (after-init . my/setup-tab-bar-mode))
 
@@ -2132,9 +2141,6 @@ functions we invoke regularly outside of magit is called.
           (tab-bar-close-group-tabs tab-group-name))))
 
     :config
-    (if (display-graphic-p)
-        (setq tab-group-name-template " %s"))
-
     (advice-add 'project-tab-groups--project-kill-buffers-advice :override 'my/project-tab-groups--project-kill-buffers-advice-overwrite)
 
     (with-eval-after-load 'tab-bar-echo-area
