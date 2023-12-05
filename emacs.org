@@ -205,6 +205,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; DOOM: add some space between fringe it and buffer.
     (fringes-outside-margins t)
 
+    ;; Resize frame and windows pixelwise
+    (window-resize-pixelwise t)
+    (frame-resize-pixelwise t)
     :preface
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
