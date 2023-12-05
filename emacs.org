@@ -722,7 +722,7 @@ Replace selected text when typing
     (dirvish-attributes
      '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
     :config
-    (dirvish-peek-mode) ; Preview files in minibuffer
+    ;; (dirvish-peek-mode) ; Preview files in minibuffer
     (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
     (with-eval-after-load 'doom-modeline
       (setq dirvish-mode-line-height doom-modeline-height)
