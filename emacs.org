@@ -608,6 +608,91 @@ Revert buffers when the underlying file has changed
     :hook
     (after-init . global-auto-revert-mode))
 #+end_src
+**** tab-bar :build_in:
+#+begin_src emacs-lisp
+  (use-package tab-bar
+    :straight nil
+    :bind
+    (:repeat-map my/workspace-map
+                 ("p" . tab-previous)
+                 ("n" . tab-next)
+                 ("P" . tab-bar-move-tab-backward)
+                 ("N". tab-bar-move-tab)
+                 :exit
+                 ("k" . tab-close-group))
+    :custom
+    (tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups))
+    (tab-bar-separator "")
+    (tab-bar-auto-width nil)
+    (tab-bar-close-button-show nil)
+    :preface
+    (defface tab-bar-tab-group-icon-current
+      '((t :inherit tab-bar-tab-group-current :family "Symbols Nerd Font Mono"))
+      "Face for active tab bar groups icon")
+    (defface tab-bar-tab-group-icon-inactive
+      '((t :inherit tab-bar-tab-group-inactive :family "Symbols Nerd Font Mono"))
+      "Face for active tab bar groups icon")
+
+    (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
+      (let*((tab-group-name (funcall tab-bar-tab-group-function tab))
+            (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
+            (icon-face (if current-p 'tab-bar-tab-group-icon-current 'tab-bar-tab-group-icon-inactive))
+            (color (face-attribute (if current-p
+                                       'mode-line-emphasis
+                                     'tab-bar-tab-group-inactive) :foreground))
+            (group-sep (concat (propertize " " 'face (list :height (if current-p 0.3 0.2)
+                                                           :foreground color
+                                                           :background color))
+                               (propertize " " 'face tab-group-face)))
+            (group-icon (propertize (if (equal tab-group-name "HOME") "" "") 'face icon-face))
+            )
+        (concat
+         group-sep
+         group-icon
+         (propertize
+          (concat
+           " "
+           (funcall tab-bar-tab-group-function tab)
+           " "
+           (if current-p "⏵ " ""))
+          'face tab-group-face))))
+    (defun my/setup-tab-bar-mode nil
+      (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function)
+      (tab-bar-mode)
+      (tab-group "HOME"))
+    :hook
+    (after-init . my/setup-tab-bar-mode))
+#+end_src
+**** tab-line :build_in:
+#+begin_src emacs-lisp
+  (use-package tab-line
+    :straight nil
+    :custom
+    (tab-line-new-tab-choice . nil)
+    (tab-line-new-button-show . nil)
+    (tab-line-close-button-show . nil)
+    :bind
+    (:map my/toggle-map
+          ("T" . global-tab-line-mode))
+    :preface
+    (defun my/tab-line-tab-name-function (buffer &optional _buffers)
+      (let ((name (buffer-name buffer)))
+        (concat " "
+                (propertize (nerd-icons-icon-for-file name) 'face 'tab-bar-tab-group-icon-current)
+                (format " %s " name))))
+    (defun my/tab-line-tab-name-format-default-around (orig-fun tab tabs)
+      (let ((formatted-tab (funcall orig-fun tab tabs)))
+        (put-text-property 1 2 'face
+                           `((t :inherit ,(get-text-property 0 'face formatted-tab ) :family "Symbols Nerd Font Mono"))
+                           formatted-tab)
+        formatted-tab))
+    :config
+    (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
+          tab-line-separator "")
+    (advice-add 'tab-line-tab-name-format-default :around #'my/tab-line-tab-name-format-default-around)
+    :hook
+    (after-init . global-tab-line-mode))
+#+end_src
 **** delsel :build_in:
 Replace selected text when typing
 #+begin_src emacs-lisp
@@ -2122,89 +2207,8 @@ functions we invoke regularly outside of magit is called.
 *** Project Management
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 #+begin_src emacs-lisp
-  (use-package tab-bar
-    :straight nil
-    :bind
-    (:repeat-map my/workspace-map
-                 ("p" . tab-previous)
-                 ("n" . tab-next)
-                 ("P" . tab-bar-move-tab-backward)
-                 ("N". tab-bar-move-tab)
-                 :exit
-                 ("k" . tab-close-group))
-    :custom
-    (tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups))
-    (tab-bar-separator "")
-    (tab-bar-auto-width nil)
-    :preface
-    (defun my/set-tab-faces (&rest r)
-      (if (display-graphic-p)
-          (let ((bg (face-attribute 'default :background))
-                (fg (face-attribute 'default :foreground))
-                (base (face-attribute 'mode-line :background))
-                (box-width (/ (line-pixel-height) 3)))
-            (set-face-attribute 'tab-bar-tab nil :foreground fg :background bg :weight 'normal :inherit nil :box (list :line-width box-width :color bg))
-            (set-face-attribute 'tab-bar-tab-inactive nil :foreground fg :background base :weight 'normal :inherit nil :box (list :line-width box-width :color base)))))
-    (defun my/tab-bar-tab-name-current-filter-return (str)
-      (format " %s " str))
-
-    (defun my/tab-bar-tab-group-default-filter-return (str)
-      (format " %s " str))
-
-    (defface tab-bar-tab-group-icon-current
-      '((t :inherit tab-bar-tab-group-current :family "Symbols Nerd Font Mono"))
-      "Face for active tab bar groups icon")
-    (defface tab-bar-tab-group-icon-inactive
-      '((t :inherit tab-bar-tab-group-inactive :family "Symbols Nerd Font Mono"))
-      "Face for active tab bar groups icon")
-
-    (defun my/tab-bar--format-tab-group-around (orig-fun tab i &optional current-p)
-      (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
-             (color (face-attribute (if current-p
-                                        'mode-line-emphasis
-                                      'tab-bar-tab-group-inactive) :foreground))
-             (group-sep (propertize " " 'face (list :height (if current-p 0.3 0.2)
-                                                    :foreground color
-                                                    :background color)))
-             (icon-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-             (group-icon (propertize (if (equal tab-group-name " HOME ") " " " ") 'face icon-face))
-             )
-        (put-text-property 1 2 'face (if current-p 'tab-bar-tab-group-icon-current 'tab-bar-tab-group-icon-inactive) group-icon)
-        (append (list `(,(intern (format "group-sep-%i" i)) menu-item
-                        ,group-sep ignore)
-                      `(,(intern (format "group-icon-%i" i)) menu-item
-                        ,group-icon ignore))
-                (funcall orig-fun tab i current-p)
-                (when current-p (list`(,(intern (format "group-arrow-%i" i)) menu-item
-                                       ,(propertize "⏵" 'face 'tab-bar-tab-group-current)
-                                       ignore))))))
-
-    (defun my/setup-tab-bar-mode nil
-      (advice-add 'tab-bar-tab-name-current :filter-return #'my/tab-bar-tab-name-current-filter-return)
-      (advice-add 'tab-bar-tab-group-default :filter-return #'my/tab-bar-tab-group-default-filter-return)
-      (advice-add 'load-theme :after #'my/set-tab-faces)
-      (advice-add 'tab-bar--format-tab-group :around #'my/tab-bar--format-tab-group-around)
-      (my/set-tab-faces)
-      (tab-bar-mode)
-      (tab-group "HOME"))
-    :hook
-    (after-init . my/setup-tab-bar-mode))
-
   (use-package project-tab-groups
-    :after tab-bar
-    :preface
-    ;; We need to update the provided advice for kill project buffers to find
-    ;; the tab group with our custom format
-    (defun my/project-tab-groups--project-kill-buffers-advice-overwrite (orig-fun &rest args)
-      "Call ORIG-FUN with ARGS, then close the current tab group, if any."
-      (when (apply orig-fun args)
-        (when-let ((tab-group-name (funcall tab-bar-tab-group-function
-                                            (tab-bar--current-tab-find))))
-          (tab-bar-close-group-tabs tab-group-name))))
-
     :config
-    (advice-add 'project-tab-groups--project-kill-buffers-advice :override 'my/project-tab-groups--project-kill-buffers-advice-overwrite)
-
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
