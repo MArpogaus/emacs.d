@@ -1495,7 +1495,7 @@ Emacs libvterm integration.
     (vterm-max-scrollback 100000)
     (vterm-tramp-shells '(("ssh" "/bin/bash")
                           ("podman" "/bin/bash"))))
-          #+end_src
+#+end_src
 **** tramp :build_in:
 remote file editing through ssh/scp.
 #+begin_src emacs-lisp
@@ -2144,6 +2144,12 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
                    (expand-file-name "straight/build/vertico/extensions"
                                      straight-base-dir)))
     (require 'vertico-directory)
+    :bind
+    ;; Improve directory navigation
+    (:map vertico-map
+          ("RET" . vertico-directory-enter)
+          ("DEL" . vertico-directory-delete-word)
+          ("M-d" . vertico-directory-delete-char))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
