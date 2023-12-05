@@ -2327,12 +2327,8 @@ functions we invoke regularly outside of magit is called.
   (use-package auctex
     :mode ("\\.tex\\'" . latex-mode)
     :commands (latex-mode LaTeX-mode plain-tex-mode)
-    :hook
-    ((LaTeX-mode . LaTeX-preview-setup)
-     (LaTeX-mode . LaTeX-math-mode)
-     (LaTeX-mode . TeX-source-correlate-mode)
-     (LaTeX-mode . turn-on-reftex))
     :custom
+    ;; Use PDF Tools for pdf output
     (TeX-view-program-selection
      '(((output-dvi has-no-display-manager)
         "dvi2tty")
@@ -2341,10 +2337,23 @@ functions we invoke regularly outside of magit is called.
        (output-dvi "xdvi")
        (output-pdf "PDF Tools")
        (output-html "xdg-open")))
+
+    ;; Enable auto-saving of TeX files
     (TeX-auto-save t)
+    ;; Enable parsing of the current TeX file
     (TeX-parse-self t)
+    ;; Disable query prompts when saving TeX files
     (TeX-save-query nil)
-    (TeX-PDF-mode t))
+    ;; Ask for master document
+    (TeX-master nil)
+    ;; Enable PDF mode for TeX files
+    (TeX-PDF-mode t)
+    :hook
+    ;; Set up preview, math mode, source correlate, and reftex in LaTeX mode
+    ((LaTeX-mode . LaTeX-preview-setup)
+     (LaTeX-mode . LaTeX-math-mode)
+     (LaTeX-mode . TeX-source-correlate-mode)
+     (LaTeX-mode . turn-on-reftex)))
 #+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 #+begin_src emacs-lisp
