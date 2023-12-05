@@ -2650,11 +2650,19 @@ Meow is yet another modal editing mode for Emacs.
     (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
     :bind
     (:map meow-motion-state-keymap
-          ("j" . meow-next)
-          ("k" . meow-prev)
-          ("<escape>" . ignore)
+          ("<escape>" . meow-cancel-selection)
+          ("b" . meow-back-word)
+          ("e" . meow-next-word)
+          ("f" . meow-find)
+          ("o" . meow-block)
+          ("q" . meow-quit)
+          ("t" . meow-till)
+          ("v" . meow-visit)
+          ("w" . meow-mark-word)
           ("x" . meow-line)
           ("y" . meow-save)
+          ("W" . meow-mark-symbol)
+          ("X" . meow-goto-line)
           :map my/leader-map
           ;; ("j" . "H-j")
           ;; ("k" . "H-k")
