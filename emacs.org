@@ -474,7 +474,7 @@ Highlighting of the current line (native mode)
   (use-package ligature
     :config
     ;; set Fira as default font
-    (set-frame-font "Fira Code-10" nil t)
+    (set-frame-font "FiraCode Nerd Font-10" nil t)
     :preface
     (defun my/setup-ligatures ()
       ;; Enable the "www" ligature in every possible major mode
@@ -587,7 +587,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                                :internal-border-width 15
                                :header-line-width 4
                                :mode-line-width 6
-                               :tab-width 8
+                               :tab-width 6
                                :right-divider-width 10
                                :scroll-bar-width 4))
     :hook
@@ -630,47 +630,82 @@ Revert buffers when the underlying file has changed
                  :exit
                  ("k" . tab-close-group))
     :custom
-    (tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups))
+    (tab-bar-format '(tab-bar-format-history
+                      tab-bar-format-tabs-groups
+                      my/tab-bar-format-new
+                      tab-bar-format-align-right
+                      tab-bar-format-global
+                      tab-bar-format-menu-bar))
     (tab-bar-separator "")
     (tab-bar-auto-width nil)
-    (tab-bar-close-button-show nil)
+    (tab-bar-close-button-show t)
+    (tab-bar-new-tab-choice "*dashboard*")
     :preface
-    (defface tab-bar-tab-group-icon-current
-      '((t :inherit tab-bar-tab-group-current :family "Symbols Nerd Font Mono"))
-      "Face for active tab bar groups icon")
-    (defface tab-bar-tab-group-icon-inactive
-      '((t :inherit tab-bar-tab-group-inactive :family "Symbols Nerd Font Mono"))
-      "Face for active tab bar groups icon")
+    (defun my/tab-bar-format-new ()
+      "Button to add a new tab."
+      `((add-tab menu-item ,tab-bar-new-button project-switch-project
+                 :help "New")))
 
     (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
       (let*((tab-group-name (funcall tab-bar-tab-group-function tab))
             (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-            (icon-face (if current-p 'tab-bar-tab-group-icon-current 'tab-bar-tab-group-icon-inactive))
             (color (face-attribute (if current-p
                                        'mode-line-emphasis
                                      'tab-bar-tab-group-inactive) :foreground))
-            (group-sep (concat (propertize " " 'face (list :height (if current-p 0.3 0.2)
-                                                           :foreground color
-                                                           :background color))
-                               (propertize " " 'face tab-group-face)))
-            (group-icon (propertize (if (equal tab-group-name "HOME") "" "") 'face icon-face))
-            )
+            (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
+                                                   :foreground color
+                                                   :background color)))
+            (group-icon (cond
+                         ((equal tab-group-name "HOME") "")
+                         (t ""))))
         (concat
          group-sep
-         group-icon
          (propertize
           (concat
+           " "
+           group-icon
            " "
            (funcall tab-bar-tab-group-function tab)
            " "
            (if current-p "⏵ " ""))
           'face tab-group-face))))
-    (defun my/setup-tab-bar-mode nil
-      (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function)
-      (tab-bar-mode)
+
+    (defun my/create-home-tab-group (&rest frame)
+      (when frame (frame-focus 'frame))
       (tab-group "HOME"))
+
+    :config
+    (require 'icons)
+    (define-icon tab-bar-new nil
+      '(
+        ;; (emoji "➕")
+        (symbol "  " :face tab-bar-tab-inactive)
+        (text " + "))
+      "Icon for creating a new tab."
+      :version "29.1"
+      :help-echo "New tab")
+    (define-icon tab-bar-close nil
+      '(
+        ;; (emoji " ❌")
+        (symbol " ✕ ") ;; "ⓧ"
+        (text " x "))
+      "Icon for closing the clicked tab."
+      :version "29.1"
+      :help-echo "Click to close tab")
+    (define-icon tab-bar-menu-bar nil
+      '(;; (emoji "🍔")
+        (symbol " 󰍜 " :face tab-bar-tab-inactive)
+        (text "Menu" :face tab-bar-tab-inactive))
+      "Icon for the menu bar."
+      :version "29.1"
+      :help-echo "Menu bar")
+
+    (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function)
+
+    (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
+    (my/create-home-tab-group)
     :hook
-    (after-init . my/setup-tab-bar-mode))
+    (after-init . tab-bar-mode))
 #+end_src
 **** tab-line :build_in:
 #+begin_src emacs-lisp
@@ -687,18 +722,11 @@ Revert buffers when the underlying file has changed
     (defun my/tab-line-tab-name-function (buffer &optional _buffers)
       (let ((name (buffer-name buffer)))
         (concat " "
-                (propertize (nerd-icons-icon-for-file name) 'face 'tab-bar-tab-group-icon-current)
+                (nerd-icons-icon-for-file name)
                 (format " %s " name))))
-    (defun my/tab-line-tab-name-format-default-around (orig-fun tab tabs)
-      (let ((formatted-tab (funcall orig-fun tab tabs)))
-        (put-text-property 1 2 'face
-                           `((t :inherit ,(get-text-property 0 'face formatted-tab ) :family "Symbols Nerd Font Mono"))
-                           formatted-tab)
-        formatted-tab))
     :config
     (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
           tab-line-separator "")
-    (advice-add 'tab-line-tab-name-format-default :around #'my/tab-line-tab-name-format-default-around)
     :hook
     (after-init . global-tab-line-mode))
 #+end_src
