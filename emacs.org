@@ -749,6 +749,7 @@ Replace selected text when typing
      '(:left (sort symlink) :right (omit yank index)))
     (dirvish-attributes
      '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+    (dirvish-use-header-line nil)
     :config
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
     (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
