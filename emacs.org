@@ -1069,6 +1069,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     (org-babel-load-languages '((emacs-lisp . t)
                                 (python . t)
                                 (shell . t)))
+    (org-export-backends '(md beamer odt latex icalendar html ascii))
     :preface
     ;; https://github.com/rougier/emacs-gtd#activating-tasks
     (defun my/log-todo-next-creation-date (&rest ignore)
