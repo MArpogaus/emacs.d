@@ -1533,7 +1533,9 @@ Emacs libvterm integration.
   ;; https://www.reddit.com/r/emacs/comments/wu5rxi/comment/ilagtzv/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
   (use-package vterm
     :bind
-    (:map project-prefix-map
+    (:map my/open-map
+          ("v" . vterm)
+          :map project-prefix-map
           ("t" . my/project-vterm)
           :map vterm-mode-map
           ("C-<escape>" . vterm-send-escape))
