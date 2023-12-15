@@ -2516,18 +2516,44 @@ Structured Editing and Navigation in Emacs
     (eldoc-add-command-completions "paredit-")
     (eldoc-add-command-completions "combobulate-"))
 #+end_src
-**** [[https://github.com/garyo/ts-fold.git][ts-fold]]
-Code-folding using tree-sitter.
-Using the forked version with treesit support here
+**** [[https://github.com/emacs-ess/ESS][ESS]]
 #+begin_src emacs-lisp
-  (use-package ts-fold
-    :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
-    :bind
-    (:map my/toggle-map
-          ([tab] . ts-fold-toggle))
+  (use-package ess
+    :mode (("\\.[rR]\\'" . R-mode)
+           ("\\.[rR]nw\\'" . Rnw-mode)
+           ("\\.jl\\'" . julia-mode))
+    :config
+    (require 'ess-site))
+#+end_src
+**** [[https://github.com/kaz-yos/eval-in-repl.git][eval-in-repl]]
+#+begin_src emacs-lisp
+  (use-package eval-in-repl
+    :custom
+    ;; Uncomment if no need to jump after evaluating current line
+    ;; (eir-jump-after-eval nil)
+
+    ;; Uncomment if you want to always split the script window into two.
+    ;; This will just split the current script window into two without
+    ;; disturbing other windows.
+    ;; (eir-always-split-script-window t)
+
+    ;; Uncomment if you always prefer the two-window layout.
+    ;; (eir-delete-other-windows t)
+
+    ;; Place REPL on the left of the script window when splitting.
+    (eir-repl-placement 'left)
+    :preface
+    (defun my/setup-eir-python nil
+      (require 'eval-in-repl-python)
+      (local-set-key (kbd "<C-return>") 'eir-eval-in-python))
+    (defun my/setup-eir-lisp nil
+      (require 'eval-in-repl-ielm)
+      ;; Evaluate expression in the current buffer.
+      (setq-local eir-ielm-eval-in-current-buffer t)
+      (local-set-key (kbd "<C-return>") 'eir-eval-in-ielm))
     :hook
-    ((after-init . global-ts-fold-mode)
-     (after-init . global-ts-fold-indicators-mode)))
+    (((python-mode python-ts-mode) . my/setup-eir-python)
+     ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 #+end_src
 **** [[https://github.com/flycheck/flycheck.git][flycheck]]
 #+begin_src emacs-lisp
