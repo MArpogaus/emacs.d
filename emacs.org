@@ -1414,6 +1414,12 @@ An Emacs web feeds client
 **** flyspell :build_in:
 #+begin_src emacs-lisp
   (use-package flyspell
+    :custom
+    ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
+    (flyspell-issue-welcome-flag nil)
+    ;; Significantly speeds up flyspell, which would otherwise print
+    ;; messages for every word when checking the entire buffer
+    (flyspell-issue-message-flag nil)
     :preface
     (defun my/restart-flyspell-mode ()
       (when flyspell-mode
@@ -1433,8 +1439,8 @@ An Emacs web feeds client
                   :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
                   ([mouse-1] . flyspell-correct-at-point)))
     :hook
-    (((text-mode conf-mode org-mode LaTeX-mode) . flyspell-mode)
-     (prog-mode . flyspell-prog-mode)
+    (((text-mode org-mode LaTeX-mode) . flyspell-mode)
+     ((prog-mode conf-mode) . flyspell-prog-mode)
      (ispell-change-dictionary . restart-flyspell-mode)))
 #+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
