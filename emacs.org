@@ -891,8 +891,8 @@ Enable repeat maps
 #+begin_src emacs-lisp
   (use-package savehist
     :custom
-    (kill-ring-max 50)
-    (history-length 50)
+    (kill-ring-max 500)
+    (history-length 500)
     (savehist-additional-variables
      '(kill-ring
        command-history
@@ -908,15 +908,15 @@ Enable repeat maps
     ;; No duplicates in history
     (history-delete-duplicates t)
     :config
-    (put 'minibuffer-history         'history-length 50)
-    (put 'file-name-history          'history-length 50)
-    (put 'set-variable-value-history 'history-length 25)
-    (put 'custom-variable-history    'history-length 25)
-    (put 'query-replace-history      'history-length 25)
-    (put 'read-expression-history    'history-length 25)
-    (put 'read-char-history          'history-length 25)
-    (put 'face-name-history          'history-length 25)
-    (put 'bookmark-history           'history-length 25)
+    (put 'minibuffer-history         'history-length 500)
+    (put 'file-name-history          'history-length 500)
+    (put 'set-variable-value-history 'history-length 250)
+    (put 'custom-variable-history    'history-length 250)
+    (put 'query-replace-history      'history-length 250)
+    (put 'read-expression-history    'history-length 250)
+    (put 'read-char-history          'history-length 250)
+    (put 'face-name-history          'history-length 250)
+    (put 'bookmark-history           'history-length 250)
     :hook
     ;;Start history mode.
     (after-init . savehist-mode))
