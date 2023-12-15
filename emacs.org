@@ -1509,6 +1509,24 @@ Major mode for interacting with a terminal
     (shell-file-name "/bin/zsh")
     (explicit-shell-file-name "/bin/zsh"))
 #+end_src
+**** tramp :build_in:
+remote file editing through ssh/scp.
+#+begin_src emacs-lisp
+  (use-package tramp
+    :straight nil
+    :custom
+    (tramp-default-method "ssh")
+    (tramp-encoding-shell "/usr/bin/zsh")
+    (remote-file-name-inhibit-cache nil)
+    (vc-ignore-dir-regexp
+     (format "%s\\|%s"
+             vc-ignore-dir-regexp
+             tramp-file-name-regexp))
+    :config
+    (add-to-list 'tramp-connection-properties
+                 (list (regexp-quote "/sshx:user@host:")
+                       "remote-shell" "/bin/bash")))
+#+end_src
 **** [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 Emacs libvterm integration.
 #+begin_src emacs-lisp
@@ -1538,24 +1556,6 @@ Emacs libvterm integration.
     (vterm-max-scrollback 100000)
     (vterm-tramp-shells '(("ssh" "/bin/bash")
                           ("podman" "/bin/bash"))))
-#+end_src
-**** tramp :build_in:
-remote file editing through ssh/scp.
-#+begin_src emacs-lisp
-  (use-package tramp
-    :straight nil
-    :custom
-    (tramp-default-method "ssh")
-    (tramp-encoding-shell "/usr/bin/zsh")
-    (remote-file-name-inhibit-cache nil)
-    (vc-ignore-dir-regexp
-     (format "%s\\|%s"
-             vc-ignore-dir-regexp
-             tramp-file-name-regexp))
-    :config
-    (add-to-list 'tramp-connection-properties
-                 (list (regexp-quote "/sshx:user@host:")
-                       "remote-shell" "/bin/bash")))
 #+end_src
 **** [[https://github.com/emacs-straight/vundo.git][vundo]]
 #+begin_src emacs-lisp
