@@ -1077,6 +1077,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
                                 (python . t)
                                 (shell . t)))
     (org-export-backends '(md beamer odt latex icalendar html ascii))
+    (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
     :preface
     ;; https://github.com/rougier/emacs-gtd#activating-tasks
     (defun my/log-todo-next-creation-date (&rest ignore)
@@ -2015,15 +2016,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
-**** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
-#+begin_src emacs-lisp
-  (use-package nerd-icons-corfu
-    :preface
-    (defun my/add-nerd-icons-formatter nil
-      (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-    :hook
-    (corfu-mode . my/add-nerd-icons-formatter))
-#+end_src
 **** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 #+begin_src emacs-lisp
   (use-package lsp-snippet-tempel
@@ -2066,6 +2058,15 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (nerd-icons-completion-mode)
     :hook
     (marginalia-mode . nerd-icons-completion-marginalia-setup))
+#+end_src
+**** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
+#+begin_src emacs-lisp
+  (use-package nerd-icons-corfu
+    :preface
+    (defun my/add-nerd-icons-formatter nil
+      (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+    :hook
+    (corfu-mode . my/add-nerd-icons-formatter))
 #+end_src
 **** [[https://github.com/oantolin/orderless.git][orderless]]
 Emacs completion style that matches multiple regexps in any order
@@ -2192,9 +2193,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :bind
     ;; Improve directory navigation
     (:map vertico-map
-          ("RET" . vertico-directory-enter)
-          ("DEL" . vertico-directory-delete-word)
-          ("M-d" . vertico-directory-delete-char))
+          ("RET" . vertico-directory-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
@@ -2406,6 +2405,30 @@ functions we invoke regularly outside of magit is called.
      (LaTeX-mode . TeX-source-correlate-mode)
      (LaTeX-mode . turn-on-reftex)))
 #+end_src
+**** [[https://github.com/mickeynp/combobulate.git][combobulate]]
+Structured Editing and Navigation in Emacs
+#+begin_src emacs-lisp
+  (use-package combobulate
+    :after treesit
+    :custom
+    ;; ;; You can customize Combobulate's key prefix here.
+    ;; ;; Note that you may have to restart Emacs for this to take effect!
+    (combobulate-key-prefix "C-c o")
+    :config
+    (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
+
+    ;; Optional, but recommended.
+    ;;
+    ;; You can manually enable Combobulate with `M-x
+    ;; combobulate-mode'.
+    :hook
+    ((python-ts-mode . combobulate-mode)
+     (js-ts-mode . combobulate-mode)
+     (css-ts-mode . combobulate-mode)
+     (yaml-ts-mode . combobulate-mode)
+     (typescript-ts-mode . combobulate-mode)
+     (tsx-ts-mode . combobulate-mode)))
+#+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 #+begin_src emacs-lisp
   (use-package dape
@@ -2442,30 +2465,6 @@ functions we invoke regularly outside of magit is called.
                    :cwd dape-cwd-fn
                    :program dape-find-file-buffer-default))
     )
-#+end_src
-**** [[https://github.com/mickeynp/combobulate.git][combobulate]]
-Structured Editing and Navigation in Emacs
-#+begin_src emacs-lisp
-  (use-package combobulate
-    :after treesit
-    :custom
-    ;; ;; You can customize Combobulate's key prefix here.
-    ;; ;; Note that you may have to restart Emacs for this to take effect!
-    (combobulate-key-prefix "C-c o")
-    :config
-    (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
-
-    ;; Optional, but recommended.
-    ;;
-    ;; You can manually enable Combobulate with `M-x
-    ;; combobulate-mode'.
-    :hook
-    ((python-ts-mode . combobulate-mode)
-     (js-ts-mode . combobulate-mode)
-     (css-ts-mode . combobulate-mode)
-     (yaml-ts-mode . combobulate-mode)
-     (typescript-ts-mode . combobulate-mode)
-     (tsx-ts-mode . combobulate-mode)))
 #+end_src
 **** docker
 #+begin_src emacs-lisp
@@ -2561,6 +2560,17 @@ Structured Editing and Navigation in Emacs
     :custom
     ;; Let git gutter have left fringe, flycheck can have right fringe
     (flycheck-indication-mode 'right-fringe)
+
+    ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/syntax/config.el#L15
+    ;; Don't recheck on idle as often
+    (flycheck-idle-change-delay 1.0)
+    ;; For the above functionality, check syntax in a buffer that you switched to
+    ;; only briefly. This allows "refreshing" the syntax check state for several
+    ;; buffers quickly after e.g. changing a config file.
+    (flycheck-buffer-switch-check-intermediate-buffers t)
+
+    ;; Display errors a little quicker (default is 0.9s)
+    (flycheck-display-errors-delay 0.25)
     :preface
     ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
     (defun my/flycheck-eldoc (callback &rest _ignored)
@@ -2685,6 +2695,19 @@ built-in tree-sitter integration for Emacs
     :hook
     (after-init . global-treesit-auto-mode))
 #+end_src
+**** [[https://github.com/garyo/ts-fold.git][ts-fold]]
+Code-folding using tree-sitter.
+Using the forked version with treesit support here
+#+begin_src emacs-lisp
+  (use-package ts-fold
+    :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
+    :bind
+    (:map my/toggle-map
+          ([tab] . ts-fold-toggle))
+    :hook
+    ((after-init . global-ts-fold-mode)
+     (after-init . global-ts-fold-indicators-mode)))
+#+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 #+begin_src emacs-lisp
   (use-package yaml-mode
@@ -2747,6 +2770,7 @@ Meow is yet another modal editing mode for Emacs.
           ("w" . meow-mark-word)
           ("x" . meow-line)
           ("y" . meow-save)
+          ("E" . meow-next-symbol)
           ("W" . meow-mark-symbol)
           ("X" . meow-goto-line)
           :map my/leader-map
