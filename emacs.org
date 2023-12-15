@@ -593,30 +593,6 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :hook
     (after-init . spacious-padding-mode))
 #+end_src
-**** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
-#+begin_src emacs-lisp
-  (use-package visual-fill-column
-    :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
-#+end_src
-*** UX
-**** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
-#+begin_src emacs-lisp
-  (use-package auto-dark
-    :custom
-    (auto-dark-dark-theme 'modus-vivendi)
-    (auto-dark-light-theme 'modus-operandi)
-    :hook (after-init . auto-dark-mode))
-#+end_src
-**** autorevert :build_in:
-Revert buffers when the underlying file has changed
-#+begin_src emacs-lisp
-  (use-package autorevert
-    :custom
-    ;; Revert Dired and other buffers
-    (global-auto-revert-non-file-buffers t)
-    :hook
-    (after-init . global-auto-revert-mode))
-#+end_src
 **** tab-bar :build_in:
 #+begin_src emacs-lisp
   (use-package tab-bar
@@ -729,6 +705,37 @@ Revert buffers when the underlying file has changed
           tab-line-separator "")
     :hook
     (after-init . global-tab-line-mode))
+#+end_src
+**** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
+#+begin_src emacs-lisp
+  (use-package visual-fill-column
+    :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
+#+end_src
+*** UX
+**** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+#+begin_src emacs-lisp
+  (use-package auto-dark
+    :custom
+    (auto-dark-dark-theme 'modus-vivendi)
+    (auto-dark-light-theme 'modus-operandi)
+    :hook (after-init . auto-dark-mode))
+#+end_src
+**** autorevert :build_in:
+Revert buffers when the underlying file has changed
+#+begin_src emacs-lisp
+  (use-package autorevert
+    :custom
+    ;; Revert Dired and other buffers
+    (global-auto-revert-non-file-buffers t)
+    :hook
+    (after-init . global-auto-revert-mode))
+#+end_src
+**** bookmark :build_in:
+#+begin_src emacs-lisp
+  (use-package bookmark
+    :straight nil
+    :custom
+    (bookmark-save-flag 1))
 #+end_src
 **** delsel :build_in:
 Replace selected text when typing
