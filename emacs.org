@@ -2265,6 +2265,12 @@ functions we invoke regularly outside of magit is called.
           ("r"  . magit-rebase)))
 #+end_src
 *** Project Management
+**** project :build_in:
+#+begin_src emacs-lisp
+  (use-package project
+    :custom
+    (project-vc-extra-root-markers '(".project")))
+#+end_src
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 #+begin_src emacs-lisp
   (use-package project-tab-groups
