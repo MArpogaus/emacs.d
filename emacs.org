@@ -642,9 +642,18 @@ Increase the padding/spacing of GNU Emacs frames and windows.
            group-icon
            " "
            (funcall tab-bar-tab-group-function tab)
-           " "
-           (if current-p "⏵ " ""))
+           " ")
           'face tab-group-face))))
+
+    (defun my/tab-bar-tab-name-format-function (tab i)
+      (let ((current-p (eq (car tab) 'current-tab)))
+        (propertize
+         (concat (if current-p "⏵ " " ")
+                 (if tab-bar-tab-hints (format "%d " i) "")
+                 (alist-get 'name tab)
+                 (if (and tab-bar-close-button-show current-p)
+                     tab-bar-close-button " "))
+         'face (list :inherit 'tab-bar-tab :weight (if current-p 'bold 'normal)))))
 
     (defun my/create-home-tab-group (&rest frame)
       (when frame (frame-focus 'frame))
@@ -676,7 +685,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
       :version "29.1"
       :help-echo "Menu bar")
 
-    (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function)
+    (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function
+          tab-bar-tab-name-format-function #'my/tab-bar-tab-name-format-function)
 
     (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
     (my/create-home-tab-group)
