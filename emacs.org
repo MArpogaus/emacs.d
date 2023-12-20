@@ -710,9 +710,13 @@ Increase the padding/spacing of GNU Emacs frames and windows.
         (concat " "
                 (nerd-icons-icon-for-file name)
                 (format " %s " name))))
+    (defun my/switch-to-prev-buffer-skip (window buffer &REST)
+      (not (seq-contains-p
+            (tab-line-tabs-window-buffers) buffer)))
     :config
     (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
           tab-line-separator "")
+    (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip)
     :hook
     (after-init . global-tab-line-mode))
 #+end_src
