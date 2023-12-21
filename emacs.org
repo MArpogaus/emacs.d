@@ -751,6 +751,13 @@ Revert buffers when the underlying file has changed
     :custom
     (bookmark-save-flag 1))
 #+end_src
+**** [[https://github.com/emacs-straight/comint-mime.git][comint-mime]]
+#+begin_src emacs-lisp
+  (use-package comint-mime
+    :hook
+    ((shell-mode . comint-mime-setup)
+     (inferior-python-mode . comint-mime-setup)))
+#+end_src
 **** delsel :build_in:
 Replace selected text when typing
 #+begin_src emacs-lisp
@@ -2656,14 +2663,7 @@ universal on-the-fly syntax checker for Emacs
     :custom
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
-    (python-indent-guess-indent-offset-verbose nil)
-
-    :config
-    ;; Default to Python 3. Prefer the versioned Python binaries since some
-    ;; systems link the unversioned one to Python 2.
-    (when (and (executable-find "python3")
-               (string= python-shell-interpreter "python"))
-      (setq python-shell-interpreter "python3")))
+    (python-indent-guess-indent-offset-verbose nil))
 
   (use-package conda
     :after python
@@ -2671,18 +2671,29 @@ universal on-the-fly syntax checker for Emacs
     ;; support for mambaforge envs
     (conda-anaconda-home "~/mambaforge/")
     (conda-env-home-directory "~/mambaforge/")
+    (conda-activate-base-by-default t)
+    :preface
+    (defun my/find-python-interpreter nil
+      (cond
+       ((executable-find "ipython3")
+        (setq python-shell-interpreter "ipython3"
+              python-shell-interpreter-args "--simple-prompt --classic"))
+       ((executable-find "python3")
+        (setq python-shell-interpreter "python3"
+              python-shell-interpreter-args "-i"))
+       (t (setq python-shell-interpreter "python"
+                python-shell-interpreter-args "-i"))))
     :config
     ;; interactive shell support
     (conda-env-initialize-interactive-shells)
     ;; if you want eshell support, include:
     (conda-env-initialize-eshell)
-    (conda-env-activate "dev310")
     ;; enable auto-activation
     ;; (conda-env-autoactivate-mode t)
     ;; if you want to automatically activate a conda environment on the opening of a file:
     ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
     ;;                       (conda-env-activate-for-buffer))))
-    )
+    (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
 
   (use-package numpydoc
     :after python)
