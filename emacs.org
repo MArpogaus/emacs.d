@@ -2427,6 +2427,12 @@ functions we invoke regularly outside of magit is called.
      (LaTeX-mode . TeX-source-correlate-mode)
      (LaTeX-mode . turn-on-reftex)))
 #+end_src
+**** [[https://github.com/astoff/code-cells.el.git][code-cells]]
+#+begin_src emacs-lisp
+  (use-package code-cells
+    :hook
+    (python-base-mode . code-cells-mode-maybe))
+#+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs
 #+begin_src emacs-lisp
