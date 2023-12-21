@@ -655,9 +655,10 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                      tab-bar-close-button " "))
          'face (list :inherit 'tab-bar-tab :weight (if current-p 'bold 'normal)))))
 
-    (defun my/create-home-tab-group (&rest frame)
-      (when frame (frame-focus 'frame))
-      (tab-group "HOME"))
+    (defun my/create-home-tab-group (&optional frame)
+      (let ((tab-group-name (funcall tab-bar-tab-group-function (tab-bar--current-tab))))
+        (when frame (select-frame frame))
+        (tab-group (if tab-group-name tab-group-name "HOME"))))
 
     :config
     (require 'icons)
