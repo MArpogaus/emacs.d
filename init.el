@@ -1,7 +1,7 @@
 ;;; init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
-;; Copyright (C) 2010-2021 Marcel Arpogaus
+;; Copyright (C) 2010-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
 ;; Keywords: internal

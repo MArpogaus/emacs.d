@@ -1,7 +1,7 @@
 ;;; my-ux.el --- Emacs configuration file  -*- lexical-binding: t; -*-
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
-;; Copyright (C) 2010-2021 Marcel Arpogaus
+;; Copyright (C) 2010-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
 ;; Keywords: internal
@@ -86,8 +86,8 @@
 
 (use-package golden-ratio
   :custom
-  (golden-ratio-exclude-modes '(speedbar-mode vundo-mode dired-mode))
-  (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*"))
+  (golden-ratio-exclude-modes '(speedbar-mode vundo-mode dired-mode symbols-outline-mode))
+  (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*" " ?\\*Outline\\*"))
   ;; (golden-ratio-auto-scale t)
   :config
   (add-to-list 'golden-ratio-inhibit-functions
@@ -142,12 +142,6 @@
 (use-package repeat
   :hook
   (after-init . repeat-mode))
-
-(use-package repeat-help
-  :custom
-  (repeat-help-auto nil)
-  :hook
-  (repeat-mode . repeat-help-mode))
 
 (use-package rotate
   :bind

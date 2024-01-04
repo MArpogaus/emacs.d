@@ -1,7 +1,7 @@
 ;;; my-programming.el --- Emacs configuration file  -*- lexical-binding: t; -*-
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
-;; Copyright (C) 2010-2021 Marcel Arpogaus
+;; Copyright (C) 2010-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
 ;; Keywords: internal
@@ -299,6 +299,19 @@
 
 (use-package py-isort
   :after conda)
+
+(use-package symbols-outline
+  :bind
+  (:map my/toggle-map
+        ("o" . symbols-outline-show))
+  :custom
+  (symbols-outline-window-position 'left)
+  :config
+  ;; By default the ctags backend is selected
+  (unless (executable-find "ctags")
+    ;; Use lsp-mode or eglot as backend
+    (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
+  (symbols-outline-follow-mode))
 
 (use-package treesit-auto
   :if (>= emacs-major-version 29)
