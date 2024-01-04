@@ -2509,7 +2509,7 @@ Structured Editing and Navigation in Emacs
                    :program dape-find-file-buffer-default))
     )
 #+end_src
-**** docker
+**** [[https://github.com/spotify/dockerfile-mode.git][docker]]
 #+begin_src emacs-lisp
   (use-package docker
     :commands docker)
