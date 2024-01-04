@@ -901,6 +901,14 @@ Enable repeat maps
     :hook
     (after-init . repeat-mode))
 #+end_src
+**** [[https://github.com/karthink/repeat-help.git][repeat-help]]
+#+begin_src emacs-lisp
+  (use-package repeat-help
+    :custom
+    (repeat-help-auto t)
+    :hook
+    (repeat-mode . repeat-help-mode))
+#+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 #+begin_src emacs-lisp
   (use-package rotate
