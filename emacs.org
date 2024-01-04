@@ -977,8 +977,8 @@ When working with many windows at the same time, each window has a size that is 
 #+begin_src emacs-lisp
   (use-package golden-ratio
     :custom
-    (golden-ratio-exclude-modes '(speedbar-mode vundo-mode dired-mode))
-    (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*"))
+    (golden-ratio-exclude-modes '(speedbar-mode vundo-mode dired-mode symbols-outline-mode))
+    (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*" " ?\\*Outline\\*"))
     ;; (golden-ratio-auto-scale t)
     :config
     (add-to-list 'golden-ratio-inhibit-functions
@@ -2968,6 +2968,21 @@ universal on-the-fly syntax checker for Emacs
 
   (use-package py-isort
     :after conda)
+#+end_src
+**** [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
+#+begin_src emacs-lisp
+  (use-package symbols-outline
+    :bind
+    (:map my/toggle-map
+          ("o" . symbols-outline-show))
+    :custom
+    (symbols-outline-window-position 'left)
+    :config
+    ;; By default the ctags backend is selected
+    (unless (executable-find "ctags")
+      ;; Use lsp-mode or eglot as backend
+      (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
+    (symbols-outline-follow-mode))
 #+end_src
 **** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
 built-in tree-sitter integration for Emacs
