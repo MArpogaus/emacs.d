@@ -1049,7 +1049,7 @@ Enable repeat maps
     (after-init . repeat-mode))
 #+end_src
 **** [[https://github.com/karthink/repeat-help.git][repeat-help]]
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package repeat-help
     :custom
     (repeat-help-auto nil)
