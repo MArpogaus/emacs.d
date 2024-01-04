@@ -1,11 +1,19 @@
+;;; early-init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;; Copyright (C) 2010-2021 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Keywords: internal
+;; URL: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
 ;; If an `.el' file is newer than its corresponding `.elc', load the `.el'.
 (setq load-prefer-newer t)
 
 ;; Disable certain byte compiler warnings to cut down on the noise.
 (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-
-;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
-;; Taken from: https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
 
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
@@ -24,11 +32,6 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-;; prevent package.el loading packages prior to their init-file loading.
-(setq package-enable-at-startup nil)
-
-;; The following optimisatzion have been taken from:
-;; https://github.com/mnewt/dotemacs/blob/master/early-init.el
 
 ;; Default frame settings. This is actually maximized, not full screen.
 (push '(fullscreen . maximized) initial-frame-alist)
@@ -53,6 +56,13 @@
           (lambda ()
             (setq file-name-handler-alist file-name-handler-alist-old)))
 
+;; Minimal UI
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+
+;; prevent package.el loading packages prior to their init-file loading.
+(setq package-enable-at-startup nil)
 
 ;; straight.el bootstrap code
 ;;disable checking (for speedup).
@@ -71,7 +81,5 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; Minimal UI
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
+(provide 'early-init)
+;;; early-init.el ends here

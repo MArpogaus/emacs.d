@@ -1,19 +1,24 @@
 #+TITLE: Emacs Literate Configuration
 #+AUTHOR: Marcel Arpogaus
-#+PROPERTY: header-args :tangle yes
-#+STARTUP: show2levels
+#+STARTUP: show2levels indent
 #+auto_tangle: t
 
 * Configuration
-
 ** Table of Contents                                               :TOC_3_gh:
 - [[#configuration][Configuration]]
   - [[#references][References]]
-  - [[#conventional-headers-for-emacs-libraries][Conventional Headers for Emacs Libraries]]
   - [[#to-dos][To-dos]]
   - [[#notes][Notes]]
     - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
+  - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
+  - [[#early-emacs-initialization][Early Emacs Initialization]]
+    - [[#conventional-library-header][Conventional Library Header]]
+    - [[#configure-byte-compile][Configure Byte Compile]]
+    - [[#optimize-startup-time][Optimize Startup Time]]
+    - [[#configure-straight][Configure Straight]]
+    - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
+    - [[#conventional-header][Conventional Header]]
     - [[#package-management][Package Management]]
     - [[#benchmark-startup][Benchmark startup]]
     - [[#personal-information][Personal Information]]
@@ -30,35 +35,20 @@
     - [[#project-management][Project Management]]
     - [[#programming][Programming]]
     - [[#keybindings][Keybindings]]
-  - [[#conventional-library-footer][Conventional Library Footer]]
+  - [[#conventional-library-footer-for-initel][Conventional Library Footer for =init.el=]]
 
 ** References
 This Emacs literate configuration has been inspired by the following projects:
 
-- [[https://config.daviwil.com/emacs][Emacs Configuration - config.daviwil.com]]
 - [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
 - [[https://github.com/rougier/dotemacs][GitHub - rougier/dotemacs: Litterate configuration for GNU Emacs]]
 - [[https://github.com/SystemCrafters/crafted-emacs][GitHub - SystemCrafters/crafted-emacs: A sensible base Emacs configuration.]]
 - [[https://github.com/terlar/emacs-config][GitHub - terlar/emacs-config: Emacs configuration]]
 - [[https://github.com/zoliky/dotemacs][GitHub - zoliky/dotemacs: My GNU Emacs configuration.]]
+- [[https://protesilaos.com/emacs/dotemacs][GNU Emacs configuration | Protesilaos Stavrou]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
-
-** Conventional Headers for Emacs Libraries
-[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
-#+begin_src emacs-lisp
-    ;;; emacs.el --- Emacs configuration  -*- lexical-binding: t; -*-
-  ;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-  ;; Copyright (C) 2010-2021 Marcel Arpogaus
-
-  ;; Author: Marcel Arpogaus
-  ;; Keywords: internal
-  ;; URL: https://github.com/MArpogaus/emacs.d/
-
-  ;; This file is not part of GNU Emacs.
-#+end_src
 ** To-dos :noexport_1:
 *** TODO Add iPython shell command
 *** TODO Add doom snippets?
@@ -75,7 +65,134 @@ https://github.com/emacsorphanage/anzu
       fi;
   done
 #+end_src
+** Common Header for Emacs Libraries
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
+#+NAME: header
+#+begin_src shell :var file_name="init.el" :results output
+  echo ";;; $file_name --- Emacs configuration file  -*- lexical-binding: t; -*-
+  ;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+  ;; Copyright (C) 2010-2021 Marcel Arpogaus
+
+  ;; Author: Marcel Arpogaus
+  ;; Keywords: internal
+  ;; URL: https://github.com/MArpogaus/emacs.d/
+
+  ;; This file is not part of GNU Emacs."
+#+end_src
+** Early Emacs Initialization
+:PROPERTIES:
+:header-args: :tangle early-init.el
+:END:
+This file serves as the initial configuration file for Emacs and aims to establish fundamental settings before Emacs generates the initial frame.
+It should only consist of code that is independent of any package.
+*** Conventional Library Header
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="early-init.el")>>
+#+end_src
+*** Configure Byte Compile
+#+begin_src emacs-lisp
+  ;; If an `.el' file is newer than its corresponding `.elc', load the `.el'.
+  (setq load-prefer-newer t)
+
+  ;; Disable certain byte compiler warnings to cut down on the noise.
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+#+end_src
+*** Optimize Startup Time
+We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+
+The following optimisatzion have been inspired by:
+
+- https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
+- https://github.com/mnewt/dotemacs/blob/master/early-init.el
+
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold most-positive-fixnum
+        gc-cons-percentage 0.6)
+  ;; Let's lower our GC thresholds back down to a sane level.
+  (add-hook 'after-init-hook (lambda ()
+                               ;; restore after startup
+                               (setq gc-cons-threshold (* 2 1000 1000)
+                                     gc-cons-percentage 0.1)))
+
+  ;; Profile emacs startup
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (message "*** Emacs loaded in %s with %d garbage collections."
+                       (format "%.2f seconds"
+                               (float-time
+                                (time-subtract after-init-time before-init-time)))
+                       gcs-done)))
+
+
+  ;; Default frame settings. This is actually maximized, not full screen.
+  (push '(fullscreen . maximized) initial-frame-alist)
+
+  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
+  ;; font. By inhibiting this, we easily halve startup times with fonts that are
+  ;; larger than the system default.
+  (setq frame-inhibit-implied-resize t
+        frame-resize-pixelwise t)
+
+  ;; Ignore X resources; its settings would be redundant with the other settings
+  ;; in this file and can conflict with later config (particularly where the
+  ;; cursor color is concerned).
+  (advice-add #'x-apply-session-resources :override #'ignore)
+
+  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
+  ;; loaded by Emacs will run through this list to check for a proper handler for
+  ;; the file, but during startup, it won’t need any of them.
+  (defvar file-name-handler-alist-old file-name-handler-alist)
+  (setq file-name-handler-alist nil)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (setq file-name-handler-alist file-name-handler-alist-old)))
+
+  ;; Minimal UI
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+*** Configure Straight
+This section provides the bootstrap code for =straight.el=, a package manager for Emacs. The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality. Here's the code:
+
+#+begin_src emacs-lisp
+  ;; prevent package.el loading packages prior to their init-file loading.
+  (setq package-enable-at-startup nil)
+
+  ;; straight.el bootstrap code
+  ;;disable checking (for speedup).
+  (setq straight-check-for-modifications nil)
+
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 6))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+#+end_src
+*** Conventional Library Footer
+#+begin_src emacs-lisp
+  (provide 'early-init)
+  ;;; early-init.el ends here
+#+end_src
 ** Emacs Initialization
+:PROPERTIES:
+:header-args: :tangle init.el
+:END:
+The main initialization file, =init.el=, is responsible for defining essential configurations and variables used in submodules.
+*** Conventional Header
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="init.el")>>
+#+end_src
 *** Package Management
 **** Install and configure use-package
 
@@ -330,7 +447,22 @@ This section initializes various keymaps used for different purposes.
           ("=" . balance-windows)))
 #+end_src
 ** Configure Packages
+We save the following package declaration into separate files in the =modules= directory.
+To load the we have to add this directory to the =load-path=.
+#+begin_src emacs-lisp :tangle init.el
+  (add-to-list 'load-path "~/.emacs.d/lisp/")
+#+end_src
 *** UI
+:PROPERTIES:
+:header-args: :tangle lisp/my-ui.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-ui)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-ui.el")>>
+#+end_src
 **** [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 Make org-brain-visualize-mode look a bit nicer.
 #+begin_src emacs-lisp
@@ -350,6 +482,14 @@ Make org-brain-visualize-mode look a bit nicer.
                 (lambda (str) (propertize str 'face 'aa2u-face)))
     :hook
     (org-brain-after-visualize . aa2u-org-brain-buffer))
+#+end_src
+**** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+#+begin_src emacs-lisp
+  (use-package auto-dark
+    :custom
+    (auto-dark-dark-theme 'modus-vivendi)
+    (auto-dark-light-theme 'modus-operandi)
+    :hook (after-init . auto-dark-mode))
 #+end_src
 **** [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
 #+begin_src emacs-lisp
@@ -726,14 +866,21 @@ Increase the padding/spacing of GNU Emacs frames and windows.
   (use-package visual-fill-column
     :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
 #+end_src
-*** UX
-**** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+**** Library Footer
 #+begin_src emacs-lisp
-  (use-package auto-dark
-    :custom
-    (auto-dark-dark-theme 'modus-vivendi)
-    (auto-dark-light-theme 'modus-operandi)
-    :hook (after-init . auto-dark-mode))
+  (provide 'my-ui)
+  ;;; my-ui.el ends here
+#+end_src
+*** UX
+:PROPERTIES:
+:header-args: :tangle lisp/my-ux.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-ux)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-ux.el")>>
 #+end_src
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed
@@ -905,7 +1052,7 @@ Enable repeat maps
 #+begin_src emacs-lisp
   (use-package repeat-help
     :custom
-    (repeat-help-auto t)
+    (repeat-help-auto nil)
     :hook
     (repeat-mode . repeat-help-mode))
 #+end_src
@@ -980,7 +1127,22 @@ Undo and redo changes to window configuration
   (use-package writeroom-mode
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-ux)
+  ;;; my-ux.el ends here
+#+end_src
 *** Org
+:PROPERTIES:
+:header-args: :tangle lisp/my-org.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-org)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-org.el")>>
+#+end_src
 **** [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
 Let's include a newer version of org-mode than the one that is built in. We're going
 to manually remove the org directories from the load path, to ensure the version we
@@ -1353,7 +1515,22 @@ package that automatically generates an up to date table of contents for us.
     :hook
     (org-mode . toc-org-enable))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-org)
+  ;;; my-org.el ends here
+#+end_src
 *** Tools
+:PROPERTIES:
+:header-args: :tangle lisp/my-tools.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-tools)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-tools.el")>>
+#+end_src
 **** [[https://github.com/radian-software/ctrlf.git][ctrlf]]
 #+begin_src emacs-lisp
   (use-package ctrlf
@@ -1607,7 +1784,22 @@ Emacs libvterm integration.
     (when (display-graphic-p)
       (setq vundo-glyph-alist vundo-unicode-symbols)))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-tools)
+  ;;; my-tools.el ends here
+#+end_src
 *** Completion
+:PROPERTIES:
+:header-args: :tangle lisp/my-completion.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-completion)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-completion.el")>>
+#+end_src
 **** [[https://github.com/minad/cape.git][cape]]
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
@@ -2235,7 +2427,22 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-completion)
+  ;;; my-completion.el ends here
+#+end_src
 *** Version Control
+:PROPERTIES:
+:header-args: :tangle lisp/my-vc.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-vc)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-vc.el")>>
+#+end_src
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
 #+begin_src emacs-lisp
   (use-package git-gutter
@@ -2300,7 +2507,22 @@ functions we invoke regularly outside of magit is called.
           ("v"  . magit-status)
           ("r"  . magit-rebase)))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-vc)
+  ;;; my-vc.el ends here
+#+end_src
 *** Project Management
+:PROPERTIES:
+:header-args: :tangle lisp/my-project.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-project)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-project.el")>>
+#+end_src
 **** project :build_in:
 #+begin_src emacs-lisp
   (use-package project
@@ -2408,7 +2630,22 @@ functions we invoke regularly outside of magit is called.
     (:map my/toggle-map
           ("s" . sr-speedbar-toggle)))
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-project)
+  ;;; my-project.el ends here
+#+end_src
 *** Programming
+:PROPERTIES:
+:header-args: :tangle lisp/my-programming.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-programming)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-programming.el")>>
+#+end_src
 **** [[https://github.com/emacs-straight/auctex.git][auctex]]
 #+begin_src emacs-lisp
   (use-package auctex
@@ -2760,7 +2997,22 @@ Using the forked version with treesit support here
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
 #+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-programming)
+  ;;; my-programming.el ends here
+#+end_src
 *** Keybindings
+:PROPERTIES:
+:header-args: :tangle lisp/my-keybindings.el :mkdirp yes
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-keybindings)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes
+  <<header(file_name="my-keybindings.el")>>
+#+end_src
 **** [[https://github.com/meow-edit/meow.git][meow]]
 Meow is yet another modal editing mode for Emacs.
 #+begin_src emacs-lisp
@@ -2915,8 +3167,17 @@ The mode displays the key bindings following your currently entered incomplete c
     :hook
     (meow-mode . which-key-mode))
 #+end_src
-** Conventional Library Footer
+**** Library Footer
 #+begin_src emacs-lisp
-  (provide 'emacs.el)
-  ;;; emacs.el ends here
+  (provide 'my-keybindings)
+  ;;; my-keybindings.el ends here
 #+end_src
+** Conventional Library Footer for =init.el=
+#+begin_src emacs-lisp :tangle init.el
+  (provide 'init)
+  ;;; init.el ends here
+#+end_src
+
+# Local Variables:
+# org-confirm-babel-evaluate: nil
+# End:
