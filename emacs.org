@@ -1293,6 +1293,13 @@ This package implements a modern style for your Org buffers using font locking a
      org-agenda-current-time-string
      "⭠ now ─────────────────────────────────────────────────"))
 #+end_src
+**** [[https://github.com/jdtsmith/org-modern-indent.git][org-modern-indent]]
+#+begin_src emacs-lisp
+  (use-package org-modern-indent
+    :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+    :hook ; add late to hook
+    (org-mode . org-modern-indent-mode))
+#+end_src
 **** [[https://github.com/org-noter/org-noter.git][org-noter]]
 
 #+begin_src emacs-lisp
