@@ -1613,7 +1613,7 @@ An Emacs web feeds client
           ("f" . elfeed))
     :config
     (setq elfeed-feeds
-          (split-string (shell-command-to-string "for d in straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
+          (split-string (shell-command-to-string "for d in ~/.emacs.d/straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
 #+end_src
 **** [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 #+begin_src emacs-lisp
