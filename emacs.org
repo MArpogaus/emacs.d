@@ -2529,6 +2529,15 @@ functions we invoke regularly outside of magit is called.
     :custom
     (project-vc-extra-root-markers '(".project")))
 #+end_src
+**** [[https://github.com/karthink/project-x.git][project-x]]
+#+begin_src emacs-lisp
+  (use-package project-x
+    :straight (:type git :host github :repo "karthink/project-x")
+    :custom
+    (project-x-save-interval 60)  ;; Save project state every minute
+    :hook
+    (after-init . project-x-mode))
+#+end_src
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 #+begin_src emacs-lisp
   (use-package project-tab-groups
