@@ -2717,7 +2717,16 @@ Structured Editing and Navigation in Emacs
     (combobulate-key-prefix "C-c o")
     :config
     (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
-
+    :bind
+    (:map combobulate-key-map
+          ("S-<down>"  . combobulate-navigate-down-list-maybe)
+          ("S-<left>"  . combobulate-navigate-next)
+          ("S-<right>" . combobulate-navigate-previous)
+          ("M-<left>"  . combobulate-navigate-logical-previous)
+          ("M-<right>" . combobulate-navigate-logical-next)
+          ("S-<up>"    . combobulate-navigate-up-list-maybe)
+          ("M-<down>"  . combobulate-drag-down)
+          ("M-<up>"    . combobulate-drag-up))
     ;; Optional, but recommended.
     ;;
     ;; You can manually enable Combobulate with `M-x
