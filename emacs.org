@@ -2691,6 +2691,18 @@ functions we invoke regularly outside of magit is called.
 **** [[https://github.com/astoff/code-cells.el.git][code-cells]]
 #+begin_src emacs-lisp
   (use-package code-cells
+    :preface
+    (defun my/code-cells-eval (start end)
+      (interactive (code-cells--bounds (prefix-numeric-value current-prefix-arg)
+                                       'use-region
+                                       'no-header))
+      (code-cells-eval start end)
+      (code-cells-forward-cell 1))
+    :config
+    (add-to-list 'code-cells-eval-region-commands '(python-base-mode . python-shell-send-region))
+    :bind
+    (:map code-cells-mode-map
+          ("C-S-<return>" . my/code-cells-eval))
     :hook
     (python-base-mode . code-cells-mode-maybe))
 #+end_src
