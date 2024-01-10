@@ -2255,7 +2255,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :preface
     (defun my/eglot-capf ()
       (setq-local completion-at-point-functions
-                  (cons (cape-super-capf
+                  (cons (cape-capf-super
                          #'tempel-complete
                          #'eglot-completion-at-point
                          #'cape-file)
