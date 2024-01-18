@@ -1,17 +1,37 @@
 ;;; my-project.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; project :build_in:
 
 (use-package project
   :custom
   (project-vc-extra-root-markers '(".project")))
+
+;; [[https://github.com/karthink/project-x.git][project-x]]
+;; Ehancements to Emacs' built in project library.
+
+(use-package project-x
+  :straight (:type git :host github :repo "karthink/project-x")
+  :custom
+  (project-x-save-interval 60)  ;; Save project state every minute
+  :hook
+  (after-init . project-x-mode))
+
+;; [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
+;; Support a "one tab group per project" workflow.
 
 (use-package project-tab-groups
   :config
@@ -19,6 +39,8 @@
     (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
     (tab-bar-echo-area-apply-display-tab-names-advice))
   :hook (after-init . project-tab-groups-mode))
+
+;; speedbar :build_in:
 
 (use-package speedbar
   :custom
@@ -101,12 +123,17 @@
                       ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                       (text-scale-adjust -1)))))
 
+;; [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
+;; Same frame speedbar.
+
 (use-package sr-speedbar
   :custom
   (sr-speedbar-right-side nil)
   :bind
   (:map my/toggle-map
         ("s" . sr-speedbar-toggle)))
+
+;; Library Footer
 
 (provide 'my-project)
 ;;; my-project.el ends here

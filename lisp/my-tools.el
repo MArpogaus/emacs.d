@@ -1,18 +1,28 @@
 ;;; my-tools.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/radian-software/ctrlf.git][ctrlf]]
+;; Emacs finally learns how to ctrl+F.
 
 (use-package ctrlf
   :hook
   ((after-init . ctrlf-mode)
    (pdf-isearch-minor-mode . (lambda () (ctrlf-local-mode -1)))))
+
+;; dired :build_in:
 
 (use-package dired
   :straight nil
@@ -51,8 +61,17 @@
   (:map my/open-map
         ("d" . dired)))
 
+;; [[https://github.com/purcell/diredfl.git][diredfl]]
+;; Extra Emacs font lock rules for a more colourful dired.
+
 (use-package diredfl
   :hook (dired-mode . diredfl-mode))
+
+;; ediff :build_in:
+;; The ediff package is utilized to handle file differences in emacs.
+;; We will tweak the Emacs built-in ediff configuration a bit.
+;; [[https://panadestein.github.io/emacsd/#org5917c00][Emacs literate configuration]]
+
 
 (use-package ediff
   :preface
@@ -70,13 +89,19 @@
   ((ediff-before-setup . my/store-pre-ediff-winconfig)
    (ediff-quit . my/restore-pre-ediff-winconfig)))
 
+;; [[https://github.com/skeeto/elfeed.git][elfeed]]
+;; An Emacs web feeds client.
+
 (use-package elfeed
   :bind
   (:map my/open-map
         ("f" . elfeed))
   :config
   (setq elfeed-feeds
-        (split-string (shell-command-to-string "for d in straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
+        (split-string (shell-command-to-string "for d in ~/.emacs.d/straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
+
+;; [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
+;; Make Emacs use the $PATH set up by the user's shell.
 
 (use-package exec-path-from-shell
   :config
@@ -86,6 +111,8 @@
     (exec-path-from-shell-initialize))
   :hook
   (magit-credential . my/copy-ssh-env))
+
+;; flyspell :build_in:
 
 (use-package flyspell
   :custom
@@ -117,6 +144,9 @@
    ((prog-mode conf-mode) . flyspell-prog-mode)
    (ispell-change-dictionary . restart-flyspell-mode)))
 
+;; [[https://github.com/karthink/gptel.git][gptel]]
+;; A simple LLM client for Emacs.
+
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
@@ -124,6 +154,11 @@
   (:map my/open-map
         ("g". gptel))
   :commands (gptel gptel-send))
+
+;; [[https://github.com/Wilfred/helpful.git][helpful]]
+;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
+;; It is a bit slow to load so we do need load it explicitely.
+
 
 (use-package helpful
   :bind
@@ -136,6 +171,9 @@
    :map helpful-mode-map
    ([remap revert-buffer] . helpful-update)))
 
+;; [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
+;; Emacs support library for PDF files.
+
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
   :config
@@ -144,11 +182,17 @@
   (pdf-view-use-scaling t)
   (pdf-view-use-imagemagick nil))
 
+;; re-builder :build_in:
+;; Change re-builder syntax
+
 ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 (use-package re-builder
   :commands re-builder
   :custom
   (reb-re-syntax 'string))
+
+;; term :build_in:
+;; Major mode for interacting with a terminal
 
 (use-package term
   :commands term
@@ -156,6 +200,9 @@
   :custom
   (shell-file-name "/bin/zsh")
   (explicit-shell-file-name "/bin/zsh"))
+
+;; tramp :build_in:
+;; remote file editing through ssh/scp.
 
 (use-package tramp
   :straight nil
@@ -171,6 +218,9 @@
   (add-to-list 'tramp-connection-properties
                (list (regexp-quote "/sshx:user@host:")
                      "remote-shell" "/bin/bash")))
+
+;; [[https://github.com/akermu/emacs-libvterm.git][vterm]]
+;; Emacs libvterm integration.
 
 ;; https://www.reddit.com/r/emacs/comments/wu5rxi/comment/ilagtzv/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 (use-package vterm
@@ -201,6 +251,9 @@
   (vterm-tramp-shells '(("ssh" "/bin/bash")
                         ("podman" "/bin/bash"))))
 
+;; [[https://github.com/emacs-straight/vundo.git][vundo]]
+;; Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
+
 (use-package vundo
   :bind
   (:map my/open-map
@@ -208,6 +261,8 @@
   :config
   (when (display-graphic-p)
     (setq vundo-glyph-alist vundo-unicode-symbols)))
+
+;; Library Footer
 
 (provide 'my-tools)
 ;;; my-tools.el ends here

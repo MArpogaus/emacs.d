@@ -1,13 +1,21 @@
 ;;; my-ui.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
+;; Make org-brain-visualize-mode look a bit nicer.
 
 (use-package ascii-art-to-unicode
   :after org-brain
@@ -26,11 +34,17 @@
   :hook
   (org-brain-after-visualize . aa2u-org-brain-buffer))
 
+;; [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+;; Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS, Linux or Windows Dark Mode settings.
+
 (use-package auto-dark
   :custom
   (auto-dark-dark-theme 'modus-vivendi)
   (auto-dark-light-theme 'modus-operandi)
   :hook (after-init . auto-dark-mode))
+
+;; [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
+;; An extensible emacs dashboard.
 
 (use-package dashboard
   :custom
@@ -55,11 +69,17 @@
   :hook
   (after-init . dashboard-setup-startup-hook))
 
+;; display-line-numbers :build_in:
+;; Enable line numbers for some modes
+
 (use-package display-line-numbers
   :hook
   (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
    ;; disable for org mode
    (org-mode . (lambda () (display-line-numbers-mode 0)))))
+
+;; [[https://github.com/seagle0128/doom-modeline.git][doom-modeline]]
+;; A fancy and fast mode-line inspired by minimalism design.
 
 (use-package doom-modeline
   :custom
@@ -110,9 +130,17 @@
   :hook
   (after-init . doom-modeline-mode))
 
+;; hl-line :build_in:
+
+;; Highlighting of the current line (native mode)
+
+
 (use-package hl-line
   :hook
   ((prog-mode org-mode) . global-hl-line-mode))
+
+;; [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
+;; Fast, configurable indentation guide-bars for Emacs.
 
 (use-package indent-bars
   :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
@@ -134,6 +162,9 @@
   (indent-bars-display-on-blank-lines nil)
   :hook
   ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
+
+;; [[https://github.com/mickeynp/ligature.el.git][ligature]]
+;; Display typographical ligatures in Emacs.
 
 (use-package ligature
   :config
@@ -211,6 +242,11 @@
   :hook
   (after-init . my/setup-ligatures))
 
+;; [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
+;; Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
+;; https://protesilaos.com/emacs/modus-themes
+
+
 (use-package modus-themes
   :bind
   (:map my/toggle-map
@@ -220,7 +256,13 @@
   (modus-themes-italic-constructs t)
   (modus-themes-bold-constructs nil))
 
+;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
+;; A Library for Nerd Font icons. Required for modline icons.
+
 (use-package nerd-icons)
+
+;; [[https://github.com/haji-ali/procress.git][procress]]
+;; display LaTeX compilation information in the mode line
 
 (use-package procress
   :straight (:host github :repo "haji-ali/procress")
@@ -230,6 +272,9 @@
   (LaTeX-mode . procress-auctex-mode)
   :config
   (procress-load-default-svg-images))
+
+;; [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
+;; Increase the padding/spacing of GNU Emacs frames and windows.
 
 (use-package spacious-padding
   :custom
@@ -242,6 +287,8 @@
                              :scroll-bar-width 4))
   :hook
   (after-init . spacious-padding-mode))
+
+;; tab-bar :build_in:
 
 (use-package tab-bar
   :straight nil
@@ -342,6 +389,8 @@
   :hook
   (after-init . tab-bar-mode))
 
+;; tab-line :build_in:
+
 (use-package tab-line
   :straight nil
   :custom
@@ -367,8 +416,13 @@
   :hook
   (after-init . global-tab-line-mode))
 
+;; [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
+
+
 (use-package visual-fill-column
   :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
+
+;; Library Footer
 
 (provide 'my-ui)
 ;;; my-ui.el ends here

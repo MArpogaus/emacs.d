@@ -1,13 +1,23 @@
 ;;; my-org.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
+
+;; Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
+
 
 (use-package org
   :custom
@@ -206,13 +216,24 @@
   :config
   (ox-extras-activate '(ignore-headlines)))
 
+;; [[https://github.com/awth13/org-appear.git][org-appear]]
+;; Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
+
+;; *test* /aaa/ =babab=
+
 (use-package org-appear
   :after org
   :hook (org-mode . org-appear-mode))
 
+;; [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
+;; A simple emacs package to allow org file tangling upon save.
+
 (use-package org-auto-tangle
   :after org
   :hook (org-mode . org-auto-tangle-mode))
+
+;; [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
+;; Org-mode wiki + concept-mapping.
 
 (use-package org-brain
   :after org org-noter
@@ -267,8 +288,16 @@
   :hook
   (before-save . org-brain-ensure-ids-in-buffer))
 
+;; [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
+;; A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
+
+
 (use-package org-cliplink
   :after org)
+
+;; [[https://github.com/minad/org-modern.git][org-modern]]
+;; This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
+
 
 (use-package org-modern
   :hook (org-mode . global-org-modern-mode)
@@ -298,10 +327,16 @@
    org-agenda-current-time-string
    "⭠ now ─────────────────────────────────────────────────"))
 
+;; [[https://github.com/jdtsmith/org-modern-indent.git][org-modern-indent]]
+;; Modern block styling with org-indent.
+
 (use-package org-modern-indent
   :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
   :hook ; add late to hook
   (org-mode . org-modern-indent-mode))
+
+;; [[https://github.com/org-noter/org-noter.git][org-noter]]
+;; Emacs document annotator, using Org-mode.
 
 (use-package org-noter
   :after org
@@ -319,6 +354,9 @@
   ;; Org-noter’s purpose is to let you create notes that are kept in sync when
   ;; you scroll through the [PDF etc] document
   (org-noter-insert-heading . org-id-get-create))
+
+;; [[https://github.com/marcinkoziej/org-pomodoro.git][org-pomodoro]]
+;; Pomodoro technique for org-mode.
 
 (use-package org-pomodoro
   :custom
@@ -341,10 +379,16 @@
         :map org-agenda-keymap
         ("p" . org-pomodoro)))
 
+;; [[https://github.com/snosov1/toc-org.git][toc-org]]
+;; Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
+
+
 (use-package toc-org
   :after org
   :hook
   (org-mode . toc-org-enable))
+
+;; Library Footer
 
 (provide 'my-org)
 ;;; my-org.el ends here
