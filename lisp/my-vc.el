@@ -1,13 +1,21 @@
 ;;; my-vc.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
+;; Emacs port of Sublime Text Plugin GitGutter.
 
 (use-package git-gutter
   :custom
@@ -41,10 +49,17 @@
   :hook
   (after-init . global-git-gutter-mode))
 
+;; [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
+
 (use-package git-timemachine
   :bind
   (:map my/version-control-map
         ("t" . git-timemachine)))
+
+;; [[https://github.com/magit/magit.git][magit]]
+;; The magical git client. Let's load magit only when one of the several entry pont
+;; functions we invoke regularly outside of magit is called.
+
 
 (use-package magit
   :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
@@ -63,6 +78,8 @@
         ("p"  . magit-pull-branch)
         ("v"  . magit-status)
         ("r"  . magit-rebase)))
+
+;; Library Footer
 
 (provide 'my-vc)
 ;;; my-vc.el ends here

@@ -1,19 +1,36 @@
 ;;; early-init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; Configure Byte Compile
 
 ;; If an `.el' file is newer than its corresponding `.elc', load the `.el'.
 (setq load-prefer-newer t)
 
 ;; Disable certain byte compiler warnings to cut down on the noise.
 (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+
+;; Optimize Startup Time
+;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+
+;; The following optimisatzion have been inspired by:
+
+;; - https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
+;; - https://github.com/mnewt/dotemacs/blob/master/early-init.el
+;; - https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+
 
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
@@ -56,13 +73,32 @@
           (lambda ()
             (setq file-name-handler-alist file-name-handler-alist-old)))
 
+;; further preformance tweaks
+(setq
+ auto-mode-case-fold nil ; Use case-sensitive `auto-mode-alist' for performance
+ fast-but-imprecise-scrolling t ; More performant rapid scrolling over unfontified regions
+ ffap-machine-p-known 'reject ; Don't ping things that look like domain names
+ idle-update-delay 1.0  ; slow down UI updates down
+ inhibit-compacting-font-caches t ; Inhibit frame resizing for performance
+ read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
+ redisplay-skip-fontification-on-input t ; Inhibits it for better scrolling performance.
+ command-line-x-option-alist nil ; Remove irreleant command line options for faster startup
+ select-active-regions 'only ; Emacs hangs when large selections contain mixed line endings.
+ vc-follow-symlinks t) ; Do not ask about symlink following
+
 ;; Minimal UI
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
+;; Configure Straight
+;; This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
+;; The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
+
+
 ;; prevent package.el loading packages prior to their init-file loading.
-(setq package-enable-at-startup nil)
+(setq package-quickstart nil
+      package-enable-at-startup nil)
 
 ;; straight.el bootstrap code
 ;;disable checking (for speedup).
@@ -80,6 +116,8 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+
+;; Conventional Library Footer
 
 (provide 'early-init)
 ;;; early-init.el ends here

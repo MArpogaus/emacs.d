@@ -1,13 +1,21 @@
 ;;; my-programming.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/emacs-straight/auctex.git][auctex]]
+;; Integrated environment for *TeX*
 
 (use-package auctex
   :mode ("\\.tex\\'" . latex-mode)
@@ -40,9 +48,27 @@
    (LaTeX-mode . TeX-source-correlate-mode)
    (LaTeX-mode . turn-on-reftex)))
 
+;; [[https://github.com/astoff/code-cells.el.git][code-cells]]
+;; Emacs utilities for code split into cells, including Jupyter notebooks.
+
 (use-package code-cells
+  :preface
+  (defun my/code-cells-eval (start end)
+    (interactive (code-cells--bounds (prefix-numeric-value current-prefix-arg)
+                                     'use-region
+                                     'no-header))
+    (code-cells-eval start end)
+    (code-cells-forward-cell 1))
+  :config
+  (add-to-list 'code-cells-eval-region-commands '(python-base-mode . python-shell-send-region))
+  :bind
+  (:map code-cells-mode-map
+        ("C-S-<return>" . my/code-cells-eval))
   :hook
   (python-base-mode . code-cells-mode-maybe))
+
+;; [[https://github.com/mickeynp/combobulate.git][combobulate]]
+;; Structured Editing and Navigation in Emacs.
 
 (use-package combobulate
   :after treesit
@@ -52,7 +78,16 @@
   (combobulate-key-prefix "C-c o")
   :config
   (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
-
+  :bind
+  (:map combobulate-key-map
+        ("S-<down>"  . combobulate-navigate-down-list-maybe)
+        ("S-<left>"  . combobulate-navigate-previous)
+        ("S-<right>" . combobulate-navigate-next)
+        ("M-<left>"  . combobulate-navigate-logical-previous)
+        ("M-<right>" . combobulate-navigate-logical-next)
+        ("S-<up>"    . combobulate-navigate-up-list-maybe)
+        ("M-<down>"  . combobulate-drag-down)
+        ("M-<up>"    . combobulate-drag-up))
   ;; Optional, but recommended.
   ;;
   ;; You can manually enable Combobulate with `M-x
@@ -64,6 +99,50 @@
    (yaml-ts-mode . combobulate-mode)
    (typescript-ts-mode . combobulate-mode)
    (tsx-ts-mode . combobulate-mode)))
+
+;; [[https://github.com/necaris/conda.el.git][conda]]
+;; Emacs helper library (and minor mode) to work with conda environments.
+
+(use-package conda
+  :after python
+  :custom
+  ;; support for mambaforge envs
+  (conda-anaconda-home "~/mambaforge/")
+  (conda-env-home-directory "~/mambaforge/")
+  (conda-activate-base-by-default t)
+  :preface
+  (defun my/find-python-interpreter (&rest _)
+    (cond
+     ((executable-find "ipython3")
+      (setq python-shell-interpreter "ipython3"
+            python-shell-interpreter-args "--simple-prompt --classic"))
+     ((executable-find "python3")
+      (setq python-shell-interpreter "python3"
+            python-shell-interpreter-args "-i"))
+     (t
+      (setq python-shell-interpreter "python"
+            python-shell-interpreter-args "-i"))))
+  :config
+  ;; interactive shell support
+  (conda-env-initialize-interactive-shells)
+  ;; if you want eshell support, include:
+  (conda-env-initialize-eshell)
+  ;; enable auto-activation
+  ;; (conda-env-autoactivate-mode t)
+  ;; if you want to automatically activate a conda environment on the opening of a file:
+  ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+  ;;                       (conda-env-activate-for-buffer))))
+  (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
+
+;; [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
+;; Jump to workspace symbols with eglot and consult.
+
+(use-package consult-eglot
+  :demand t
+  :after (eglot consult))
+
+;; [[https://github.com/svaante/dape.git][dape]]
+;; Debug Adapter Protocol for Emacs.
 
 (use-package dape
   ;; Currently only on github
@@ -100,6 +179,9 @@
                  :program dape-find-file-buffer-default))
   )
 
+;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
+;; An emacs mode for handling Dockerfiles.
+
 (use-package docker
   :commands docker)
 (use-package dockerfile-mode
@@ -110,6 +192,9 @@
 (use-package tramp-container
   :straight nil
   :after docker)
+
+;; [[https://github.com/emacs-straight/eglot.git][eglot]]
+;; A client for Language Server Protocol servers.
 
 (use-package eglot
   :custom
@@ -133,6 +218,9 @@
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
   :hook ((python-mode python-ts-mode) . eglot-ensure))
 
+;; [[https://github.com/emacs-straight/eldoc.git][eldoc]]
+;; Configure emacs documentation support.
+
 (use-package eldoc
   :custom
   (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
@@ -143,12 +231,18 @@
   (eldoc-add-command-completions "paredit-")
   (eldoc-add-command-completions "combobulate-"))
 
+;; [[https://github.com/emacs-ess/ESS.git][ESS]]
+;; Emacs Speaks Statistics: ESS.
+
 (use-package ess
   :mode (("\\.[rR]\\'" . R-mode)
          ("\\.[rR]nw\\'" . Rnw-mode)
          ("\\.jl\\'" . julia-mode))
   :config
   (require 'ess-site))
+
+;; [[https://github.com/kaz-yos/eval-in-repl.git][eval-in-repl]]
+;; Consistent ESS-like eval interface for various REPLs.
 
 (use-package eval-in-repl
   :custom
@@ -178,60 +272,18 @@
   (((python-mode python-ts-mode) . my/setup-eir-python)
    ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 
-(use-package flycheck
-  :custom
-  ;; Let git gutter have left fringe, flycheck can have right fringe
-  (flycheck-indication-mode 'right-fringe)
-
-  ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/syntax/config.el#L15
-  ;; Don't recheck on idle as often
-  (flycheck-idle-change-delay 1.0)
-  ;; For the above functionality, check syntax in a buffer that you switched to
-  ;; only briefly. This allows "refreshing" the syntax check state for several
-  ;; buffers quickly after e.g. changing a config file.
-  (flycheck-buffer-switch-check-intermediate-buffers t)
-
-  ;; Display errors a little quicker (default is 0.9s)
-  (flycheck-display-errors-delay 0.25)
-  :preface
-  ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
-  (defun my/flycheck-eldoc (callback &rest _ignored)
-    "Print flycheck messages at point by calling CALLBACK."
-    (when-let ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
-      (mapc
-       (lambda (err)
-         (funcall callback
-                  (format "%s: %s"
-                          (let ((level (flycheck-error-level err)))
-                            (pcase level
-                              ('info (propertize "I" 'face 'flycheck-error-list-info))
-                              ('error (propertize "E" 'face 'flycheck-error-list-error))
-                              ('warning (propertize "W" 'face 'flycheck-error-list-warning))
-                              (_ level)))
-                          (flycheck-error-message err))
-                  :thing (or (flycheck-error-id err)
-                             (flycheck-error-group err))
-                  :face 'font-lock-doc-face))
-       flycheck-errors)))
-
-  (defun my/flycheck-prefer-eldoc ()
-    (add-hook 'eldoc-documentation-functions #'my/flycheck-eldoc nil t)
-    (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-    (setq flycheck-display-errors-function nil)
-    (setq flycheck-help-echo-function nil))
-
-  :config
-  ;; A non-descript, left-pointing arrow
-  (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-    [16 48 112 240 112 48 16] nil nil 'center)
-  :hook
-  ((after-init . global-flycheck-mode)
-   (flycheck-mode . my/flycheck-prefer-eldoc)))
+;; [[https://github.com/emacs-straight/flymake.git][flymake]]
+;; Universal on-the-fly syntax checker for Emacs.
 
 (use-package flymake
   :custom
   ;; Let git gutter have left fringe, flymake can have right fringe
-  (flymake-fringe-indicator-position 'right-fringe))
+  (flymake-fringe-indicator-position 'right-fringe)
+  :hook
+  ((prog-mode conf-mode) . flymake-mode))
+
+;; [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
+;; Auto-format source code in many languages with one command.
 
 (use-package format-all
   ;;:hook (prog-mode . format-all-mode)
@@ -239,11 +291,37 @@
   (:map my/toggle-map
         ("f" . format-all-buffer)))
 
+;; [[https://github.com/immerrr/lua-mode.git][lua]]
+;; Emacs major mode for editing Lua.
+
 (use-package lua-mode
   :mode "\\.lua\\'")
 
+;; [[https://github.com/jrblevin/markdown-mode.git][markdown]]
+;; Emacs Markdown Mode.
+
 (use-package markdown-mode
   :mode "\\.md\\'")
+
+;; [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
+;; Insert NumPy style docstrings in Python functions.
+
+(use-package numpydoc
+  :after python)
+
+;; [[https://github.com/paetzke/py-isort.el.git][py-isort]]
+;; Py-isort.el integrates isort into Emacs.
+
+(use-package py-isort
+  :after conda)
+
+;; [[https://github.com/Wilfred/pyimport.git][pyimport]]
+;; Manage Python imports from Emacs!.
+
+(use-package pyimport
+  :after conda)
+
+;; python :build_in:
 
 (use-package python
   :mode ("[./]flake8\\'" . conf-mode)
@@ -255,38 +333,8 @@
   (python-indent-guess-indent-offset t)
   (python-indent-guess-indent-offset-verbose nil))
 
-(use-package conda
-  :after python
-  :custom
-  ;; support for mambaforge envs
-  (conda-anaconda-home "~/mambaforge/")
-  (conda-env-home-directory "~/mambaforge/")
-  (conda-activate-base-by-default t)
-  :preface
-  (defun my/find-python-interpreter nil
-    (cond
-     ((executable-find "ipython3")
-      (setq python-shell-interpreter "ipython3"
-            python-shell-interpreter-args "--simple-prompt --classic"))
-     ((executable-find "python3")
-      (setq python-shell-interpreter "python3"
-            python-shell-interpreter-args "-i"))
-     (t (setq python-shell-interpreter "python"
-              python-shell-interpreter-args "-i"))))
-  :config
-  ;; interactive shell support
-  (conda-env-initialize-interactive-shells)
-  ;; if you want eshell support, include:
-  (conda-env-initialize-eshell)
-  ;; enable auto-activation
-  (conda-env-autoactivate-mode t)
-  ;; if you want to automatically activate a conda environment on the opening of a file:
-  ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-  ;;                       (conda-env-activate-for-buffer))))
-  (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
-
-(use-package numpydoc
-  :after python)
+;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
+;; Generate Sphinx friendly docstrings for Python functions in Emacs.
 
 (use-package sphinx-doc
   :straight '(:type git :host github :repo "eanopolsky/sphinx-doc.el"
@@ -294,11 +342,8 @@
   :hook
   (python-mode . sphinx-doc-mode))
 
-(use-package pyimport
-  :after conda)
-
-(use-package py-isort
-  :after conda)
+;; [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
+;; Display symbols (functions, variables, etc) in a side window.
 
 (use-package symbols-outline
   :bind
@@ -313,12 +358,19 @@
     (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
   (symbols-outline-follow-mode))
 
+;; [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
+;; built-in tree-sitter integration for Emacs
+
 (use-package treesit-auto
   :if (>= emacs-major-version 29)
   :custom
   (treesit-auto-install 'prompt)
   :hook
   (after-init . global-treesit-auto-mode))
+
+;; [[https://github.com/garyo/ts-fold.git][ts-fold]]
+;; Code-folding using tree-sitter.
+;; Using the forked version with treesit support here
 
 (use-package ts-fold
   :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
@@ -329,8 +381,13 @@
   ((after-init . global-ts-fold-mode)
    (after-init . global-ts-fold-indicators-mode)))
 
+;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
+;; The emacs major mode for editing files in the YAML data serialization format.
+
 (use-package yaml-mode
   :mode "\\.ya?ml\\'")
+
+;; Library Footer
 
 (provide 'my-programming)
 ;;; my-programming.el ends here

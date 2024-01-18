@@ -1,13 +1,21 @@
 ;;; my-keybindings.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/meow-edit/meow.git][meow]]
+;; Meow is yet another modal editing mode for Emacs.
 
 (use-package meow
   :demand t
@@ -52,6 +60,8 @@ when entering git-timemachine mode."
   :bind
   (:map meow-motion-state-keymap
         ("<escape>" . meow-cancel-selection)
+        ("," . meow-inner-of-thing)
+        ("." . meow-bounds-of-thing)
         ("b" . meow-back-word)
         ("e" . meow-next-word)
         ("f" . meow-find)
@@ -151,11 +161,16 @@ when entering git-timemachine mode."
   ((git-timemachine-mode . my/meow-git-timemachine-hook)
    (after-init . meow-global-mode)))
 
+;; [[https://github.com/justbur/emacs-which-key.git][which-key]]
+;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+
 (use-package which-key
   :custom
   (which-key-idle-delay 0.0)
   :hook
   (meow-mode . which-key-mode))
+
+;; Library Footer
 
 (provide 'my-keybindings)
 ;;; my-keybindings.el ends here

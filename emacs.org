@@ -2,6 +2,7 @@
 #+AUTHOR: Marcel Arpogaus
 #+STARTUP: show2levels indent
 #+auto_tangle: t
+#+PROPERTY: header-args :comments org :mkdirp yes
 
 * Configuration
 ** Table of Contents                                               :TOC_3_gh:
@@ -25,6 +26,7 @@
     - [[#paths][Paths]]
     - [[#better-defaults][Better Defaults]]
     - [[#keymaps][Keymaps]]
+    - [[#custom-lisp-functions][Custom Lisp Functions]]
   - [[#configure-packages][Configure Packages]]
     - [[#ui][UI]]
     - [[#ux][UX]]
@@ -70,25 +72,29 @@ https://github.com/emacsorphanage/anzu
 #+NAME: header
 #+begin_src shell :var file_name="init.el" :results output
   echo ";;; $file_name --- Emacs configuration file  -*- lexical-binding: t; -*-
-  ;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-  ;; Copyright (C) 2010-$(date +%Y) Marcel Arpogaus
+  ;; Copyright (C) 2023-$(date +%Y) Marcel Arpogaus
 
   ;; Author: Marcel Arpogaus
-  ;; Keywords: internal
-  ;; URL: https://github.com/MArpogaus/emacs.d/
+  ;; Created: $(date -I)
+  ;; Keywords: configuration
+  ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
-  ;; This file is not part of GNU Emacs."
+  ;; This file is not part of GNU Emacs.
+
+  ;;; Commentary:
+
+  ;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+  ;;; Code:"
 #+end_src
 ** Early Emacs Initialization
 :PROPERTIES:
-:header-args: :tangle early-init.el
+:header-args+: :tangle early-init.el
 :END:
 This file serves as the initial configuration file for Emacs and aims to establish fundamental settings before Emacs generates the initial frame.
 It should only consist of code that is independent of any package.
 *** Conventional Library Header
-[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
 *** Configure Byte Compile
@@ -106,6 +112,7 @@ The following optimisatzion have been inspired by:
 
 - https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
 - https://github.com/mnewt/dotemacs/blob/master/early-init.el
+- https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
 
 #+begin_src emacs-lisp
   (setq gc-cons-threshold most-positive-fixnum
@@ -149,17 +156,32 @@ The following optimisatzion have been inspired by:
             (lambda ()
               (setq file-name-handler-alist file-name-handler-alist-old)))
 
+  ;; further preformance tweaks
+  (setq
+   auto-mode-case-fold nil ; Use case-sensitive `auto-mode-alist' for performance
+   fast-but-imprecise-scrolling t ; More performant rapid scrolling over unfontified regions
+   ffap-machine-p-known 'reject ; Don't ping things that look like domain names
+   idle-update-delay 1.0  ; slow down UI updates down
+   inhibit-compacting-font-caches t ; Inhibit frame resizing for performance
+   read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
+   redisplay-skip-fontification-on-input t ; Inhibits it for better scrolling performance.
+   command-line-x-option-alist nil ; Remove irreleant command line options for faster startup
+   select-active-regions 'only ; Emacs hangs when large selections contain mixed line endings.
+   vc-follow-symlinks t) ; Do not ask about symlink following
+
   ;; Minimal UI
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
 #+end_src
 *** Configure Straight
-This section provides the bootstrap code for =straight.el=, a package manager for Emacs. The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality. Here's the code:
+This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
+The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
 
 #+begin_src emacs-lisp
   ;; prevent package.el loading packages prior to their init-file loading.
-  (setq package-enable-at-startup nil)
+  (setq package-quickstart nil
+        package-enable-at-startup nil)
 
   ;; straight.el bootstrap code
   ;;disable checking (for speedup).
@@ -185,17 +207,14 @@ This section provides the bootstrap code for =straight.el=, a package manager fo
 #+end_src
 ** Emacs Initialization
 :PROPERTIES:
-:header-args: :tangle init.el
+:header-args+: :tangle init.el
 :END:
 The main initialization file, =init.el=, is responsible for defining essential configurations and variables used in submodules.
 *** Conventional Header
-[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="init.el")>>
 #+end_src
 *** Package Management
-**** Install and configure use-package
-
 Lets install and configure =use-package= and use =straight= as the underlying package manager.
 We also load =bind-key= here which is used by =use-package= for keybindings.
 
@@ -251,66 +270,66 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (inhibit-startup-screen t)			 ; Disable start-up screen
-    (inhibit-startup-message t)			 ; Disable startup message
-    (inhibit-startup-echo-area-message t)	 ; Disable initial echo message
-    (initial-scratch-message "")		 ; Empty the initial *scratch* buffer
+    (inhibit-startup-screen t)                            ; Disable start-up screen
+    (inhibit-startup-message t)                           ; Disable startup message
+    (inhibit-startup-echo-area-message t)                 ; Disable initial echo message
+    (initial-scratch-message "")                          ; Empty the initial *scratch* buffer
 
     ;; Encoding
     ;; We tell emacs to use UTF-8 encoding as much as possible.
-    (set-default-coding-systems 'utf-8)		 ; Default to utf-8 encoding
-    (prefer-coding-system       'utf-8)		 ; Add utf-8 at the front for automatic detection.
-    (set-terminal-coding-system 'utf-8)		 ; Set coding system of terminal output
-    (set-keyboard-coding-system 'utf-8)		 ; Set coding system for keyboard input on TERMINAL
-    (set-language-environment "English")	 ; Set up multilingual environment
+    (set-default-coding-systems 'utf-8)                   ; Default to utf-8 encoding
+    (prefer-coding-system       'utf-8)                   ; Add utf-8 at the front for automatic detection.
+    (set-terminal-coding-system 'utf-8)                   ; Set coding system of terminal output
+    (set-keyboard-coding-system 'utf-8)                   ; Set coding system for keyboard input on TERMINAL
+    (set-language-environment "English")                  ; Set up multilingual environment
 
     ;; Recovery
     ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
-    (auto-save-default t)			 ; Auto-save every buffer that visits a file
-    (auto-save-timeout 20)			 ; Number of seconds between auto-save
-    (auto-save-interval 200)			 ; Number of keystrokes between auto-saves
+    (auto-save-default t)                                 ; Auto-save every buffer that visits a file
+    (auto-save-timeout 20)                                ; Number of seconds between auto-save
+    (auto-save-interval 200)                              ; Number of keystrokes between auto-saves
 
     ;; Text
     ;; Pretty self-explanatory
-    (use-short-answers t)			 ; Replace yes/no prompts with y/n
-    (confirm-nonexistent-file-or-buffer nil)	 ; Ok to visit non existent files
+    (use-short-answers t)                                 ; Replace yes/no prompts with y/n
+    (confirm-nonexistent-file-or-buffer nil)              ; Ok to visit non existent files
 
     ;; Mouse
     ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
-    (mouse-yank-at-point t)			 ; Yank at point rather than pointer
-    (mouse-avoidance-mode 'exile)		 ; Avoid collision of mouse with point
+    (mouse-yank-at-point t)                               ; Yank at point rather than pointer
+    (mouse-avoidance-mode 'exile)                         ; Avoid collision of mouse with point
     ;; Mouse active in tty mode.
     (xterm-mouse-mode (display-graphic-p))
 
     ;; Scroll
     ;; Smoother scrolling.
-    (scroll-conservatively 101)                  ; Avoid recentering when scrolling far
-    (scroll-margin 2)                            ; Add a margin when scrolling vertically
-    (recenter-positions '(5 bottom))             ; Set re-centering positions
+    (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
+    (scroll-margin 2)                                     ; Add a margin when scrolling vertically
+    (recenter-positions '(5 bottom))                      ; Set re-centering positions
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
-    (cursor-in-non-selected-windows nil)	 ; Hide the cursor in inactive windows
-    (cursor-type '(hbar . 2))			 ; Underline-shaped cursor
-    (cursor-intangible-mode t)			 ; Enforce cursor intangibility
-    (x-stretch-cursor nil)			 ; Don't stretch cursor to the glyph width
-    (blink-cursor-mode nil)			 ; Still cursor
+    (cursor-in-non-selected-windows nil)                  ; Hide the cursor in inactive windows
+    (cursor-type '(hbar . 2))                             ; Underline-shaped cursor
+    (cursor-intangible-mode t)                            ; Enforce cursor intangibility
+    (x-stretch-cursor nil)                                ; Don't stretch cursor to the glyph width
+    (blink-cursor-mode nil)                               ; Still cursor
 
     ;; Typography
-    (fill-column 80)				 ; Default line width
-    (sentence-end-double-space nil)		 ; Use a single space after dots
-    (bidi-paragraph-direction 'left-to-right)	 ; Faster
-    (truncate-string-ellipsis "…")		 ; Nicer ellipsis
+    (fill-column 80)                                      ; Default line width
+    (sentence-end-double-space nil)                       ; Use a single space after dots
+    (bidi-paragraph-direction 'left-to-right)             ; Faster
+    (truncate-string-ellipsis "…")                        ; Nicer ellipsis
 
     ;; Default mode
     ;; Default & initial mode is text.
-    (initial-major-mode 'text-mode)		 ; Initial mode is text
-    (default-major-mode 'text-mode)		 ; Default mode is text
+    (initial-major-mode 'text-mode)                       ; Initial mode is text
+    (default-major-mode 'text-mode)                       ; Default mode is text
 
     ;; Tabulations
     ;; No tabulation, ever.
-    (indent-tabs-mode nil)			 ; Stop using tabs to indent
-    (tab-width 4)				 ; Smaller width for tab characters
+    (indent-tabs-mode nil)                                ; Stop using tabs to indent
+    (tab-width 4)                                         ; Smaller width for tab characters
 
     ;; Don't pop up UI dialogs when prompting
     (use-dialog-box nil)
@@ -446,6 +465,56 @@ This section initializes various keymaps used for different purposes.
           :exit
           ("=" . balance-windows)))
 #+end_src
+*** Custom Lisp Functions
+
+In this section, I define some custom Lisp functions.
+
+This function extracts the username and repository name from a GitHub repository link.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my/extract-username-repo ()
+    "Extract the username and repository name from a GitHub repository link at point."
+    (interactive)
+    (save-excursion
+      (org-back-to-heading)
+      (let* ((element (org-element-at-point))
+             (headline (org-element-property :raw-value element))
+             (url (save-match-data
+                    (string-match org-bracket-link-regexp headline)
+                    (match-string 1 headline))))
+        (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
+            (list (match-string 1 url) (match-string 2 url))
+          (error "No GitHub link found at point.")))))
+#+END_SRC
+
+This function retrieves and inserts the short description of a GitHub repository.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my/insert-github-repo-description ()
+    "Retrieve and insert the short description of a GitHub repository at point."
+    (interactive)
+    (let* ((repo-info (my/extract-username-repo))
+           (username (car repo-info))
+           (repo (cadr repo-info)))
+      (message (format "Inserting description for GitHub Repository. User: %s, Repo: %s" username repo))
+      (let* ((url (format "https://api.github.com/repos/%s/%s" username repo))
+             (response (with-current-buffer (url-retrieve-synchronously url)
+                         (prog1 (buffer-substring-no-properties (point-min) (point-max))
+                           (kill-buffer)))))
+        (string-match "\r?\n\r?\n" response)
+        (setq response (substring response (match-end 0)))
+        (let* ((json (json-read-from-string response))
+               (description (cdr (assoc 'description json))))
+          (if description
+              (progn
+                (setq description (string-trim description))
+                (setq description (concat (capitalize (substring description 0 1))
+                                          (substring description 1)))
+                (unless (string-suffix-p "." description)
+                  (setq description (concat description ".")))
+                (insert description))
+            (error "No description, website, or topics provided."))))))
+#+END_SRC
 ** Configure Packages
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
@@ -454,13 +523,13 @@ To load the we have to add this directory to the =load-path=.
 #+end_src
 *** UI
 :PROPERTIES:
-:header-args: :tangle lisp/my-ui.el :mkdirp yes
+:header-args+: :tangle lisp/my-ui.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-ui)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ui.el")>>
 #+end_src
 **** [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
@@ -484,6 +553,7 @@ Make org-brain-visualize-mode look a bit nicer.
     (org-brain-after-visualize . aa2u-org-brain-buffer))
 #+end_src
 **** [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
+Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS, Linux or Windows Dark Mode settings.
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
@@ -492,6 +562,7 @@ Make org-brain-visualize-mode look a bit nicer.
     :hook (after-init . auto-dark-mode))
 #+end_src
 **** [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
+An extensible emacs dashboard.
 #+begin_src emacs-lisp
   (use-package dashboard
     :custom
@@ -587,6 +658,7 @@ Highlighting of the current line (native mode)
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
 **** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
+Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
   (use-package indent-bars
     :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
@@ -610,6 +682,7 @@ Highlighting of the current line (native mode)
     ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
+Display typographical ligatures in Emacs.
 #+begin_src emacs-lisp
   (use-package ligature
     :config
@@ -862,6 +935,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (after-init . global-tab-line-mode))
 #+end_src
 **** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
+
 #+begin_src emacs-lisp
   (use-package visual-fill-column
     :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
@@ -873,13 +947,13 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 #+end_src
 *** UX
 :PROPERTIES:
-:header-args: :tangle lisp/my-ux.el :mkdirp yes
+:header-args+: :tangle lisp/my-ux.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-ux)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ux.el")>>
 #+end_src
 **** autorevert :build_in:
@@ -900,6 +974,8 @@ Revert buffers when the underlying file has changed
     (bookmark-save-flag 1))
 #+end_src
 **** [[https://github.com/emacs-straight/comint-mime.git][comint-mime]]
+Mirror of the comint-mime package from GNU ELPA, current as of 2024-01-18.
+Provides a mechanism for REPLs (or comint buffers, in Emacs parlance) to display graphics and other types of special content.
 #+begin_src emacs-lisp
   (use-package comint-mime
     :hook
@@ -914,6 +990,7 @@ Replace selected text when typing
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
 #+end_src
 **** [[https://github.com/alexluigit/dirvish.git][dirvish]]
+A polished Dired with batteries included.
 #+begin_src emacs-lisp
   (use-package dirvish
     :custom
@@ -922,10 +999,11 @@ Replace selected text when typing
        ("d" "~/Downloads/"                "Downloads")
        ("t" "~/.local/share/Trash/files/" "TrashCan")))
     (dirvish-mode-line-format
-     '(:left (sort symlink) :right (omit yank index)))
+     '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-attributes
-     '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+     '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
     (dirvish-use-header-line nil)
+    ;; (dirvish-subtree-file-viewer (lambda (&rest _) nil))
     :config
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
     (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
@@ -940,7 +1018,8 @@ Replace selected text when typing
      :map my/toggle-map
      ("d" . dirvish-side)
      :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-     ([mouse-1] . dirvish-subtree-toggle-or-open)
+     ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
+     ("<mouse-2>" . dired-mouse-find-file-other-window)
      ("F" . dirvish-toggle-fullscreen)
      ("M-b" . dirvish-history-go-backward)
      ("M-e" . dirvish-emerge-menu)
@@ -963,7 +1042,9 @@ Replace selected text when typing
      ("z" . dirvish-show-history))
     :hook
     ((after-init . dirvish-override-dired-mode)
-     (dired-mode . (lambda nil (setq-local mouse-1-click-follows-link nil)))))
+     (dirvish-directory-view-mode . diredfl-mode)
+     ;; (dired-mode . (lambda nil (setq-local mouse-1-click-follows-link nil)))
+     ))
 #+end_src
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
@@ -992,6 +1073,7 @@ When working with many windows at the same time, each window has a size that is 
     (after-init . golden-ratio-mode))
 #+end_src
 **** [[https://github.com/dengste/minimap.git][minimap]]
+Sidebar showing a "mini-map" of a buffer.
 #+begin_src emacs-lisp
   (use-package minimap
     :custom
@@ -1057,6 +1139,7 @@ Enable repeat maps
     (repeat-mode . repeat-help-mode))
 #+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
+Rotate the layout of emacs.
 #+begin_src emacs-lisp
   (use-package rotate
     :bind
@@ -1123,6 +1206,7 @@ Undo and redo changes to window configuration
     (after-init . winner-mode))
 #+end_src
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
+Distraction-free writing for Emacs.
 #+begin_src emacs-lisp
   (use-package writeroom-mode
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
@@ -1134,19 +1218,16 @@ Undo and redo changes to window configuration
 #+end_src
 *** Org
 :PROPERTIES:
-:header-args: :tangle lisp/my-org.el :mkdirp yes
+:header-args+: :tangle lisp/my-org.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-org)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-org.el")>>
 #+end_src
 **** [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
-Let's include a newer version of org-mode than the one that is built in. We're going
-to manually remove the org directories from the load path, to ensure the version we
-want is prioritized instead.
 
 Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
 
@@ -1349,6 +1430,8 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     (ox-extras-activate '(ignore-headlines)))
 #+end_src
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
+Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
+
 *test* /aaa/ =babab=
 #+begin_src emacs-lisp
   (use-package org-appear
@@ -1356,12 +1439,14 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :hook (org-mode . org-appear-mode))
 #+end_src
 **** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
+A simple emacs package to allow org file tangling upon save.
 #+begin_src emacs-lisp
   (use-package org-auto-tangle
     :after org
     :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 **** [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
+Org-mode wiki + concept-mapping.
 #+begin_src emacs-lisp
   (use-package org-brain
     :after org org-noter
@@ -1456,6 +1541,7 @@ This package implements a modern style for your Org buffers using font locking a
      "⭠ now ─────────────────────────────────────────────────"))
 #+end_src
 **** [[https://github.com/jdtsmith/org-modern-indent.git][org-modern-indent]]
+Modern block styling with org-indent.
 #+begin_src emacs-lisp
   (use-package org-modern-indent
     :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
@@ -1463,7 +1549,7 @@ This package implements a modern style for your Org buffers using font locking a
     (org-mode . org-modern-indent-mode))
 #+end_src
 **** [[https://github.com/org-noter/org-noter.git][org-noter]]
-
+Emacs document annotator, using Org-mode.
 #+begin_src emacs-lisp
   (use-package org-noter
     :after org
@@ -1483,6 +1569,7 @@ This package implements a modern style for your Org buffers using font locking a
     (org-noter-insert-heading . org-id-get-create))
 #+end_src
 **** [[https://github.com/marcinkoziej/org-pomodoro.git][org-pomodoro]]
+Pomodoro technique for org-mode.
 #+begin_src emacs-lisp
   (use-package org-pomodoro
     :custom
@@ -1506,8 +1593,7 @@ This package implements a modern style for your Org buffers using font locking a
           ("p" . org-pomodoro)))
 #+end_src
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
-Let's install and load the =toc-org= package after org mode is loaded. This is the
-package that automatically generates an up to date table of contents for us.
+Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
 
 #+begin_src emacs-lisp
   (use-package toc-org
@@ -1522,16 +1608,17 @@ package that automatically generates an up to date table of contents for us.
 #+end_src
 *** Tools
 :PROPERTIES:
-:header-args: :tangle lisp/my-tools.el :mkdirp yes
+:header-args+: :tangle lisp/my-tools.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-tools)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-tools.el")>>
 #+end_src
 **** [[https://github.com/radian-software/ctrlf.git][ctrlf]]
+Emacs finally learns how to ctrl+F.
 #+begin_src emacs-lisp
   (use-package ctrlf
     :hook
@@ -1578,6 +1665,7 @@ package that automatically generates an up to date table of contents for us.
           ("d" . dired)))
 #+end_src
 **** [[https://github.com/purcell/diredfl.git][diredfl]]
+Extra Emacs font lock rules for a more colourful dired.
 #+begin_src emacs-lisp
   (use-package diredfl
     :hook (dired-mode . diredfl-mode))
@@ -1605,7 +1693,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
      (ediff-quit . my/restore-pre-ediff-winconfig)))
 #+end_src
 **** [[https://github.com/skeeto/elfeed.git][elfeed]]
-An Emacs web feeds client
+An Emacs web feeds client.
 #+begin_src emacs-lisp
   (use-package elfeed
     :bind
@@ -1616,6 +1704,7 @@ An Emacs web feeds client
           (split-string (shell-command-to-string "for d in ~/.emacs.d/straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
 #+end_src
 **** [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
+Make Emacs use the $PATH set up by the user's shell.
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
     :config
@@ -1659,6 +1748,7 @@ An Emacs web feeds client
      (ispell-change-dictionary . restart-flyspell-mode)))
 #+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
+A simple LLM client for Emacs.
 #+begin_src emacs-lisp
   (use-package gptel
     :custom
@@ -1685,7 +1775,7 @@ It is a bit slow to load so we do need load it explicitely.
      ([remap revert-buffer] . helpful-update)))
 #+end_src
 **** [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
-
+Emacs support library for PDF files.
 #+begin_src emacs-lisp
   (use-package pdf-tools
     :magic ("%PDF" . pdf-view-mode)
@@ -1775,6 +1865,7 @@ Emacs libvterm integration.
                           ("podman" "/bin/bash"))))
 #+end_src
 **** [[https://github.com/emacs-straight/vundo.git][vundo]]
+Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
 #+begin_src emacs-lisp
   (use-package vundo
     :bind
@@ -1791,13 +1882,13 @@ Emacs libvterm integration.
 #+end_src
 *** Completion
 :PROPERTIES:
-:header-args: :tangle lisp/my-completion.el :mkdirp yes
+:header-args+: :tangle lisp/my-completion.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-completion)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-completion.el")>>
 #+end_src
 **** [[https://github.com/minad/cape.git][cape]]
@@ -1931,7 +2022,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
      (org-mode . citar-embark-mode)))
 #+end_src
 **** [[https://github.com/minad/consult.git][consult]]
-additional featureful completion commands
+Additional featureful completion commands.
 #+begin_src emacs-lisp
   ;; Example configuration for Consult
   (use-package consult
@@ -2149,6 +2240,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (global-corfu-mode . corfu-terminal-mode))
 #+end_src
 **** [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]
+
 #+begin_src emacs-lisp
   (use-package corfu-candidate-overlay
     :straight (:type git
@@ -2176,7 +2268,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (use-package embark
     :after which-key
     :bind
-    (("C-." . embark-act)         ;; pick some comfortable binding
+    (("C-." . embark-act)         ;; pick some com fortable binding
      ("C-:" . embark-dwim)        ;; good alternative: M-.
      ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
@@ -2256,8 +2348,8 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (defun my/eglot-capf ()
       (setq-local completion-at-point-functions
                   (cons (cape-capf-super
-                         #'tempel-complete
                          #'eglot-completion-at-point
+                         #'tempel-complete
                          #'cape-file)
                         completion-at-point-functions)))
     :config
@@ -2271,6 +2363,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (eglot-managed-mode . my/eglot-capf))
 #+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
+Marginalia in the minibuffer.
 #+begin_src emacs-lisp
   (use-package marginalia
     :after vertico
@@ -2289,6 +2382,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     (marginalia-mode . nerd-icons-completion-marginalia-setup))
 #+end_src
 **** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
+Icons for corfu via nerd-icons.
 #+begin_src emacs-lisp
   (use-package nerd-icons-corfu
     :preface
@@ -2434,16 +2528,17 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+end_src
 *** Version Control
 :PROPERTIES:
-:header-args: :tangle lisp/my-vc.el :mkdirp yes
+:header-args+: :tangle lisp/my-vc.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-vc)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-vc.el")>>
 #+end_src
 **** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
+Emacs port of Sublime Text Plugin GitGutter.
 #+begin_src emacs-lisp
   (use-package git-gutter
     :custom
@@ -2514,13 +2609,13 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 *** Project Management
 :PROPERTIES:
-:header-args: :tangle lisp/my-project.el :mkdirp yes
+:header-args+: :tangle lisp/my-project.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-project)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-project.el")>>
 #+end_src
 **** project :build_in:
@@ -2530,6 +2625,7 @@ functions we invoke regularly outside of magit is called.
     (project-vc-extra-root-markers '(".project")))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
+Ehancements to Emacs' built in project library.
 #+begin_src emacs-lisp
   (use-package project-x
     :straight (:type git :host github :repo "karthink/project-x")
@@ -2539,6 +2635,7 @@ functions we invoke regularly outside of magit is called.
     (after-init . project-x-mode))
 #+end_src
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
+Support a "one tab group per project" workflow.
 #+begin_src emacs-lisp
   (use-package project-tab-groups
     :config
@@ -2631,6 +2728,7 @@ functions we invoke regularly outside of magit is called.
                         (text-scale-adjust -1)))))
 #+end_src
 **** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
+Same frame speedbar.
 #+begin_src emacs-lisp
   (use-package sr-speedbar
     :custom
@@ -2646,16 +2744,17 @@ functions we invoke regularly outside of magit is called.
 #+end_src
 *** Programming
 :PROPERTIES:
-:header-args: :tangle lisp/my-programming.el :mkdirp yes
+:header-args+: :tangle lisp/my-programming.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-programming)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-programming.el")>>
 #+end_src
 **** [[https://github.com/emacs-straight/auctex.git][auctex]]
+Integrated environment for *TeX*
 #+begin_src emacs-lisp
   (use-package auctex
     :mode ("\\.tex\\'" . latex-mode)
@@ -2689,6 +2788,7 @@ functions we invoke regularly outside of magit is called.
      (LaTeX-mode . turn-on-reftex)))
 #+end_src
 **** [[https://github.com/astoff/code-cells.el.git][code-cells]]
+Emacs utilities for code split into cells, including Jupyter notebooks.
 #+begin_src emacs-lisp
   (use-package code-cells
     :preface
@@ -2707,7 +2807,7 @@ functions we invoke regularly outside of magit is called.
     (python-base-mode . code-cells-mode-maybe))
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
-Structured Editing and Navigation in Emacs
+Structured Editing and Navigation in Emacs.
 #+begin_src emacs-lisp
   (use-package combobulate
     :after treesit
@@ -2720,8 +2820,8 @@ Structured Editing and Navigation in Emacs
     :bind
     (:map combobulate-key-map
           ("S-<down>"  . combobulate-navigate-down-list-maybe)
-          ("S-<left>"  . combobulate-navigate-next)
-          ("S-<right>" . combobulate-navigate-previous)
+          ("S-<left>"  . combobulate-navigate-previous)
+          ("S-<right>" . combobulate-navigate-next)
           ("M-<left>"  . combobulate-navigate-logical-previous)
           ("M-<right>" . combobulate-navigate-logical-next)
           ("S-<up>"    . combobulate-navigate-up-list-maybe)
@@ -2739,7 +2839,49 @@ Structured Editing and Navigation in Emacs
      (typescript-ts-mode . combobulate-mode)
      (tsx-ts-mode . combobulate-mode)))
 #+end_src
+**** [[https://github.com/necaris/conda.el.git][conda]]
+Emacs helper library (and minor mode) to work with conda environments.
+#+begin_src emacs-lisp
+  (use-package conda
+    :after python
+    :custom
+    ;; support for mambaforge envs
+    (conda-anaconda-home "~/mambaforge/")
+    (conda-env-home-directory "~/mambaforge/")
+    (conda-activate-base-by-default t)
+    :preface
+    (defun my/find-python-interpreter (&rest _)
+      (cond
+       ((executable-find "ipython3")
+        (setq python-shell-interpreter "ipython3"
+              python-shell-interpreter-args "--simple-prompt --classic"))
+       ((executable-find "python3")
+        (setq python-shell-interpreter "python3"
+              python-shell-interpreter-args "-i"))
+       (t
+        (setq python-shell-interpreter "python"
+              python-shell-interpreter-args "-i"))))
+    :config
+    ;; interactive shell support
+    (conda-env-initialize-interactive-shells)
+    ;; if you want eshell support, include:
+    (conda-env-initialize-eshell)
+    ;; enable auto-activation
+    ;; (conda-env-autoactivate-mode t)
+    ;; if you want to automatically activate a conda environment on the opening of a file:
+    ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
+    ;;                       (conda-env-activate-for-buffer))))
+    (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
+#+end_src
+**** [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
+Jump to workspace symbols with eglot and consult.
+#+begin_src emacs-lisp
+  (use-package consult-eglot
+    :demand t
+    :after (eglot consult))
+#+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
+Debug Adapter Protocol for Emacs.
 #+begin_src emacs-lisp
   (use-package dape
     ;; Currently only on github
@@ -2777,6 +2919,7 @@ Structured Editing and Navigation in Emacs
     )
 #+end_src
 **** [[https://github.com/spotify/dockerfile-mode.git][docker]]
+An emacs mode for handling Dockerfiles.
 #+begin_src emacs-lisp
   (use-package docker
     :commands docker)
@@ -2790,6 +2933,7 @@ Structured Editing and Navigation in Emacs
     :after docker)
 #+end_src
 **** [[https://github.com/emacs-straight/eglot.git][eglot]]
+A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
   (use-package eglot
     :custom
@@ -2814,6 +2958,7 @@ Structured Editing and Navigation in Emacs
     :hook ((python-mode python-ts-mode) . eglot-ensure))
 #+end_src
 **** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
+Configure emacs documentation support.
 #+begin_src emacs-lisp
   (use-package eldoc
     :custom
@@ -2825,7 +2970,8 @@ Structured Editing and Navigation in Emacs
     (eldoc-add-command-completions "paredit-")
     (eldoc-add-command-completions "combobulate-"))
 #+end_src
-**** [[https://github.com/emacs-ess/ESS][ESS]]
+**** [[https://github.com/emacs-ess/ESS.git][ESS]]
+Emacs Speaks Statistics: ESS.
 #+begin_src emacs-lisp
   (use-package ess
     :mode (("\\.[rR]\\'" . R-mode)
@@ -2835,6 +2981,7 @@ Structured Editing and Navigation in Emacs
     (require 'ess-site))
 #+end_src
 **** [[https://github.com/kaz-yos/eval-in-repl.git][eval-in-repl]]
+Consistent ESS-like eval interface for various REPLs.
 #+begin_src emacs-lisp
   (use-package eval-in-repl
     :custom
@@ -2865,7 +3012,8 @@ Structured Editing and Navigation in Emacs
      ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 #+end_src
 **** [[https://github.com/flycheck/flycheck.git][flycheck]]
-#+begin_src emacs-lisp
+On the fly syntax checking for GNU Emacs.
+#+begin_src emacs-lisp :tangle no
   (use-package flycheck
     :custom
     ;; Let git gutter have left fringe, flycheck can have right fringe
@@ -2917,14 +3065,17 @@ Structured Editing and Navigation in Emacs
      (flycheck-mode . my/flycheck-prefer-eldoc)))
 #+end_src
 **** [[https://github.com/emacs-straight/flymake.git][flymake]]
-universal on-the-fly syntax checker for Emacs
+Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
   (use-package flymake
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
-    (flymake-fringe-indicator-position 'right-fringe))
+    (flymake-fringe-indicator-position 'right-fringe)
+    :hook
+    ((prog-mode conf-mode) . flymake-mode))
 #+end_src
 **** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
+Auto-format source code in many languages with one command.
 #+begin_src emacs-lisp
   (use-package format-all
     ;;:hook (prog-mode . format-all-mode)
@@ -2933,16 +3084,36 @@ universal on-the-fly syntax checker for Emacs
           ("f" . format-all-buffer)))
 #+end_src
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
+Emacs major mode for editing Lua.
 #+begin_src emacs-lisp
   (use-package lua-mode
     :mode "\\.lua\\'")
 #+end_src
 **** [[https://github.com/jrblevin/markdown-mode.git][markdown]]
+Emacs Markdown Mode.
 #+begin_src emacs-lisp
   (use-package markdown-mode
     :mode "\\.md\\'")
 #+end_src
-**** [[https://github.com/pythonic-emacs/pythonic.git][python]]
+**** [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
+Insert NumPy style docstrings in Python functions.
+#+begin_src emacs-lisp
+  (use-package numpydoc
+    :after python)
+#+end_src
+**** [[https://github.com/paetzke/py-isort.el.git][py-isort]]
+Py-isort.el integrates isort into Emacs.
+#+begin_src emacs-lisp
+  (use-package py-isort
+    :after conda)
+#+end_src
+**** [[https://github.com/Wilfred/pyimport.git][pyimport]]
+Manage Python imports from Emacs!.
+#+begin_src emacs-lisp
+  (use-package pyimport
+    :after conda)
+#+end_src
+**** python :build_in:
 #+begin_src emacs-lisp
   (use-package python
     :mode ("[./]flake8\\'" . conf-mode)
@@ -2953,53 +3124,18 @@ universal on-the-fly syntax checker for Emacs
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil))
-
-  (use-package conda
-    :after python
-    :custom
-    ;; support for mambaforge envs
-    (conda-anaconda-home "~/mambaforge/")
-    (conda-env-home-directory "~/mambaforge/")
-    (conda-activate-base-by-default t)
-    :preface
-    (defun my/find-python-interpreter nil
-      (cond
-       ((executable-find "ipython3")
-        (setq python-shell-interpreter "ipython3"
-              python-shell-interpreter-args "--simple-prompt --classic"))
-       ((executable-find "python3")
-        (setq python-shell-interpreter "python3"
-              python-shell-interpreter-args "-i"))
-       (t (setq python-shell-interpreter "python"
-                python-shell-interpreter-args "-i"))))
-    :config
-    ;; interactive shell support
-    (conda-env-initialize-interactive-shells)
-    ;; if you want eshell support, include:
-    (conda-env-initialize-eshell)
-    ;; enable auto-activation
-    (conda-env-autoactivate-mode t)
-    ;; if you want to automatically activate a conda environment on the opening of a file:
-    ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-    ;;                       (conda-env-activate-for-buffer))))
-    (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
-
-  (use-package numpydoc
-    :after python)
-
+#+end_src
+**** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
+Generate Sphinx friendly docstrings for Python functions in Emacs.
+#+begin_src emacs-lisp
   (use-package sphinx-doc
     :straight '(:type git :host github :repo "eanopolsky/sphinx-doc.el"
                       :branch "square-brackets-in-return-types")
     :hook
     (python-mode . sphinx-doc-mode))
-
-  (use-package pyimport
-    :after conda)
-
-  (use-package py-isort
-    :after conda)
 #+end_src
 **** [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
+Display symbols (functions, variables, etc) in a side window.
 #+begin_src emacs-lisp
   (use-package symbols-outline
     :bind
@@ -3038,6 +3174,7 @@ Using the forked version with treesit support here
      (after-init . global-ts-fold-indicators-mode)))
 #+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
+The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp
   (use-package yaml-mode
     :mode "\\.ya?ml\\'")
@@ -3049,13 +3186,13 @@ Using the forked version with treesit support here
 #+end_src
 *** Keybindings
 :PROPERTIES:
-:header-args: :tangle lisp/my-keybindings.el :mkdirp yes
+:header-args+: :tangle lisp/my-keybindings.el
 :END:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-keybindings)
 #+end_src
 **** Conventional Header
-#+begin_src emacs-lisp :noweb yes
+#+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-keybindings.el")>>
 #+end_src
 **** [[https://github.com/meow-edit/meow.git][meow]]
@@ -3104,6 +3241,8 @@ Meow is yet another modal editing mode for Emacs.
     :bind
     (:map meow-motion-state-keymap
           ("<escape>" . meow-cancel-selection)
+          ("," . meow-inner-of-thing)
+          ("." . meow-bounds-of-thing)
           ("b" . meow-back-word)
           ("e" . meow-next-word)
           ("f" . meow-find)

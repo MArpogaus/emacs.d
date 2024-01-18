@@ -1,13 +1,21 @@
 ;;; my-completion.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;; Copyright (C) 2010-2024 Marcel Arpogaus
+;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Keywords: internal
-;; URL: https://github.com/MArpogaus/emacs.d/
+;; Created: 2024-01-18
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
 
 ;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
+
+;; [[https://github.com/minad/cape.git][cape]]
+;; Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 
 (use-package cape
   ;; Bind dedicated completion commands
@@ -52,6 +60,9 @@
     ;; Ensure that pcomplete does not write to the buffer
     ;; and behaves as a pure `completion-at-point-function'.
     (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+
+;; [[https://github.com/emacs-citar/citar.git][citar]]
+;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 
 (use-package citar
   :custom
@@ -132,6 +143,9 @@
   :hook
   ((LaTeX-mode . citar-embark-mode)
    (org-mode . citar-embark-mode)))
+
+;; [[https://github.com/minad/consult.git][consult]]
+;; Additional featureful completion commands.
 
 ;; Example configuration for Consult
 (use-package consult
@@ -227,6 +241,9 @@
   (with-eval-after-load 'projectile
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-function (lambda (_) (projectile-project-root)))))
+
+;; [[https://github.com/emacs-straight/corfu.git][corfu]]
+;; Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 
 (use-package corfu
   :custom
@@ -345,6 +362,9 @@
   :hook
   (global-corfu-mode . corfu-terminal-mode))
 
+;; [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]
+
+
 (use-package corfu-candidate-overlay
   :straight (:type git
                    :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay"
@@ -355,6 +375,8 @@
   ;; this relies on having corfu-auto set to nil
   (global-corfu-mode . corfu-candidate-overlay-mode))
 
+;; dabbrev :build_in:
+
 (use-package dabbrev
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
@@ -363,10 +385,13 @@
   :custom
   (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
+;; [[https://github.com/oantolin/embark.git][embark]]
+;; Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
+
 (use-package embark
   :after which-key
   :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
+  (("C-." . embark-act)         ;; pick some com fortable binding
    ("C-:" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
@@ -435,6 +460,8 @@ the completing-read prompter."
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
+;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
+
 (use-package lsp-snippet-tempel
   :straight (lsp-snippet-tempel :type git
                                 :host github
@@ -443,9 +470,9 @@ the completing-read prompter."
   :preface
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
-                (cons (cape-super-capf
-                       #'tempel-complete
+                (cons (cape-capf-super
                        #'eglot-completion-at-point
+                       #'tempel-complete
                        #'cape-file)
                       completion-at-point-functions)))
   :config
@@ -458,12 +485,17 @@ the completing-read prompter."
   :hook
   (eglot-managed-mode . my/eglot-capf))
 
+;; [[https://github.com/minad/marginalia.git][marginalia]]
+;; Marginalia in the minibuffer.
+
 (use-package marginalia
   :after vertico
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :hook
   (vertico-mode . marginalia-mode))
+
+;; [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 
 (use-package nerd-icons-completion
   :after marginalia vertico
@@ -472,12 +504,18 @@ the completing-read prompter."
   :hook
   (marginalia-mode . nerd-icons-completion-marginalia-setup))
 
+;; [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
+;; Icons for corfu via nerd-icons.
+
 (use-package nerd-icons-corfu
   :preface
   (defun my/add-nerd-icons-formatter nil
     (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
   :hook
   (corfu-mode . my/add-nerd-icons-formatter))
+
+;; [[https://github.com/oantolin/orderless.git][orderless]]
+;; Emacs completion style that matches multiple regexps in any order
 
 (use-package orderless
   :after vertico
@@ -500,6 +538,10 @@ the completing-read prompter."
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic-remote partial-completion)))))
+
+;; [[https://github.com/minad/tempel.git][tempel]]
+;; Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
+
 
 ;; Configure Tempel
 (use-package tempel
@@ -543,6 +585,10 @@ the completing-read prompter."
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
   )
+
+;; [[https://github.com/emacs-straight/vertico.git][vertico]]
+;; Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
+
 
 (use-package vertico
   :custom
@@ -597,6 +643,8 @@ the completing-read prompter."
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (after-init . vertico-mode)))
+
+;; Library Footer
 
 (provide 'my-completion)
 ;;; my-completion.el ends here
