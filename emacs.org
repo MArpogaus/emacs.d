@@ -52,7 +52,6 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
 ** To-dos :noexport_1:
-*** TODO Add iPython shell command
 *** TODO Add doom snippets?
 - [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
 *** TODO anzu
@@ -1600,6 +1599,13 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
     :after org
     :hook
     (org-mode . toc-org-enable))
+#+end_src
+**** [[https://github.com/tarsius/orglink.git][orglink]]
+Use Org Mode links in other modes.
+#+begin_src emacs-lisp
+  (use-package orglink
+    :hook
+    (prog-mode . orglink-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp

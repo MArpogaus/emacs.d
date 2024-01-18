@@ -388,6 +388,13 @@
   :hook
   (org-mode . toc-org-enable))
 
+;; [[https://github.com/tarsius/orglink.git][orglink]]
+;; Use Org Mode links in other modes.
+
+(use-package orglink
+  :hook
+  (prog-mode . orglink-mode))
+
 ;; Library Footer
 
 (provide 'my-org)
