@@ -3188,7 +3188,12 @@ Using the forked version with treesit support here
 The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp
   (use-package yaml-mode
-    :mode "\\.ya?ml\\'")
+    :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+#+end_src
+**** yaml-pro
+#+begin_src emacs-lisp
+  (use-package yaml-pro
+    :hook (yaml-ts-mode . yaml-pro-ts-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
