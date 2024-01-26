@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-26
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -145,38 +145,36 @@
 ;; Debug Adapter Protocol for Emacs.
 
 (use-package dape
-  ;; Currently only on github
-  :straight (dape :type git :host github :repo "svaante/dape")
+  ;; To use window configuration like gud (gdb-mi)
+  ;; :init
+  ;; (setq dape-buffer-window-arrangement 'gud)
+
   :config
-  ;; Add inline variable hints, this feature is highly experimental
-  ;; (setq dape-inline-variables t)
+  ;; Info buffers to the right
+  (setq dape-buffer-window-arrangement 'right)
 
-  ;; To remove info buffer on startup
+  ;; To not display info and/or buffers on startup
   ;; (remove-hook 'dape-on-start-hooks 'dape-info)
-
-  ;; To remove repl buffer on startup
   ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
 
+  ;; To display info and/or repl buffers on stopped
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-info)
+  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
+
   ;; By default dape uses gdb keybinding prefix
+  ;; If you do not want to use any prefix, set it to nil.
   ;; (setq dape-key-prefix "\C-x\C-a")
 
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
 
+  ;; Save buffers on startup, useful for interpreted languages
+  (add-hook 'dape-on-start-hooks
+            (defun dape--save-on-start ()
+              (save-some-buffers t t)))
+
   ;; Projectile users
   ;; (setq dape-cwd-fn 'projectile-project-root)
-
-  ;; Add Debug Adapters
-  ;; https://github.com/svaante/dape#supported-debug-adapters
-  (add-to-list 'dape-configs
-               `(debugpy
-                 modes (python-ts-mode python-mode)
-                 command "python3"
-                 command-args ("-m" "debugpy.adapter")
-                 :type "executable"
-                 :request "launch"
-                 :cwd dape-cwd-fn
-                 :program dape-find-file-buffer-default))
   )
 
 ;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
@@ -201,6 +199,15 @@
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
   (completion-category-defaults nil)
+  :after (tempel cape)
+  :preface
+  (defun my/eglot-capf ()
+    (setq-local completion-at-point-functions
+                (cons (cape-capf-super
+                       #'cape-file
+                       #'eglot-completion-at-point
+                       #'tempel-complete)
+                      completion-at-point-functions)))
   :bind
   (:map my/lsp-map
         ("l" . eglot)
@@ -213,10 +220,20 @@
         ("q" . eglot-code-action-quickfix)
         ("r". eglot-rename))
   :config
-  (with-eval-after-load 'cape
-    ;; Continuously update the candidates using cape cache buster
-    (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
-  :hook ((python-mode python-ts-mode) . eglot-ensure))
+  ;; Continuously update the candidates using cape cache buster
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  :hook
+  (((python-mode python-ts-mode) . eglot-ensure)
+   (eglot-managed-mode . my/eglot-capf)))
+
+;; [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
+;; Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
+
+(use-package eglot-booster
+  :after eglot
+  :if (executable-find "emacs-lsp-booster")
+  :straight (:host github :repo "jdtsmith/eglot-booster")
+  :config	(eglot-booster-mode))
 
 ;; [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 ;; Configure emacs documentation support.
@@ -374,18 +391,24 @@
 
 (use-package ts-fold
   :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
-  :bind
-  (:map my/toggle-map
-        ([tab] . ts-fold-toggle))
+  :preface
+  (defun my/ts-fold-mode-hook ()
+    (keymap-local-set "S-TAB" 'ts-fold-toggle))
   :hook
-  ((after-init . global-ts-fold-mode)
-   (after-init . global-ts-fold-indicators-mode)))
+  (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
+   ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
+   (ts-fold-mode . my/ts-fold-mode-hook)))
 
 ;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 ;; The emacs major mode for editing files in the YAML data serialization format.
 
 (use-package yaml-mode
-  :mode "\\.ya?ml\\'")
+  :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+
+;; yaml-pro
+
+(use-package yaml-pro
+  :hook (yaml-ts-mode . yaml-pro-ts-mode))
 
 ;; Library Footer
 
