@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-26
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -40,17 +40,17 @@
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   ;; NOTE: The order matters!
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-history)
-  (add-to-list 'completion-at-point-functions #'cape-keyword)
-  (add-to-list 'completion-at-point-functions #'cape-tex)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
   ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
   ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
   ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-  (add-to-list 'completion-at-point-functions #'cape-dict)
-  ;; (add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
-  ;; (add-to-list 'completion-at-point-functions #'cape-line)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+  ;;(add-to-list 'completion-at-point-functions #'cape-line)
 
   ;; The advices are only needed on Emacs 28 and older.
   (when (< emacs-major-version 29)
@@ -466,24 +466,10 @@ the completing-read prompter."
   :straight (lsp-snippet-tempel :type git
                                 :host github
                                 :repo "svaante/lsp-snippet")
-  :after (tempel eglot cape)
-  :preface
-  (defun my/eglot-capf ()
-    (setq-local completion-at-point-functions
-                (cons (cape-capf-super
-                       #'eglot-completion-at-point
-                       #'tempel-complete
-                       #'cape-file)
-                      completion-at-point-functions)))
+  :after (tempel eglot)
   :config
-  (when (feature 'tempel)
-    ;; Initialize lsp-snippet -> tempel in eglot
-    (lsp-snippet-tempel-eglot-init))
-  (when (feature 'yas-snippet)
-    ;; Initialize lsp-snippet -> yas-snippet in eglot
-    (lsp-snippet-yasnippet-eglot-init))
-  :hook
-  (eglot-managed-mode . my/eglot-capf))
+  ;; Initialize lsp-snippet -> tempel in eglot
+  (lsp-snippet-tempel-eglot-init))
 
 ;; [[https://github.com/minad/marginalia.git][marginalia]]
 ;; Marginalia in the minibuffer.
@@ -545,8 +531,8 @@ the completing-read prompter."
 
 ;; Configure Tempel
 (use-package tempel
-  ;; Require trigger prefix before template name when completing.
   :custom
+  ;; Require trigger prefix before template name when completing.
   ;; (tempel-trigger-prefix ">")
   (tempel-path my/templates-path)
 
