@@ -2349,24 +2349,10 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :straight (lsp-snippet-tempel :type git
                                   :host github
                                   :repo "svaante/lsp-snippet")
-    :after (tempel eglot cape)
-    :preface
-    (defun my/eglot-capf ()
-      (setq-local completion-at-point-functions
-                  (cons (cape-capf-super
-                         #'eglot-completion-at-point
-                         #'tempel-complete
-                         #'cape-file)
-                        completion-at-point-functions)))
+    :after (tempel eglot)
     :config
-    (when (feature 'tempel)
-      ;; Initialize lsp-snippet -> tempel in eglot
-      (lsp-snippet-tempel-eglot-init))
-    (when (feature 'yas-snippet)
-      ;; Initialize lsp-snippet -> yas-snippet in eglot
-      (lsp-snippet-yasnippet-eglot-init))
-    :hook
-    (eglot-managed-mode . my/eglot-capf))
+    ;; Initialize lsp-snippet -> tempel in eglot
+    (lsp-snippet-tempel-eglot-init))
 #+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 Marginalia in the minibuffer.
@@ -2428,8 +2414,8 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 #+begin_src emacs-lisp
   ;; Configure Tempel
   (use-package tempel
-    ;; Require trigger prefix before template name when completing.
     :custom
+    ;; Require trigger prefix before template name when completing.
     ;; (tempel-trigger-prefix ">")
     (tempel-path my/templates-path)
 
@@ -2946,6 +2932,15 @@ A client for Language Server Protocol servers.
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
     (completion-category-defaults nil)
+    :after (tempel cape)
+    :preface
+    (defun my/eglot-capf ()
+      (setq-local completion-at-point-functions
+                  (cons (cape-capf-super
+                         #'cape-file
+                         #'eglot-completion-at-point
+                         #'tempel-complete)
+                        completion-at-point-functions)))
     :bind
     (:map my/lsp-map
           ("l" . eglot)
@@ -2958,10 +2953,20 @@ A client for Language Server Protocol servers.
           ("q" . eglot-code-action-quickfix)
           ("r". eglot-rename))
     :config
-    (with-eval-after-load 'cape
-      ;; Continuously update the candidates using cape cache buster
-      (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
-    :hook ((python-mode python-ts-mode) . eglot-ensure))
+    ;; Continuously update the candidates using cape cache buster
+    (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+    :hook
+    (((python-mode python-ts-mode) . eglot-ensure)
+     (eglot-managed-mode . my/eglot-capf)))
+#+end_src
+**** [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
+Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
+#+begin_src emacs-lisp
+  (use-package eglot-booster
+    :after eglot
+    :if (executable-find "emacs-lsp-booster")
+    :straight (:host github :repo "jdtsmith/eglot-booster")
+    :config	(eglot-booster-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 Configure emacs documentation support.
