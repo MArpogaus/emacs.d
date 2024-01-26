@@ -3177,12 +3177,14 @@ Using the forked version with treesit support here
 #+begin_src emacs-lisp
   (use-package ts-fold
     :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
-    :bind
-    (:map my/toggle-map
-          ([tab] . ts-fold-toggle))
+    :preface
+    (defun my/ts-fold-mode-hook ()
+      (keymap-local-set "S-TAB" 'ts-fold-toggle))
     :hook
-    ((after-init . global-ts-fold-mode)
-     (after-init . global-ts-fold-indicators-mode)))
+    (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
+     ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
+     (ts-fold-mode . my/ts-fold-mode-hook)))
+
 #+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 The emacs major mode for editing files in the YAML data serialization format.
