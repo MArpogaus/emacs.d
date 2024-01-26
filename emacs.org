@@ -2,7 +2,7 @@
 #+AUTHOR: Marcel Arpogaus
 #+STARTUP: show2levels indent
 #+auto_tangle: t
-#+PROPERTY: header-args :comments org :mkdirp yes
+#+PROPERTY: header-args :mkdirp yes :comments org
 
 * Configuration
 ** Table of Contents                                               :TOC_3_gh:
