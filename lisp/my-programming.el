@@ -405,7 +405,8 @@
 (use-package yaml-mode
   :mode ("\\.ya?ml\\'" . yaml-ts-mode))
 
-;; yaml-pro
+;; [[https://github.com/zkry/yaml-pro.git][yaml-pro]]
+;; Edit YAML in Emacs like a pro.
 
 (use-package yaml-pro
   :hook (yaml-ts-mode . yaml-pro-ts-mode))

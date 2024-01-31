@@ -3210,7 +3210,8 @@ The emacs major mode for editing files in the YAML data serialization format.
   (use-package yaml-mode
     :mode ("\\.ya?ml\\'" . yaml-ts-mode))
 #+end_src
-**** yaml-pro
+**** [[https://github.com/zkry/yaml-pro.git][yaml-pro]]
+Edit YAML in Emacs like a pro.
 #+begin_src emacs-lisp
   (use-package yaml-pro
     :hook (yaml-ts-mode . yaml-pro-ts-mode))
