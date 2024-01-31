@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-26
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -366,9 +366,7 @@
 
 
 (use-package corfu-candidate-overlay
-  :straight (:type git
-                   :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay"
-                   :files (:defaults "*.el"))
+  :straight (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
   :after corfu
   :hook
   ;; enable corfu-candidate-overlay mode globally
@@ -378,6 +376,7 @@
 ;; dabbrev :build_in:
 
 (use-package dabbrev
+  :straight nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand))
@@ -463,9 +462,7 @@ the completing-read prompter."
 ;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 
 (use-package lsp-snippet-tempel
-  :straight (lsp-snippet-tempel :type git
-                                :host github
-                                :repo "svaante/lsp-snippet")
+  :straight (:host github :repo "svaante/lsp-snippet")
   :after (tempel eglot)
   :config
   ;; Initialize lsp-snippet -> tempel in eglot

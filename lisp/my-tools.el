@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,18 +48,18 @@
   ;; Enable mouse drag-and-drop support
   (dired-mouse-drag-files t)                   ; added in Emacs 29
   (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
-  :config
-  (use-package dired-x
-    :straight nil
-    :config
-    ;; Make dired-omit-mode hide all "dotfiles"
-    (setq dired-omit-files
-          (concat dired-omit-files "\\|^\\..*$"))
-    :hook
-    (dired-mode . dired-omit-mode))
   :bind
   (:map my/open-map
         ("d" . dired)))
+
+(use-package dired-x
+  :straight nil
+  :config
+  ;; Make dired-omit-mode hide all "dotfiles"
+  (setq dired-omit-files
+        (concat dired-omit-files "\\|^\\..*$"))
+  :hook
+  (dired-mode . dired-omit-mode))
 
 ;; [[https://github.com/purcell/diredfl.git][diredfl]]
 ;; Extra Emacs font lock rules for a more colourful dired.
@@ -74,6 +74,7 @@
 
 
 (use-package ediff
+  :straight nil
   :preface
   (defvar my-ediff-original-windows nil)
   (defun my/store-pre-ediff-winconfig ()
@@ -115,6 +116,7 @@
 ;; flyspell :build_in:
 
 (use-package flyspell
+  :straight nil
   :custom
   ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
   (flyspell-issue-welcome-flag nil)
@@ -187,6 +189,7 @@
 
 ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 (use-package re-builder
+  :straight nil
   :commands re-builder
   :custom
   (reb-re-syntax 'string))
@@ -195,6 +198,7 @@
 ;; Major mode for interacting with a terminal
 
 (use-package term
+  :straight nil
   :commands term
   :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
   :custom

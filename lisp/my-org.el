@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -331,7 +331,7 @@
 ;; Modern block styling with org-indent.
 
 (use-package org-modern-indent
-  :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+  :straight (:host github :repo "jdtsmith/org-modern-indent")
   :hook ; add late to hook
   (org-mode . org-modern-indent-mode))
 

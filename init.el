@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -23,8 +23,6 @@
   (straight-use-package 'use-package)
   (use-package bind-key))
 
-(setq straight-use-package-by-default t
-      use-package-always-defer t)
 ;; make use-package more verbose when ´‘--debug-init´ is passed
 ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
 (when init-file-debug
@@ -60,6 +58,7 @@
 ;; Better Defaults
 
 (use-package emacs
+  :straight nil
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -165,6 +164,7 @@
 
 ;; setup keymaps
 (use-package emacs
+  :straight nil
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
