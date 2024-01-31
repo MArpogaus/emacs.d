@@ -186,6 +186,10 @@ The code includes optimization for startup time, disables file modification chec
   ;;disable checking (for speedup).
   (setq straight-check-for-modifications nil)
 
+  ;; Enable straight use-package integration
+  (setq straight-use-package-by-default t
+        use-package-always-defer t)
+
   (defvar bootstrap-version)
   (let ((bootstrap-file
          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -222,8 +226,6 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
     (straight-use-package 'use-package)
     (use-package bind-key))
 
-  (setq straight-use-package-by-default t
-        use-package-always-defer t)
   ;; make use-package more verbose when ´‘--debug-init´ is passed
   ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
   (when init-file-debug
