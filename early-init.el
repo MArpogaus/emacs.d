@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -103,6 +103,10 @@
 ;; straight.el bootstrap code
 ;;disable checking (for speedup).
 (setq straight-check-for-modifications nil)
+
+;; Enable straight use-package integration
+(setq straight-use-package-by-default t
+      use-package-always-defer t)
 
 (defvar bootstrap-version)
 (let ((bootstrap-file

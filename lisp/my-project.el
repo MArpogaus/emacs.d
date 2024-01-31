@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -17,6 +17,7 @@
 ;; project :build_in:
 
 (use-package project
+  :straight nil
   :custom
   (project-vc-extra-root-markers '(".project")))
 
@@ -24,7 +25,7 @@
 ;; Ehancements to Emacs' built in project library.
 
 (use-package project-x
-  :straight (:type git :host github :repo "karthink/project-x")
+  :straight (:host github :repo "karthink/project-x")
   :custom
   (project-x-save-interval 60)  ;; Save project state every minute
   :hook
@@ -43,6 +44,7 @@
 ;; speedbar :build_in:
 
 (use-package speedbar
+  :straight nil
   :custom
   (speedbar-frame-parameters
    '((name . "speedbar")

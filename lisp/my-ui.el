@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -73,6 +73,7 @@
 ;; Enable line numbers for some modes
 
 (use-package display-line-numbers
+  :straight nil
   :hook
   (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
    ;; disable for org mode
@@ -136,6 +137,7 @@
 
 
 (use-package hl-line
+  :straight nil
   :hook
   ((prog-mode org-mode) . global-hl-line-mode))
 
@@ -143,7 +145,7 @@
 ;; Fast, configurable indentation guide-bars for Emacs.
 
 (use-package indent-bars
-  :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+  :straight (:host github :repo "jdtsmith/indent-bars")
   :custom
   (indent-bars-treesit-support t)
   (indent-bars-no-descend-string t)

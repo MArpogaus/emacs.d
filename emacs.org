@@ -268,6 +268,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 *** Better Defaults
 #+begin_src emacs-lisp
   (use-package emacs
+    :straight nil
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -373,6 +374,7 @@ This section initializes various keymaps used for different purposes.
 #+begin_src emacs-lisp
   ;; setup keymaps
   (use-package emacs
+    :straight nil
     :preface
     (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
@@ -592,6 +594,7 @@ An extensible emacs dashboard.
 Enable line numbers for some modes
 #+begin_src emacs-lisp
   (use-package display-line-numbers
+    :straight nil
     :hook
     (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
      ;; disable for org mode
@@ -655,6 +658,7 @@ Highlighting of the current line (native mode)
 
 #+begin_src emacs-lisp
   (use-package hl-line
+    :straight nil
     :hook
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
@@ -662,7 +666,7 @@ Highlighting of the current line (native mode)
 Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
   (use-package indent-bars
-    :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+    :straight (:host github :repo "jdtsmith/indent-bars")
     :custom
     (indent-bars-treesit-support t)
     (indent-bars-no-descend-string t)
@@ -961,6 +965,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 Revert buffers when the underlying file has changed
 #+begin_src emacs-lisp
   (use-package autorevert
+    :straight nil
     :custom
     ;; Revert Dired and other buffers
     (global-auto-revert-non-file-buffers t)
@@ -987,6 +992,7 @@ Provides a mechanism for REPLs (or comint buffers, in Emacs parlance) to display
 Replace selected text when typing
 #+begin_src emacs-lisp
   (use-package delsel
+    :straight nil
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
 #+end_src
@@ -1051,6 +1057,7 @@ A polished Dired with batteries included.
 Automatically add closing parentheses, quotes, etc.
 #+begin_src emacs-lisp
   (use-package elec-pair
+    :straight nil
     :hook
     ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
@@ -1098,6 +1105,7 @@ Paren mode for highlighting matcing paranthesis
 
 #+begin_src emacs-lisp
   (use-package paren
+    :straight nil
     :custom
     (show-paren-style 'parenthesis)
     (show-paren-when-point-in-periphery t)
@@ -1111,6 +1119,7 @@ Paren mode for highlighting matcing paranthesis
 
 #+begin_src emacs-lisp
   (use-package recentf
+    :straight nil
     :custom
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
@@ -1128,6 +1137,7 @@ Paren mode for highlighting matcing paranthesis
 Enable repeat maps
 #+begin_src emacs-lisp
   (use-package repeat
+    :straight nil
     :hook
     (after-init . repeat-mode))
 #+end_src
@@ -1151,6 +1161,7 @@ Rotate the layout of emacs.
 **** savehist :build_in:
 #+begin_src emacs-lisp
   (use-package savehist
+    :straight nil
     :custom
     (kill-ring-max 500)
     (history-length 500)
@@ -1186,6 +1197,7 @@ Rotate the layout of emacs.
 Record cursor position from one session to the other
 #+begin_src emacs-lisp
   (use-package saveplace
+    :straight nil
     :hook
     (after-init . save-place-mode))
 #+end_src
@@ -1193,6 +1205,7 @@ Record cursor position from one session to the other
 Automatically update file timestamps when file is saved
 #+begin_src emacs-lisp
   (use-package time-stamp
+    :straight nil
     :custom
     (time-stamp-active t)
     (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
@@ -1203,6 +1216,7 @@ Automatically update file timestamps when file is saved
 Undo and redo changes to window configuration
 #+begin_src emacs-lisp
   (use-package winner
+    :straight nil
     :hook
     (after-init . winner-mode))
 #+end_src
@@ -1545,7 +1559,7 @@ This package implements a modern style for your Org buffers using font locking a
 Modern block styling with org-indent.
 #+begin_src emacs-lisp
   (use-package org-modern-indent
-    :straight (org-modern-indent :type git :host github :repo "jdtsmith/org-modern-indent")
+    :straight (:host github :repo "jdtsmith/org-modern-indent")
     :hook ; add late to hook
     (org-mode . org-modern-indent-mode))
 #+end_src
@@ -1659,18 +1673,18 @@ Emacs finally learns how to ctrl+F.
     ;; Enable mouse drag-and-drop support
     (dired-mouse-drag-files t)                   ; added in Emacs 29
     (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
-    :config
-    (use-package dired-x
-      :straight nil
-      :config
-      ;; Make dired-omit-mode hide all "dotfiles"
-      (setq dired-omit-files
-            (concat dired-omit-files "\\|^\\..*$"))
-      :hook
-      (dired-mode . dired-omit-mode))
     :bind
     (:map my/open-map
           ("d" . dired)))
+
+  (use-package dired-x
+    :straight nil
+    :config
+    ;; Make dired-omit-mode hide all "dotfiles"
+    (setq dired-omit-files
+          (concat dired-omit-files "\\|^\\..*$"))
+    :hook
+    (dired-mode . dired-omit-mode))
 #+end_src
 **** [[https://github.com/purcell/diredfl.git][diredfl]]
 Extra Emacs font lock rules for a more colourful dired.
@@ -1685,6 +1699,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
 
 #+begin_src emacs-lisp
   (use-package ediff
+    :straight nil
     :preface
     (defvar my-ediff-original-windows nil)
     (defun my/store-pre-ediff-winconfig ()
@@ -1726,6 +1741,7 @@ Make Emacs use the $PATH set up by the user's shell.
 **** flyspell :build_in:
 #+begin_src emacs-lisp
   (use-package flyspell
+    :straight nil
     :custom
     ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
     (flyspell-issue-welcome-flag nil)
@@ -1798,6 +1814,7 @@ Change re-builder syntax
 #+begin_src emacs-lisp
   ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
   (use-package re-builder
+    :straight nil
     :commands re-builder
     :custom
     (reb-re-syntax 'string))
@@ -1808,6 +1825,7 @@ Server start.
 
 #+begin_src emacs-lisp :tangle no
   (use-package server
+    :straight nil
     :config
     (unless (server-running-p)
       (server-start)))
@@ -1816,6 +1834,7 @@ Server start.
 Major mode for interacting with a terminal
 #+begin_src emacs-lisp
   (use-package term
+    :straight nil
     :commands term
     :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
     :custom
@@ -2251,9 +2270,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 
 #+begin_src emacs-lisp
   (use-package corfu-candidate-overlay
-    :straight (:type git
-                     :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay"
-                     :files (:defaults "*.el"))
+    :straight (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
     :after corfu
     :hook
     ;; enable corfu-candidate-overlay mode globally
@@ -2263,6 +2280,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
   (use-package dabbrev
+    :straight nil
     ;; Swap M-/ and C-M-/
     :bind (("M-/" . dabbrev-completion)
            ("C-M-/" . dabbrev-expand))
@@ -2348,9 +2366,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 **** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 #+begin_src emacs-lisp
   (use-package lsp-snippet-tempel
-    :straight (lsp-snippet-tempel :type git
-                                  :host github
-                                  :repo "svaante/lsp-snippet")
+    :straight (:host github :repo "svaante/lsp-snippet")
     :after (tempel eglot)
     :config
     ;; Initialize lsp-snippet -> tempel in eglot
@@ -2615,6 +2631,7 @@ functions we invoke regularly outside of magit is called.
 **** project :build_in:
 #+begin_src emacs-lisp
   (use-package project
+    :straight nil
     :custom
     (project-vc-extra-root-markers '(".project")))
 #+end_src
@@ -2622,7 +2639,7 @@ functions we invoke regularly outside of magit is called.
 Ehancements to Emacs' built in project library.
 #+begin_src emacs-lisp
   (use-package project-x
-    :straight (:type git :host github :repo "karthink/project-x")
+    :straight (:host github :repo "karthink/project-x")
     :custom
     (project-x-save-interval 60)  ;; Save project state every minute
     :hook
@@ -2641,6 +2658,7 @@ Support a "one tab group per project" workflow.
 **** speedbar :build_in:
 #+begin_src emacs-lisp
   (use-package speedbar
+    :straight nil
     :custom
     (speedbar-frame-parameters
      '((name . "speedbar")
@@ -3127,6 +3145,7 @@ Manage Python imports from Emacs!.
 **** python :build_in:
 #+begin_src emacs-lisp
   (use-package python
+    :straight nil
     :mode ("[./]flake8\\'" . conf-mode)
     :mode ("/Pipfile\\'" . conf-mode)
     :mode ("\\.py\\'" . python-mode)
@@ -3140,8 +3159,7 @@ Manage Python imports from Emacs!.
 Generate Sphinx friendly docstrings for Python functions in Emacs.
 #+begin_src emacs-lisp
   (use-package sphinx-doc
-    :straight '(:type git :host github :repo "eanopolsky/sphinx-doc.el"
-                      :branch "square-brackets-in-return-types")
+    :straight (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
     :hook
     (python-mode . sphinx-doc-mode))
 #+end_src
@@ -3176,7 +3194,7 @@ Code-folding using tree-sitter.
 Using the forked version with treesit support here
 #+begin_src emacs-lisp
   (use-package ts-fold
-    :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
+    :straight (:host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
     :preface
     (defun my/ts-fold-mode-hook ()
       (keymap-local-set "S-TAB" 'ts-fold-toggle))

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-18
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -18,6 +18,7 @@
 ;; Revert buffers when the underlying file has changed
 
 (use-package autorevert
+  :straight nil
   :custom
   ;; Revert Dired and other buffers
   (global-auto-revert-non-file-buffers t)
@@ -44,6 +45,7 @@
 ;; Replace selected text when typing
 
 (use-package delsel
+  :straight nil
   :hook
   ((prog-mode conf-mode text-mode) . delete-selection-mode))
 
@@ -108,6 +110,7 @@
 ;; Automatically add closing parentheses, quotes, etc.
 
 (use-package elec-pair
+  :straight nil
   :hook
   ((prog-mode conf-mode) . electric-pair-mode))
 
@@ -155,6 +158,7 @@
 
 
 (use-package paren
+  :straight nil
   :custom
   (show-paren-style 'parenthesis)
   (show-paren-when-point-in-periphery t)
@@ -168,6 +172,7 @@
 
 
 (use-package recentf
+  :straight nil
   :custom
   (recentf-keep '(file-remote-p file-readable-p))
   (recentf-max-menu-items 10)
@@ -185,6 +190,7 @@
 ;; Enable repeat maps
 
 (use-package repeat
+  :straight nil
   :hook
   (after-init . repeat-mode))
 
@@ -200,6 +206,7 @@
 ;; savehist :build_in:
 
 (use-package savehist
+  :straight nil
   :custom
   (kill-ring-max 500)
   (history-length 500)
@@ -235,6 +242,7 @@
 ;; Record cursor position from one session to the other
 
 (use-package saveplace
+  :straight nil
   :hook
   (after-init . save-place-mode))
 
@@ -242,6 +250,7 @@
 ;; Automatically update file timestamps when file is saved
 
 (use-package time-stamp
+  :straight nil
   :custom
   (time-stamp-active t)
   (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
@@ -252,6 +261,7 @@
 ;; Undo and redo changes to window configuration
 
 (use-package winner
+  :straight nil
   :hook
   (after-init . winner-mode))
 

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-26
+;; Created: 2024-01-31
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -341,6 +341,7 @@
 ;; python :build_in:
 
 (use-package python
+  :straight nil
   :mode ("[./]flake8\\'" . conf-mode)
   :mode ("/Pipfile\\'" . conf-mode)
   :mode ("\\.py\\'" . python-mode)
@@ -354,8 +355,7 @@
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.
 
 (use-package sphinx-doc
-  :straight '(:type git :host github :repo "eanopolsky/sphinx-doc.el"
-                    :branch "square-brackets-in-return-types")
+  :straight (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
   :hook
   (python-mode . sphinx-doc-mode))
 
@@ -390,7 +390,7 @@
 ;; Using the forked version with treesit support here
 
 (use-package ts-fold
-  :straight (ts-fold :type git :host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
+  :straight (:host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
   :preface
   (defun my/ts-fold-mode-hook ()
     (keymap-local-set "S-TAB" 'ts-fold-toggle))
