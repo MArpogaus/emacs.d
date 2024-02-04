@@ -956,12 +956,6 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :hook
     (after-init . global-tab-line-mode))
 #+end_src
-**** [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
-
-#+begin_src emacs-lisp
-  (use-package visual-fill-column
-    :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
-#+end_src
 **** Library Footer
 #+begin_src emacs-lisp
   (provide 'my-ui)
