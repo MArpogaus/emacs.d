@@ -652,6 +652,23 @@ A fancy and fast mode-line inspired by minimalism design.
     :hook
     (after-init . doom-modeline-mode))
 #+end_src
+**** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
+An Emacs plugin that hides (or masks) the current buffer's mode-line.
+#+begin_src emacs-lisp
+  (use-package hide-mode-line
+    :hook
+    (((completion-list-mode-hook Man-mode-hook) . hide-mode-line-mode)
+     (comint-mode . hide-mode-line-mode)
+     (diff-mode . hide-mode-line-mode)
+     (eshell-mode  . hide-mode-line-mode)
+     (magit-status-mode . hide-mode-line-mode)
+     (org-brain-visualize-mode . hide-mode-line-mode)
+     (shell-mode  . hide-mode-line-mode)
+     (special-mode . hide-mode-line-mode)
+     (symbols-outline-mode . hide-mode-line-mode)
+     (term-mode  . hide-mode-line-mode)
+     (vterm-mode . hide-mode-line-mode)))
+#+end_src
 **** hl-line :build_in:
 
 Highlighting of the current line (native mode)
@@ -1010,6 +1027,7 @@ A polished Dired with batteries included.
     (dirvish-attributes
      '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
     (dirvish-use-header-line nil)
+    (dirvish-use-mode-line nil)
     ;; (dirvish-subtree-file-viewer (lambda (&rest _) nil))
     :config
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
