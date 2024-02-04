@@ -157,16 +157,8 @@ The following optimisatzion have been inspired by:
 
   ;; further preformance tweaks
   (setq
-   auto-mode-case-fold nil ; Use case-sensitive `auto-mode-alist' for performance
-   fast-but-imprecise-scrolling t ; More performant rapid scrolling over unfontified regions
-   ffap-machine-p-known 'reject ; Don't ping things that look like domain names
-   idle-update-delay 1.0  ; slow down UI updates down
-   inhibit-compacting-font-caches t ; Inhibit frame resizing for performance
    read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
-   redisplay-skip-fontification-on-input t ; Inhibits it for better scrolling performance.
-   command-line-x-option-alist nil ; Remove irreleant command line options for faster startup
-   select-active-regions 'only ; Emacs hangs when large selections contain mixed line endings.
-   vc-follow-symlinks t) ; Do not ask about symlink following
+   command-line-x-option-alist nil) ; Remove irreleant command line options for faster startup
 
   ;; Minimal UI
   (menu-bar-mode -1)
@@ -308,6 +300,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
     (scroll-margin 2)                                     ; Add a margin when scrolling vertically
     (recenter-positions '(5 bottom))                      ; Set re-centering positions
+    (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified regions
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
