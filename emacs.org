@@ -3209,7 +3209,7 @@ Using the forked version with treesit support here
     :straight (:host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
     :preface
     (defun my/ts-fold-mode-hook ()
-      (keymap-local-set "S-TAB" 'ts-fold-toggle))
+      (keymap-local-set "<backtab>" 'ts-fold-toggle))
     :hook
     (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
      ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
