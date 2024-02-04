@@ -381,15 +381,17 @@ This section initializes various keymaps used for different purposes.
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
+    (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
 
     :config
     ;; remove keybind for suspend-frame
     (global-unset-key (kbd "C-z"))
 
-    ;; version control and lsp commands
+    ;; version control, lsp and debug commands
     (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
     (define-key my/version-control-map "g" (cons "gutter" my/git-gutter-repeat-map))
     (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
+    (define-key my/leader-map "d" (cons "debug" my/debug-map))
 
     ;; completion commands
     (define-key my/leader-map "." (cons "completion" my/completion-map))
@@ -2904,7 +2906,30 @@ Debug Adapter Protocol for Emacs.
     ;; To use window configuration like gud (gdb-mi)
     ;; :init
     ;; (setq dape-buffer-window-arrangement 'gud)
-
+    :bind
+    (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
+     :repeat-map my/debug-map
+     ("d" . dape)
+     ("p" . dape-pause)
+     ("c" . dape-continue)
+     ("n" . dape-next)
+     ("s" . dape-step-in)
+     ("o" . dape-step-out)
+     ("r" . dape-restart)
+     ("i" . dape-info)
+     ("R" . dape-repl)
+     ("m" . dape-read-memory)
+     ("l" . dape-breakpoint-log)
+     ("e" . dape-breakpoint-expression)
+     ("b" . dape-breakpoint-toggle)
+     ("B" . dape-breakpoint-remove-all)
+     ("t" . dape-select-thread)
+     ("S" . dape-select-stack)
+     ("x" . dape-evaluate-expression)
+     ("w" . dape-watch-dwim)
+     ("D" . dape-disconnect-quit)
+     :exit
+     ("q" . dape-quit))
     :config
     ;; Info buffers to the right
     (setq dape-buffer-window-arrangement 'right)
