@@ -2374,7 +2374,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 #+begin_src emacs-lisp
   (use-package lsp-snippet-tempel
     :straight (:host github :repo "svaante/lsp-snippet")
-    :after (tempel eglot)
+    :after tempel eglot
     :config
     ;; Initialize lsp-snippet -> tempel in eglot
     (lsp-snippet-tempel-eglot-init))
