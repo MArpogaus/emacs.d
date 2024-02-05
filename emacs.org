@@ -3070,59 +3070,6 @@ Consistent ESS-like eval interface for various REPLs.
     (((python-mode python-ts-mode) . my/setup-eir-python)
      ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 #+end_src
-**** [[https://github.com/flycheck/flycheck.git][flycheck]]
-On the fly syntax checking for GNU Emacs.
-#+begin_src emacs-lisp :tangle no
-  (use-package flycheck
-    :custom
-    ;; Let git gutter have left fringe, flycheck can have right fringe
-    (flycheck-indication-mode 'right-fringe)
-
-    ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/syntax/config.el#L15
-    ;; Don't recheck on idle as often
-    (flycheck-idle-change-delay 1.0)
-    ;; For the above functionality, check syntax in a buffer that you switched to
-    ;; only briefly. This allows "refreshing" the syntax check state for several
-    ;; buffers quickly after e.g. changing a config file.
-    (flycheck-buffer-switch-check-intermediate-buffers t)
-
-    ;; Display errors a little quicker (default is 0.9s)
-    (flycheck-display-errors-delay 0.25)
-    :preface
-    ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
-    (defun my/flycheck-eldoc (callback &rest _ignored)
-      "Print flycheck messages at point by calling CALLBACK."
-      (when-let ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
-        (mapc
-         (lambda (err)
-           (funcall callback
-                    (format "%s: %s"
-                            (let ((level (flycheck-error-level err)))
-                              (pcase level
-                                ('info (propertize "I" 'face 'flycheck-error-list-info))
-                                ('error (propertize "E" 'face 'flycheck-error-list-error))
-                                ('warning (propertize "W" 'face 'flycheck-error-list-warning))
-                                (_ level)))
-                            (flycheck-error-message err))
-                    :thing (or (flycheck-error-id err)
-                               (flycheck-error-group err))
-                    :face 'font-lock-doc-face))
-         flycheck-errors)))
-
-    (defun my/flycheck-prefer-eldoc ()
-      (add-hook 'eldoc-documentation-functions #'my/flycheck-eldoc nil t)
-      (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-      (setq flycheck-display-errors-function nil)
-      (setq flycheck-help-echo-function nil))
-
-    :config
-    ;; A non-descript, left-pointing arrow
-    (define-fringe-bitmap 'flycheck-fringe-bitmap-double-arrow
-      [16 48 112 240 112 48 16] nil nil 'center)
-    :hook
-    ((after-init . global-flycheck-mode)
-     (flycheck-mode . my/flycheck-prefer-eldoc)))
-#+end_src
 **** [[https://github.com/emacs-straight/flymake.git][flymake]]
 Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
