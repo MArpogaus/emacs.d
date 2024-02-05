@@ -1758,22 +1758,19 @@ Make Emacs use the $PATH set up by the user's shell.
         (flyspell-mode-off)
         (flyspell-mode-on)
         (flyspell-buffer)))
-    :config
-    (use-package ispell
-      :custom
-      (ispell-program-name "hunspell")
-      (ispell-dictionary "en_US,de_DE")
-      :config
-      (ispell-set-spellchecker-params)
-      (ispell-hunspell-add-multi-dic "en_US,de_DE"))
-    (use-package flyspell-correct
-      :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-                  :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-                  ([mouse-1] . flyspell-correct-at-point)))
     :hook
     (((text-mode org-mode LaTeX-mode) . flyspell-mode)
      ((prog-mode conf-mode) . flyspell-prog-mode)
      (ispell-change-dictionary . restart-flyspell-mode)))
+#+end_src
+**** [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
+Distraction-free words correction with flyspell via selected interface.
+#+begin_src emacs-lisp
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
+                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
+                ([mouse-1] . flyspell-correct-at-point)))
 #+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
 A simple LLM client for Emacs.
@@ -1801,6 +1798,18 @@ It is a bit slow to load so we do need load it explicitely.
      ("C-h K" . describe-keymap)
      :map helpful-mode-map
      ([remap revert-buffer] . helpful-update)))
+#+end_src
+**** ispell :build_in:
+#+begin_src emacs-lisp
+  (use-package ispell
+    :straight nil
+    :after flyspell
+    :custom
+    (ispell-program-name "hunspell")
+    (ispell-dictionary "en_US,de_DE")
+    :config
+    (ispell-set-spellchecker-params)
+    (ispell-hunspell-add-multi-dic "en_US,de_DE"))
 #+end_src
 **** [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 Emacs support library for PDF files.
