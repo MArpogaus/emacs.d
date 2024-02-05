@@ -1001,64 +1001,6 @@ Replace selected text when typing
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
 #+end_src
-**** [[https://github.com/alexluigit/dirvish.git][dirvish]]
-A polished Dired with batteries included.
-#+begin_src emacs-lisp
-  (use-package dirvish
-    :custom
-    (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
-     '(("h" "~/"                          "Home")
-       ("d" "~/Downloads/"                "Downloads")
-       ("t" "~/.local/share/Trash/files/" "TrashCan")))
-    (dirvish-mode-line-format
-     '(:left (sort symlink) :right (vc-info yank index)))
-    (dirvish-attributes
-     '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
-    (dirvish-use-header-line nil)
-    (dirvish-use-mode-line nil)
-    ;; (dirvish-subtree-file-viewer (lambda (&rest _) nil))
-    :config
-    ;; (dirvish-peek-mode) ; Preview files in minibuffer
-    (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-    (with-eval-after-load 'doom-modeline
-      (setq dirvish-mode-line-height doom-modeline-height)
-      (setq dirvish-header-line-height
-            doom-modeline-height))
-    :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-    (("C-c f" . dirvish-fd)
-     :map my/open-map
-     ("D" . dirvish)
-     :map my/toggle-map
-     ("d" . dirvish-side)
-     :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-     ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
-     ("<mouse-2>" . dired-mouse-find-file-other-window)
-     ("F" . dirvish-toggle-fullscreen)
-     ("M-b" . dirvish-history-go-backward)
-     ("M-e" . dirvish-emerge-menu)
-     ("M-f" . dirvish-history-go-forward)
-     ("M-j" . dirvish-fd-jump)
-     ("M-l" . dirvish-ls-switches-menu)
-     ("M-m" . dirvish-mark-menu)
-     ("M-s" . dirvish-setup-menu)
-     ("M-t" . dirvish-layout-toggle)
-     ("N"   . dirvish-narrow)
-     ("TAB" . dirvish-subtree-toggle)
-     ("^"   . dirvish-history-last)
-     ("a"   . dirvish-quick-access)
-     ("b"   . dirvish-goto-bookmark)
-     ("f"   . dirvish-file-info-menu)
-     ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-     ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-     ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-     ("y"   . dirvish-yank-menu)
-     ("z" . dirvish-show-history))
-    :hook
-    ((after-init . dirvish-override-dired-mode)
-     (dirvish-directory-view-mode . diredfl-mode)
-     ;; (dired-mode . (lambda nil (setq-local mouse-1-click-follows-link nil)))
-     ))
-#+end_src
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
 #+begin_src emacs-lisp
@@ -1696,7 +1638,63 @@ Emacs finally learns how to ctrl+F.
 Extra Emacs font lock rules for a more colourful dired.
 #+begin_src emacs-lisp
   (use-package diredfl
-    :hook (dired-mode . diredfl-mode))
+    :hook
+    ((dired-mode . diredfl-mode)
+     (dirvish-directory-view-mode . diredfl-mode)))
+#+end_src
+**** [[https://github.com/alexluigit/dirvish.git][dirvish]]
+A polished Dired with batteries included.
+#+begin_src emacs-lisp
+  (use-package dirvish
+    :after dired
+    :custom
+    (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+     '(("h" "~/"                          "Home")
+       ("d" "~/Downloads/"                "Downloads")
+       ("t" "~/.local/share/Trash/files/" "TrashCan")))
+    (dirvish-mode-line-format
+     '(:left (sort symlink) :right (vc-info yank index)))
+    (dirvish-attributes
+     '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
+    (dirvish-use-header-line nil)
+    (dirvish-use-mode-line nil)
+    :config
+    (dirvish-override-dired-mode)
+    ;; (dirvish-peek-mode) ; Preview files in minibuffer
+    (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
+    (with-eval-after-load 'doom-modeline
+      (setq dirvish-mode-line-height doom-modeline-height)
+      (setq dirvish-header-line-height
+            doom-modeline-height))
+    :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+    (("C-c f" . dirvish-fd)
+     :map my/open-map
+     ("D" . dirvish)
+     :map my/toggle-map
+     ("d" . dirvish-side)
+     :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+     ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
+     ("<mouse-2>" . dired-mouse-find-file-other-window)
+     ("F" . dirvish-toggle-fullscreen)
+     ("M-b" . dirvish-history-go-backward)
+     ("M-e" . dirvish-emerge-menu)
+     ("M-f" . dirvish-history-go-forward)
+     ("M-j" . dirvish-fd-jump)
+     ("M-l" . dirvish-ls-switches-menu)
+     ("M-m" . dirvish-mark-menu)
+     ("M-s" . dirvish-setup-menu)
+     ("M-t" . dirvish-layout-toggle)
+     ("N"   . dirvish-narrow)
+     ("TAB" . dirvish-subtree-toggle)
+     ("^"   . dirvish-history-last)
+     ("a"   . dirvish-quick-access)
+     ("b"   . dirvish-goto-bookmark)
+     ("f"   . dirvish-file-info-menu)
+     ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+     ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+     ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+     ("y"   . dirvish-yank-menu)
+     ("z" . dirvish-show-history)))
 #+end_src
 **** ediff :build_in:
 The ediff package is utilized to handle file differences in emacs.
