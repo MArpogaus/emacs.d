@@ -948,9 +948,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :config
     (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
           tab-line-separator "")
-    (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip)
-    :hook
-    (after-init . global-tab-line-mode))
+    (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
