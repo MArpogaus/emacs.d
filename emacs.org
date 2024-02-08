@@ -2875,7 +2875,8 @@ Emacs helper library (and minor mode) to work with conda environments.
     (conda-env-home-directory "~/mambaforge/")
     (conda-activate-base-by-default t)
     :preface
-    (defun my/find-python-interpreter (&rest _)
+    (defun my/find-python-interpreter-advice (&rest _)
+      "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
       (cond
        ((executable-find "ipython3")
         (setq python-shell-interpreter "ipython3"
@@ -2886,17 +2887,26 @@ Emacs helper library (and minor mode) to work with conda environments.
        (t
         (setq python-shell-interpreter "python"
               python-shell-interpreter-args "-i"))))
+    (defun my/conda-env-activate-for-buffer-advice (&rest _)
+      "Activate conda environment for buffer."
+      (conda-env-activate-for-buffer))
+    :init
+    ;; Try to activat env imediatly after switching to a project
+    (with-eval-after-load 'tab-bar
+      (advice-add #'tab-bar-select-tab :after #'my/conda-env-activate-for-buffer-advice))
+    (with-eval-after-load 'project
+      (advice-add #'project-switch-project :after #'my/conda-env-activate-for-buffer-advice))
     :config
     ;; interactive shell support
     (conda-env-initialize-interactive-shells)
-    ;; if you want eshell support, include:
+    ;; eshell support
     (conda-env-initialize-eshell)
-    ;; enable auto-activation
-    ;; (conda-env-autoactivate-mode t)
-    ;; if you want to automatically activate a conda environment on the opening of a file:
-    ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-    ;;                       (conda-env-activate-for-buffer))))
-    (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
+    ;; Add current conda env to mode line
+    (add-to-list 'global-mode-string
+                 '(conda-env-current-name (" 󰌠 conda: " conda-env-current-name " "))
+                 'append)
+    ;; Add custom hook to set correct python interpreter
+    (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice))
 #+end_src
 **** [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
 Jump to workspace symbols with eglot and consult.
@@ -3136,7 +3146,20 @@ Manage Python imports from Emacs!.
     :custom
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
-    (python-indent-guess-indent-offset-verbose nil))
+    (python-indent-guess-indent-offset-verbose nil)
+    :preface
+    (defun my/run-python-for-project ()
+      "Run Python interpreter for the project."
+      (interactive)
+      (run-python nil 'p t))
+    :init
+    (with-eval-after-load 'project
+      (add-to-list 'project-switch-commands '(my/run-python-for-project "python") t))
+    :bind
+    (:map my/open-map
+          ("P" . run-python)
+          :map project-prefix-map
+          ("P" . my/run-python-for-project)))
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
