@@ -2309,7 +2309,9 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :bind
     (("C-." . embark-act)         ;; pick some com fortable binding
      ("C-:" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+     ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+     :map vertico-map
+     ("C-SPC" . embark-select))   ;; good alternative: M-.
 
     :custom
     ;; Optionally replace the key help with a completing-read interface
