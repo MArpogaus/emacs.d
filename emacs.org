@@ -2745,10 +2745,12 @@ Ehancements to Emacs' built in project library.
 #+begin_src emacs-lisp
   (use-package project-x
     :straight (:host github :repo "karthink/project-x")
+    :after project
+    :demand t
     :custom
     (project-x-save-interval 60)  ;; Save project state every minute
-    :hook
-    (after-init . project-x-mode))
+    :config
+    (project-x-mode))
 #+end_src
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 Support a "one tab group per project" workflow.
