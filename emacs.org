@@ -1555,6 +1555,102 @@ Pomodoro technique for org-mode.
           :map org-agenda-keymap
           ("p" . org-pomodoro)))
 #+end_src
+**** [[https://github.com/rlister/org-present.git][org-present]]
+Ultra-minimalist presentation minor-mode for Emacs org-mode.
+Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-present/
+#+begin_src emacs-lisp
+  (use-package org-present
+    :after org
+    :preface
+    (defun my/org-present-start ()
+      (org-present-read-only)
+      (org-display-inline-images)
+
+      ;; Hide Property drawers
+      (org-tidy-mode 1)
+
+      ;; Tweak font sizes
+      (setq-local face-remapping-alist '((header-line (:height 4.0) variable-pitch)
+                                         (org-document-title (:height 2.0) org-document-title)))
+
+      ;; Set a blank header line string to create blank space at the top
+      (setq-local header-line-format " ")
+
+      ;; Configure fill width
+      (setq-local visual-fill-column-width 80
+                  visual-fill-column-center-text t)
+
+      ;; Center the presentation and wrap lines
+      (visual-fill-column-mode 1)
+
+      ;; hide the mode line
+      (hide-mode-line-mode 1)
+
+      ;; Increase font size
+      (org-present-big))
+    (defun my/org-present-quit ()
+      (org-present-read-write)
+      (org-remove-inline-images)
+
+      ;; Show Property drawers
+      (org-tidy-untidy-buffer)
+      (org-tidy-mode 0)
+
+      ;; Reset font customizations
+      (setq-local face-remapping-alist nil)
+
+      ;; Clear the header line string so that it isn't displayed
+      (setq-local header-line-format nil)
+
+      ;; Configure fill width
+      (setq-local visual-fill-column-width nil
+                  visual-fill-column-center-text nil)
+
+      ;; Stop centering the presentation and wrap lines
+      (visual-fill-column-mode 0)
+
+      ;; Stop hiding the mode line
+      (hide-mode-line-mode 0)
+    
+      ;; Restore font size
+      (org-present-small)
+
+      )
+    (defun my/org-present-prepare-slide (buffer-name heading)
+      ;; Show only top-level headlines
+      (org-overview)
+
+      ;; Unfold the current entry
+      (org-show-entry)
+
+      ;; Show only direct subheadings of the slide but don't expand them
+      (org-show-children))
+    :bind
+    (:map org-present-mode-keymap
+          ("q" . org-present-quit)
+          ("C-<left>" . org-present-prev)
+          ("C-<right>" . org-present-next))
+    :config
+    (define-key org-present-mode-keymap (kbd "<left>") nil t)
+    (define-key org-present-mode-keymap (kbd "<right>") nil t)
+    (add-hook 'org-present-after-navigate-functions 'my/org-present-prepare-slide)
+    :hook
+    ((org-present-mode . my/org-present-start)
+     (org-present-mode-quit . my/org-present-quit)))
+#+end_src
+**** [[https://github.com/jxq0/org-tidy.git][org-tidy]]
+An Emacs minor mode to automatically tidy org-mode property drawers.
+#+begin_src emacs-lisp
+  (use-package org-tidy
+    :after org)
+#+end_src
+**** [[https://github.com/tarsius/orglink.git][orglink]]
+Use Org Mode links in other modes.
+#+begin_src emacs-lisp
+  (use-package orglink
+    :hook
+    (prog-mode . orglink-mode))
+#+end_src
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
 
@@ -1564,13 +1660,7 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
     :hook
     (org-mode . toc-org-enable))
 #+end_src
-**** [[https://github.com/tarsius/orglink.git][orglink]]
-Use Org Mode links in other modes.
-#+begin_src emacs-lisp
-  (use-package orglink
-    :hook
-    (prog-mode . orglink-mode))
-#+end_src
+
 **** Library Footer
 #+begin_src emacs-lisp
   (provide 'my-org)
