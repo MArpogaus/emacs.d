@@ -231,7 +231,8 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
   (use-package benchmark-init
     :demand t
     ;; To disable collection of benchmark data after init is done.
-    :hook (after-init . benchmark-init/deactivate))
+    :hook
+    (after-init . benchmark-init/deactivate))
 #+end_src
 *** Personal Information
 Let's set some variables with basic user information.
@@ -356,8 +357,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :hook
     ;; Enable word wrapping
     (((prog-mode conf-mode text-mode) . visual-line-mode)
-     ;; display column number in modeline
-     ((prog-mode conf-mode) . column-number-mode)
      (kill-emacs . unpropertize-kill-ring)))
 #+end_src
 *** Keymaps
@@ -643,10 +642,14 @@ A fancy and fast mode-line inspired by minimalism design.
     (doom-modeline-icon (display-graphic-p))
 
     ;; If non-nil, only display one number for checker information if applicable.
-    (doom-modeline-checker-simple-format t)
+    (doom-modeline-checker-simple-format nil)
 
     :hook
-    (after-init . doom-modeline-mode))
+    ((after-init . doom-modeline-mode)
+     ;; filesize in modeline
+     (doom-modeline-mode . size-indication-mode)
+     ;; cursor column in modeline)
+     (doom-modeline-mode . column-number-mode)))
 #+end_src
 **** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
@@ -703,6 +706,7 @@ Fast, configurable indentation guide-bars for Emacs.
 Display typographical ligatures in Emacs.
 #+begin_src emacs-lisp
   (use-package ligature
+    :if (display-graphic-p)
     :config
     ;; set Fira as default font
     (set-frame-font "FiraCode Nerd Font-10" nil t)
@@ -781,7 +785,6 @@ Display typographical ligatures in Emacs.
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
-
 #+begin_src emacs-lisp
   (use-package modus-themes
     :bind
@@ -829,16 +832,20 @@ Increase the padding/spacing of GNU Emacs frames and windows.
   (use-package tab-bar
     :straight nil
     :bind
-    (:repeat-map my/workspace-map
-                 ("p" . tab-previous)
-                 ("n" . tab-next)
-                 ("P" . tab-bar-move-tab-backward)
-                 ("N". tab-bar-move-tab)
-                 :exit
-                 ("k" . tab-close-group))
+    (([remap winner-undo] . tab-bar-history-back)
+     ([remap winner-undo] . tab-bar-history-forward)
+     :repeat-map my/window-map
+     ("u" . tab-bar-history-back)
+     ("i" . tab-bar-history-forward)
+     :repeat-map my/workspace-map
+     ("p" . tab-previous)
+     ("n" . tab-next)
+     ("P" . tab-bar-move-tab-backward)
+     ("N". tab-bar-move-tab)
+     :exit
+     ("k" . tab-close-group))
     :custom
-    (tab-bar-format '(tab-bar-format-history
-                      tab-bar-format-tabs-groups
+    (tab-bar-format '(tab-bar-format-tabs-groups
                       my/tab-bar-format-new
                       tab-bar-format-align-right
                       tab-bar-format-global
@@ -847,6 +854,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (tab-bar-auto-width nil)
     (tab-bar-close-button-show t)
     (tab-bar-new-tab-choice "*dashboard*")
+    (tab-bar-history-limit 100)
     :preface
     (defun my/tab-bar-format-new ()
       "Button to add a new tab."
@@ -923,7 +931,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
     (my/create-home-tab-group)
     :hook
-    (after-init . tab-bar-mode))
+    ((after-init . tab-bar-history-mode)
+     (after-init . tab-bar-mode)))
 #+end_src
 **** tab-line :build_in:
 #+begin_src emacs-lisp
@@ -1159,14 +1168,6 @@ Automatically update file timestamps when file is saved
     (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
     :hook
     (before-save . time-stamp))
-#+end_src
-**** winner :build_in:
-Undo and redo changes to window configuration
-#+begin_src emacs-lisp
-  (use-package winner
-    :straight nil
-    :hook
-    (after-init . winner-mode))
 #+end_src
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
@@ -1747,7 +1748,7 @@ A polished Dired with batteries included.
     (dirvish-attributes
      '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
     (dirvish-use-header-line nil)
-    (dirvish-use-mode-line nil)
+    ;; (dirvish-use-mode-line nil)
     :config
     (dirvish-override-dired-mode)
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -2668,7 +2669,6 @@ Emacs port of Sublime Text Plugin GitGutter.
      (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
                                   :key #'symbol-name)))
     :config
-    ;; (add-hook 'after-focus-change-function #'git-gutter:update-all-windows)
     (use-package git-gutter-fringe
       :demand t
       :config
@@ -2760,7 +2760,8 @@ Support a "one tab group per project" workflow.
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
-    :hook (after-init . project-tab-groups-mode))
+    :hook
+    (after-init . project-tab-groups-mode))
 #+end_src
 **** speedbar :build_in:
 #+begin_src emacs-lisp
@@ -3090,7 +3091,6 @@ A client for Language Server Protocol servers.
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
     (completion-category-defaults nil)
-    :after (tempel cape)
     :preface
     (defun my/eglot-capf ()
       (setq-local completion-at-point-functions
@@ -3114,7 +3114,7 @@ A client for Language Server Protocol servers.
     ;; Continuously update the candidates using cape cache buster
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
     :hook
-    (((python-mode python-ts-mode) . eglot-ensure)
+    ((python-base-mode . eglot-ensure)
      (eglot-managed-mode . my/eglot-capf)))
 #+end_src
 **** [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
@@ -3342,7 +3342,7 @@ Meow is yet another modal editing mode for Emacs.
     (meow-keypad-meta-prefix . nil)
     (meow-keypad-ctrl-meta-prefix . nil)
     (meow-keypad-literal-prefix . nil)
-    ;; (meow-keypad-self-insert-undefined . nil)
+    (meow-keypad-self-insert-undefined . nil)
     ;; use system clipboard
     (meow-use-clipboard t)
     (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
