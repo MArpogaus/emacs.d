@@ -262,6 +262,27 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 #+begin_src emacs-lisp
   (use-package emacs
     :straight nil
+    :preface
+    (defun my/backward-kill-thing ()
+      "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+      (interactive)
+      (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+        (cond
+         ;; If there are bounds and point is within them, kill the region
+         ((and bounds (< (car bounds) (point)))
+          (kill-region (car bounds) (cdr bounds)))
+
+         ;; If there's whitespace before point, delete it
+         ((thing-at-point-looking-at "\\([ \n]+\\)")
+          (if (< (match-beginning 1) (point))
+              (kill-region (match-beginning 1) (point))
+            (kill-backward-chars 1)))
+
+         ;; If none of the above, delete one character backward
+         (t
+          (kill-backward-chars 1)))))
+    :bind
+    ("C-<backspace>" . my/backward-kill-thing)
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
