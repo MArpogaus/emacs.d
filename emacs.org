@@ -699,6 +699,17 @@ Highlighting of the current line (native mode)
     :hook
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
+**** [[https://github.com/tarsius/hl-todo.git][hl-todo]]
+Highlight TODO keywords.
+#+begin_src emacs-lisp
+  (use-package hl-todo
+    :preface
+    (defun my/hl-todo-register-flymake-report-fn ()
+      (add-hook #'flymake-diagnostic-functions #'hl-todo-flymake))
+    :hook
+    (((prog-mode conf-mode LaTeX-mode) . hl-todo-mode)
+     (flymake-mode . my/hl-todo-register-flymake-report-fn)))
+      #+end_src
 **** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
 Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
@@ -2271,6 +2282,12 @@ Additional featureful completion commands.
       (autoload 'projectile-project-root "projectile")
       (setq consult-project-function (lambda (_) (projectile-project-root)))))
 #+end_src
+**** [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
+Searching and jumping to TODO keywords using consult.
+#+begin_src emacs-lisp
+  (use-package consult-todo
+    :after consult hl-todo)
+#+end_src
 **** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+begin_src emacs-lisp
@@ -2737,6 +2754,14 @@ functions we invoke regularly outside of magit is called.
           ("p"  . magit-pull-branch)
           ("v"  . magit-status)
           ("r"  . magit-rebase)))
+#+end_src
+**** [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
+Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
+#+begin_src emacs-lisp
+  (use-package magit-todos
+    :after magit hl-todo
+    :demand t
+    :config (magit-todos-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
