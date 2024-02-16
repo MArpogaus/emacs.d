@@ -1,5 +1,4 @@
-python-mode sh-mode lua-mode
-python-ts-mode bash-ts-mode
+python-base-mode sh-base-mode lua-mode
 
 (header
  comment-start "-*- time-stamp-pattern: \"changed[\\s]+:[\\s]+%%$\"; -*-" n
@@ -66,4 +65,39 @@ org-mode
  "* " r n n
  "* To-dos" n
  " - XXX : YYY"
+ )
+
+(README
+ (p "Please enter the host (i.e.: github): " forge t)
+ (p "Please enter the domain (i.e.: com): " domain t)
+ (p "Please enter your user name: " user t)
+ (p "Please enter the repo name: " repo t)
+ "# Inspired by: https://github.com/othneildrew/Best-README-Template" n
+ "#+OPTIONS: toc:nil" n n
+ "[[https://" forge "." domain "/" user "/" repo "/graphs/contributors][https://img.shields.io/" forge "/contributors/" user "/" repo ".svg?style=" (p "flat-square" style) "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/network/members][https://img.shields.io/" forge "/forks/" user "/" repo ".svg?style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/stargazers][https://img.shields.io/" forge "/stars/" user "/" repo ".svg?style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/issues][https://img.shields.io/" forge "/issues/" user "/" repo ".svg?style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/blob/main/LICENSE][https://img.shields.io/" forge "/license/" user "/" repo ".svg?style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/actions/workflows/test.yaml][https://img.shields.io/" forge "/actions/workflow/status/" user "/" repo "/test.yaml.svg?label=test&style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/blob/main/.pre-commit-config.yaml][https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=" style "]]" n
+ "[[https://linkedin.com/in/" user "][https://img.shields.io/badge/-LinkedIn-black.svg?style=" style "&logo=linkedin&colorB=555]]" n n
+ "* " (p (string-replace "-" " " repo)) n n
+ "#+TOC: headlines 2 local" n n
+ "** About The Project" n n "..." n n
+ "** Getting Started" n n
+ "This is an example of how you may give instructions on setting up your" n
+ "project locally. To get a local copy up and running follow these simple" n
+ "example steps." n n
+ "*** Prerequisites" n n "- A" n "- B" n n
+ "*** Installation" n n "1. Step" n "2. Step" n n
+ "** Usage" n n "..." n n
+ "** Contributing" n n "Any Contributions are greatly appreciated! If you have a question, an issue or would like to contribute, please read our [[file:CONTRIBUTING.md][contributing guidelines]]." n n
+ "** License" n n
+ "Distributed under the [[file:LICENSE][" (p "TODO: License") "]]" n n
+ "** Contact" n n
+ "[[https://" forge "." domain "/" user "/][" user-full-name "]] - [[mailto:" user-mail-address "][" user-mail-address "]]" n n
+ "Project Link:" n
+ "[[https://" forge "." domain "/" user "/" repo"]]" n n
+ "** Acknowledgments" n n "..."
  )
