@@ -962,6 +962,10 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 
     (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
     (my/create-home-tab-group)
+
+    ;; Prevent accidental tab switches when scrolling the buffer
+    (define-key tab-bar-map (kbd "<wheel-down>") nil t)
+    (define-key tab-bar-map (kbd "<wheel-up>") nil t)
     :hook
     ((after-init . tab-bar-history-mode)
      (after-init . tab-bar-mode)))
