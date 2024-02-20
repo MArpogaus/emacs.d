@@ -270,7 +270,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
         (cond
          ;; If there are bounds and point is within them, kill the region
          ((and bounds (< (car bounds) (point)))
-          (kill-region (car bounds) (cdr bounds)))
+          (kill-region (car bounds) (point)))
 
          ;; If there's whitespace before point, delete it
          ((thing-at-point-looking-at "\\([ \n]+\\)")
