@@ -1660,7 +1660,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
 
       ;; Stop hiding the mode line
       (hide-mode-line-mode 0)
-    
+
       ;; Restore font size
       (org-present-small)
 
@@ -2764,8 +2764,7 @@ functions we invoke regularly outside of magit is called.
 Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp
   (use-package magit-todos
-    :after magit hl-todo
-    :demand t
+    :after magit
     :config (magit-todos-mode))
 #+end_src
 **** Library Footer
@@ -2792,16 +2791,20 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
     (project-vc-extra-root-markers '(".project")))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
-Ehancements to Emacs' built in project library.
+Enhancements to Emacs' built in project library.
 #+begin_src emacs-lisp
   (use-package project-x
     :straight (:host github :repo "karthink/project-x")
     :after project
-    :demand t
-    :custom
-    (project-x-save-interval 60)  ;; Save project state every minute
+    :bind (:map project-prefix-map
+                ("w" . project-x-window-state-save)
+                ("j" . project-x-window-state-load))
+    :init
+    (add-to-list 'project-switch-commands
+                 '(?j "Restore windows" project-x-windows) t)
     :config
-    (project-x-mode))
+    (add-hook 'project-find-functions 'project-x-try-local 90)
+    (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 Support a "one tab group per project" workflow.
@@ -3299,19 +3302,7 @@ Manage Python imports from Emacs!.
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil)
-    :preface
-    (defun my/run-python-for-project ()
-      "Run Python interpreter for the project."
-      (interactive)
-      (run-python nil 'p t))
-    :init
-    (with-eval-after-load 'project
-      (add-to-list 'project-switch-commands '(my/run-python-for-project "python") t))
-    :bind
-    (:map my/open-map
-          ("P" . run-python)
-          :map project-prefix-map
-          ("P" . my/run-python-for-project)))
+    (python-shell-dedicated 'project))
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
