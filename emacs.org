@@ -3027,11 +3027,12 @@ Structured Editing and Navigation in Emacs.
 Emacs helper library (and minor mode) to work with conda environments.
 #+begin_src emacs-lisp
   (use-package conda
-    :after python
+    :after tab-bar project python
     :custom
     ;; support for mambaforge envs
     (conda-anaconda-home "~/mambaforge/")
     (conda-env-home-directory "~/mambaforge/")
+    :commands conda-env-candidates
     :preface
     (defun my/find-python-interpreter-advice (&rest _)
       "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
