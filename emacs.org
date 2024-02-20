@@ -1141,6 +1141,18 @@ Enable repeat maps
 #+begin_src emacs-lisp
   (use-package repeat
     :straight nil
+    :preface
+    ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
+    (defun my/repeatize-keymap (keymap)
+      "Add `repeat-mode' support to a KEYMAP."
+      (map-keymap
+       (lambda (_key cmd)
+         (when (symbolp cmd)
+           (put cmd 'repeat-map keymap)))
+       (symbol-value keymap)))
+    :config
+    (with-eval-after-load 'smerge
+      (my/repeatize-keymap 'smerge-basic-map))
     :hook
     (after-init . repeat-mode))
 #+end_src
