@@ -719,7 +719,7 @@ Highlight TODO keywords.
     :hook
     (((prog-mode conf-mode LaTeX-mode) . hl-todo-mode)
      (flymake-mode . my/hl-todo-register-flymake-report-fn)))
-      #+end_src
+#+end_src
 **** [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
 Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
@@ -1155,14 +1155,6 @@ Enable repeat maps
       (my/repeatize-keymap 'smerge-basic-map))
     :hook
     (after-init . repeat-mode))
-#+end_src
-**** [[https://github.com/karthink/repeat-help.git][repeat-help]]
-#+begin_src emacs-lisp :tangle no
-  (use-package repeat-help
-    :custom
-    (repeat-help-auto nil)
-    :hook
-    (repeat-mode . repeat-help-mode))
 #+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 Rotate the layout of emacs.
@@ -3582,6 +3574,15 @@ The mode displays the key bindings following your currently entered incomplete c
     (which-key-idle-delay 0.0)
     :hook
     (meow-mode . which-key-mode))
+#+end_src
+**** [[https://github.com/karthink/repeat-help.git][repeat-help]]
+#+begin_src emacs-lisp :tangle no
+  (use-package repeat-help
+    :straight (:host github :repo "LemonBreezes/repeat-help" :branch "real-last-command")
+    :custom
+    (repeat-help-auto nil)
+    :hook
+    (repeat-mode . repeat-help-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
