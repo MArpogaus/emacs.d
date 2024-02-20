@@ -391,7 +391,6 @@ This section initializes various keymaps used for different purposes.
     :preface
     (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-    (defvar my/git-gutter-repeat-map (make-sparse-keymap) "key-map for GitGutter commands")
     (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
     (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
@@ -426,7 +425,6 @@ This section initializes various keymaps used for different purposes.
     (define-key my/leader-map "w" (cons "window" my/window-map))
 
     ;; version-control and project keymaps
-    (define-key my/version-control-map "g" (cons "gutter" my/git-gutter-repeat-map))
     (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
     :bind
     (:map my/buffer-map
@@ -2709,39 +2707,28 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-vc.el")>>
 #+end_src
-**** [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
-Emacs port of Sublime Text Plugin GitGutter.
+**** [[https://github.com/dgutov/diff-hl.git][diff-hl]]
+Emacs package for highlighting uncommitted changes.
 #+begin_src emacs-lisp
-  (use-package git-gutter
+  (use-package diff-hl
     :custom
-    (git-gutter:ask-p . nil)
-    (git-gutter:disabled-modes '(fundamental-mode image-mode pdf-view-mode))
-    ;;update interval for diff information
-    (git-gutter:update-interval 0.5)
-
-    ;; PERF: Only enable the backends that are available, so it doesn't have to
-    ;;   check when opening each buffer.
-    (git-gutter:handled-backends
-     (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
-                                  :key #'symbol-name)))
-    :config
-    (use-package git-gutter-fringe
-      :demand t
-      :config
-      (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-      (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-      (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+    ;; DOOM: https://github.com/doomemacs/doomemacs/blob/98d753e1036f76551ccaa61f5c810782cda3b48a/modules/ui/vc-gutter/config.el#L167C1-L173C41
+    ;; PERF: A slightly faster algorithm for diffing.
+    (vc-git-diff-switches '("--histogram"))
+    ;; PERF: Slightly more conservative delay before updating the diff
+    (diff-hl-flydiff-delay 0.5)  ; default: 0.3
+    ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
+    (diff-hl-show-staged-changes nil)
     :bind
-    (:repeat-map my/git-gutter-repeat-map
-                 ("n" . git-gutter:next-hunk)
-                 ("p" . git-gutter:previous-hunk)
-                 ("s" . git-gutter:stage-hunk)
-                 ("d" . git-gutter:popup-hunk)
-                 ("r" . git-gutter:revert-hunk)
-                 :exit
-                 ("c" . magit-commit-create))
+    (:map my/version-control-map
+          ("g" . diff-hl-show-hunk))
     :hook
-    (after-init . global-git-gutter-mode))
+    ((find-file    . diff-hl-mode)
+     (vc-dir-mode  . diff-hl-dir-mode)
+     (dired-mode   . diff-hl-dired-mode)
+     (diff-hl-mode . diff-hl-flydiff-mode)
+     (magit-pre-refresh . diff-hl-magit-pre-refresh)
+     (magit-post-refresh . diff-hl-magit-post-refresh)))
 #+end_src
 **** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 #+begin_src emacs-lisp
