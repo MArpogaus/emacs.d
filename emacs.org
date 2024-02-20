@@ -3081,13 +3081,6 @@ Emacs helper library (and minor mode) to work with conda environments.
     (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice)
     (advice-add #'conda-env-deactivate :after #'my/find-python-interpreter-advice))
 #+end_src
-**** [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
-Jump to workspace symbols with eglot and consult.
-#+begin_src emacs-lisp
-  (use-package consult-eglot
-    :demand t
-    :after (eglot consult))
-#+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 Debug Adapter Protocol for Emacs.
 #+begin_src emacs-lisp
