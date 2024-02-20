@@ -402,40 +402,32 @@ This section initializes various keymaps used for different purposes.
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
     (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
-
     :config
     ;; remove keybind for suspend-frame
     (global-unset-key (kbd "C-z"))
 
-    ;; version control, lsp and debug commands
-    (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
-    (define-key my/version-control-map "g" (cons "gutter" my/git-gutter-repeat-map))
-    (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
-    (define-key my/leader-map "d" (cons "debug" my/debug-map))
-
-    ;; completion commands
-    (define-key my/leader-map "." (cons "completion" my/completion-map))
-
-    ;; file, buffer, window and workspace commands
-    (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
+    ;; buffer keymap
     (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
-    (define-key my/leader-map "w" (cons "window" my/window-map))
-    (define-key my/leader-map "f" (cons "file" my/file-map))
-    (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
-
-    ;; toggle commands
-    (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
-
-    ;; opening recent files ne buffer frame etc
-    (define-key my/leader-map "o" (cons "open" my/open-map))
-
-    ;; add predefined maps to leader map
-    (define-key my/leader-map "g" (cons "goto" goto-map))
-    (define-key my/leader-map "h" (cons "help" help-map))
-    (define-key my/leader-map "p" (cons "project" project-prefix-map))
-    (define-key my/leader-map "s" (cons "search" search-map))
     ;;    (define-key my/leader-map "x" (cons "C-x" ctl-x-map))
 
+    ;; leader keymap
+    (define-key my/leader-map "." (cons "completion" my/completion-map))
+    (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
+    (define-key my/leader-map "d" (cons "debug" my/debug-map))
+    (define-key my/leader-map "f" (cons "file" my/file-map))
+    (define-key my/leader-map "g" (cons "goto" goto-map))
+    (define-key my/leader-map "h" (cons "help" help-map))
+    (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
+    (define-key my/leader-map "o" (cons "open" my/open-map))
+    (define-key my/leader-map "p" (cons "project" project-prefix-map))
+    (define-key my/leader-map "s" (cons "search" search-map))
+    (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
+    (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
+    (define-key my/leader-map "w" (cons "window" my/window-map))
+
+    ;; version-control and project keymaps
+    (define-key my/version-control-map "g" (cons "gutter" my/git-gutter-repeat-map))
+    (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
     :bind
     (:map my/buffer-map
           ("e" . eval-buffer)
