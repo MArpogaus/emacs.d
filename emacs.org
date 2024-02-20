@@ -3040,7 +3040,6 @@ Emacs helper library (and minor mode) to work with conda environments.
     ;; support for mambaforge envs
     (conda-anaconda-home "~/mambaforge/")
     (conda-env-home-directory "~/mambaforge/")
-    (conda-activate-base-by-default t)
     :preface
     (defun my/find-python-interpreter-advice (&rest _)
       "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
@@ -3054,15 +3053,28 @@ Emacs helper library (and minor mode) to work with conda environments.
        (t
         (setq python-shell-interpreter "python"
               python-shell-interpreter-args "-i"))))
-    (defun my/conda-env-activate-for-buffer-advice (&rest _)
-      "Activate conda environment for buffer."
-      (conda-env-activate-for-buffer))
+    (defun my/conda-env-auto-activate-advice (&rest _)
+      "Activate conda environment for project."
+      (let ((current-project-name 
+             ;; If buffer belongs to a project us its name.
+             ;; If not fall back to tab group
+             (if-let ((project-current (project-current)))
+                 (project-name project-current)
+               (alist-get 'group (tab-bar--current-tab)))))
+        (cond
+         ((bound-and-true-p conda-project-env-path)
+          (conda-env-activate-for-buffer))
+         ((and current-project-name
+               (member current-project-name
+                       (conda-env-candidates)))
+          (conda-env-activate current-project-name))
+         (t (conda-env-deactivate)))))
     :init
     ;; Try to activat env imediatly after switching to a project
     (with-eval-after-load 'tab-bar
-      (advice-add #'tab-bar-select-tab :after #'my/conda-env-activate-for-buffer-advice))
+      (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice))
     (with-eval-after-load 'project
-      (advice-add #'project-switch-project :after #'my/conda-env-activate-for-buffer-advice))
+      (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice))
     :config
     ;; interactive shell support
     (conda-env-initialize-interactive-shells)
@@ -3073,7 +3085,8 @@ Emacs helper library (and minor mode) to work with conda environments.
                  '(conda-env-current-name (" 󰌠 conda: " conda-env-current-name " "))
                  'append)
     ;; Add custom hook to set correct python interpreter
-    (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice))
+    (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice)
+    (advice-add #'conda-env-deactivate :after #'my/find-python-interpreter-advice))
 #+end_src
 **** [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
 Jump to workspace symbols with eglot and consult.
