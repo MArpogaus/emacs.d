@@ -2719,9 +2719,19 @@ Emacs package for highlighting uncommitted changes.
     (diff-hl-flydiff-delay 0.5)  ; default: 0.3
     ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
     (diff-hl-show-staged-changes nil)
+    :preface
+    (defun my/diff-hl-inline-popup-show-adv (orig-func &rest args)
+      (setcar (nthcdr 2 args) "")
+      (apply orig-func args))
+    :config
+    (advice-add #'diff-hl-inline-popup-show :around #'my/diff-hl-inline-popup-show-adv)
     :bind
     (:map my/version-control-map
-          ("g" . diff-hl-show-hunk))
+          ("g" . diff-hl-show-hunk)
+          :repeat-map diff-hl-show-hunk-map
+          ("S" . diff-hl-stage-current-hunk)
+          :exit
+          ("C" . magit-commit-create))
     :hook
     ((find-file    . diff-hl-mode)
      (vc-dir-mode  . diff-hl-dir-mode)
