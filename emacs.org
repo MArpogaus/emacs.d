@@ -2821,10 +2821,10 @@ Enhancements to Emacs' built in project library.
     :bind (:map project-prefix-map
                 ("w" . project-x-window-state-save)
                 ("j" . project-x-window-state-load))
+    :commands project-x-try-local project-x--window-state-write
     :init
     (add-to-list 'project-switch-commands
                  '(?j "Restore windows" project-x-windows) t)
-    :config
     (add-hook 'project-find-functions 'project-x-try-local 90)
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
