@@ -16,6 +16,7 @@
     - [[#conventional-library-header][Conventional Library Header]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#optimize-startup-time][Optimize Startup Time]]
+    - [[#default-frame-and-initial-frame-settings][Default Frame and initial Frame Settings]]
     - [[#configure-straight][Configure Straight]]
     - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
@@ -131,10 +132,6 @@ The following optimisatzion have been inspired by:
                                 (time-subtract after-init-time before-init-time)))
                        gcs-done)))
 
-
-  ;; Default frame settings. This is actually maximized, not full screen.
-  (push '(fullscreen . maximized) initial-frame-alist)
-
   ;; Resizing the Emacs frame can be a terribly expensive part of changing the
   ;; font. By inhibiting this, we easily halve startup times with fonts that are
   ;; larger than the system default.
@@ -164,6 +161,15 @@ The following optimisatzion have been inspired by:
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
+#+end_src
+*** Default Frame and initial Frame Settings
+#+begin_src emacs-lisp
+  ;; Increase size of new frames
+  (push '(width  . 200) default-frame-alist)
+  (push '(height  . 50) default-frame-alist)
+
+  ;; Apply frame settings to initial frame
+  (setq initial-frame-alist default-frame-alist)
 #+end_src
 *** Configure Straight
 This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
