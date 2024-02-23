@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -24,11 +24,10 @@
   (meow-keypad-meta-prefix . nil)
   (meow-keypad-ctrl-meta-prefix . nil)
   (meow-keypad-literal-prefix . nil)
-  ;; (meow-keypad-self-insert-undefined . nil)
+  (meow-keypad-self-insert-undefined . nil)
   ;; use system clipboard
   (meow-use-clipboard t)
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-
   :preface
   ;; Buffer-local variable to specify the desired Meow state
   (defvar my/meow-desired-state nil
@@ -41,19 +40,30 @@
 
   ;; Advice function to modify 'meow--mode-get-state' based on 'my/meow-desired-state'
   (defun my/meow-mode-get-state-advice (orig-func &rest args)
-    "Advice function to modify =meow--mode-get-state= based
-  on =my/meow-desired-state=."
+    "Advice function to modify =meow--mode-get-state= based on =my/meow-desired-state=."
     (if my/meow-desired-state
         my/meow-desired-state
       (apply orig-func args)))
 
   ;; Hook to set my/meow-desired-state to 'motion' when entering git-timemachine mode
   (defun my/meow-git-timemachine-hook ()
-    "Hook to set my/meow-desired-state to =motion=
-when entering git-timemachine mode."
+    "Hook to set my/meow-desired-state to =motion= when entering git-timemachine mode."
     (my/meow-set-desired-state 'motion))
 
   :config
+  (with-eval-after-load 'nerd-icons
+    (setq meow-replace-state-name-list
+          '((normal . "󰆾")
+            (motion . "󰷢")
+            (keypad . "󰌌")
+            (insert . "󰏫")
+            (beacon . "󰩬")))
+    (setq meow-indicator-face-alist
+          '((normal . meow-normal-indicator)
+            (motion . nerd-icons-lred)
+            (keypad . meow-normal-indicator)
+            (insert . nerd-icons-lgreen)
+            (beacon . nerd-icons-orange))))
   ;; Apply advice to 'meow--mode-get-state'
   (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
   (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))

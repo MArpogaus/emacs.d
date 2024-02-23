@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -242,6 +242,12 @@
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-function (lambda (_) (projectile-project-root)))))
 
+;; [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
+;; Searching and jumping to TODO keywords using consult.
+
+(use-package consult-todo
+  :after consult hl-todo)
+
 ;; [[https://github.com/emacs-straight/corfu.git][corfu]]
 ;; Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 
@@ -392,7 +398,9 @@
   :bind
   (("C-." . embark-act)         ;; pick some com fortable binding
    ("C-:" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
+   :map vertico-map
+   ("C-SPC" . embark-select))   ;; good alternative: M-.
 
   :custom
   ;; Optionally replace the key help with a completing-read interface
@@ -463,7 +471,7 @@ the completing-read prompter."
 
 (use-package lsp-snippet-tempel
   :straight (:host github :repo "svaante/lsp-snippet")
-  :after (tempel eglot)
+  :after tempel eglot
   :config
   ;; Initialize lsp-snippet -> tempel in eglot
   (lsp-snippet-tempel-eglot-init))
@@ -626,6 +634,39 @@ the completing-read prompter."
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (after-init . vertico-mode)))
+
+;; [[https://github.com/emacs-straight/vertico-posframe.git][vertico-posframe]]
+;; A vertico extension, which lets vertico use posframe to show its candidate menu.
+
+(use-package vertico-posframe
+  :after vertico
+  :custom
+  (vertico-multiform-commands
+   '((consult-line (:not posframe))
+     (consult-yank-from-kill-ring (:not posframe))
+     (consult-imenu (:not posframe))
+     (consult-ripgrep (:not posframe))
+     (consult-grep (:not posframe))
+     (consult-yank-from-kill-ring (:not posframe))
+     (consult-outline (:not posframe) buffer ,(lambda (_) (text-scale-set -1)))
+     (posframe
+      (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
+      (vertico-posframe-border-width . 10)
+      ;; NOTE: This is useful when emacs is used in both in X and
+      ;; terminal, for posframe do not work well in terminal, so
+      ;; vertico-buffer-mode will be used as fallback at the
+      ;; moment.
+      (vertico-posframe-fallback-mode . vertico-buffer-mode))
+     (t posframe)))
+  (vertico-posframe-parameters
+   '((left-fringe . 8)
+     (right-fringe . 8)
+     (alpha . 80)))
+  :init
+  (require 'vertico-multiform)
+  (vertico-multiform-mode)
+  :hook
+  (vertico-mode . vertico-posframe-mode))
 
 ;; Library Footer
 

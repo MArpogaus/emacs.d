@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -22,14 +22,20 @@
   (project-vc-extra-root-markers '(".project")))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
-;; Ehancements to Emacs' built in project library.
+;; Enhancements to Emacs' built in project library.
 
 (use-package project-x
   :straight (:host github :repo "karthink/project-x")
-  :custom
-  (project-x-save-interval 60)  ;; Save project state every minute
-  :hook
-  (after-init . project-x-mode))
+  :after project
+  :bind (:map project-prefix-map
+              ("w" . project-x-window-state-save)
+              ("j" . project-x-window-state-load))
+  :commands project-x-try-local project-x--window-state-write
+  :init
+  (add-to-list 'project-switch-commands
+               '(?j "Restore windows" project-x-windows) t)
+  (add-hook 'project-find-functions 'project-x-try-local 90)
+  (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
 ;; Support a "one tab group per project" workflow.
@@ -39,7 +45,8 @@
   (with-eval-after-load 'tab-bar-echo-area
     (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
     (tab-bar-echo-area-apply-display-tab-names-advice))
-  :hook (after-init . project-tab-groups-mode))
+  :hook
+  (after-init . project-tab-groups-mode))
 
 ;; speedbar :build_in:
 

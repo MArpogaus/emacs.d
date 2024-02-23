@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -65,7 +65,63 @@
 ;; Extra Emacs font lock rules for a more colourful dired.
 
 (use-package diredfl
-  :hook (dired-mode . diredfl-mode))
+  :hook
+  ((dired-mode . diredfl-mode)
+   (dirvish-directory-view-mode . diredfl-mode)))
+
+;; [[https://github.com/alexluigit/dirvish.git][dirvish]]
+;; A polished Dired with batteries included.
+
+(use-package dirvish
+  :after dired
+  :custom
+  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+   '(("h" "~/"                          "Home")
+     ("d" "~/Downloads/"                "Downloads")
+     ("t" "~/.local/share/Trash/files/" "TrashCan")))
+  (dirvish-mode-line-format
+   '(:left (sort symlink) :right (vc-info yank index)))
+  (dirvish-attributes
+   '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
+  (dirvish-use-header-line nil)
+  ;; (dirvish-use-mode-line nil)
+  :config
+  (dirvish-override-dired-mode)
+  ;; (dirvish-peek-mode) ; Preview files in minibuffer
+  (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
+  (with-eval-after-load 'doom-modeline
+    (setq dirvish-mode-line-height doom-modeline-height)
+    (setq dirvish-header-line-height
+          doom-modeline-height))
+  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  (("C-c f" . dirvish-fd)
+   :map my/open-map
+   ("D" . dirvish)
+   :map my/toggle-map
+   ("d" . dirvish-side)
+   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
+   ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
+   ("<mouse-2>" . dired-mouse-find-file-other-window)
+   ("F" . dirvish-toggle-fullscreen)
+   ("M-b" . dirvish-history-go-backward)
+   ("M-e" . dirvish-emerge-menu)
+   ("M-f" . dirvish-history-go-forward)
+   ("M-j" . dirvish-fd-jump)
+   ("M-l" . dirvish-ls-switches-menu)
+   ("M-m" . dirvish-mark-menu)
+   ("M-s" . dirvish-setup-menu)
+   ("M-t" . dirvish-layout-toggle)
+   ("N"   . dirvish-narrow)
+   ("TAB" . dirvish-subtree-toggle)
+   ("^"   . dirvish-history-last)
+   ("a"   . dirvish-quick-access)
+   ("b"   . dirvish-goto-bookmark)
+   ("f"   . dirvish-file-info-menu)
+   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("y"   . dirvish-yank-menu)
+   ("z" . dirvish-show-history)))
 
 ;; ediff :build_in:
 ;; The ediff package is utilized to handle file differences in emacs.
@@ -129,22 +185,19 @@
       (flyspell-mode-off)
       (flyspell-mode-on)
       (flyspell-buffer)))
-  :config
-  (use-package ispell
-    :custom
-    (ispell-program-name "hunspell")
-    (ispell-dictionary "en_US,de_DE")
-    :config
-    (ispell-set-spellchecker-params)
-    (ispell-hunspell-add-multi-dic "en_US,de_DE"))
-  (use-package flyspell-correct
-    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-                ([mouse-1] . flyspell-correct-at-point)))
   :hook
   (((text-mode org-mode LaTeX-mode) . flyspell-mode)
    ((prog-mode conf-mode) . flyspell-prog-mode)
    (ispell-change-dictionary . restart-flyspell-mode)))
+
+;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
+;; Distraction-free words correction with flyspell via selected interface.
+
+(use-package flyspell-correct
+  :after flyspell
+  :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
+              :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
+              ([mouse-1] . flyspell-correct-at-point)))
 
 ;; [[https://github.com/karthink/gptel.git][gptel]]
 ;; A simple LLM client for Emacs.
@@ -172,6 +225,18 @@
    ("C-h K" . describe-keymap)
    :map helpful-mode-map
    ([remap revert-buffer] . helpful-update)))
+
+;; ispell :build_in:
+
+(use-package ispell
+  :straight nil
+  :after flyspell
+  :custom
+  (ispell-program-name "hunspell")
+  (ispell-dictionary "en_US,de_DE")
+  :config
+  (ispell-set-spellchecker-params)
+  (ispell-hunspell-add-multi-dic "en_US,de_DE"))
 
 ;; [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 ;; Emacs support library for PDF files.

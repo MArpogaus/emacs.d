@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -39,9 +39,10 @@
 
 (use-package auto-dark
   :custom
-  (auto-dark-dark-theme 'modus-vivendi)
-  (auto-dark-light-theme 'modus-operandi)
-  :hook (after-init . auto-dark-mode))
+  (auto-dark-dark-theme 'modus-vivendi-tinted)
+  (auto-dark-light-theme 'modus-operandi-tinted)
+  :hook
+  (after-init . auto-dark-mode))
 
 ;; [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
 ;; An extensible emacs dashboard.
@@ -126,10 +127,31 @@
   (doom-modeline-icon (display-graphic-p))
 
   ;; If non-nil, only display one number for checker information if applicable.
-  (doom-modeline-checker-simple-format t)
+  (doom-modeline-checker-simple-format nil)
 
   :hook
-  (after-init . doom-modeline-mode))
+  ((after-init . doom-modeline-mode)
+   ;; filesize in modeline
+   (doom-modeline-mode . size-indication-mode)
+   ;; cursor column in modeline)
+   (doom-modeline-mode . column-number-mode)))
+
+;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
+;; An Emacs plugin that hides (or masks) the current buffer's mode-line.
+
+(use-package hide-mode-line
+  :hook
+  (((completion-list-mode-hook Man-mode-hook) . hide-mode-line-mode)
+   (comint-mode . hide-mode-line-mode)
+   (diff-mode . hide-mode-line-mode)
+   (eshell-mode  . hide-mode-line-mode)
+   (magit-status-mode . hide-mode-line-mode)
+   (org-brain-visualize-mode . hide-mode-line-mode)
+   (shell-mode  . hide-mode-line-mode)
+   (special-mode . hide-mode-line-mode)
+   (symbols-outline-mode . hide-mode-line-mode)
+   (term-mode  . hide-mode-line-mode)
+   (vterm-mode . hide-mode-line-mode)))
 
 ;; hl-line :build_in:
 
@@ -140,6 +162,17 @@
   :straight nil
   :hook
   ((prog-mode org-mode) . global-hl-line-mode))
+
+;; [[https://github.com/tarsius/hl-todo.git][hl-todo]]
+;; Highlight TODO keywords.
+
+(use-package hl-todo
+  :preface
+  (defun my/hl-todo-register-flymake-report-fn ()
+    (add-hook #'flymake-diagnostic-functions #'hl-todo-flymake))
+  :hook
+  (((prog-mode conf-mode LaTeX-mode) . hl-todo-mode)
+   (flymake-mode . my/hl-todo-register-flymake-report-fn)))
 
 ;; [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
 ;; Fast, configurable indentation guide-bars for Emacs.
@@ -169,6 +202,7 @@
 ;; Display typographical ligatures in Emacs.
 
 (use-package ligature
+  :if (display-graphic-p)
   :config
   ;; set Fira as default font
   (set-frame-font "FiraCode Nerd Font-10" nil t)
@@ -248,7 +282,6 @@
 ;; Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 ;; https://protesilaos.com/emacs/modus-themes
 
-
 (use-package modus-themes
   :bind
   (:map my/toggle-map
@@ -295,16 +328,20 @@
 (use-package tab-bar
   :straight nil
   :bind
-  (:repeat-map my/workspace-map
-               ("p" . tab-previous)
-               ("n" . tab-next)
-               ("P" . tab-bar-move-tab-backward)
-               ("N". tab-bar-move-tab)
-               :exit
-               ("k" . tab-close-group))
+  (([remap winner-undo] . tab-bar-history-back)
+   ([remap winner-undo] . tab-bar-history-forward)
+   :repeat-map my/window-map
+   ("u" . tab-bar-history-back)
+   ("i" . tab-bar-history-forward)
+   :repeat-map my/workspace-map
+   ("p" . tab-previous)
+   ("n" . tab-next)
+   ("P" . tab-bar-move-tab-backward)
+   ("N". tab-bar-move-tab)
+   :exit
+   ("k" . tab-close-group))
   :custom
-  (tab-bar-format '(tab-bar-format-history
-                    tab-bar-format-tabs-groups
+  (tab-bar-format '(tab-bar-format-tabs-groups
                     my/tab-bar-format-new
                     tab-bar-format-align-right
                     tab-bar-format-global
@@ -313,6 +350,7 @@
   (tab-bar-auto-width nil)
   (tab-bar-close-button-show t)
   (tab-bar-new-tab-choice "*dashboard*")
+  (tab-bar-history-limit 100)
   :preface
   (defun my/tab-bar-format-new ()
     "Button to add a new tab."
@@ -388,8 +426,13 @@
 
   (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
   (my/create-home-tab-group)
+
+  ;; Prevent accidental tab switches when scrolling the buffer
+  (define-key tab-bar-map (kbd "<wheel-down>") nil t)
+  (define-key tab-bar-map (kbd "<wheel-up>") nil t)
   :hook
-  (after-init . tab-bar-mode))
+  ((after-init . tab-bar-history-mode)
+   (after-init . tab-bar-mode)))
 
 ;; tab-line :build_in:
 
@@ -414,15 +457,7 @@
   :config
   (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
         tab-line-separator "")
-  (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip)
-  :hook
-  (after-init . global-tab-line-mode))
-
-;; [[https://codeberg.org/joostkremers/visual-fill-column.git][visual-fill-column]]
-
-
-(use-package visual-fill-column
-  :bind (:map my/toggle-map ("w" . visual-fill-column-mode)))
+  (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip))
 
 ;; Library Footer
 
