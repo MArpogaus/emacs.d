@@ -80,6 +80,7 @@ org-mode
  "[[https://" forge "." domain "/" user "/" repo "/issues][https://img.shields.io/" forge "/issues/" user "/" repo ".svg?style=" style "]]" n
  "[[https://" forge "." domain "/" user "/" repo "/blob/main/LICENSE][https://img.shields.io/" forge "/license/" user "/" repo ".svg?style=" style "]]" n
  "[[https://" forge "." domain "/" user "/" repo "/actions/workflows/test.yaml][https://img.shields.io/" forge "/actions/workflow/status/" user "/" repo "/test.yaml.svg?label=test&style=" style "]]" n
+ "[[https://" forge "." domain "/" user "/" repo "/actions/workflows/release.yaml][https://img.shields.io/" forge "/actions/workflow/status/" user "/" repo "/release.yaml.svg?label=release&style=" style "]]" n
  "[[https://" forge "." domain "/" user "/" repo "/blob/main/.pre-commit-config.yaml][https://img.shields.io/badge/pre--commit-enabled-brightgreen.svg?logo=pre-commit&style=" style "]]" n
  "[[https://linkedin.com/in/" user "][https://img.shields.io/badge/-LinkedIn-black.svg?style=" style "&logo=linkedin&colorB=555]]" n n
  "* " (p (string-replace "-" " " repo)) n n
@@ -96,8 +97,13 @@ org-mode
  "** License" n n
  "Distributed under the [[file:LICENSE][" (p "TODO: License") "]]" n n
  "** Contact" n n
- "[[https://" forge "." domain "/" user "/][" user-full-name "]] - [[mailto:" user-mail-address "][" user-mail-address "]]" n n
+ "[[https://" forge "." domain "/" user "/][" user-full-name "]] - [[mailto:" user-mail-address "][" user-mail-address "]] (encrypted with [ROT13](https://rot13.com/))" n n
  "Project Link:" n
  "[[https://" forge "." domain "/" user "/" repo"]]" n n
  "** Acknowledgments" n n "..."
+ )
+
+(python-shields
+ "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/v/" (p (project-name (project-current)) project) ".svg?style=" (p "flat-square" style) "]]" n
+ "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/pyversions/" project ".svg?style=" style "]]" q
  )
