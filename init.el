@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -59,6 +59,27 @@
 
 (use-package emacs
   :straight nil
+  :preface
+  (defun my/backward-kill-thing ()
+    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+    (interactive)
+    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+      (cond
+       ;; If there are bounds and point is within them, kill the region
+       ((and bounds (< (car bounds) (point)))
+        (kill-region (car bounds) (point)))
+
+       ;; If there's whitespace before point, delete it
+       ((thing-at-point-looking-at "\\([ \n]+\\)")
+        (if (< (match-beginning 1) (point))
+            (kill-region (match-beginning 1) (point))
+          (kill-backward-chars 1)))
+
+       ;; If none of the above, delete one character backward
+       (t
+        (kill-backward-chars 1)))))
+  :bind
+  ("C-<backspace>" . my/backward-kill-thing)
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -98,6 +119,7 @@
   (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
   (scroll-margin 2)                                     ; Add a margin when scrolling vertically
   (recenter-positions '(5 bottom))                      ; Set re-centering positions
+  (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified regions
 
   ;; Cursor
   ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
@@ -153,8 +175,6 @@
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode) . visual-line-mode)
-   ;; display column number in modeline
-   ((prog-mode conf-mode) . column-number-mode)
    (kill-emacs . unpropertize-kill-ring)))
 
 ;; Keymaps
@@ -168,7 +188,6 @@
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-  (defvar my/git-gutter-repeat-map (make-sparse-keymap) "key-map for GitGutter commands")
   (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
   (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
   (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
@@ -178,39 +197,32 @@
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
-
+  (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
   :config
   ;; remove keybind for suspend-frame
   (global-unset-key (kbd "C-z"))
 
-  ;; version control and lsp commands
-  (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
-  (define-key my/version-control-map "g" (cons "gutter" my/git-gutter-repeat-map))
-  (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
-
-  ;; completion commands
-  (define-key my/leader-map "." (cons "completion" my/completion-map))
-
-  ;; file, buffer, window and workspace commands
-  (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
+  ;; buffer keymap
   (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
-  (define-key my/leader-map "w" (cons "window" my/window-map))
-  (define-key my/leader-map "f" (cons "file" my/file-map))
-  (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
-
-  ;; toggle commands
-  (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
-
-  ;; opening recent files ne buffer frame etc
-  (define-key my/leader-map "o" (cons "open" my/open-map))
-
-  ;; add predefined maps to leader map
-  (define-key my/leader-map "g" (cons "goto" goto-map))
-  (define-key my/leader-map "h" (cons "help" help-map))
-  (define-key my/leader-map "p" (cons "project" project-prefix-map))
-  (define-key my/leader-map "s" (cons "search" search-map))
   ;;    (define-key my/leader-map "x" (cons "C-x" ctl-x-map))
 
+  ;; leader keymap
+  (define-key my/leader-map "." (cons "completion" my/completion-map))
+  (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
+  (define-key my/leader-map "d" (cons "debug" my/debug-map))
+  (define-key my/leader-map "f" (cons "file" my/file-map))
+  (define-key my/leader-map "g" (cons "goto" goto-map))
+  (define-key my/leader-map "h" (cons "help" help-map))
+  (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
+  (define-key my/leader-map "o" (cons "open" my/open-map))
+  (define-key my/leader-map "p" (cons "project" project-prefix-map))
+  (define-key my/leader-map "s" (cons "search" search-map))
+  (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
+  (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
+  (define-key my/leader-map "w" (cons "window" my/window-map))
+
+  ;; version-control and project keymaps
+  (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
   :bind
   (:map my/buffer-map
         ("e" . eval-buffer)
@@ -262,52 +274,69 @@
 
 ;; In this section, I define some custom Lisp functions.
 
-;; This function extracts the username and repository name from a GitHub repository link.
+(use-package emacs
+  :preface
+  (defun my/extract-username-repo ()
+    "Extract the username and repository name from a GitHub repository link at point."
+    (interactive)
+    (save-excursion
+      (org-back-to-heading)
+      (let* ((element (org-element-at-point))
+             (headline (org-element-property :raw-value element))
+             (url (save-match-data
+                    (string-match org-bracket-link-regexp headline)
+                    (match-string 1 headline))))
+        (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
+            (list (match-string 1 url) (match-string 2 url))
+          (error "No GitHub link found at point.")))))
 
-
-(defun my/extract-username-repo ()
-  "Extract the username and repository name from a GitHub repository link at point."
-  (interactive)
-  (save-excursion
-    (org-back-to-heading)
-    (let* ((element (org-element-at-point))
-           (headline (org-element-property :raw-value element))
-           (url (save-match-data
-                  (string-match org-bracket-link-regexp headline)
-                  (match-string 1 headline))))
-      (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
-          (list (match-string 1 url) (match-string 2 url))
-        (error "No GitHub link found at point.")))))
-
-
-
-;; This function retrieves and inserts the short description of a GitHub repository.
-
-
-(defun my/insert-github-repo-description ()
-  "Retrieve and insert the short description of a GitHub repository at point."
-  (interactive)
-  (let* ((repo-info (my/extract-username-repo))
-         (username (car repo-info))
-         (repo (cadr repo-info)))
-    (message (format "Inserting description for GitHub Repository. User: %s, Repo: %s" username repo))
-    (let* ((url (format "https://api.github.com/repos/%s/%s" username repo))
-           (response (with-current-buffer (url-retrieve-synchronously url)
-                       (prog1 (buffer-substring-no-properties (point-min) (point-max))
-                         (kill-buffer)))))
-      (string-match "\r?\n\r?\n" response)
-      (setq response (substring response (match-end 0)))
-      (let* ((json (json-read-from-string response))
-             (description (cdr (assoc 'description json))))
-        (if description
-            (progn
-              (setq description (string-trim description))
-              (setq description (concat (capitalize (substring description 0 1))
-                                        (substring description 1)))
-              (unless (string-suffix-p "." description)
-                (setq description (concat description ".")))
-              (insert description))
-          (error "No description, website, or topics provided."))))))
+  (defun my/insert-github-repo-description ()
+    "Retrieve and insert the short description of a GitHub repository at point."
+    (interactive)
+    (let* ((repo-info (my/extract-username-repo))
+           (username (car repo-info))
+           (repo (cadr repo-info)))
+      (message (format "Inserting description for GitHub Repository. User: %s, Repo: %s" username repo))
+      (let* ((url (format "https://api.github.com/repos/%s/%s" username repo))
+             (response (with-current-buffer (url-retrieve-synchronously url)
+                         (prog1 (buffer-substring-no-properties (point-min) (point-max))
+                           (kill-buffer)))))
+        (string-match "\r?\n\r?\n" response)
+        (setq response (substring response (match-end 0)))
+        (let* ((json (json-read-from-string response))
+               (description (cdr (assoc 'description json))))
+          (if description
+              (progn
+                (setq description (string-trim description))
+                (setq description (concat (capitalize (substring description 0 1))
+                                          (substring description 1)))
+                (unless (string-suffix-p "." description)
+                  (setq description (concat description ".")))
+                (insert description))
+            (error "No description, website, or topics provided."))))))
+  ;; (cl-defun create-org-entry-for-package (recipe)
+  ;;   (interactive (list (straight-get-recipe nil nil)))
+  ;;   (straight--with-plist recipe
+  ;;       (package local-repo type)
+  ;;     (message-box type)
+  ;;     (if (eq type 'git)
+  ;;         (straight-vc-git--destructure recipe
+  ;;             (package local-repo branch nonrecursive depth
+  ;;                      remote upstream-remote
+  ;;                      host upstream-host
+  ;;                      protocol upstream-protocol
+  ;;                      repo upstream-repo fork-repo)
+  ;;           (message upstream-remote)
+  ;;           (let ((parent-headline-level (org-outline-level)))
+  ;;             (save-excursion
+  ;;               (org-insert-heading (1+ parent-headline-level))
+  ;;               (insert (format "*** [[%s][%s]]\n" upstream-remote package))
+  ;;               ;; (insert (format "%s\n" description))
+  ;;               (insert (format "#+begin_src emacs-lisp\n(use-package %s\n  :demand t\n  :after (eglot consult))\n#+end_src\n" package))
+  ;;               (org-edit-src-code)))
+  ;;           )
+  ;;       )))
+  )
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.

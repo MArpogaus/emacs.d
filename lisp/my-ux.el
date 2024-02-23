@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,63 +48,6 @@
   :straight nil
   :hook
   ((prog-mode conf-mode text-mode) . delete-selection-mode))
-
-;; [[https://github.com/alexluigit/dirvish.git][dirvish]]
-;; A polished Dired with batteries included.
-
-(use-package dirvish
-  :custom
-  (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
-   '(("h" "~/"                          "Home")
-     ("d" "~/Downloads/"                "Downloads")
-     ("t" "~/.local/share/Trash/files/" "TrashCan")))
-  (dirvish-mode-line-format
-   '(:left (sort symlink) :right (vc-info yank index)))
-  (dirvish-attributes
-   '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
-  (dirvish-use-header-line nil)
-  ;; (dirvish-subtree-file-viewer (lambda (&rest _) nil))
-  :config
-  ;; (dirvish-peek-mode) ; Preview files in minibuffer
-  (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-  (with-eval-after-load 'doom-modeline
-    (setq dirvish-mode-line-height doom-modeline-height)
-    (setq dirvish-header-line-height
-          doom-modeline-height))
-  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
-  (("C-c f" . dirvish-fd)
-   :map my/open-map
-   ("D" . dirvish)
-   :map my/toggle-map
-   ("d" . dirvish-side)
-   :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-   ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
-   ("<mouse-2>" . dired-mouse-find-file-other-window)
-   ("F" . dirvish-toggle-fullscreen)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-f" . dirvish-history-go-forward)
-   ("M-j" . dirvish-fd-jump)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-s" . dirvish-setup-menu)
-   ("M-t" . dirvish-layout-toggle)
-   ("N"   . dirvish-narrow)
-   ("TAB" . dirvish-subtree-toggle)
-   ("^"   . dirvish-history-last)
-   ("a"   . dirvish-quick-access)
-   ("b"   . dirvish-goto-bookmark)
-   ("f"   . dirvish-file-info-menu)
-   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-   ("y"   . dirvish-yank-menu)
-   ("z" . dirvish-show-history))
-  :hook
-  ((after-init . dirvish-override-dired-mode)
-   (dirvish-directory-view-mode . diredfl-mode)
-   ;; (dired-mode . (lambda nil (setq-local mouse-1-click-follows-link nil)))
-   ))
 
 ;; elec-pair :build_in:
 ;; Automatically add closing parentheses, quotes, etc.
@@ -191,6 +134,18 @@
 
 (use-package repeat
   :straight nil
+  :preface
+  ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
+  (defun my/repeatize-keymap (keymap)
+    "Add `repeat-mode' support to a KEYMAP."
+    (map-keymap
+     (lambda (_key cmd)
+       (when (symbolp cmd)
+         (put cmd 'repeat-map keymap)))
+     (symbol-value keymap)))
+  :config
+  (with-eval-after-load 'smerge
+    (my/repeatize-keymap 'smerge-basic-map))
   :hook
   (after-init . repeat-mode))
 
@@ -256,14 +211,6 @@
   (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
   :hook
   (before-save . time-stamp))
-
-;; winner :build_in:
-;; Undo and redo changes to window configuration
-
-(use-package winner
-  :straight nil
-  :hook
-  (after-init . winner-mode))
 
 ;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 ;; Distraction-free writing for Emacs.

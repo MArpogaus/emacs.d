@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -49,10 +49,6 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-
-;; Default frame settings. This is actually maximized, not full screen.
-(push '(fullscreen . maximized) initial-frame-alist)
-
 ;; Resizing the Emacs frame can be a terribly expensive part of changing the
 ;; font. By inhibiting this, we easily halve startup times with fonts that are
 ;; larger than the system default.
@@ -75,21 +71,22 @@
 
 ;; further preformance tweaks
 (setq
- auto-mode-case-fold nil ; Use case-sensitive `auto-mode-alist' for performance
- fast-but-imprecise-scrolling t ; More performant rapid scrolling over unfontified regions
- ffap-machine-p-known 'reject ; Don't ping things that look like domain names
- idle-update-delay 1.0  ; slow down UI updates down
- inhibit-compacting-font-caches t ; Inhibit frame resizing for performance
  read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
- redisplay-skip-fontification-on-input t ; Inhibits it for better scrolling performance.
- command-line-x-option-alist nil ; Remove irreleant command line options for faster startup
- select-active-regions 'only ; Emacs hangs when large selections contain mixed line endings.
- vc-follow-symlinks t) ; Do not ask about symlink following
+ command-line-x-option-alist nil) ; Remove irreleant command line options for faster startup
 
 ;; Minimal UI
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+
+;; Default Frame and initial Frame Settings
+
+;; Increase size of new frames
+(push '(width  . 200) default-frame-alist)
+(push '(height  . 50) default-frame-alist)
+
+;; Apply frame settings to initial frame
+(setq initial-frame-alist default-frame-alist)
 
 ;; Configure Straight
 ;; This section provides the bootstrap code for =straight.el=, a package manager for Emacs.

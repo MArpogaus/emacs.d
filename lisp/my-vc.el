@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,40 +14,44 @@
 
 ;;; Code:
 
-;; [[https://github.com/emacsorphanage/git-gutter.git][git-gutter]]
-;; Emacs port of Sublime Text Plugin GitGutter.
+;; [[https://github.com/dgutov/diff-hl.git][diff-hl]]
+;; Emacs package for highlighting uncommitted changes.
 
-(use-package git-gutter
+(use-package diff-hl
   :custom
-  (git-gutter:ask-p . nil)
-  (git-gutter:disabled-modes '(fundamental-mode image-mode pdf-view-mode))
-  ;;update interval for diff information
-  (git-gutter:update-interval 0.5)
-
-  ;; PERF: Only enable the backends that are available, so it doesn't have to
-  ;;   check when opening each buffer.
-  (git-gutter:handled-backends
-   (cons 'git (cl-remove-if-not #'executable-find (list 'hg 'svn 'bzr)
-                                :key #'symbol-name)))
+  ;; DOOM: https://github.com/doomemacs/doomemacs/blob/98d753e1036f76551ccaa61f5c810782cda3b48a/modules/ui/vc-gutter/config.el#L167C1-L173C41
+  ;; PERF: A slightly faster algorithm for diffing.
+  (vc-git-diff-switches '("--histogram"))
+  ;; PERF: Slightly more conservative delay before updating the diff
+  (diff-hl-flydiff-delay 0.5)  ; default: 0.3
+  ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
+  (diff-hl-show-staged-changes nil)
+  :preface
+  (defun my/diff-hl-inline-popup-show-adv (orig-func &rest args)
+    (setcar (nthcdr 2 args) "")
+    (apply orig-func args))
   :config
-  ;; (add-hook 'after-focus-change-function #'git-gutter:update-all-windows)
-  (use-package git-gutter-fringe
-    :demand t
-    :config
-    (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+  (advice-add #'diff-hl-inline-popup-show :around #'my/diff-hl-inline-popup-show-adv)
+  (if (display-graphic-p)
+      (global-diff-hl-show-hunk-mouse-mode)
+    (diff-hl-margin-mode))
   :bind
-  (:repeat-map my/git-gutter-repeat-map
-               ("n" . git-gutter:next-hunk)
-               ("p" . git-gutter:previous-hunk)
-               ("s" . git-gutter:stage-hunk)
-               ("d" . git-gutter:popup-hunk)
-               ("r" . git-gutter:revert-hunk)
-               :exit
-               ("c" . magit-commit-create))
+  (:map my/version-control-map
+        ("g" . diff-hl-show-hunk)
+        :repeat-map diff-hl-show-hunk-map
+        ("n" . diff-hl-show-hunk-next)
+        ("p" . diff-hl-show-hunk-previous)
+        ("r" . diff-hl-revert-hunk)
+        ("S" . diff-hl-stage-current-hunk)
+        :exit
+        ("C" . magit-commit-create))
   :hook
-  (after-init . global-git-gutter-mode))
+  ((find-file    . diff-hl-mode)
+   (vc-dir-mode  . diff-hl-dir-mode)
+   (dired-mode   . diff-hl-dired-mode)
+   (diff-hl-mode . diff-hl-flydiff-mode)
+   (magit-pre-refresh . diff-hl-magit-pre-refresh)
+   (magit-post-refresh . diff-hl-magit-post-refresh)))
 
 ;; [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
 
@@ -78,6 +82,13 @@
         ("p"  . magit-pull-branch)
         ("v"  . magit-status)
         ("r"  . magit-rebase)))
+
+;; [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
+;; Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode))
 
 ;; Library Footer
 

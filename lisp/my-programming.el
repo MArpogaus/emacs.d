@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-01-31
+;; Created: 2024-02-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -104,14 +104,15 @@
 ;; Emacs helper library (and minor mode) to work with conda environments.
 
 (use-package conda
-  :after python
+  :after tab-bar project python
   :custom
   ;; support for mambaforge envs
   (conda-anaconda-home "~/mambaforge/")
   (conda-env-home-directory "~/mambaforge/")
-  (conda-activate-base-by-default t)
+  :commands conda-env-candidates
   :preface
-  (defun my/find-python-interpreter (&rest _)
+  (defun my/find-python-interpreter-advice (&rest _)
+    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
     (cond
      ((executable-find "ipython3")
       (setq python-shell-interpreter "ipython3"
@@ -122,24 +123,40 @@
      (t
       (setq python-shell-interpreter "python"
             python-shell-interpreter-args "-i"))))
+  (defun my/conda-env-auto-activate-advice (&rest _)
+    "Activate conda environment for project."
+    (let ((current-project-name 
+           ;; If buffer belongs to a project us its name.
+           ;; If not fall back to tab group
+           (if-let ((project-current (project-current)))
+               (project-name project-current)
+             (alist-get 'group (tab-bar--current-tab)))))
+      (cond
+       ((bound-and-true-p conda-project-env-path)
+        (conda-env-activate-for-buffer))
+       ((and current-project-name
+             (member current-project-name
+                     (conda-env-candidates)))
+        (conda-env-activate current-project-name))
+       (t (conda-env-deactivate)))))
+  :init
+  ;; Try to activat env imediatly after switching to a project
+  (with-eval-after-load 'tab-bar
+    (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice))
+  (with-eval-after-load 'project
+    (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice))
   :config
   ;; interactive shell support
   (conda-env-initialize-interactive-shells)
-  ;; if you want eshell support, include:
+  ;; eshell support
   (conda-env-initialize-eshell)
-  ;; enable auto-activation
-  ;; (conda-env-autoactivate-mode t)
-  ;; if you want to automatically activate a conda environment on the opening of a file:
-  ;; (add-to-hook 'find-file-hook (lambda () (when (bound-and-true-p conda-project-env-path)
-  ;;                       (conda-env-activate-for-buffer))))
-  (advice-add #'conda-env-activate :after #'my/find-python-interpreter))
-
-;; [[https://github.com/mohkale/consult-eglot.git][consult-eglot]]
-;; Jump to workspace symbols with eglot and consult.
-
-(use-package consult-eglot
-  :demand t
-  :after (eglot consult))
+  ;; Add current conda env to mode line
+  (add-to-list 'global-mode-string
+               '(conda-env-current-name (" 󰌠 conda: " conda-env-current-name " "))
+               'append)
+  ;; Add custom hook to set correct python interpreter
+  (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice)
+  (advice-add #'conda-env-deactivate :after #'my/find-python-interpreter-advice))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -148,7 +165,30 @@
   ;; To use window configuration like gud (gdb-mi)
   ;; :init
   ;; (setq dape-buffer-window-arrangement 'gud)
-
+  :bind
+  (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
+   :repeat-map my/debug-map
+   ("d" . dape)
+   ("p" . dape-pause)
+   ("c" . dape-continue)
+   ("n" . dape-next)
+   ("s" . dape-step-in)
+   ("o" . dape-step-out)
+   ("r" . dape-restart)
+   ("i" . dape-info)
+   ("R" . dape-repl)
+   ("m" . dape-read-memory)
+   ("l" . dape-breakpoint-log)
+   ("e" . dape-breakpoint-expression)
+   ("b" . dape-breakpoint-toggle)
+   ("B" . dape-breakpoint-remove-all)
+   ("t" . dape-select-thread)
+   ("S" . dape-select-stack)
+   ("x" . dape-evaluate-expression)
+   ("w" . dape-watch-dwim)
+   ("D" . dape-disconnect-quit)
+   :exit
+   ("q" . dape-quit))
   :config
   ;; Info buffers to the right
   (setq dape-buffer-window-arrangement 'right)
@@ -199,7 +239,6 @@
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
   (completion-category-defaults nil)
-  :after (tempel cape)
   :preface
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
@@ -223,7 +262,7 @@
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   :hook
-  (((python-mode python-ts-mode) . eglot-ensure)
+  ((python-base-mode . eglot-ensure)
    (eglot-managed-mode . my/eglot-capf)))
 
 ;; [[https://github.com/jdtsmith/eglot-booster.git][eglot-booster]]
@@ -349,7 +388,8 @@
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)
-  (python-indent-guess-indent-offset-verbose nil))
+  (python-indent-guess-indent-offset-verbose nil)
+  (python-shell-dedicated 'project))
 
 ;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.
@@ -393,7 +433,7 @@
   :straight (:host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
   :preface
   (defun my/ts-fold-mode-hook ()
-    (keymap-local-set "S-TAB" 'ts-fold-toggle))
+    (keymap-local-set "<backtab>" 'ts-fold-toggle))
   :hook
   (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
    ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
