@@ -358,6 +358,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Resize frame and windows pixelwise
     (window-resize-pixelwise t)
     (frame-resize-pixelwise t)
+
+    ;; Diasble windmove mode
+    (windmove-mode nil)
     :preface
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
@@ -370,10 +373,11 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Load customization File
     (load custom-file 'noerror 'nomessage)
 
+    ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+    (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil t)
     :bind
     ;;ESC Cancels All
     (("<escape>" . keyboard-escape-quit))
-
     :hook
     ;; Enable word wrapping
     (((prog-mode conf-mode text-mode) . visual-line-mode)
