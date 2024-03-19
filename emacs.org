@@ -162,15 +162,6 @@ The following optimisatzion have been inspired by:
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
 #+end_src
-*** Default Frame and initial Frame Settings
-#+begin_src emacs-lisp
-  ;; Increase size of new frames
-  (push '(width  . 200) default-frame-alist)
-  (push '(height  . 50) default-frame-alist)
-
-  ;; Apply frame settings to initial frame
-  (setq initial-frame-alist default-frame-alist)
-#+end_src
 *** Configure Straight
 This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
 The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
@@ -372,7 +363,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
     (defun unpropertize-kill-ring ()
       (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-
+    :init
+    (modify-all-frames-parameters '((width . 200)
+                                    (height . 50)))
     :config
     ;; Load customization File
     (load custom-file 'noerror 'nomessage)
