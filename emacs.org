@@ -228,8 +228,8 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
   (use-package benchmark-init
     :demand t
     ;; To disable collection of benchmark data after init is done.
-    :hook
-    (after-init . benchmark-init/deactivate))
+    :config
+    (add-hook 'after-init-hook #'benchmark-init/deactivate 99))
 #+end_src
 *** Personal Information
 Let's set some variables with basic user information.
@@ -1054,9 +1054,7 @@ When working with many windows at the same time, each window has a size that is 
                         (window-live-p (get-buffer-window which-key--buffer)))))
     :bind
     (:map my/toggle-map
-          ("g" . golden-ratio-mode))
-    :hook
-    (after-init . golden-ratio-mode))
+          ("g" . golden-ratio-mode)))
 #+end_src
 **** [[https://github.com/dengste/minimap.git][minimap]]
 Sidebar showing a "mini-map" of a buffer.
@@ -1360,7 +1358,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 
     ;; archive all DONE tasks in subtree
     ;; https://stackoverflow.com/questions/6997387
-    (defun org-archive-done-tasks ()
+    (defun my/org-archive-done-tasks ()
       (interactive)
       (org-map-entries
        (lambda ()
@@ -1369,15 +1367,15 @@ Agenda view and task management has been inspired by https://github.com/rougier/
        "/DONE" 'tree))
     :hook
     (org-after-todo-state-change . my/log-todo-next-creation-date)
-    :config
-    (advice-add 'org-refile :after
-                (lambda (&rest _)
-                  (my/gtd-save-org-buffers)))
     :bind
     (:map my/leader-map
           ("c" . org-capture)
           :map my/open-map
-          ("a" . org-agenda)))
+          ("a" . org-agenda))
+    :config
+    (advice-add 'org-refile :after
+                (lambda (&rest _)
+                  (my/gtd-save-org-buffers))))
 
   (use-package ox-latex
     :straight nil
@@ -1502,8 +1500,7 @@ This package implements a modern style for your Org buffers using font locking a
 
 #+begin_src emacs-lisp
   (use-package org-modern
-    :hook (org-mode . global-org-modern-mode)
-    :after (:any org org-agenda)
+    :hook (org-mode . org-modern-mode)
     :custom
     (org-modern-star '("◉" "○" "◇"))
     (org-modern-label-border 0.3)
@@ -1534,8 +1531,8 @@ Modern block styling with org-indent.
 #+begin_src emacs-lisp
   (use-package org-modern-indent
     :straight (:host github :repo "jdtsmith/org-modern-indent")
-    :hook ; add late to hook
-    (org-mode . org-modern-indent-mode))
+    :hook
+    (org-indent-mode . org-modern-indent-mode))
 #+end_src
 **** [[https://github.com/org-noter/org-noter.git][org-noter]]
 Emacs document annotator, using Org-mode.
@@ -2765,7 +2762,7 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp
   (use-package magit-todos
     :after magit
-    :config (magit-todos-mode))
+    :init (magit-todos-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
@@ -2810,12 +2807,13 @@ Enhancements to Emacs' built in project library.
 Support a "one tab group per project" workflow.
 #+begin_src emacs-lisp
   (use-package project-tab-groups
+    :after tab-bar project
     :config
     (with-eval-after-load 'tab-bar-echo-area
       (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
       (tab-bar-echo-area-apply-display-tab-names-advice))
-    :hook
-    (after-init . project-tab-groups-mode))
+    :init
+    (project-tab-groups-mode))
 #+end_src
 **** speedbar :build_in:
 #+begin_src emacs-lisp
@@ -3317,10 +3315,6 @@ Manage Python imports from Emacs!.
 #+begin_src emacs-lisp
   (use-package python
     :straight nil
-    :mode ("[./]flake8\\'" . conf-mode)
-    :mode ("/Pipfile\\'" . conf-mode)
-    :mode ("\\.py\\'" . python-mode)
-    :interpreter ("python" . python-mode)
     :custom
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
@@ -3372,7 +3366,6 @@ Using the forked version with treesit support here
       (keymap-local-set "<backtab>" 'ts-fold-toggle))
     :hook
     (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
-     ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
      (ts-fold-mode . my/ts-fold-mode-hook)))
 
 #+end_src
