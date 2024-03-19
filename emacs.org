@@ -591,32 +591,6 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
     :hook
     (after-init . auto-dark-mode))
 #+end_src
-**** [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
-An extensible emacs dashboard.
-#+begin_src emacs-lisp
-  (use-package dashboard
-    :custom
-    ;; Content is not centered by default. To center, set
-    (dashboard-center-content t)
-
-    ;; display an alternative emacs logo
-    (dashboard-startup-banner 'logo)
-
-    ;; To disable shortcut "jump" indicators for each section, set
-    (dashboard-show-shortcuts nil)
-    (dashboard-projects-backend 'project-el)
-    (dashboard-items '((bookmarks . 20)
-                       (recents  . 10)
-                       (projects . 10)))
-    (dashboard-icon-type 'nerd-icons) ;; use `nerd-icons' package
-    (dashboard-display-icons-p (display-graphic-p))
-    (dashboard-set-heading-icons (display-graphic-p))
-    (dashboard-set-file-icons (display-graphic-p))
-    (dashboard-set-navigator t) ;; show navigator below the banner:
-    (dashboard-set-footer nil) ;; disable footer
-    :hook
-    (after-init . dashboard-setup-startup-hook))
-#+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
 #+begin_src emacs-lisp
@@ -896,7 +870,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (tab-bar-separator "")
     (tab-bar-auto-width nil)
     (tab-bar-close-button-show t)
-    (tab-bar-new-tab-choice "*dashboard*")
+    (tab-bar-new-tab-choice "*scratch*")
     (tab-bar-history-limit 100)
     :preface
     (defun my/tab-bar-format-new ()
@@ -1728,14 +1702,6 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
 **** Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-tools.el")>>
-#+end_src
-**** [[https://github.com/radian-software/ctrlf.git][ctrlf]]
-Emacs finally learns how to ctrl+F.
-#+begin_src emacs-lisp
-  (use-package ctrlf
-    :hook
-    ((after-init . ctrlf-mode)
-     (pdf-isearch-minor-mode . (lambda () (ctrlf-local-mode -1)))))
 #+end_src
 **** dired :build_in:
 #+begin_src emacs-lisp
@@ -2695,39 +2661,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
 #+end_src
-**** [[https://github.com/emacs-straight/vertico-posframe.git][vertico-posframe]]
-A vertico extension, which lets vertico use posframe to show its candidate menu.
-#+begin_src emacs-lisp
-  (use-package vertico-posframe
-    :after vertico
-    :custom
-    (vertico-multiform-commands
-     '((consult-line (:not posframe))
-       (consult-yank-from-kill-ring (:not posframe))
-       (consult-imenu (:not posframe))
-       (consult-ripgrep (:not posframe))
-       (consult-grep (:not posframe))
-       (consult-yank-from-kill-ring (:not posframe))
-       (consult-outline (:not posframe) buffer ,(lambda (_) (text-scale-set -1)))
-       (posframe
-        (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-        (vertico-posframe-border-width . 10)
-        ;; NOTE: This is useful when emacs is used in both in X and
-        ;; terminal, for posframe do not work well in terminal, so
-        ;; vertico-buffer-mode will be used as fallback at the
-        ;; moment.
-        (vertico-posframe-fallback-mode . vertico-buffer-mode))
-       (t posframe)))
-    (vertico-posframe-parameters
-     '((left-fringe . 8)
-       (right-fringe . 8)
-       (alpha . 80)))
-    :init
-    (require 'vertico-multiform)
-    (vertico-multiform-mode)
-    :hook
-    (vertico-mode . vertico-posframe-mode))
-#+end_src
 **** Library Footer
 #+begin_src emacs-lisp
   (provide 'my-completion)
@@ -3447,13 +3380,9 @@ Using the forked version with treesit support here
 The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp
   (use-package yaml-mode
+    :bind
+    (:map yaml-mode-map ("\C-m" . newline-and-indent))
     :mode ("\\.ya?ml\\'" . yaml-ts-mode))
-#+end_src
-**** [[https://github.com/zkry/yaml-pro.git][yaml-pro]]
-Edit YAML in Emacs like a pro.
-#+begin_src emacs-lisp
-  (use-package yaml-pro
-    :hook (yaml-ts-mode . yaml-pro-ts-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
