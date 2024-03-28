@@ -175,6 +175,9 @@ The code includes optimization for startup time, disables file modification chec
   ;;disable checking (for speedup).
   (setq straight-check-for-modifications nil)
 
+  ;; cache the autoloads of all used packages in a single file
+  (setq straight-cache-autoloads t)
+
   ;; Enable straight use-package integration
   (setq straight-use-package-by-default t
         use-package-always-defer t)
