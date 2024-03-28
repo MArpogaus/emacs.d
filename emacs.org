@@ -313,16 +313,13 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Mouse
     ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
     (mouse-yank-at-point t)                               ; Yank at point rather than pointer
-    (mouse-avoidance-mode 'exile)                         ; Avoid collision of mouse with point
     ;; Mouse active in tty mode.
     (xterm-mouse-mode (not (display-graphic-p)))
 
     ;; Scroll
     ;; Smoother scrolling.
     (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
-    (scroll-margin 2)                                     ; Add a margin when scrolling vertically
-    (recenter-positions '(5 bottom))                      ; Set re-centering positions
-    (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified regions
+    (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified region
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
