@@ -840,7 +840,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                                :mode-line-width 4
                                :tab-width 4
                                :right-divider-width 10
-                               :scroll-bar-width 4))
+                               :scroll-bar-width 4
+                               :fringe-width 8))
     :hook
     (after-init . spacious-padding-mode))
 #+end_src
