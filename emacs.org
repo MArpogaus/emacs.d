@@ -312,7 +312,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (mouse-yank-at-point t)                               ; Yank at point rather than pointer
     (mouse-avoidance-mode 'exile)                         ; Avoid collision of mouse with point
     ;; Mouse active in tty mode.
-    (xterm-mouse-mode (display-graphic-p))
+    (xterm-mouse-mode (not (display-graphic-p)))
 
     ;; Scroll
     ;; Smoother scrolling.
@@ -3549,7 +3549,7 @@ The mode displays the key bindings following your currently entered incomplete c
 #+begin_src emacs-lisp
   (use-package which-key
     :custom
-    (which-key-idle-delay 0.0)
+    (which-key-idle-delay 0.1)
     :hook
     (meow-mode . which-key-mode))
 #+end_src
