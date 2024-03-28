@@ -2710,6 +2710,8 @@ Emacs package for highlighting uncommitted changes.
     (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my/diff-hl-bitmap))
     (my/diff-hl-fix-face-colors)
     (advice-add #'enable-theme :after #'my/diff-hl-fix-face-colors)
+    (when (not (display-graphic-p))
+      (diff-hl-margin-mode))
     :bind
     (:map my/version-control-map
           ("g" . diff-hl-show-hunk)
