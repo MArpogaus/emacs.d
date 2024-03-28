@@ -645,7 +645,7 @@ A fancy and fast mode-line inspired by minimalism design.
 
     ;; Whether display icons in the mode-line.
     ;; While using the server mode in GUI, should set the value explicitly.
-    (doom-modeline-icon (display-graphic-p))
+    (doom-modeline-icon t)
 
     ;; If non-nil, only display one number for checker information if applicable.
     (doom-modeline-checker-simple-format nil)
