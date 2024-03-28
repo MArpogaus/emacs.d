@@ -3070,16 +3070,19 @@ Emacs helper library (and minor mode) to work with conda environments.
       :group 'conda
       :global t
       ;; Forms
-      (if my/conda-env-autoactivate-mode ;; already on, now switching off
+      (if my/global-conda-env-autoactivate-mode ;; already on, now switching off
           (progn
             (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice)
-            (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice))
+            (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice)
+            ;; Try to activat env imediatly after switching to a project
+            (my/conda-env-auto-activate-advice))
         (progn
           (advice-remove #'tab-bar-select-tab #'my/conda-env-auto-activate-advice)
-          (advice-remove #'project-switch-project #'my/conda-env-auto-activate-advice))))
+          (advice-remove #'project-switch-project #'my/conda-env-auto-activate-advice)
+          (conda-env-deactivate))))
     :init
-    ;; Try to activat env imediatly after switching to a project
-    (my/conda-env-autoactivate-mode)
+    ;; enable automatic activation on project switch
+    (my/global-conda-env-autoactivate-mode)
     :config
     ;; interactive shell support
     (conda-env-initialize-interactive-shells)
