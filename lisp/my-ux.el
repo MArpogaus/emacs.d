@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -72,9 +72,7 @@
                       (window-live-p (get-buffer-window which-key--buffer)))))
   :bind
   (:map my/toggle-map
-        ("g" . golden-ratio-mode))
-  :hook
-  (after-init . golden-ratio-mode))
+        ("g" . golden-ratio-mode)))
 
 ;; [[https://github.com/dengste/minimap.git][minimap]]
 ;; Sidebar showing a "mini-map" of a buffer.

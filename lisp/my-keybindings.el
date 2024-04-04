@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -29,27 +29,26 @@
   (meow-use-clipboard t)
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
   :preface
-  ;; Buffer-local variable to specify the desired Meow state
+  ;; Here we define some helper variables and functions to mimic the bahaviour
+  ;; of =meow-mode-state-list= for minor modess
   (defvar my/meow-desired-state nil
     "Buffer-local variable to specify the desired Meow state.")
-
-  ;; Function to set the buffer-local value of my/meow-desired-state
   (defun my/meow-set-desired-state (state)
     "Set the buffer-local variable =my/meow-desired-state= to the specified state."
     (setq-local my/meow-desired-state state))
-
-  ;; Advice function to modify 'meow--mode-get-state' based on 'my/meow-desired-state'
   (defun my/meow-mode-get-state-advice (orig-func &rest args)
     "Advice function to modify =meow--mode-get-state= based on =my/meow-desired-state=."
     (if my/meow-desired-state
         my/meow-desired-state
       (apply orig-func args)))
-
-  ;; Hook to set my/meow-desired-state to 'motion' when entering git-timemachine mode
   (defun my/meow-git-timemachine-hook ()
     "Hook to set my/meow-desired-state to =motion= when entering git-timemachine mode."
     (my/meow-set-desired-state 'motion))
-
+  (defun my/tab-line-mode-hook ()
+    "modify behavior of meow commands when tab-line-mode is active"
+    (if tab-line-mode
+        (advice-add #'meow-quit :override #'my/tab-line-close-tab-function)
+      (advice-remove #'meow-quit #'my/tab-line-close-tab-function)))
   :config
   (with-eval-after-load 'nerd-icons
     (setq meow-replace-state-name-list
@@ -169,14 +168,15 @@
         ("z" . meow-pop-selection))
   :hook
   ((git-timemachine-mode . my/meow-git-timemachine-hook)
-   (after-init . meow-global-mode)))
+   (after-init . meow-global-mode)
+   (tab-line-mode . my/tab-line-mode-hook)))
 
 ;; [[https://github.com/justbur/emacs-which-key.git][which-key]]
 ;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 
 (use-package which-key
   :custom
-  (which-key-idle-delay 0.0)
+  (which-key-idle-delay 0.1)
   :hook
   (meow-mode . which-key-mode))
 

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -634,39 +634,6 @@ the completing-read prompter."
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (after-init . vertico-mode)))
-
-;; [[https://github.com/emacs-straight/vertico-posframe.git][vertico-posframe]]
-;; A vertico extension, which lets vertico use posframe to show its candidate menu.
-
-(use-package vertico-posframe
-  :after vertico
-  :custom
-  (vertico-multiform-commands
-   '((consult-line (:not posframe))
-     (consult-yank-from-kill-ring (:not posframe))
-     (consult-imenu (:not posframe))
-     (consult-ripgrep (:not posframe))
-     (consult-grep (:not posframe))
-     (consult-yank-from-kill-ring (:not posframe))
-     (consult-outline (:not posframe) buffer ,(lambda (_) (text-scale-set -1)))
-     (posframe
-      (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-      (vertico-posframe-border-width . 10)
-      ;; NOTE: This is useful when emacs is used in both in X and
-      ;; terminal, for posframe do not work well in terminal, so
-      ;; vertico-buffer-mode will be used as fallback at the
-      ;; moment.
-      (vertico-posframe-fallback-mode . vertico-buffer-mode))
-     (t posframe)))
-  (vertico-posframe-parameters
-   '((left-fringe . 8)
-     (right-fringe . 8)
-     (alpha . 80)))
-  :init
-  (require 'vertico-multiform)
-  (vertico-multiform-mode)
-  :hook
-  (vertico-mode . vertico-posframe-mode))
 
 ;; Library Footer
 
