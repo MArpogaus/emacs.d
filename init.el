@@ -110,13 +110,15 @@
   ;; Mouse
   ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
   (mouse-yank-at-point t)                               ; Yank at point rather than pointer
-  ;; Mouse active in tty mode.
-  (xterm-mouse-mode (not (display-graphic-p)))
+  (xterm-mouse-mode (not (display-graphic-p)))          ; Mouse active in tty mode.
+  (context-menu-mode (display-graphic-p))               ; Enable context menu on right click
 
   ;; Scroll
   ;; Smoother scrolling.
   (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
   (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified region
+  (pixel-scroll-precision-mode t)                       ; Enable pixel-wise scrolling 
+  (pixel-scroll-precision-interpolate-mice nil)         ; Disable interpolation (causes wired jumps)
 
   ;; Cursor
   ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
