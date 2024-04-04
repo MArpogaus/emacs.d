@@ -16,7 +16,6 @@
     - [[#conventional-library-header][Conventional Library Header]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#optimize-startup-time][Optimize Startup Time]]
-    - [[#default-frame-and-initial-frame-settings][Default Frame and initial Frame Settings]]
     - [[#configure-straight][Configure Straight]]
     - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
@@ -3438,7 +3437,6 @@ Using the forked version with treesit support here
     :hook
     (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
      (ts-fold-mode . my/ts-fold-mode-hook)))
-
 #+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 The emacs major mode for editing files in the YAML data serialization format.
@@ -3629,15 +3627,6 @@ The mode displays the key bindings following your currently entered incomplete c
     (which-key-idle-delay 0.1)
     :hook
     (meow-mode . which-key-mode))
-#+end_src
-**** [[https://github.com/karthink/repeat-help.git][repeat-help]]
-#+begin_src emacs-lisp :tangle no
-  (use-package repeat-help
-    :straight (:host github :repo "LemonBreezes/repeat-help" :branch "real-last-command")
-    :custom
-    (repeat-help-auto nil)
-    :hook
-    (repeat-mode . repeat-help-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
