@@ -957,13 +957,26 @@ Increase the padding/spacing of GNU Emacs frames and windows.
      (after-init . tab-bar-mode)))
 #+end_src
 **** tab-line :build_in:
+Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
+
+Some customizations are made to prettify the look of tabs using =nerd-icons= and make the close button behave as known from other editors.
+
+References:
+- https://github.com/benleis1/emacs-init/blob/main/tab-config.md#tab2-close-tab
+- https://andreyor.st/posts/2020-05-07-making-emacs-tabs-work-like-in-atom/
+
 #+begin_src emacs-lisp
   (use-package tab-line
     :straight nil
     :custom
-    (tab-line-new-tab-choice . nil)
-    (tab-line-new-button-show . nil)
-    (tab-line-close-button-show . nil)
+    (tab-line-new-tab-choice nil)
+    (tab-line-new-button-show nil)
+    (tab-line-tab-name-function #'my/tab-line-tab-name-function)
+    (tab-line-close-tab-function #'my/tab-line-close-tab-function)
+    (tab-line-exclude-modes '(completion-list-mode doc-view-mode imenu-list-major-mode
+                                                   ediff-meta-mode ediff-mode symbols-outline-mode))
+    (tab-line-close-button-show 'selected)
+    (tab-line-separator "")
     :bind
     (:map my/toggle-map
           ("T" . global-tab-line-mode))
@@ -973,13 +986,42 @@ Increase the padding/spacing of GNU Emacs frames and windows.
         (concat " "
                 (nerd-icons-icon-for-file name)
                 (format " %s " name))))
-    (defun my/switch-to-prev-buffer-skip (window buffer &REST)
-      (not (seq-contains-p
-            (tab-line-tabs-window-buffers) buffer)))
+
+    (defun my/tab-line-close-tab-function (tab)
+      "Close the selected tab.
+    If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+    If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+    Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+      (interactive (list (current-buffer)))
+      (let ((window (selected-window))
+            (buffer (if (bufferp tab) tab (cdr (assq 'buffer tab)))))
+        (with-selected-window window
+          (let ((tab-list (tab-line-tabs-window-buffers))
+                (buffer-list (flatten-list
+                              (seq-reduce (lambda (list window)
+                                            (select-window window t)
+                                            (cons (tab-line-tabs-window-buffers) list))
+                                          (window-list) nil))))
+            (select-window window)
+            (if (> (seq-count (lambda (b) (eq b buffer)) buffer-list) 1)
+                (progn
+                  (message "Burry tab %s of buffer %s" tab buffer)
+                  (bury-buffer))
+              (progn
+                (message "Closing tab %s of buffer %s" tab buffer)
+                (kill-buffer buffer)))
+  		  (unless (cdr tab-list)
+              (progn
+                (message "Closing window")
+                (ignore-errors (delete-window window))))))))
     :config
-    (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
-          tab-line-separator "")
-    (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip))
+    (setq tab-line-close-button
+          (propertize "󰅖 "
+                      'keymap tab-line-tab-close-map
+                      'mouse-face 'tab-line-close-highlight
+                      'help-echo "Click to close tab"))
+    :hook
+    (after-init . global-tab-line-mode))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
@@ -3428,6 +3470,11 @@ Meow is yet another modal editing mode for Emacs.
     (defun my/meow-git-timemachine-hook ()
       "Hook to set my/meow-desired-state to =motion= when entering git-timemachine mode."
       (my/meow-set-desired-state 'motion))
+    (defun my/tab-line-mode-hook ()
+      "modify behavior of meow commands when tab-line-mode is active"
+      (if tab-line-mode
+          (advice-add #'meow-quit :override #'my/tab-line-close-tab-function)
+        (advice-remove #'meow-quit #'my/tab-line-close-tab-function)))
     :config
     (with-eval-after-load 'nerd-icons
       (setq meow-replace-state-name-list
@@ -3547,7 +3594,8 @@ Meow is yet another modal editing mode for Emacs.
           ("z" . meow-pop-selection))
     :hook
     ((git-timemachine-mode . my/meow-git-timemachine-hook)
-     (after-init . meow-global-mode)))
+     (after-init . meow-global-mode)
+     (tab-line-mode . my/tab-line-mode-hook)))
 #+end_src
 **** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
