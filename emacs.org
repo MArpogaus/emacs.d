@@ -319,6 +319,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Smoother scrolling.
     (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
     (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified region
+    (pixel-scroll-precision-mode t)                       ; Enable pixel-wise scrolling 
+    (pixel-scroll-precision-interpolate-mice nil)         ; Disable interpolation (causes wired jumps)
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
