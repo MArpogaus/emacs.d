@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -79,15 +79,6 @@
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
-;; Default Frame and initial Frame Settings
-
-;; Increase size of new frames
-(push '(width  . 200) default-frame-alist)
-(push '(height  . 50) default-frame-alist)
-
-;; Apply frame settings to initial frame
-(setq initial-frame-alist default-frame-alist)
-
 ;; Configure Straight
 ;; This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
 ;; The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
@@ -100,6 +91,9 @@
 ;; straight.el bootstrap code
 ;;disable checking (for speedup).
 (setq straight-check-for-modifications nil)
+
+;; cache the autoloads of all used packages in a single file
+(setq straight-cache-autoloads t)
 
 ;; Enable straight use-package integration
 (setq straight-use-package-by-default t

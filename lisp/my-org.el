@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -158,7 +158,7 @@
 
   ;; archive all DONE tasks in subtree
   ;; https://stackoverflow.com/questions/6997387
-  (defun org-archive-done-tasks ()
+  (defun my/org-archive-done-tasks ()
     (interactive)
     (org-map-entries
      (lambda ()
@@ -167,15 +167,15 @@
      "/DONE" 'tree))
   :hook
   (org-after-todo-state-change . my/log-todo-next-creation-date)
-  :config
-  (advice-add 'org-refile :after
-              (lambda (&rest _)
-                (my/gtd-save-org-buffers)))
   :bind
   (:map my/leader-map
         ("c" . org-capture)
         :map my/open-map
-        ("a" . org-agenda)))
+        ("a" . org-agenda))
+  :config
+  (advice-add 'org-refile :after
+              (lambda (&rest _)
+                (my/gtd-save-org-buffers))))
 
 (use-package ox-latex
   :straight nil
@@ -300,8 +300,7 @@
 
 
 (use-package org-modern
-  :hook (org-mode . global-org-modern-mode)
-  :after (:any org org-agenda)
+  :hook (org-mode . org-modern-mode)
   :custom
   (org-modern-star '("◉" "○" "◇"))
   (org-modern-label-border 0.3)
@@ -332,8 +331,8 @@
 
 (use-package org-modern-indent
   :straight (:host github :repo "jdtsmith/org-modern-indent")
-  :hook ; add late to hook
-  (org-mode . org-modern-indent-mode))
+  :hook
+  (org-indent-mode . org-modern-indent-mode))
 
 ;; [[https://github.com/org-noter/org-noter.git][org-noter]]
 ;; Emacs document annotator, using Org-mode.
@@ -395,7 +394,15 @@
 
     ;; Tweak font sizes
     (setq-local face-remapping-alist '((header-line (:height 4.0) variable-pitch)
-                                       (org-document-title (:height 2.0) org-document-title)))
+                                       (org-document-title (:height 2.0) org-document-title)
+                                       (org-level-1 (:height 1.2) org-level-1)
+                                       (org-level-2 (:height 1.1) org-level-2)
+                                       (org-default (:inherit fixed-pitch) org-default)
+                                       (org-table (:inherit fixed-pitch) org-table)
+                                       (org-code (:inherit fixed-pitch) org-code)
+                                       (org-verbatim (:inherit fixed-pitch) org-verbatim)
+                                       (org-hide (:inherit fixed-pitch) org-hide)
+                                       (default (:inherit variable-pitch))))
 
     ;; Set a blank header line string to create blank space at the top
     (setq-local header-line-format " ")
@@ -404,11 +411,17 @@
     (setq-local visual-fill-column-width 80
                 visual-fill-column-center-text t)
 
+    ;; Remove org modern borders from blocks
+    (setq-local org-modern-block-fringe nil)
+
     ;; Center the presentation and wrap lines
     (visual-fill-column-mode 1)
 
     ;; hide the mode line
     (hide-mode-line-mode 1)
+
+    ;; disable fringes
+    (set-fringe-mode 0)
 
     ;; Increase font size
     (org-present-big))
@@ -421,14 +434,17 @@
     (org-tidy-mode 0)
 
     ;; Reset font customizations
-    (setq-local face-remapping-alist nil)
+    (kill-local-variable 'face-remapping-alist)
 
     ;; Clear the header line string so that it isn't displayed
-    (setq-local header-line-format nil)
+    (kill-local-variable 'header-line-format)
 
     ;; Configure fill width
-    (setq-local visual-fill-column-width nil
-                visual-fill-column-center-text nil)
+    (kill-local-variable 'visual-fill-column-width)
+    (kill-local-variable 'visual-fill-column-center-text)
+
+    ;; Reset org modern borders from blocks
+    (kill-local-variable 'org-modern-block-fringe)
 
     ;; Stop centering the presentation and wrap lines
     (visual-fill-column-mode 0)
@@ -436,10 +452,11 @@
     ;; Stop hiding the mode line
     (hide-mode-line-mode 0)
 
-    ;; Restore font size
-    (org-present-small)
+    ;; reset fringes to default style
+    (set-fringe-mode nil)
 
-    )
+    ;; Restore font size
+    (org-present-small))
   (defun my/org-present-prepare-slide (buffer-name heading)
     ;; Show only top-level headlines
     (org-overview)

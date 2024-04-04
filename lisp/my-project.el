@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -41,12 +41,13 @@
 ;; Support a "one tab group per project" workflow.
 
 (use-package project-tab-groups
+  :after tab-bar project
   :config
   (with-eval-after-load 'tab-bar-echo-area
     (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
     (tab-bar-echo-area-apply-display-tab-names-advice))
-  :hook
-  (after-init . project-tab-groups-mode))
+  :init
+  (project-tab-groups-mode))
 
 ;; speedbar :build_in:
 

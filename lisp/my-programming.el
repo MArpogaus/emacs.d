@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -125,26 +125,56 @@
             python-shell-interpreter-args "-i"))))
   (defun my/conda-env-auto-activate-advice (&rest _)
     "Activate conda environment for project."
-    (let ((current-project-name 
-           ;; If buffer belongs to a project us its name.
+    (let* ((project-current (project-current))
+           ;; If buffer belongs to a project use its name.
            ;; If not fall back to tab group
-           (if-let ((project-current (project-current)))
-               (project-name project-current)
-             (alist-get 'group (tab-bar--current-tab)))))
-      (cond
-       ((bound-and-true-p conda-project-env-path)
-        (conda-env-activate-for-buffer))
-       ((and current-project-name
-             (member current-project-name
-                     (conda-env-candidates)))
-        (conda-env-activate current-project-name))
-       (t (conda-env-deactivate)))))
+           (current-project-name 
+            (or (and project-current (project-name project-current))
+                (alist-get 'group (tab-bar--current-tab))))
+           ;; Skip env activation if project is located at a remote location
+           (project-remote-p
+            (and project-current (file-remote-p (project-root project-current)))))
+      (progn
+        (message (format "%s %s" current-project-name project-remote-p))
+        (cond
+         ((and (bound-and-true-p conda-project-env-path)
+               (not project-remote-p))
+          (message (format "activating env for project: %s" conda-project-env-path))
+          (conda-env-activate-for-buffer))
+         ((and current-project-name
+               (not project-remote-p)
+               (member current-project-name (conda-env-candidates)))
+          (message (format "found conda env with project name: %s" current-project-name))
+          (conda-env-activate current-project-name))
+         (t (conda-env-deactivate))))))
+  (define-minor-mode my/global-conda-env-autoactivate-mode
+    "Toggle conda-env-autoactivate mode.
+
+This mode automatically tries to activate a conda environment for the current
+buffer."
+    ;; The initial value.
+    nil
+    ;; The indicator for the mode line.
+    nil
+    ;; The minor mode bindings.
+    nil
+    ;; Kwargs
+    :group 'conda
+    :global t
+    ;; Forms
+    (if my/global-conda-env-autoactivate-mode ;; already on, now switching off
+        (progn
+          (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice)
+          (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice)
+          ;; Try to activat env imediatly after switching to a project
+          (my/conda-env-auto-activate-advice))
+      (progn
+        (advice-remove #'tab-bar-select-tab #'my/conda-env-auto-activate-advice)
+        (advice-remove #'project-switch-project #'my/conda-env-auto-activate-advice)
+        (conda-env-deactivate))))
   :init
-  ;; Try to activat env imediatly after switching to a project
-  (with-eval-after-load 'tab-bar
-    (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice))
-  (with-eval-after-load 'project
-    (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice))
+  ;; enable automatic activation on project switch
+  (my/global-conda-env-autoactivate-mode)
   :config
   ;; interactive shell support
   (conda-env-initialize-interactive-shells)
@@ -205,17 +235,16 @@
   ;; If you do not want to use any prefix, set it to nil.
   ;; (setq dape-key-prefix "\C-x\C-a")
 
+  ;; Projectile users
+  ;; (setq dape-cwd-fn 'projectile-project-root)
+
+  :hook
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
 
   ;; Save buffers on startup, useful for interpreted languages
-  (add-hook 'dape-on-start-hooks
-            (defun dape--save-on-start ()
-              (save-some-buffers t t)))
-
-  ;; Projectile users
-  ;; (setq dape-cwd-fn 'projectile-project-root)
-  )
+  ((dape-on-start-hooks . (lambda () (save-some-buffers t t)))
+   (prog-mode . dape-breakpoint-global-mode)))
 
 ;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
 ;; An emacs mode for handling Dockerfiles.
@@ -381,10 +410,6 @@
 
 (use-package python
   :straight nil
-  :mode ("[./]flake8\\'" . conf-mode)
-  :mode ("/Pipfile\\'" . conf-mode)
-  :mode ("\\.py\\'" . python-mode)
-  :interpreter ("python" . python-mode)
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)
@@ -436,20 +461,15 @@
     (keymap-local-set "<backtab>" 'ts-fold-toggle))
   :hook
   (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
-   ((yaml-ts-mode python-ts-mode) . ts-fold-indicators-mode)
    (ts-fold-mode . my/ts-fold-mode-hook)))
 
 ;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 ;; The emacs major mode for editing files in the YAML data serialization format.
 
 (use-package yaml-mode
+  :bind
+  (:map yaml-mode-map ("\C-m" . newline-and-indent))
   :mode ("\\.ya?ml\\'" . yaml-ts-mode))
-
-;; [[https://github.com/zkry/yaml-pro.git][yaml-pro]]
-;; Edit YAML in Emacs like a pro.
-
-(use-package yaml-pro
-  :hook (yaml-ts-mode . yaml-pro-ts-mode))
 
 ;; Library Footer
 

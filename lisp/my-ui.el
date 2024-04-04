@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -43,32 +43,6 @@
   (auto-dark-light-theme 'modus-operandi-tinted)
   :hook
   (after-init . auto-dark-mode))
-
-;; [[https://github.com/emacs-dashboard/emacs-dashboard.git][dashboard]]
-;; An extensible emacs dashboard.
-
-(use-package dashboard
-  :custom
-  ;; Content is not centered by default. To center, set
-  (dashboard-center-content t)
-
-  ;; display an alternative emacs logo
-  (dashboard-startup-banner 'logo)
-
-  ;; To disable shortcut "jump" indicators for each section, set
-  (dashboard-show-shortcuts nil)
-  (dashboard-projects-backend 'project-el)
-  (dashboard-items '((bookmarks . 20)
-                     (recents  . 10)
-                     (projects . 10)))
-  (dashboard-icon-type 'nerd-icons) ;; use `nerd-icons' package
-  (dashboard-display-icons-p (display-graphic-p))
-  (dashboard-set-heading-icons (display-graphic-p))
-  (dashboard-set-file-icons (display-graphic-p))
-  (dashboard-set-navigator t) ;; show navigator below the banner:
-  (dashboard-set-footer nil) ;; disable footer
-  :hook
-  (after-init . dashboard-setup-startup-hook))
 
 ;; display-line-numbers :build_in:
 ;; Enable line numbers for some modes
@@ -124,7 +98,7 @@
 
   ;; Whether display icons in the mode-line.
   ;; While using the server mode in GUI, should set the value explicitly.
-  (doom-modeline-icon (display-graphic-p))
+  (doom-modeline-icon t)
 
   ;; If non-nil, only display one number for checker information if applicable.
   (doom-modeline-checker-simple-format nil)
@@ -317,9 +291,12 @@
                              :internal-border-width 10
                              :header-line-width 1
                              :mode-line-width 4
-                             :tab-width 4
+                             :tab-bar-width 4
+                             :tab-line-width 0
                              :right-divider-width 10
-                             :scroll-bar-width 4))
+                             :scroll-bar-width 4
+                             :fringe-width 8))
+  (spacious-padding-subtle-mode-line t)
   :hook
   (after-init . spacious-padding-mode))
 
@@ -349,7 +326,7 @@
   (tab-bar-separator "")
   (tab-bar-auto-width nil)
   (tab-bar-close-button-show t)
-  (tab-bar-new-tab-choice "*dashboard*")
+  (tab-bar-new-tab-choice "*scratch*")
   (tab-bar-history-limit 100)
   :preface
   (defun my/tab-bar-format-new ()
@@ -435,13 +412,26 @@
    (after-init . tab-bar-mode)))
 
 ;; tab-line :build_in:
+;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
+
+;; Some customizations are made to prettify the look of tabs using =nerd-icons= and make the close button behave as known from other editors.
+
+;; References:
+;; - https://github.com/benleis1/emacs-init/blob/main/tab-config.md#tab2-close-tab
+;; - https://andreyor.st/posts/2020-05-07-making-emacs-tabs-work-like-in-atom/
+
 
 (use-package tab-line
   :straight nil
   :custom
-  (tab-line-new-tab-choice . nil)
-  (tab-line-new-button-show . nil)
-  (tab-line-close-button-show . nil)
+  (tab-line-new-tab-choice nil)
+  (tab-line-new-button-show nil)
+  (tab-line-tab-name-function #'my/tab-line-tab-name-function)
+  (tab-line-close-tab-function #'my/tab-line-close-tab-function)
+  (tab-line-exclude-modes '(completion-list-mode doc-view-mode imenu-list-major-mode
+                                                 ediff-meta-mode ediff-mode symbols-outline-mode))
+  (tab-line-close-button-show 'selected)
+  (tab-line-separator "")
   :bind
   (:map my/toggle-map
         ("T" . global-tab-line-mode))
@@ -451,13 +441,42 @@
       (concat " "
               (nerd-icons-icon-for-file name)
               (format " %s " name))))
-  (defun my/switch-to-prev-buffer-skip (window buffer &REST)
-    (not (seq-contains-p
-          (tab-line-tabs-window-buffers) buffer)))
+
+  (defun my/tab-line-close-tab-function (tab)
+    "Close the selected tab.
+  If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+  If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+  Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+    (interactive (list (current-buffer)))
+    (let ((window (selected-window))
+          (buffer (if (bufferp tab) tab (cdr (assq 'buffer tab)))))
+      (with-selected-window window
+        (let ((tab-list (tab-line-tabs-window-buffers))
+              (buffer-list (flatten-list
+                            (seq-reduce (lambda (list window)
+                                          (select-window window t)
+                                          (cons (tab-line-tabs-window-buffers) list))
+                                        (window-list) nil))))
+          (select-window window)
+          (if (> (seq-count (lambda (b) (eq b buffer)) buffer-list) 1)
+              (progn
+                (message "Burry tab %s of buffer %s" tab buffer)
+                (bury-buffer))
+            (progn
+              (message "Closing tab %s of buffer %s" tab buffer)
+              (kill-buffer buffer)))
+		  (unless (cdr tab-list)
+            (progn
+              (message "Closing window")
+              (ignore-errors (delete-window window))))))))
   :config
-  (setq tab-line-tab-name-function #'my/tab-line-tab-name-function
-        tab-line-separator "")
-  (customize-set-value 'switch-to-prev-buffer-skip #'my/switch-to-prev-buffer-skip))
+  (setq tab-line-close-button
+        (propertize "󰅖 "
+                    'keymap tab-line-tab-close-map
+                    'mouse-face 'tab-line-close-highlight
+                    'help-echo "Click to close tab"))
+  :hook
+  (after-init . global-tab-line-mode))
 
 ;; Library Footer
 

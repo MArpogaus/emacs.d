@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -110,16 +110,13 @@
   ;; Mouse
   ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
   (mouse-yank-at-point t)                               ; Yank at point rather than pointer
-  (mouse-avoidance-mode 'exile)                         ; Avoid collision of mouse with point
   ;; Mouse active in tty mode.
-  (xterm-mouse-mode (display-graphic-p))
+  (xterm-mouse-mode (not (display-graphic-p)))
 
   ;; Scroll
   ;; Smoother scrolling.
   (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
-  (scroll-margin 2)                                     ; Add a margin when scrolling vertically
-  (recenter-positions '(5 bottom))                      ; Set re-centering positions
-  (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified regions
+  (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified region
 
   ;; Cursor
   ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
@@ -158,20 +155,26 @@
   ;; Resize frame and windows pixelwise
   (window-resize-pixelwise t)
   (frame-resize-pixelwise t)
+
+  ;; Diasble windmove mode
+  (windmove-mode nil)
   :preface
   ;; History
   ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
   (defun unpropertize-kill-ring ()
     (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-
+  :init
+  (modify-all-frames-parameters '((width . 200)
+                                  (height . 50)))
   :config
   ;; Load customization File
   (load custom-file 'noerror 'nomessage)
 
+  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil t)
   :bind
   ;;ESC Cancels All
   (("<escape>" . keyboard-escape-quit))
-
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode) . visual-line-mode)

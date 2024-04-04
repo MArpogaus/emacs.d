@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-02-23
+;; Created: 2024-04-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,14 +13,6 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
-
-;; [[https://github.com/radian-software/ctrlf.git][ctrlf]]
-;; Emacs finally learns how to ctrl+F.
-
-(use-package ctrlf
-  :hook
-  ((after-init . ctrlf-mode)
-   (pdf-isearch-minor-mode . (lambda () (ctrlf-local-mode -1)))))
 
 ;; dired :build_in:
 
@@ -85,9 +77,10 @@
    '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
   (dirvish-use-header-line nil)
   ;; (dirvish-use-mode-line nil)
-  :config
+  :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
+  :config
   (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
   (with-eval-after-load 'doom-modeline
     (setq dirvish-mode-line-height doom-modeline-height)
