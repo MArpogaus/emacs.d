@@ -1639,7 +1639,15 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
 
       ;; Tweak font sizes
       (setq-local face-remapping-alist '((header-line (:height 4.0) variable-pitch)
-                                         (org-document-title (:height 2.0) org-document-title)))
+                                         (org-document-title (:height 2.0) org-document-title)
+                                         (org-level-1 (:height 1.2) org-level-1)
+                                         (org-level-2 (:height 1.1) org-level-2)
+                                         (org-default (:inherit fixed-pitch) org-default)
+                                         (org-table (:inherit fixed-pitch) org-table)
+                                         (org-code (:inherit fixed-pitch) org-code)
+                                         (org-verbatim (:inherit fixed-pitch) org-verbatim)
+                                         (org-hide (:inherit fixed-pitch) org-hide)
+                                         (default (:inherit variable-pitch))))
 
       ;; Set a blank header line string to create blank space at the top
       (setq-local header-line-format " ")
@@ -1648,11 +1656,17 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (setq-local visual-fill-column-width 80
                   visual-fill-column-center-text t)
 
+      ;; Remove org modern borders from blocks
+      (setq-local org-modern-block-fringe nil)
+
       ;; Center the presentation and wrap lines
       (visual-fill-column-mode 1)
 
       ;; hide the mode line
       (hide-mode-line-mode 1)
+
+      ;; disable fringes
+      (set-fringe-mode 0)
 
       ;; Increase font size
       (org-present-big))
@@ -1665,14 +1679,17 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (org-tidy-mode 0)
 
       ;; Reset font customizations
-      (setq-local face-remapping-alist nil)
+      (kill-local-variable 'face-remapping-alist)
 
       ;; Clear the header line string so that it isn't displayed
-      (setq-local header-line-format nil)
+      (kill-local-variable 'header-line-format)
 
       ;; Configure fill width
-      (setq-local visual-fill-column-width nil
-                  visual-fill-column-center-text nil)
+      (kill-local-variable 'visual-fill-column-width)
+      (kill-local-variable 'visual-fill-column-center-text)
+
+      ;; Reset org modern borders from blocks
+      (kill-local-variable 'org-modern-block-fringe)
 
       ;; Stop centering the presentation and wrap lines
       (visual-fill-column-mode 0)
@@ -1680,10 +1697,11 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       ;; Stop hiding the mode line
       (hide-mode-line-mode 0)
 
-      ;; Restore font size
-      (org-present-small)
+      ;; reset fringes to default style
+      (set-fringe-mode nil)
 
-      )
+      ;; Restore font size
+      (org-present-small))
     (defun my/org-present-prepare-slide (buffer-name heading)
       ;; Show only top-level headlines
       (org-overview)
