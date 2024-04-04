@@ -52,8 +52,6 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
 ** To-dos :noexport_1:
-*** TODO Add doom snippets?
-- [[https://github.com/ptn/doom-snippets][GitHub - ptn/doom-snippets: The Doom Emacs snippets library]]
 *** TODO anzu
 https://github.com/emacsorphanage/anzu
 ** Notes
@@ -312,8 +310,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Mouse
     ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
     (mouse-yank-at-point t)                               ; Yank at point rather than pointer
-    ;; Mouse active in tty mode.
-    (xterm-mouse-mode (not (display-graphic-p)))
+    (xterm-mouse-mode (not (display-graphic-p)))          ; Mouse active in tty mode.
+    (context-menu-mode (display-graphic-p))               ; Enable context menu on right click
 
     ;; Scroll
     ;; Smoother scrolling.
