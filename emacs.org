@@ -908,7 +908,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (defun my/tab-bar-tab-name-format-function (tab i)
       (let ((current-p (eq (car tab) 'current-tab)))
         (propertize
-         (concat (if current-p "⏵ " " ")
+         (concat (if current-p " " " ")
                  (if tab-bar-tab-hints (format "%d " i) "")
                  (alist-get 'name tab)
                  (if (and tab-bar-close-button-show current-p)
@@ -933,7 +933,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (define-icon tab-bar-close nil
       '(
         ;; (emoji " ❌")
-        (symbol " ✕ ") ;; "ⓧ"
+        (symbol " 󰅖 ") ;; "ⓧ"
         (text " x "))
       "Icon for closing the clicked tab."
       :version "29.1"
