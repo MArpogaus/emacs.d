@@ -976,8 +976,10 @@ References:
     (tab-line-new-button-show nil)
     (tab-line-tab-name-function #'my/tab-line-tab-name-function)
     (tab-line-close-tab-function #'my/tab-line-close-tab-function)
-    (tab-line-exclude-modes '(completion-list-mode doc-view-mode imenu-list-major-mode
-                                                   ediff-meta-mode ediff-mode symbols-outline-mode))
+    (tab-line-exclude-modes '(completion-list-mode
+                              doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode
+                              dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
+                              dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
     (tab-line-close-button-show 'selected)
     (tab-line-separator "")
     :bind
@@ -992,9 +994,9 @@ References:
 
     (defun my/tab-line-close-tab-function (tab)
       "Close the selected tab.
-    If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-    If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-    Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+      If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+      If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+      Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
       (interactive (list (current-buffer)))
       (let ((window (selected-window))
             (buffer (if (bufferp tab) tab (cdr (assq 'buffer tab)))))
@@ -1013,7 +1015,7 @@ References:
               (progn
                 (message "Closing tab %s of buffer %s" tab buffer)
                 (kill-buffer buffer)))
-  		  (unless (cdr tab-list)
+    	  (unless (cdr tab-list)
               (progn
                 (message "Closing window")
                 (ignore-errors (delete-window window))))))))
