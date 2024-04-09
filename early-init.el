@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-04
+;; Created: 2024-04-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -69,10 +69,8 @@
           (lambda ()
             (setq file-name-handler-alist file-name-handler-alist-old)))
 
-;; further preformance tweaks
-(setq
- read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
- command-line-x-option-alist nil) ; Remove irreleant command line options for faster startup
+;; Remove irreleant command line options for faster startup
+(setq command-line-x-option-alist nil)
 
 ;; Minimal UI
 (menu-bar-mode -1)

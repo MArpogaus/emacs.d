@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-04
+;; Created: 2024-04-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -155,20 +155,22 @@
   :straight (:host github :repo "jdtsmith/indent-bars")
   :custom
   (indent-bars-treesit-support t)
-  (indent-bars-no-descend-string t)
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
-  (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
-                                      list list_comprehension
-                                      dictionary dictionary_comprehension
-                                      parenthesized_expression subscript)))
+  (indent-bars-treesit-scope '((python
+                                function_definition class_definition for_statement
+                                if_statement with_statement while_statement)))
+  (indent-bars-treesit-wrap '((python
+                               argument_list parameters list list_comprehension
+                               dictionary dictionary_comprehension
+                               parenthesized_expression subscript)))
 
+  (indent-bars-color-by-depth nil)
+  (indent-bars-display-on-blank-lines nil)
+  (indent-bars-highlight-current-depth '(:face default :blend 0.4))
+  (indent-bars-pad-frac 0.1)
   (indent-bars-pattern ".")
   (indent-bars-width-frac 0.2)
-  (indent-bars-pad-frac 0.1)
   (indent-bars-zigzag nil)
-  (indent-bars-color-by-depth nil)
-  (indent-bars-highlight-current-depth '(:face default :blend 0.4))
-  (indent-bars-display-on-blank-lines nil)
   :hook
   ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 
@@ -360,7 +362,7 @@
   (defun my/tab-bar-tab-name-format-function (tab i)
     (let ((current-p (eq (car tab) 'current-tab)))
       (propertize
-       (concat (if current-p "⏵ " " ")
+       (concat (if current-p " " " ")
                (if tab-bar-tab-hints (format "%d " i) "")
                (alist-get 'name tab)
                (if (and tab-bar-close-button-show current-p)
@@ -385,7 +387,7 @@
   (define-icon tab-bar-close nil
     '(
       ;; (emoji " ❌")
-      (symbol " ✕ ") ;; "ⓧ"
+      (symbol " 󰅖 ") ;; "ⓧ"
       (text " x "))
     "Icon for closing the clicked tab."
     :version "29.1"
@@ -428,8 +430,10 @@
   (tab-line-new-button-show nil)
   (tab-line-tab-name-function #'my/tab-line-tab-name-function)
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
-  (tab-line-exclude-modes '(completion-list-mode doc-view-mode imenu-list-major-mode
-                                                 ediff-meta-mode ediff-mode symbols-outline-mode))
+  (tab-line-exclude-modes '(completion-list-mode
+                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode
+                            dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
+                            dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)
   (tab-line-separator "")
   :bind
@@ -444,9 +448,9 @@
 
   (defun my/tab-line-close-tab-function (tab)
     "Close the selected tab.
-  If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-  If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-  Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+    If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+    If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+    Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
     (interactive (list (current-buffer)))
     (let ((window (selected-window))
           (buffer (if (bufferp tab) tab (cdr (assq 'buffer tab)))))
@@ -465,7 +469,7 @@
             (progn
               (message "Closing tab %s of buffer %s" tab buffer)
               (kill-buffer buffer)))
-		  (unless (cdr tab-list)
+  	  (unless (cdr tab-list)
             (progn
               (message "Closing window")
               (ignore-errors (delete-window window))))))))
