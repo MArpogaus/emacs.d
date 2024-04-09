@@ -149,10 +149,8 @@ The following optimisatzion have been inspired by:
             (lambda ()
               (setq file-name-handler-alist file-name-handler-alist-old)))
 
-  ;; further preformance tweaks
-  (setq
-   read-process-output-max (* 1024 1024) ; Increase how much is read from processes in a single chunk.
-   command-line-x-option-alist nil) ; Remove irreleant command line options for faster startup
+  ;; Remove irreleant command line options for faster startup
+  (setq command-line-x-option-alist nil)
 
   ;; Minimal UI
   (menu-bar-mode -1)
@@ -283,83 +281,87 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (inhibit-startup-screen t)                            ; Disable start-up screen
-    (inhibit-startup-message t)                           ; Disable startup message
-    (inhibit-startup-echo-area-message t)                 ; Disable initial echo message
-    (initial-scratch-message "")                          ; Empty the initial *scratch* buffer
+    (inhibit-startup-screen t)                      ; Disable start-up screen
+    (inhibit-startup-message t)                        ; Disable startup message
+    (inhibit-startup-echo-area-message t)              ; Disable initial echo message
+    (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
 
     ;; Encoding
     ;; We tell emacs to use UTF-8 encoding as much as possible.
-    (set-default-coding-systems 'utf-8)                   ; Default to utf-8 encoding
-    (prefer-coding-system       'utf-8)                   ; Add utf-8 at the front for automatic detection.
-    (set-terminal-coding-system 'utf-8)                   ; Set coding system of terminal output
-    (set-keyboard-coding-system 'utf-8)                   ; Set coding system for keyboard input on TERMINAL
-    (set-language-environment "English")                  ; Set up multilingual environment
+    (set-default-coding-systems 'utf-8)                ; Default to utf-8 encoding
+    (prefer-coding-system       'utf-8)                ; Add utf-8 at the front for automatic detection.
+    (set-terminal-coding-system 'utf-8)                ; Set coding system of terminal output
+    (set-keyboard-coding-system 'utf-8)                ; Set coding system for keyboard input on TERMINAL
+    (set-language-environment "English")               ; Set up multilingual environment
 
     ;; Recovery
     ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
-    (auto-save-default t)                                 ; Auto-save every buffer that visits a file
-    (auto-save-timeout 20)                                ; Number of seconds between auto-save
-    (auto-save-interval 200)                              ; Number of keystrokes between auto-saves
+    (auto-save-default t)                              ; Auto-save every buffer that visits a file
+    (auto-save-timeout 20)                             ; Number of seconds between auto-save
+    (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
 
-    ;; Text
-    ;; Pretty self-explanatory
-    (use-short-answers t)                                 ; Replace yes/no prompts with y/n
-    (confirm-nonexistent-file-or-buffer nil)              ; Ok to visit non existent files
+    ;; Dialogs
+    ;; use simple text prompts
+    (use-dialog-box nil)                               ; Don't pop up UI dialogs when prompting
+    (use-file-dialog nil)                              ; Don't use UI dialogs for file search
+    (use-short-answers t)                              ; Replace yes/no prompts with y/n
+    (confirm-nonexistent-file-or-buffer nil)           ; Ok to visit non existent files
 
     ;; Mouse
     ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
-    (mouse-yank-at-point t)                               ; Yank at point rather than pointer
-    (xterm-mouse-mode (not (display-graphic-p)))          ; Mouse active in tty mode.
-    (context-menu-mode (display-graphic-p))               ; Enable context menu on right click
+    (mouse-yank-at-point t)                            ; Yank at point rather than pointer
+    (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode.
+    (context-menu-mode (display-graphic-p))            ; Enable context menu on right click
 
     ;; Scroll
     ;; Smoother scrolling.
-    (scroll-conservatively 101)                           ; Avoid recentering when scrolling far
-    (fast-but-imprecise-scrolling t)                      ; More performant rapid scrolling over unfontified region
-    (pixel-scroll-precision-mode t)                       ; Enable pixel-wise scrolling 
-    (pixel-scroll-precision-interpolate-mice nil)         ; Disable interpolation (causes wired jumps)
+    (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
+    (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified region
+    (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling 
+    (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
+    (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
-    (cursor-in-non-selected-windows nil)                  ; Hide the cursor in inactive windows
-    (cursor-type '(hbar . 2))                             ; Underline-shaped cursor
-    (cursor-intangible-mode t)                            ; Enforce cursor intangibility
-    (x-stretch-cursor nil)                                ; Don't stretch cursor to the glyph width
-    (blink-cursor-mode nil)                               ; Still cursor
+    (cursor-in-non-selected-windows nil)               ; Hide the cursor in inactive windows
+    (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
+    (cursor-intangible-mode t)                         ; Enforce cursor intangibility
+    (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
+    (blink-cursor-mode nil)                            ; Still cursor
 
     ;; Typography
-    (fill-column 80)                                      ; Default line width
-    (sentence-end-double-space nil)                       ; Use a single space after dots
-    (bidi-paragraph-direction 'left-to-right)             ; Faster
-    (truncate-string-ellipsis "…")                        ; Nicer ellipsis
+    (fill-column 80)                                   ; Default line width
+    (sentence-end-double-space nil)                    ; Use a single space after dots
+    (bidi-paragraph-direction 'left-to-right)          ; Faster
+    (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
     ;; Default mode
     ;; Default & initial mode is text.
-    (initial-major-mode 'text-mode)                       ; Initial mode is text
-    (default-major-mode 'text-mode)                       ; Default mode is text
+    (initial-major-mode 'text-mode)                    ; Initial mode is text
+    (default-major-mode 'text-mode)                    ; Default mode is text
 
     ;; Tabulations
     ;; No tabulation, ever.
-    (indent-tabs-mode nil)                                ; Stop using tabs to indent
-    (tab-width 4)                                         ; Smaller width for tab characters
+    (indent-tabs-mode nil)                             ; Stop using tabs to indent
 
-    ;; Don't pop up UI dialogs when prompting
-    (use-dialog-box nil)
-    (use-file-dialog nil)
+    ;; Performance
+    ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+    (auto-mode-case-fold nil)                          ; Use case-sensitive `auto-mode-alist' for performance
+    (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
+    (frame-inhibit-implied-resize t)                   ; Inhibit frame resizing for performance
+    (idle-update-delay 2.0)                            ; slow down UI updates down
+    (inhibit-compacting-font-caches t)                 ; Inhibit frame resizing for performance
+    (read-process-output-max (* 1024 1024))            ; Increase how much is read from processes in a single chunk.
+    (redisplay-skip-fontification-on-input t)          ; Inhibits it for better scrolling performance.
+    (command-line-x-option-alist nil)                  ; Remove irreleant command line options for faster startup
+    (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings.
 
-    ;; disable native compiler warnings
-    (native-comp-async-report-warnings-errors nil)
-
-    ;; DOOM: add some space between fringe it and buffer.
-    (fringes-outside-margins t)
-
-    ;; Resize frame and windows pixelwise
-    (window-resize-pixelwise t)
-    (frame-resize-pixelwise t)
-
-    ;; Diasble windmove mode
-    (windmove-mode nil)
+    ;; Miscellaneous
+    (native-comp-async-report-warnings-errors nil)     ; disable native compiler warnings
+    (fringes-outside-margins t)                        ; DOOM: add some space between fringe it and buffer.
+    (window-resize-pixelwise t)                        ; Resize windows pixelwise
+    (frame-resize-pixelwise t)                         ; Resize frame pixelwise
+    (windmove-mode nil)                                ; Diasble windmove mode
     :preface
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
