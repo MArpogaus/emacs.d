@@ -357,8 +357,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Mouse
     ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
     (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
-    (mouse-wheel-scroll-amount '(2 ((shift) . hscroll))) ; Reduce vertical scroll speed
-    (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
     (mouse-yank-at-point t)                              ; Yank at point rather than pointer
     (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
 
@@ -368,6 +366,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified region
     (hscroll-margin 1)                                   ; Reduce margin triggering automatic horizontal scrolling
     (hscroll-step 1)                                     ; Slower horizontal scrolling
+    (mouse-wheel-scroll-amount '(2 ((shift) . hscroll))) ; Reduce vertical scroll speed
+    (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
     (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
     (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
     (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
