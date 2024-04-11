@@ -700,6 +700,8 @@ A fancy and fast mode-line inspired by minimalism design.
     ;; If non-nil, only display one number for checker information if applicable.
     (doom-modeline-checker-simple-format nil)
 
+    ;; Don't display offset percentage
+    (doom-modeline-percent-position nil)
     :hook
     ((after-init . doom-modeline-mode)
      ;; filesize in modeline
