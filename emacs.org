@@ -1025,7 +1025,7 @@ References:
     (tab-line-tab-name-function #'my/tab-line-tab-name-function)
     (tab-line-close-tab-function #'my/tab-line-close-tab-function)
     (tab-line-exclude-modes '(completion-list-mode
-                              doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode
+                              doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
     (tab-line-close-button-show 'selected)
@@ -1874,9 +1874,20 @@ A polished Dired with batteries included.
     (dirvish-mode-line-format
      '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-attributes
-     '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
-    (dirvish-use-header-line nil)
+     '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+    (dirvish-subtree-state-style 'nerd)
+    (dirvish-path-separators (list
+                              (format "  %s " (nerd-icons-codicon "nf-cod-home"))
+                              (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
+                              (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
+    ;; (dirvish-use-header-line nil)
     ;; (dirvish-use-mode-line nil)
+    :preface
+    (defun my/dirvish-side-hide-buffer (&rest app)
+      "make dirvish-side buffer 'uninteresting' for buffer related commands"
+      (apply app)
+      (with-selected-window (dirvish-side--session-visible-p)
+        (rename-buffer (concat " " (buffer-name)))))
     :init
     (dirvish-override-dired-mode)
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -1886,6 +1897,7 @@ A polished Dired with batteries included.
       (setq dirvish-mode-line-height doom-modeline-height)
       (setq dirvish-header-line-height
             doom-modeline-height))
+    (advice-add #'dirvish-side--new :around #'my/dirvish-side-hide-buffer)
     :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
     (("C-c f" . dirvish-fd)
      :map my/open-map
@@ -1893,7 +1905,7 @@ A polished Dired with batteries included.
      :map my/toggle-map
      ("d" . dirvish-side)
      :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-     ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
+     ("<mouse-1>" . dirvish-subtree-toggle-or-open)
      ("<mouse-2>" . dired-mouse-find-file-other-window)
      ("F" . dirvish-toggle-fullscreen)
      ("M-b" . dirvish-history-go-backward)
