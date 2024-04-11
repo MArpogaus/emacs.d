@@ -1202,6 +1202,8 @@ Paren mode for highlighting matcing paranthesis
     :config
     (add-to-list 'recentf-exclude
                  (recentf-expand-file-name no-littering-var-directory))
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-etc-directory))
     :bind
     (:map my/open-map
           ("r" . recentf-open))
