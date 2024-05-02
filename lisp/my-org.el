@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-10
+;; Created: 2024-05-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -138,6 +138,9 @@
                               (shell . t)))
   (org-export-backends '(md beamer odt latex icalendar html ascii))
   (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
+
+  ;; Use SVGs for latex previews -> No blur when scaling
+  (org-preview-latex-default-process 'dvisvgm)
   :preface
   ;; https://github.com/rougier/emacs-gtd#activating-tasks
   (defun my/log-todo-next-creation-date (&rest ignore)
@@ -165,6 +168,31 @@
        (org-archive-subtree)
        (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
      "/DONE" 'tree))
+
+  (defun my/text-scale-adjust-latex-previews ()
+    "Adjust the size of latex preview fragments when changing the
+buffer's text scale."
+    (pcase major-mode
+      ('latex-mode
+       (dolist (ov (overlays-in (point-min) (point-max)))
+         (if (eq (overlay-get ov 'category)
+                 'preview-overlay)
+             (my/text-scale--resize-fragment ov))))
+      ('org-mode
+       (dolist (ov (overlays-in (point-min) (point-max)))
+         (if (eq (overlay-get ov 'org-overlay-type)
+                 'org-latex-overlay)
+             (my/text-scale--resize-fragment ov))))))
+
+  ;; Scaling Latex previews
+  ;; https://karthinks.com/software/scaling-latex-previews-in-emacs/
+  (defun my/text-scale--resize-fragment (ov)
+    (overlay-put
+     ov 'display
+     (cons 'image
+           (plist-put
+            (cdr (overlay-get ov 'display))
+            :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
   :hook
   (org-after-todo-state-change . my/log-todo-next-creation-date)
   :bind
@@ -175,7 +203,9 @@
   :config
   (advice-add 'org-refile :after
               (lambda (&rest _)
-                (my/gtd-save-org-buffers))))
+                (my/gtd-save-org-buffers)))
+  :hook
+  (text-scale-mode . my/text-scale-adjust-latex-previews))
 
 (use-package ox-latex
   :straight nil
@@ -478,6 +508,13 @@
   :hook
   ((org-present-mode . my/org-present-start)
    (org-present-mode-quit . my/org-present-quit)))
+
+;; [[https://github.com/karthink/org-preview.git][org-preview]]
+
+(use-package org-preview
+  :straight (:host github :repo "karthink/org-preview")
+  :hook
+  (org-mode . org-preview-mode))
 
 ;; [[https://github.com/jxq0/org-tidy.git][org-tidy]]
 ;; An Emacs minor mode to automatically tidy org-mode property drawers.
