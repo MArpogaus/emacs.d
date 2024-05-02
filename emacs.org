@@ -669,9 +669,6 @@ A fancy and fast mode-line inspired by minimalism design.
     ;; display the real names, please put this into your init file.
     (find-file-visit-truename t)
 
-    ;; Whether to use hud instead of default bar. It's only respected in GUI.
-    (doom-modeline-hud t)
-
     ;; Determines the style used by `doom-modeline-buffer-file-name'.
     ;;
     ;; Given ~/Projects/FOSS/emacs/lisp/comint.el
@@ -698,7 +695,7 @@ A fancy and fast mode-line inspired by minimalism design.
     (doom-modeline-icon t)
 
     ;; If non-nil, only display one number for checker information if applicable.
-    (doom-modeline-checker-simple-format nil)
+    ;; (doom-modeline-checker-simple-format nil)
 
     ;; Don't display offset percentage
     (doom-modeline-percent-position nil)
