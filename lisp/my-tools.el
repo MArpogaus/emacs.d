@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-10
+;; Created: 2024-05-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -74,9 +74,20 @@
   (dirvish-mode-line-format
    '(:left (sort symlink) :right (vc-info yank index)))
   (dirvish-attributes
-   '(vc-state file-size git-msg subtree-state nerd-icons collapse file-time))
-  (dirvish-use-header-line nil)
+   '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+  (dirvish-subtree-state-style 'nerd)
+  (dirvish-path-separators (list
+                            (format "  %s " (nerd-icons-codicon "nf-cod-home"))
+                            (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
+                            (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
+  ;; (dirvish-use-header-line nil)
   ;; (dirvish-use-mode-line nil)
+  :preface
+  (defun my/dirvish-side-hide-buffer (&rest app)
+    "make dirvish-side buffer 'uninteresting' for buffer related commands"
+    (apply app)
+    (with-selected-window (dirvish-side--session-visible-p)
+      (rename-buffer (concat " " (buffer-name)))))
   :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -86,6 +97,7 @@
     (setq dirvish-mode-line-height doom-modeline-height)
     (setq dirvish-header-line-height
           doom-modeline-height))
+  (advice-add #'dirvish-side--new :around #'my/dirvish-side-hide-buffer)
   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
   (("C-c f" . dirvish-fd)
    :map my/open-map
@@ -93,7 +105,7 @@
    :map my/toggle-map
    ("d" . dirvish-side)
    :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
-   ;; ("<mouse-1>" . dirvish-subtree-toggle-or-open)
+   ("<mouse-1>" . dirvish-subtree-toggle-or-open)
    ("<mouse-2>" . dired-mouse-find-file-other-window)
    ("F" . dirvish-toggle-fullscreen)
    ("M-b" . dirvish-history-go-backward)
@@ -236,11 +248,19 @@
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config
-  (pdf-tools-install :no-query)
+  :functions (pdf-view-refresh-themed-buffer)
+  :preface
+  (defun my/pdf-tools-themed-update-advice (&rest app)
+    (when pdf-view-themed-minor-mode
+      (pdf-view-refresh-themed-buffer t)))
   :custom
   (pdf-view-use-scaling t)
-  (pdf-view-use-imagemagick nil))
+  :config
+  (pdf-tools-install :no-query)
+  (advice-add #'enable-theme :after #'my/pdf-tools-themed-update-advice)
+  :hook
+  ((pdf-view-mode . pdf-view-themed-minor-mode)
+   (pdf-view-mode . pdf-isearch-minor-mode)))
 
 ;; re-builder :build_in:
 ;; Change re-builder syntax
@@ -251,6 +271,17 @@
   :commands re-builder
   :custom
   (reb-re-syntax 'string))
+
+;; server :build_in:
+
+;; Server start.
+
+
+(use-package server
+  :straight nil
+  :config
+  (unless (server-running-p)
+    (server-start)))
 
 ;; term :build_in:
 ;; Major mode for interacting with a terminal

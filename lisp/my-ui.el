@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-10
+;; Created: 2024-05-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -39,8 +39,8 @@
 
 (use-package auto-dark
   :custom
-  (auto-dark-dark-theme 'modus-vivendi-tinted)
-  (auto-dark-light-theme 'modus-operandi-tinted)
+  (auto-dark-dark-theme 'modus-vivendi)
+  (auto-dark-light-theme 'modus-operandi)
   :hook
   (after-init . auto-dark-mode))
 
@@ -72,9 +72,6 @@
   ;; display the real names, please put this into your init file.
   (find-file-visit-truename t)
 
-  ;; Whether to use hud instead of default bar. It's only respected in GUI.
-  (doom-modeline-hud t)
-
   ;; Determines the style used by `doom-modeline-buffer-file-name'.
   ;;
   ;; Given ~/Projects/FOSS/emacs/lisp/comint.el
@@ -101,8 +98,10 @@
   (doom-modeline-icon t)
 
   ;; If non-nil, only display one number for checker information if applicable.
-  (doom-modeline-checker-simple-format nil)
+  ;; (doom-modeline-checker-simple-format nil)
 
+  ;; Don't display offset percentage
+  (doom-modeline-percent-position nil)
   :hook
   ((after-init . doom-modeline-mode)
    ;; filesize in modeline
@@ -121,6 +120,7 @@
    (eshell-mode  . hide-mode-line-mode)
    (magit-status-mode . hide-mode-line-mode)
    (org-brain-visualize-mode . hide-mode-line-mode)
+   (pdf-view-mode  . hide-mode-line-mode)
    (shell-mode  . hide-mode-line-mode)
    (special-mode . hide-mode-line-mode)
    (symbols-outline-mode . hide-mode-line-mode)
@@ -156,21 +156,17 @@
   :custom
   (indent-bars-treesit-support t)
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  (indent-bars-treesit-wrap '((python
+                               argument_list parameters list list_comprehension dictionary
+                               dictionary_comprehension parenthesized_expression subscript)))
   (indent-bars-treesit-scope '((python
                                 function_definition class_definition for_statement
                                 if_statement with_statement while_statement)))
-  (indent-bars-treesit-wrap '((python
-                               argument_list parameters list list_comprehension
-                               dictionary dictionary_comprehension
-                               parenthesized_expression subscript)))
-
   (indent-bars-color-by-depth nil)
-  (indent-bars-display-on-blank-lines nil)
   (indent-bars-highlight-current-depth '(:face default :blend 0.4))
   (indent-bars-pad-frac 0.1)
   (indent-bars-pattern ".")
   (indent-bars-width-frac 0.2)
-  (indent-bars-zigzag nil)
   :hook
   ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 
@@ -291,13 +287,15 @@
   :custom
   (spacious-padding-widths '(
                              :internal-border-width 10
-                             :header-line-width 1
+                             :header-line-width 0
                              :mode-line-width 4
                              :tab-bar-width 4
-                             :tab-line-width 0
+                             :tab-line-width 2
+                             :tab-width 2
                              :right-divider-width 10
-                             :scroll-bar-width 4
-                             :fringe-width 8))
+                             ;; :scroll-bar-width 2
+                             :fringe-width 8
+                             ))
   (spacious-padding-subtle-mode-line t)
   :hook
   (after-init . spacious-padding-mode))
@@ -431,7 +429,7 @@
   (tab-line-tab-name-function #'my/tab-line-tab-name-function)
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
-                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode
+                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)

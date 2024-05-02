@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-10
+;; Created: 2024-05-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -562,11 +562,6 @@ the completing-read prompter."
     (setq-local completion-at-point-functions
                 (cons #'tempel-complete
                       completion-at-point-functions)))
-
-  :config
-  ;; The package is young and doesn't have comprehensive coverage.
-  (use-package tempel-collection)
-
   :hook
   ((conf-mode . my/tempel-setup-capf)
    (prog-mode . my/tempel-setup-capf)
@@ -576,6 +571,14 @@ the completing-read prompter."
   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
   ;; (global-tempel-abbrev-mode)
   )
+
+;; [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
+;; Collection of tempel templates.
+;; The package is young and doesn't have comprehensive coverage.
+
+(use-package tempel-collection
+  :demand t
+  :after tempel)
 
 ;; [[https://github.com/emacs-straight/vertico.git][vertico]]
 ;; Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
@@ -603,6 +606,9 @@ the completing-read prompter."
 
   ;; Enable recursive minibuffers
   (enable-recursive-minibuffers t)
+
+  ;; Enable Mouse support
+  (vertico-mouse-mode t)
   :preface
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
@@ -627,6 +633,7 @@ the completing-read prompter."
                  (expand-file-name "straight/build/vertico/extensions"
                                    straight-base-dir)))
   (require 'vertico-directory)
+
   :bind
   ;; Improve directory navigation
   (:map vertico-map

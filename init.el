@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-04-10
+;; Created: 2024-05-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -52,8 +52,11 @@
         custom-file (expand-file-name "custom.el" user-emacs-directory))
 
   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")
-        url-history-file (expand-file-name "url/history" user-emacs-directory)))
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+
+  :config
+  ;; store backup and auto-save files in =no-littering-var-directory=
+  (no-littering-theme-backups))
 
 ;; Better Defaults
 
@@ -112,8 +115,6 @@
   ;; Mouse
   ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
   (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
-  (mouse-wheel-scroll-amount '(2 ((shift) . hscroll))) ; Reduce vertical scroll speed
-  (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
   (mouse-yank-at-point t)                              ; Yank at point rather than pointer
   (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
 
@@ -123,6 +124,8 @@
   (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified region
   (hscroll-margin 1)                                   ; Reduce margin triggering automatic horizontal scrolling
   (hscroll-step 1)                                     ; Slower horizontal scrolling
+  (mouse-wheel-scroll-amount '(2 ((shift) . hscroll))) ; Reduce vertical scroll speed
+  (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
   (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
