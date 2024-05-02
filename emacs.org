@@ -2115,7 +2115,7 @@ Change re-builder syntax
 
 Server start.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package server
     :straight nil
     :config
