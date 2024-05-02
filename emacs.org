@@ -2758,11 +2758,6 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
       (setq-local completion-at-point-functions
                   (cons #'tempel-complete
                         completion-at-point-functions)))
-
-    :config
-    ;; The package is young and doesn't have comprehensive coverage.
-    (use-package tempel-collection)
-
     :hook
     ((conf-mode . my/tempel-setup-capf)
      (prog-mode . my/tempel-setup-capf)
@@ -2772,6 +2767,14 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
     ;; (global-tempel-abbrev-mode)
     )
+#+end_src
+**** [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
+Collection of tempel templates.
+The package is young and doesn't have comprehensive coverage.
+#+begin_src emacs-lisp
+  (use-package tempel-collection
+    :demand t
+    :after tempel)
 #+end_src
 **** [[https://github.com/emacs-straight/vertico.git][vertico]]
 Vertico provides a performant and minimalistic vertical completion UI based on the default completion system.
