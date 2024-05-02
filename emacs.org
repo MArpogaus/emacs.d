@@ -717,6 +717,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
      (eshell-mode  . hide-mode-line-mode)
      (magit-status-mode . hide-mode-line-mode)
      (org-brain-visualize-mode . hide-mode-line-mode)
+     (pdf-view-mode  . hide-mode-line-mode)
      (shell-mode  . hide-mode-line-mode)
      (special-mode . hide-mode-line-mode)
      (symbols-outline-mode . hide-mode-line-mode)
