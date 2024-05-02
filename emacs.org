@@ -884,13 +884,15 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :custom
     (spacious-padding-widths '(
                                :internal-border-width 10
-                               :header-line-width 1
+                               :header-line-width 0
                                :mode-line-width 4
                                :tab-bar-width 4
-                               :tab-line-width 0
+                               :tab-line-width 2
+                               :tab-width 2
                                :right-divider-width 10
-                               :scroll-bar-width 4
-                               :fringe-width 8))
+                               ;; :scroll-bar-width 2
+                               :fringe-width 8
+                               ))
     (spacious-padding-subtle-mode-line t)
     :hook
     (after-init . spacious-padding-mode))
