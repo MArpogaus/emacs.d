@@ -636,8 +636,8 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
-    (auto-dark-dark-theme 'modus-vivendi-tinted)
-    (auto-dark-light-theme 'modus-operandi-tinted)
+    (auto-dark-dark-theme 'modus-vivendi)
+    (auto-dark-light-theme 'modus-operandi)
     :hook
     (after-init . auto-dark-mode))
 #+end_src
