@@ -2087,11 +2087,19 @@ Emacs support library for PDF files.
 #+begin_src emacs-lisp
   (use-package pdf-tools
     :magic ("%PDF" . pdf-view-mode)
-    :config
-    (pdf-tools-install :no-query)
+    :functions (pdf-view-refresh-themed-buffer)
+    :preface
+    (defun my/pdf-tools-themed-update-advice (&rest app)
+      (when pdf-view-themed-minor-mode
+        (pdf-view-refresh-themed-buffer t)))
     :custom
     (pdf-view-use-scaling t)
-    (pdf-view-use-imagemagick nil))
+    :config
+    (pdf-tools-install :no-query)
+    (advice-add #'enable-theme :after #'my/pdf-tools-themed-update-advice)
+    :hook
+    ((pdf-view-mode . pdf-view-themed-minor-mode)
+     (pdf-view-mode . pdf-isearch-minor-mode)))
 #+end_src
 **** re-builder :build_in:
 Change re-builder syntax
