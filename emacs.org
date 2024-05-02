@@ -2802,6 +2802,9 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 
     ;; Enable recursive minibuffers
     (enable-recursive-minibuffers t)
+
+    ;; Enable Mouse support
+    (vertico-mouse-mode t)
     :preface
     ;; Add prompt indicator to `completing-read-multiple'.
     ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
@@ -2826,6 +2829,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
                    (expand-file-name "straight/build/vertico/extensions"
                                      straight-base-dir)))
     (require 'vertico-directory)
+
     :bind
     ;; Improve directory navigation
     (:map vertico-map
