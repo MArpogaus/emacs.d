@@ -2005,13 +2005,13 @@ An Emacs web feeds client.
 Make Emacs use the $PATH set up by the user's shell.
 #+begin_src emacs-lisp
   (use-package exec-path-from-shell
-    :config
+    :preface
     (defun my/copy-ssh-env ()
       (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-      (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
-      (exec-path-from-shell-initialize))
+      (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
     :hook
-    (magit-credential . my/copy-ssh-env))
+    ((after-init . exec-path-from-shell-initialize)
+     (magit-credential . my/copy-ssh-env)))
 #+end_src
 **** flyspell :build_in:
 #+begin_src emacs-lisp
