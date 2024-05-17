@@ -2052,7 +2052,9 @@ A simple LLM client for Emacs.
     :bind
     (:map my/open-map
           ("g". gptel))
-    :commands (gptel gptel-send))
+    :commands (gptel gptel-send)
+    :config
+    (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t))
 #+end_src
 **** [[https://github.com/Wilfred/helpful.git][helpful]]
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
