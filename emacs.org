@@ -347,7 +347,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Recovery
     ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
     (auto-save-default t)                                ; Auto-save every buffer that visits a file
-    (auto-save-timeout 20)                               ; Number of seconds between auto-save
+    (auto-save-timeout 10)                               ; Number of seconds between auto-save
     (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
 
     ;; Dialogs
