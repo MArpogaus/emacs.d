@@ -1320,7 +1320,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 #+begin_src emacs-lisp
   (use-package org
     :custom
-    (org-ellipsis " ▾")
+    (org-ellipsis "…")
     (org-src-fontify-natively t)
     (org-fontify-quote-and-verse-blocks t)
     (org-src-tab-acts-natively t)
@@ -1631,7 +1631,8 @@ This package implements a modern style for your Org buffers using font locking a
   (use-package org-modern
     :hook (org-mode . org-modern-mode)
     :custom
-    (org-modern-star '("◉" "○" "◇"))
+    (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
+    (org-modern-star 'fold)
     (org-modern-label-border 0.3)
 
     ;; Edit settings
