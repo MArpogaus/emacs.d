@@ -1064,7 +1064,7 @@ References:
               (progn
                 (message "Closing tab %s of buffer %s" tab buffer)
                 (kill-buffer buffer)))
-    	  (unless (cdr tab-list)
+            (unless (cdr tab-list)
               (progn
                 (message "Closing window")
                 (ignore-errors (delete-window window))))))))
@@ -3262,13 +3262,7 @@ Emacs helper library (and minor mode) to work with conda environments.
 
   This mode automatically tries to activate a conda environment for the current
   buffer."
-      ;; The initial value.
-      nil
-      ;; The indicator for the mode line.
-      nil
-      ;; The minor mode bindings.
-      nil
-      ;; Kwargs
+      :lighter " Conda Auto Activation"
       :group 'conda
       :global t
       ;; Forms
