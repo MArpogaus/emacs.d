@@ -3,12 +3,12 @@
 #+STARTUP: show2levels indent
 #+auto_tangle: t
 #+PROPERTY: header-args :mkdirp yes :comments org
+#+EXCLUDE_TAGS: noexport
 
 * Configuration
-** Table of Contents                                               :TOC_3_gh:
+** Table of Contents :TOC_3_gh:noexport:
 - [[#configuration][Configuration]]
   - [[#references][References]]
-  - [[#to-dos][To-dos]]
   - [[#notes][Notes]]
     - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
@@ -52,9 +52,6 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://protesilaos.com/emacs/dotemacs][GNU Emacs configuration | Protesilaos Stavrou]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
-** To-dos :noexport_1:
-*** TODO anzu
-https://github.com/emacsorphanage/anzu
 ** Notes
 *** Add git url to pkg headlines
 #+begin_src bash :results none
