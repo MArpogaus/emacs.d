@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-02
+;; Created: 2024-05-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -102,7 +102,7 @@
   ;; Recovery
   ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
   (auto-save-default t)                                ; Auto-save every buffer that visits a file
-  (auto-save-timeout 20)                               ; Number of seconds between auto-save
+  (auto-save-timeout 10)                               ; Number of seconds between auto-save
   (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
 
   ;; Dialogs
@@ -124,12 +124,12 @@
   (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified region
   (hscroll-margin 1)                                   ; Reduce margin triggering automatic horizontal scrolling
   (hscroll-step 1)                                     ; Slower horizontal scrolling
-  (mouse-wheel-scroll-amount '(2 ((shift) . hscroll))) ; Reduce vertical scroll speed
+  (mouse-wheel-scroll-amount '(1 ((shift) . hscroll))) ; Reduce vertical scroll speed
   (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
   (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
-  (scroll-conservatively 10)                           ; Avoid recentering when scrolling far
+  (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
 
   ;; Cursor

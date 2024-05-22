@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-02
+;; Created: 2024-05-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -18,8 +18,20 @@
 ;; Integrated environment for *TeX*
 
 (use-package auctex
-  :mode ("\\.tex\\'" . latex-mode)
-  :commands (latex-mode LaTeX-mode plain-tex-mode)
+  :preface
+  ;; Custom auto-compile minor mode
+  (define-minor-mode my/auto-compile-mode
+    "Automatically compile LaTeX files after saving."
+    :lighter " LaTeX Auto Compile"
+    ;; Add/remove after-save hook based on mode state
+    (if my/auto-compile-mode
+        (add-hook 'after-save-hook #'my/compile-latex-on-save nil t)
+      (remove-hook 'after-save-hook #'my/compile-latex-on-save t)))
+
+  ;; Function to compile LaTeX document after saving
+  (defun my/compile-latex-on-save ()
+    (when (eq major-mode 'LaTeX-mode)
+      (TeX-command-run-all nil)))
   :custom
   ;; Use PDF Tools for pdf output
   (TeX-view-program-selection
@@ -41,8 +53,10 @@
   (TeX-master nil)
   ;; Enable PDF mode for TeX files
   (TeX-PDF-mode t)
+  ;; Don't start server for inverse search (is already running)
+  (TeX-source-correlate-start-server nil)
   :hook
-  ;; Set up preview, math mode, source correlate, and reftex in LaTeX mode
+  ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
   ((LaTeX-mode . LaTeX-preview-setup)
    (LaTeX-mode . LaTeX-math-mode)
    (LaTeX-mode . TeX-source-correlate-mode)
@@ -152,13 +166,7 @@
 
 This mode automatically tries to activate a conda environment for the current
 buffer."
-    ;; The initial value.
-    nil
-    ;; The indicator for the mode line.
-    nil
-    ;; The minor mode bindings.
-    nil
-    ;; Kwargs
+    :lighter " Conda Auto Activation"
     :group 'conda
     :global t
     ;; Forms

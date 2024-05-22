@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-02
+;; Created: 2024-05-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -21,7 +21,7 @@
 
 (use-package org
   :custom
-  (org-ellipsis " ▾")
+  (org-ellipsis "…")
   (org-src-fontify-natively t)
   (org-fontify-quote-and-verse-blocks t)
   (org-src-tab-acts-natively t)
@@ -332,7 +332,8 @@ buffer's text scale."
 (use-package org-modern
   :hook (org-mode . org-modern-mode)
   :custom
-  (org-modern-star '("◉" "○" "◇"))
+  (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
+  (org-modern-star 'fold)
   (org-modern-label-border 0.3)
 
   ;; Edit settings
