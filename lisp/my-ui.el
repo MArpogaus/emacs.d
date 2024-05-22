@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-02
+;; Created: 2024-05-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -467,7 +467,7 @@
             (progn
               (message "Closing tab %s of buffer %s" tab buffer)
               (kill-buffer buffer)))
-  	  (unless (cdr tab-list)
+          (unless (cdr tab-list)
             (progn
               (message "Closing window")
               (ignore-errors (delete-window window))))))))

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-02
+;; Created: 2024-05-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -166,13 +166,13 @@
 ;; Make Emacs use the $PATH set up by the user's shell.
 
 (use-package exec-path-from-shell
-  :config
+  :preface
   (defun my/copy-ssh-env ()
     (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
-    (exec-path-from-shell-initialize))
+    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
   :hook
-  (magit-credential . my/copy-ssh-env))
+  ((after-init . exec-path-from-shell-initialize)
+   (magit-credential . my/copy-ssh-env)))
 
 ;; flyspell :build_in:
 
@@ -213,7 +213,9 @@
   :bind
   (:map my/open-map
         ("g". gptel))
-  :commands (gptel gptel-send))
+  :commands (gptel gptel-send)
+  :config
+  (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t))
 
 ;; [[https://github.com/Wilfred/helpful.git][helpful]]
 ;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
