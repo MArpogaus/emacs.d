@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-22
+;; Created: 2024-05-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -30,13 +30,6 @@
         use-package-expand-minimally nil
         use-package-compute-statistics t
         debug-on-error t))
-
-;; Personal Information
-;; Let's set some variables with basic user information.
-
-
-(setq user-full-name "Marcel Arpogaus"
-      user-mail-address "znepry.necbtnhf@tznvy.pbz")
 
 ;; Paths
 ;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
@@ -258,10 +251,6 @@
         ("e" . eshell)
         ("t" . term)
         ("s" . scratch-buffer)
-        :repeat-map my/buffer-scale-map
-        ("+" . text-scale-increase)
-        ("-" . text-scale-decrease)
-        ("=" . text-scale-adjust)
         :repeat-map my/window-map
         ("n" . next-window-any-frame)
         ("p" . previous-window-any-frame)

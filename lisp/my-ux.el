@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-22
+;; Created: 2024-05-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -57,6 +57,44 @@
   :hook
   ((prog-mode conf-mode) . electric-pair-mode))
 
+;; face-remap :build_in:
+;; Keybindings and optimizations for text-scale-mode.
+;; https://github.com/karthink/.emacs.d/blob/4ab4829fde086cb665cba00ee5c6a42d167e14eb/init.el#L4278C1-L4303C64
+;; https://karthinks.com/software/scaling-latex-previews-in-emacs/
+
+(use-package face-remap
+  :straight nil
+  :preface
+  (defun my/text-scale-adjust-latex-previews ()
+    "Adjust the size of latex preview fragments when changing the
+buffer's text scale."
+    (pcase major-mode
+      ((or 'latex-mode (guard 'org-auctex-mode))
+       (dolist (ov (overlays-in (point-min) (point-max)))
+         (if (eq (overlay-get ov 'category)
+                 'preview-overlay)
+             (my/zoom-latex-preview ov))))
+      ('org-mode
+       (dolist (ov (overlays-in (point-min) (point-max)))
+         (if (eq (overlay-get ov 'org-overlay-type)
+                 'org-latex-overlay)
+             (my/zoom-latex-preview ov))))))
+
+  (defun my/zoom-latex-preview (ov)
+    (overlay-put
+     ov 'display
+     (cons 'image 
+           (plist-put
+            (cdr (overlay-get ov 'display))
+            :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
+  :bind
+  (:repeat-map my/buffer-scale-map
+               ("+" . text-scale-increase)
+               ("-" . text-scale-decrease)
+               ("=" . text-scale-adjust))
+  :hook
+  (text-scale-mode . my/text-scale-adjust-latex-previews))
+
 ;; [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
 ;; When working with many windows at the same time, each window has a size that is not convenient for editing.
 
@@ -106,6 +144,38 @@
   (show-paren-when-point-inside-paren nil)
   :hook
   (prog-mode . show-paren-mode))
+
+;; [[https://github.com/karthink/popper.git][popper]]
+
+(use-package popper
+  :bind
+  (:map my/toggle-map
+        ("p"   . popper-toggle)
+        ("P" . popper-toggle-type))
+  :custom
+  ;; Define popup buffers
+  (popper-reference-buffers
+   '("\\*Messages\\*"
+     "Output\\*$"
+     "\\*Async Shell Command\\*"
+     "\\*Process List\\*"
+     help-mode
+     helpful-mode
+     compilation-mode
+     "^\\*.*eshell.*\\*$" eshell-mode ;eshell as a popup
+     "^\\*.*shell.*\\*$"  shell-mode  ;shell as a popup
+     "^\\*.*term.*\\*$"   term-mode   ;term as a popup
+     "^\\*.*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+     ))
+  ;; grouping popups by project
+  (popper-mode-line nil)
+  :config
+  (with-eval-after-load 'project
+    (setq popper-group-function #'popper-group-by-project))
+  :hook
+  ((after-init . popper-mode)
+   (after-init . popper-echo-mode)
+   (popper-open-popup . (lambda nil (tab-line-mode -1)))))
 
 ;; recentf :build_in:
 

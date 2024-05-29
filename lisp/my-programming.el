@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-22
+;; Created: 2024-05-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -402,16 +402,16 @@ buffer."
 (use-package numpydoc
   :after python)
 
-;; [[https://github.com/paetzke/py-isort.el.git][py-isort]]
-;; Py-isort.el integrates isort into Emacs.
-
-(use-package py-isort
-  :after conda)
-
 ;; [[https://github.com/Wilfred/pyimport.git][pyimport]]
 ;; Manage Python imports from Emacs!.
 
 (use-package pyimport
+  :after conda)
+
+;; [[https://github.com/paetzke/py-isort.el.git][py-isort]]
+;; Py-isort.el integrates isort into Emacs.
+
+(use-package py-isort
   :after conda)
 
 ;; python :build_in:
