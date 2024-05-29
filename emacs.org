@@ -493,10 +493,6 @@ This section initializes various keymaps used for different purposes.
           ("e" . eshell)
           ("t" . term)
           ("s" . scratch-buffer)
-          :repeat-map my/buffer-scale-map
-          ("+" . text-scale-increase)
-          ("-" . text-scale-decrease)
-          ("=" . text-scale-adjust)
           :repeat-map my/window-map
           ("n" . next-window-any-frame)
           ("p" . previous-window-any-frame)
@@ -1126,6 +1122,44 @@ Automatically add closing parentheses, quotes, etc.
     :hook
     ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
+**** face-remap :build_in:
+Keybindings and optimizations for text-scale-mode.
+https://github.com/karthink/.emacs.d/blob/4ab4829fde086cb665cba00ee5c6a42d167e14eb/init.el#L4278C1-L4303C64
+https://karthinks.com/software/scaling-latex-previews-in-emacs/
+#+begin_src emacs-lisp
+  (use-package face-remap
+    :straight nil
+    :preface
+    (defun my/text-scale-adjust-latex-previews ()
+      "Adjust the size of latex preview fragments when changing the
+  buffer's text scale."
+      (pcase major-mode
+        ((or 'latex-mode (guard 'org-auctex-mode))
+         (dolist (ov (overlays-in (point-min) (point-max)))
+           (if (eq (overlay-get ov 'category)
+                   'preview-overlay)
+               (my/zoom-latex-preview ov))))
+        ('org-mode
+         (dolist (ov (overlays-in (point-min) (point-max)))
+           (if (eq (overlay-get ov 'org-overlay-type)
+                   'org-latex-overlay)
+               (my/zoom-latex-preview ov))))))
+
+    (defun my/zoom-latex-preview (ov)
+      (overlay-put
+       ov 'display
+       (cons 'image 
+             (plist-put
+              (cdr (overlay-get ov 'display))
+              :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
+    :bind
+    (:repeat-map my/buffer-scale-map
+                 ("+" . text-scale-increase)
+                 ("-" . text-scale-decrease)
+                 ("=" . text-scale-adjust))
+    :hook
+    (text-scale-mode . my/text-scale-adjust-latex-previews))
+#+end_src
 **** [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
 When working with many windows at the same time, each window has a size that is not convenient for editing.
 #+begin_src emacs-lisp
@@ -1458,30 +1492,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
          (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
        "/DONE" 'tree))
 
-    (defun my/text-scale-adjust-latex-previews ()
-      "Adjust the size of latex preview fragments when changing the
-  buffer's text scale."
-      (pcase major-mode
-        ('latex-mode
-         (dolist (ov (overlays-in (point-min) (point-max)))
-           (if (eq (overlay-get ov 'category)
-                   'preview-overlay)
-               (my/text-scale--resize-fragment ov))))
-        ('org-mode
-         (dolist (ov (overlays-in (point-min) (point-max)))
-           (if (eq (overlay-get ov 'org-overlay-type)
-                   'org-latex-overlay)
-               (my/text-scale--resize-fragment ov))))))
-
-    ;; Scaling Latex previews
-    ;; https://karthinks.com/software/scaling-latex-previews-in-emacs/
-    (defun my/text-scale--resize-fragment (ov)
-      (overlay-put
-       ov 'display
-       (cons 'image
-             (plist-put
-              (cdr (overlay-get ov 'display))
-              :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
     :hook
     (org-after-todo-state-change . my/log-todo-next-creation-date)
     :bind
@@ -1492,9 +1502,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :config
     (advice-add 'org-refile :after
                 (lambda (&rest _)
-                  (my/gtd-save-org-buffers)))
-    :hook
-    (text-scale-mode . my/text-scale-adjust-latex-previews))
+                  (my/gtd-save-org-buffers))))
 
   (use-package ox-latex
     :straight nil
