@@ -273,13 +273,6 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
     :config
     (add-hook 'after-init-hook #'benchmark-init/deactivate 99))
 #+end_src
-*** Personal Information
-Let's set some variables with basic user information.
-
-#+begin_src emacs-lisp
-  (setq user-full-name "Marcel Arpogaus"
-        user-mail-address "znepry.necbtnhf@tznvy.pbz")
-#+end_src
 *** Paths
 Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 #+begin_src emacs-lisp
