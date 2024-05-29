@@ -622,8 +622,8 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
-    (auto-dark-dark-theme 'modus-vivendi)
-    (auto-dark-light-theme 'modus-operandi)
+    (auto-dark-dark-theme 'doom-one)
+    (auto-dark-light-theme 'doom-one-light)
     :hook
     (after-init . auto-dark-mode))
 #+end_src
@@ -691,6 +691,10 @@ A fancy and fast mode-line inspired by minimalism design.
      (doom-modeline-mode . size-indication-mode)
      ;; cursor column in modeline)
      (doom-modeline-mode . column-number-mode)))
+#+end_src
+**** [[https://github.com/doomemacs/themes][doom-themes]]
+#+begin_src emacs-lisp
+  (use-package doom-themes)
 #+end_src
 **** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
@@ -836,7 +840,7 @@ Display typographical ligatures in Emacs.
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
 https://protesilaos.com/emacs/modus-themes
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package modus-themes
     :bind
     (:map my/toggle-map
