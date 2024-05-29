@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-05-22
+;; Created: 2024-05-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -39,8 +39,8 @@
 
 (use-package auto-dark
   :custom
-  (auto-dark-dark-theme 'modus-vivendi)
-  (auto-dark-light-theme 'modus-operandi)
+  (auto-dark-dark-theme 'doom-one)
+  (auto-dark-light-theme 'doom-one-light)
   :hook
   (after-init . auto-dark-mode))
 
@@ -108,6 +108,10 @@
    (doom-modeline-mode . size-indication-mode)
    ;; cursor column in modeline)
    (doom-modeline-mode . column-number-mode)))
+
+;; [[https://github.com/doomemacs/themes][doom-themes]]
+
+(use-package doom-themes)
 
 ;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 ;; An Emacs plugin that hides (or masks) the current buffer's mode-line.
@@ -249,19 +253,6 @@
     (global-ligature-mode))
   :hook
   (after-init . my/setup-ligatures))
-
-;; [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
-;; Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
-;; https://protesilaos.com/emacs/modus-themes
-
-(use-package modus-themes
-  :bind
-  (:map my/toggle-map
-        ("t" . modus-themes-toggle))
-  :custom
-  ;; Add all your customizations prior to loading the themes
-  (modus-themes-italic-constructs t)
-  (modus-themes-bold-constructs nil))
 
 ;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 ;; A Library for Nerd Font icons. Required for modline icons.
@@ -429,7 +420,7 @@
   (tab-line-tab-name-function #'my/tab-line-tab-name-function)
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
-                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode
+                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode flymake-diagnostics-buffer-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)
