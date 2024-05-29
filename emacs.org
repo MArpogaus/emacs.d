@@ -23,7 +23,6 @@
     - [[#conventional-header][Conventional Header]]
     - [[#package-management][Package Management]]
     - [[#benchmark-startup][Benchmark startup]]
-    - [[#personal-information][Personal Information]]
     - [[#paths][Paths]]
     - [[#better-defaults][Better Defaults]]
     - [[#keymaps][Keymaps]]
@@ -1016,7 +1015,7 @@ References:
     (tab-line-tab-name-function #'my/tab-line-tab-name-function)
     (tab-line-close-tab-function #'my/tab-line-close-tab-function)
     (tab-line-exclude-modes '(completion-list-mode
-                              doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode
+                              doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode flymake-diagnostics-buffer-mode
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
     (tab-line-close-button-show 'selected)
@@ -3532,16 +3531,16 @@ Insert NumPy style docstrings in Python functions.
   (use-package numpydoc
     :after python)
 #+end_src
-**** [[https://github.com/paetzke/py-isort.el.git][py-isort]]
-Py-isort.el integrates isort into Emacs.
-#+begin_src emacs-lisp
-  (use-package py-isort
-    :after conda)
-#+end_src
 **** [[https://github.com/Wilfred/pyimport.git][pyimport]]
 Manage Python imports from Emacs!.
 #+begin_src emacs-lisp
   (use-package pyimport
+    :after conda)
+#+end_src
+**** [[https://github.com/paetzke/py-isort.el.git][py-isort]]
+Py-isort.el integrates isort into Emacs.
+#+begin_src emacs-lisp
+  (use-package py-isort
     :after conda)
 #+end_src
 **** python :build_in:
