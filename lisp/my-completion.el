@@ -1,18 +1,4 @@
-;;; my-completion.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; [[https://github.com/minad/cape.git][cape]]
 ;; Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).

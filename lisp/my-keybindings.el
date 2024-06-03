@@ -1,18 +1,4 @@
-;;; my-keybindings.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; [[https://github.com/meow-edit/meow.git][meow]]
 ;; Meow is yet another modal editing mode for Emacs.
@@ -50,19 +36,6 @@
         (advice-add #'meow-quit :override #'my/tab-line-close-tab-function)
       (advice-remove #'meow-quit #'my/tab-line-close-tab-function)))
   :config
-  (with-eval-after-load 'nerd-icons
-    (setq meow-replace-state-name-list
-          '((normal . "󰆾")
-            (motion . "󰷢")
-            (keypad . "󰌌")
-            (insert . "󰏫")
-            (beacon . "󰩬")))
-    (setq meow-indicator-face-alist
-          '((normal . meow-normal-indicator)
-            (motion . nerd-icons-lred)
-            (keypad . meow-normal-indicator)
-            (insert . nerd-icons-lgreen)
-            (beacon . nerd-icons-orange))))
   ;; Apply advice to 'meow--mode-get-state'
   (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
   (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
