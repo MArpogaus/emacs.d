@@ -3658,19 +3658,6 @@ Meow is yet another modal editing mode for Emacs.
           (advice-add #'meow-quit :override #'my/tab-line-close-tab-function)
         (advice-remove #'meow-quit #'my/tab-line-close-tab-function)))
     :config
-    (with-eval-after-load 'nerd-icons
-      (setq meow-replace-state-name-list
-            '((normal . "󰆾")
-              (motion . "󰷢")
-              (keypad . "󰌌")
-              (insert . "󰏫")
-              (beacon . "󰩬")))
-      (setq meow-indicator-face-alist
-            '((normal . meow-normal-indicator)
-              (motion . nerd-icons-lred)
-              (keypad . meow-normal-indicator)
-              (insert . nerd-icons-lgreen)
-              (beacon . nerd-icons-orange))))
     ;; Apply advice to 'meow--mode-get-state'
     (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
     (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
