@@ -1,18 +1,4 @@
-;;; my-org.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
 

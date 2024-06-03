@@ -1,18 +1,4 @@
-;;; my-ui.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 ;; Make org-brain-visualize-mode look a bit nicer.
@@ -295,19 +281,6 @@
 
 (use-package tab-bar
   :straight nil
-  :bind
-  (([remap winner-undo] . tab-bar-history-back)
-   ([remap winner-undo] . tab-bar-history-forward)
-   :repeat-map my/window-map
-   ("u" . tab-bar-history-back)
-   ("i" . tab-bar-history-forward)
-   :repeat-map my/workspace-map
-   ("p" . tab-previous)
-   ("n" . tab-next)
-   ("P" . tab-bar-move-tab-backward)
-   ("N". tab-bar-move-tab)
-   :exit
-   ("k" . tab-close-group))
   :custom
   (tab-bar-format '(tab-bar-format-tabs-groups
                     my/tab-bar-format-new
@@ -320,6 +293,7 @@
   (tab-bar-new-tab-choice "*scratch*")
   (tab-bar-history-limit 100)
   :preface
+  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   (defun my/tab-bar-format-new ()
     "Button to add a new tab."
     `((add-tab menu-item ,tab-bar-new-button project-switch-project
@@ -362,32 +336,27 @@
     (let ((tab-group-name (funcall tab-bar-tab-group-function (tab-bar--current-tab))))
       (when frame (select-frame frame))
       (tab-group (if tab-group-name tab-group-name "HOME"))))
-
   :config
-  (require 'icons)
-  (define-icon tab-bar-new nil
-    '(
-      ;; (emoji "➕")
-      (symbol "  " :face tab-bar-tab-inactive)
-      (text " + "))
-    "Icon for creating a new tab."
-    :version "29.1"
-    :help-echo "New tab")
-  (define-icon tab-bar-close nil
-    '(
-      ;; (emoji " ❌")
-      (symbol " 󰅖 ") ;; "ⓧ"
-      (text " x "))
-    "Icon for closing the clicked tab."
-    :version "29.1"
-    :help-echo "Click to close tab")
-  (define-icon tab-bar-menu-bar nil
-    '(;; (emoji "🍔")
-      (symbol " 󰍜 " :face tab-bar-tab-inactive)
-      (text "Menu" :face tab-bar-tab-inactive))
-    "Icon for the menu bar."
-    :version "29.1"
-    :help-echo "Menu bar")
+  (when (>= emacs-major-version 29)
+    (require 'icons)
+    (define-icon tab-bar-new nil
+      '((symbol "  " :face tab-bar-tab-inactive)
+        (text " + "))
+      "Icon for creating a new tab."
+      :version "29.1"
+      :help-echo "New tab")
+    (define-icon tab-bar-close nil
+      '((symbol " 󰅖 ") ;; "ⓧ"
+        (text " x "))
+      "Icon for closing the clicked tab."
+      :version "29.1"
+      :help-echo "Click to close tab")
+    (define-icon tab-bar-menu-bar nil
+      '((symbol " 󰍜 " :face tab-bar-tab-inactive)
+        (text "Menu" :face tab-bar-tab-inactive))
+      "Icon for the menu bar."
+      :version "29.1"
+      :help-echo "Menu bar"))
 
   (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function
         tab-bar-tab-name-format-function #'my/tab-bar-tab-name-format-function)
@@ -398,6 +367,21 @@
   ;; Prevent accidental tab switches when scrolling the buffer
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
+  :config
+  (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+  :bind
+  (([remap winner-undo] . tab-bar-history-back)
+   ([remap winner-undo] . tab-bar-history-forward)
+   :repeat-map my/window-map
+   ("u" . tab-bar-history-back)
+   ("i" . tab-bar-history-forward)
+   :repeat-map my/workspace-map
+   ("p" . tab-previous)
+   ("n" . tab-next)
+   ("P" . tab-bar-move-tab-backward)
+   ("N". tab-bar-move-tab)
+   :exit
+   ("k" . tab-close-group))
   :hook
   ((after-init . tab-bar-history-mode)
    (after-init . tab-bar-mode)))

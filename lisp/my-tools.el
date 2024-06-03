@@ -1,18 +1,4 @@
-;;; my-tools.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; dired :build_in:
 
@@ -74,7 +60,7 @@
   (dirvish-mode-line-format
    '(:left (sort symlink) :right (vc-info yank index)))
   (dirvish-attributes
-   '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+   '(nerd-icons file-time file-size collapse subtree-state vc-state))
   (dirvish-subtree-state-style 'nerd)
   (dirvish-path-separators (list
                             (format "  %s " (nerd-icons-codicon "nf-cod-home"))

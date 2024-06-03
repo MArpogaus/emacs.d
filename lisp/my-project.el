@@ -1,25 +1,14 @@
-;;; my-project.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; project :build_in:
 
 (use-package project
   :straight nil
+  :autoload project-prefix-map
   :custom
-  (project-vc-extra-root-markers '(".project")))
+  (project-vc-extra-root-markers '(".project"))
+  :init
+  (define-key my/leader-map "p" (cons "project" project-prefix-map)))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
 ;; Enhancements to Emacs' built in project library.

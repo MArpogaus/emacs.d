@@ -1,18 +1,4 @@
-;;; my-programming.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; [[https://github.com/emacs-straight/auctex.git][auctex]]
 ;; Integrated environment for *TeX*
@@ -118,83 +104,16 @@
 ;; Emacs helper library (and minor mode) to work with conda environments.
 
 (use-package conda
-  :after tab-bar project python
+  :after python
   :custom
   ;; support for mambaforge envs
   (conda-anaconda-home "~/mambaforge/")
   (conda-env-home-directory "~/mambaforge/")
-  :commands conda-env-candidates
-  :preface
-  (defun my/find-python-interpreter-advice (&rest _)
-    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
-    (cond
-     ((executable-find "ipython3")
-      (setq python-shell-interpreter "ipython3"
-            python-shell-interpreter-args "--simple-prompt --classic"))
-     ((executable-find "python3")
-      (setq python-shell-interpreter "python3"
-            python-shell-interpreter-args "-i"))
-     (t
-      (setq python-shell-interpreter "python"
-            python-shell-interpreter-args "-i"))))
-  (defun my/conda-env-auto-activate-advice (&rest _)
-    "Activate conda environment for project."
-    (let* ((project-current (project-current))
-           ;; If buffer belongs to a project use its name.
-           ;; If not fall back to tab group
-           (current-project-name 
-            (or (and project-current (project-name project-current))
-                (alist-get 'group (tab-bar--current-tab))))
-           ;; Skip env activation if project is located at a remote location
-           (project-remote-p
-            (and project-current (file-remote-p (project-root project-current)))))
-      (progn
-        (message (format "%s %s" current-project-name project-remote-p))
-        (cond
-         ((and (bound-and-true-p conda-project-env-path)
-               (not project-remote-p))
-          (message (format "activating env for project: %s" conda-project-env-path))
-          (conda-env-activate-for-buffer))
-         ((and current-project-name
-               (not project-remote-p)
-               (member current-project-name (conda-env-candidates)))
-          (message (format "found conda env with project name: %s" current-project-name))
-          (conda-env-activate current-project-name))
-         (t (conda-env-deactivate))))))
-  (define-minor-mode my/global-conda-env-autoactivate-mode
-    "Toggle conda-env-autoactivate mode.
-
-This mode automatically tries to activate a conda environment for the current
-buffer."
-    :lighter " Conda Auto Activation"
-    :group 'conda
-    :global t
-    ;; Forms
-    (if my/global-conda-env-autoactivate-mode ;; already on, now switching off
-        (progn
-          (advice-add #'tab-bar-select-tab :after #'my/conda-env-auto-activate-advice)
-          (advice-add #'project-switch-project :after #'my/conda-env-auto-activate-advice)
-          ;; Try to activat env imediatly after switching to a project
-          (my/conda-env-auto-activate-advice))
-      (progn
-        (advice-remove #'tab-bar-select-tab #'my/conda-env-auto-activate-advice)
-        (advice-remove #'project-switch-project #'my/conda-env-auto-activate-advice)
-        (conda-env-deactivate))))
-  :init
-  ;; enable automatic activation on project switch
-  (my/global-conda-env-autoactivate-mode)
   :config
   ;; interactive shell support
   (conda-env-initialize-interactive-shells)
   ;; eshell support
-  (conda-env-initialize-eshell)
-  ;; Add current conda env to mode line
-  (add-to-list 'global-mode-string
-               '(conda-env-current-name (" 󰌠 conda: " conda-env-current-name " "))
-               'append)
-  ;; Add custom hook to set correct python interpreter
-  (advice-add #'conda-env-activate :after #'my/find-python-interpreter-advice)
-  (advice-add #'conda-env-deactivate :after #'my/find-python-interpreter-advice))
+  (conda-env-initialize-eshell))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -324,6 +243,13 @@ buffer."
   (eldoc-add-command-completions "paredit-")
   (eldoc-add-command-completions "combobulate-"))
 
+;; [[https://github.com/purcell/envrc.git][envrc]]
+
+(use-package envrc
+  :if (executable-find "direnv")
+  :hook
+  (after-init . envrc-global-mode))
+
 ;; [[https://github.com/emacs-ess/ESS.git][ESS]]
 ;; Emacs Speaks Statistics: ESS.
 
@@ -418,11 +344,23 @@ buffer."
 
 (use-package python
   :straight nil
+  :preface
+  (defun my/find-python-interpreter-advice (&rest _)
+    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
+    (cond
+     ((executable-find "ipython3")
+      (setq-local python-shell-interpreter "ipython3"
+                  python-shell-interpreter-args "--simple-prompt --classic"))
+     ((executable-find "python3")
+      (setq-local python-shell-interpreter "python3"
+                  python-shell-interpreter-args "-i"))))
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)
   (python-indent-guess-indent-offset-verbose nil)
-  (python-shell-dedicated 'project))
+  (python-shell-dedicated 'project)
+  :config
+  (advice-add #'python-shell-calculate-command :before #'my/find-python-interpreter-advice))
 
 ;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.

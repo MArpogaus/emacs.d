@@ -1,18 +1,4 @@
-;;; init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
-
-;; Author: Marcel Arpogaus
-;; Created: 2024-05-29
-;; Keywords: configuration
-;; Homepage: https://github.com/MArpogaus/emacs.d/
-
-;; This file is not part of GNU Emacs.
-
-;;; Commentary:
-
-;; This file has been generated from emacs.org file. DO NOT EDIT.
-
-;;; Code:
+nil
 
 ;; Package Management
 ;; Lets install and configure =use-package= and use =straight= as the underlying package manager.
@@ -197,7 +183,6 @@
   (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
   (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
   (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
@@ -215,18 +200,16 @@
   (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
   (define-key my/leader-map "d" (cons "debug" my/debug-map))
   (define-key my/leader-map "f" (cons "file" my/file-map))
-  (define-key my/leader-map "g" (cons "goto" goto-map))
-  (define-key my/leader-map "h" (cons "help" help-map))
   (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
   (define-key my/leader-map "o" (cons "open" my/open-map))
-  (define-key my/leader-map "p" (cons "project" project-prefix-map))
-  (define-key my/leader-map "s" (cons "search" search-map))
   (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
   (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
   (define-key my/leader-map "w" (cons "window" my/window-map))
 
-  ;; version-control and project keymaps
-  (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+  (define-key my/leader-map "g" (cons "goto" goto-map))
+  (define-key my/leader-map "h" (cons "help" help-map))
+  (define-key my/leader-map "s" (cons "search" search-map))
+
   :bind
   (:map my/buffer-map
         ("e" . eval-buffer)
