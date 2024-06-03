@@ -1942,7 +1942,7 @@ A polished Dired with batteries included.
     (dirvish-mode-line-format
      '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-attributes
-     '(nerd-icons file-time file-size collapse subtree-state vc-state git-msg))
+     '(nerd-icons file-time file-size collapse subtree-state vc-state))
     (dirvish-subtree-state-style 'nerd)
     (dirvish-path-separators (list
                               (format "  %s " (nerd-icons-codicon "nf-cod-home"))
