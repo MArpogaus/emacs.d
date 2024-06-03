@@ -438,7 +438,6 @@ This section initializes various keymaps used for different purposes.
     (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
@@ -456,18 +455,16 @@ This section initializes various keymaps used for different purposes.
     (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
     (define-key my/leader-map "d" (cons "debug" my/debug-map))
     (define-key my/leader-map "f" (cons "file" my/file-map))
-    (define-key my/leader-map "g" (cons "goto" goto-map))
-    (define-key my/leader-map "h" (cons "help" help-map))
     (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
     (define-key my/leader-map "o" (cons "open" my/open-map))
-    (define-key my/leader-map "p" (cons "project" project-prefix-map))
-    (define-key my/leader-map "s" (cons "search" search-map))
     (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
     (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
     (define-key my/leader-map "w" (cons "window" my/window-map))
 
-    ;; version-control and project keymaps
-    (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+    (define-key my/leader-map "g" (cons "goto" goto-map))
+    (define-key my/leader-map "h" (cons "help" help-map))
+    (define-key my/leader-map "s" (cons "search" search-map))
+
     :bind
     (:map my/buffer-map
           ("e" . eval-buffer)
@@ -890,19 +887,6 @@ Increase the padding/spacing of GNU Emacs frames and windows.
 #+begin_src emacs-lisp
   (use-package tab-bar
     :straight nil
-    :bind
-    (([remap winner-undo] . tab-bar-history-back)
-     ([remap winner-undo] . tab-bar-history-forward)
-     :repeat-map my/window-map
-     ("u" . tab-bar-history-back)
-     ("i" . tab-bar-history-forward)
-     :repeat-map my/workspace-map
-     ("p" . tab-previous)
-     ("n" . tab-next)
-     ("P" . tab-bar-move-tab-backward)
-     ("N". tab-bar-move-tab)
-     :exit
-     ("k" . tab-close-group))
     :custom
     (tab-bar-format '(tab-bar-format-tabs-groups
                       my/tab-bar-format-new
@@ -915,6 +899,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (tab-bar-new-tab-choice "*scratch*")
     (tab-bar-history-limit 100)
     :preface
+    (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     (defun my/tab-bar-format-new ()
       "Button to add a new tab."
       `((add-tab menu-item ,tab-bar-new-button project-switch-project
@@ -957,32 +942,27 @@ Increase the padding/spacing of GNU Emacs frames and windows.
       (let ((tab-group-name (funcall tab-bar-tab-group-function (tab-bar--current-tab))))
         (when frame (select-frame frame))
         (tab-group (if tab-group-name tab-group-name "HOME"))))
-
     :config
-    (require 'icons)
-    (define-icon tab-bar-new nil
-      '(
-        ;; (emoji "➕")
-        (symbol "  " :face tab-bar-tab-inactive)
-        (text " + "))
-      "Icon for creating a new tab."
-      :version "29.1"
-      :help-echo "New tab")
-    (define-icon tab-bar-close nil
-      '(
-        ;; (emoji " ❌")
-        (symbol " 󰅖 ") ;; "ⓧ"
-        (text " x "))
-      "Icon for closing the clicked tab."
-      :version "29.1"
-      :help-echo "Click to close tab")
-    (define-icon tab-bar-menu-bar nil
-      '(;; (emoji "🍔")
-        (symbol " 󰍜 " :face tab-bar-tab-inactive)
-        (text "Menu" :face tab-bar-tab-inactive))
-      "Icon for the menu bar."
-      :version "29.1"
-      :help-echo "Menu bar")
+    (when (>= emacs-major-version 29)
+      (require 'icons)
+      (define-icon tab-bar-new nil
+        '((symbol "  " :face tab-bar-tab-inactive)
+          (text " + "))
+        "Icon for creating a new tab."
+        :version "29.1"
+        :help-echo "New tab")
+      (define-icon tab-bar-close nil
+        '((symbol " 󰅖 ") ;; "ⓧ"
+          (text " x "))
+        "Icon for closing the clicked tab."
+        :version "29.1"
+        :help-echo "Click to close tab")
+      (define-icon tab-bar-menu-bar nil
+        '((symbol " 󰍜 " :face tab-bar-tab-inactive)
+          (text "Menu" :face tab-bar-tab-inactive))
+        "Icon for the menu bar."
+        :version "29.1"
+        :help-echo "Menu bar"))
 
     (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function
           tab-bar-tab-name-format-function #'my/tab-bar-tab-name-format-function)
@@ -993,6 +973,21 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     ;; Prevent accidental tab switches when scrolling the buffer
     (define-key tab-bar-map (kbd "<wheel-down>") nil t)
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
+    :config
+    (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+    :bind
+    (([remap winner-undo] . tab-bar-history-back)
+     ([remap winner-undo] . tab-bar-history-forward)
+     :repeat-map my/window-map
+     ("u" . tab-bar-history-back)
+     ("i" . tab-bar-history-forward)
+     :repeat-map my/workspace-map
+     ("p" . tab-previous)
+     ("n" . tab-next)
+     ("P" . tab-bar-move-tab-backward)
+     ("N". tab-bar-move-tab)
+     :exit
+     ("k" . tab-close-group))
     :hook
     ((after-init . tab-bar-history-mode)
      (after-init . tab-bar-mode)))
@@ -3002,8 +2997,11 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp
   (use-package project
     :straight nil
+    :autoload project-prefix-map
     :custom
-    (project-vc-extra-root-markers '(".project")))
+    (project-vc-extra-root-markers '(".project"))
+    :init
+    (define-key my/leader-map "p" (cons "project" project-prefix-map)))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
 Enhancements to Emacs' built in project library.
