@@ -247,6 +247,11 @@ nil
 
 (use-package envrc
   :if (executable-find "direnv")
+  :config
+  ;; Fix problem with python promt detection
+  ;; https://github.com/purcell/envrc#troubleshooting
+  (with-eval-after-load 'python
+    (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
   :hook
   (after-init . envrc-global-mode))
 
@@ -352,8 +357,8 @@ nil
       (setq-local python-shell-interpreter "ipython3"
                   python-shell-interpreter-args "--simple-prompt --classic"))
      ((executable-find "python3")
-      (setq-local python-shell-interpreter "python3"
-                  python-shell-interpreter-args "-i"))))
+      (setq-local python-shell-interpreter "python3")
+      (kill-local-variable 'python-shell-interpreter-args))))
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)
