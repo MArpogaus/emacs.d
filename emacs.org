@@ -411,12 +411,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :config
     ;; Load customization File
     (load custom-file 'noerror 'nomessage)
-
-    ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
-    (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil t)
-    :bind
-    ;;ESC Cancels All
-    (("<escape>" . keyboard-escape-quit))
     :hook
     ;; Enable word wrapping
     (((prog-mode conf-mode text-mode) . visual-line-mode)
@@ -424,7 +418,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 #+end_src
 *** Keymaps
 
-This section initializes various keymaps used for different purposes.
+We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
+Package specific keymap definitions are kept in preface of the respective package declaration.
 
 #+begin_src emacs-lisp
   ;; setup keymaps
@@ -432,30 +427,36 @@ This section initializes various keymaps used for different purposes.
     :straight nil
     :preface
     (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
-    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-    (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-    (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-    (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
-    (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
+    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+
+    (defun my/backward-kill-thing ()
+      "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+      (interactive)
+      (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+        (cond
+         ;; If there are bounds and point is within them, kill the region
+         ((and bounds (< (car bounds) (point)))
+          (kill-region (car bounds) (point)))
+
+         ;; If there's whitespace before point, delete it
+         ((thing-at-point-looking-at "\\([ \n]+\\)")
+          (if (< (match-beginning 1) (point))
+              (kill-region (match-beginning 1) (point))
+            (kill-backward-chars 1)))
+
+         ;; If none of the above, delete one character backward
+         (t
+          (kill-backward-chars 1)))))
+
     :config
-    ;; remove keybind for suspend-frame
-    (global-unset-key (kbd "C-z"))
-
-    ;; buffer keymap
-    (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
-    ;;    (define-key my/leader-map "x" (cons "C-x" ctl-x-map))
-
     ;; leader keymap
-    (define-key my/leader-map "." (cons "completion" my/completion-map))
     (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
-    (define-key my/leader-map "d" (cons "debug" my/debug-map))
     (define-key my/leader-map "f" (cons "file" my/file-map))
-    (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
     (define-key my/leader-map "o" (cons "open" my/open-map))
     (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
     (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
@@ -465,48 +466,60 @@ This section initializes various keymaps used for different purposes.
     (define-key my/leader-map "h" (cons "help" help-map))
     (define-key my/leader-map "s" (cons "search" search-map))
 
+    ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+    (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
+
+    ;; remove keybind for suspend-frame
+    (global-unset-key (kbd "C-z"))
+    
+    ;; Don't kill windows when clicking on the mode line
+    (global-unset-key [mode-line mouse-2])
+    (global-unset-key [mode-line mouse-3])
     :bind
-    (:map my/buffer-map
-          ("e" . eval-buffer)
-          ("k" . kill-this-buffer)
-          ("K" . kill-buffer)
-          ("c" . clone-buffer)
-          ("r" . revert-buffer)
-          ("e" . eval-buffer)
-          ("s" . save-buffer)
-          :map my/file-map
-          ("f" . find-file)
-          ("F" . find-file-other-window)
-          ("d" . find-dired)
-          ("c" . copy-file)
-          ("f" . find-file)
-          ("d" . delete-file)
-          ("r" . rename-file)
-          ("w" . write-file)
-          :map my/open-map
-          ("F" . make-frame)
-          ("i" . ielm)
-          ("e" . eshell)
-          ("t" . term)
-          ("s" . scratch-buffer)
-          :repeat-map my/window-map
-          ("n" . next-window-any-frame)
-          ("p" . previous-window-any-frame)
-          ("k" . delete-window)
-          ("K" . kill-buffer-and-window)
-          ("+" . enlarge-window)
-          ("-" . shrink-window)
-          ("*" . enlarge-window-horizontally)
-          ("’" . shrink-window-horizontally)
-          ("r" . split-window-right)
-          ("b" . split-window-below)
-          ("v" . split-window-vertically)
-          ("h" . split-window-horizontally)
-          ("m" . delete-other-windows)
-          ("m" . delete-other-windows)
-          ("M" . delete-other-windows-vertically)
-          :exit
-          ("=" . balance-windows)))
+    ;;ESC Cancels All
+    (("<escape>" . keyboard-escape-quit)
+     ("C-<backspace>" . my/backward-kill-thing)
+     :map my/buffer-map
+     ("e" . eval-buffer)
+     ("k" . kill-this-buffer)
+     ("K" . kill-buffer)
+     ("c" . clone-buffer)
+     ("r" . revert-buffer)
+     ("e" . eval-buffer)
+     ("s" . save-buffer)
+     :map my/file-map
+     ("f" . find-file)
+     ("F" . find-file-other-window)
+     ("d" . find-dired)
+     ("c" . copy-file)
+     ("f" . find-file)
+     ("d" . delete-file)
+     ("r" . rename-file)
+     ("w" . write-file)
+     :map my/open-map
+     ("F" . make-frame)
+     ("i" . ielm)
+     ("e" . eshell)
+     ("t" . term)
+     ("s" . scratch-buffer)
+     :repeat-map my/window-map
+     ("n" . next-window-any-frame)
+     ("p" . previous-window-any-frame)
+     ("k" . delete-window)
+     ("K" . kill-buffer-and-window)
+     ("+" . enlarge-window)
+     ("-" . shrink-window)
+     ("*" . enlarge-window-horizontally)
+     ("’" . shrink-window-horizontally)
+     ("r" . split-window-right)
+     ("b" . split-window-below)
+     ("v" . split-window-vertically)
+     ("h" . split-window-horizontally)
+     ("m" . delete-other-windows)
+     ("m" . delete-other-windows)
+     ("M" . delete-other-windows-vertically)
+     :exit
+     ("=" . balance-windows)))
 #+end_src
 *** Custom Lisp Functions
 
@@ -1128,6 +1141,8 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
   (use-package face-remap
     :straight nil
     :preface
+    (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
+
     (defun my/text-scale-adjust-latex-previews ()
       "Adjust the size of latex preview fragments when changing the
   buffer's text scale."
@@ -1150,6 +1165,8 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
              (plist-put
               (cdr (overlay-get ov 'display))
               :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
+    :init
+    (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
     :bind
     (:repeat-map my/buffer-scale-map
                  ("+" . text-scale-increase)
@@ -2245,25 +2262,29 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
   (use-package cape
+    :preface
+    (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
+    :bind
     ;; Bind dedicated completion commands
     ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-    :bind (:map my/completion-map
-                ("p" . completion-at-point) ;; capf
-                ("t" . complete-tag)        ;; etags
-                ("d" . cape-dabbrev)        ;; or dabbrev-completion
-                ("h" . cape-history)
-                ("f" . cape-file)
-                ("k" . cape-keyword)
-                ("s" . cape-symbol)
-                ("a" . cape-abbrev)
-                ("l" . cape-line)
-                ("w" . cape-dict)
-                ("\\" . cape-tex)
-                ("_" . cape-tex)
-                ("^" . cape-tex)
-                ("&" . cape-sgml)
-                ("r" . cape-rfc1345))
+    (:map my/completion-map
+          ("p" . completion-at-point) ;; capf
+          ("t" . complete-tag)        ;; etags
+          ("d" . cape-dabbrev)        ;; or dabbrev-completion
+          ("h" . cape-history)
+          ("f" . cape-file)
+          ("k" . cape-keyword)
+          ("s" . cape-symbol)
+          ("a" . cape-abbrev)
+          ("l" . cape-line)
+          ("w" . cape-dict)
+          ("\\" . cape-tex)
+          ("_" . cape-tex)
+          ("^" . cape-tex)
+          ("&" . cape-sgml)
+          ("r" . cape-rfc1345))
     :init
+    (define-key my/leader-map "." (cons "completion" my/completion-map))
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;; NOTE: The order matters!
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -3010,8 +3031,8 @@ Enhancements to Emacs' built in project library.
     :straight (:host github :repo "karthink/project-x")
     :after project
     :bind (:map project-prefix-map
-                ("w" . project-x-window-state-save)
-                ("j" . project-x-window-state-load))
+                ("S" . project-x-window-state-save)
+                ("l" . project-x-window-state-load))
     :commands project-x-try-local project-x--window-state-write
     :init
     (add-to-list 'project-switch-commands
@@ -3260,8 +3281,11 @@ Emacs helper library (and minor mode) to work with conda environments.
 Debug Adapter Protocol for Emacs.
 #+begin_src emacs-lisp
   (use-package dape
+    :preface
+    (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
+    :init
+    (define-key my/leader-map "d" (cons "debug" my/debug-map))
     ;; To use window configuration like gud (gdb-mi)
-    ;; :init
     ;; (setq dape-buffer-window-arrangement 'gud)
     :bind
     (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
@@ -3332,6 +3356,10 @@ An emacs mode for handling Dockerfiles.
 A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
   (use-package eglot
+    :preface
+    (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
+    :init
+    (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
     :custom
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
@@ -3729,6 +3757,8 @@ The mode displays the key bindings following your currently entered incomplete c
   (use-package which-key
     :custom
     (which-key-idle-delay 0.1)
+    :config
+    (which-key-setup-minibuffer)
     :hook
     (meow-mode . which-key-mode))
 #+end_src
