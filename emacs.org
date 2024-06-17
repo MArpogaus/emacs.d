@@ -648,28 +648,43 @@ A fancy and fast mode-line inspired by minimalism design.
     ;;   relative-from-project => emacs/lisp/comint.el
     ;;   relative-to-project => lisp/comint.el
     ;;   file-name => comint.el
+    ;;   file-name-with-project => FOSS|comint.el
     ;;   buffer-name => comint.el<2> (uniquify buffer name)
     ;;
     ;; If you are experiencing the laggy issue, especially while editing remote files
     ;; with tramp, please try `file-name' style.
     ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
-    (doom-modeline-buffer-file-name-style 'relative-to-project)
+    (doom-modeline-buffer-file-name-style 'file-name-with-project)
 
     ;; Whether display icons in the mode-line.
     ;; While using the server mode in GUI, should set the value explicitly.
     (doom-modeline-icon t)
 
     ;; If non-nil, only display one number for checker information if applicable.
-    ;; (doom-modeline-checker-simple-format nil)
+    (doom-modeline-checker-simple-format t)
+
+    ;; Whether display the workspace name. Non-nil to display in the mode-line.
+    (doom-modeline-workspace-name nil)
 
     ;; Don't display offset percentage
     (doom-modeline-percent-position nil)
+
+    ;; Don't show env version
+    (doom-modeline-env-version nil)
+
+    ;; Dont show buffer encoding
+    (doom-modeline-buffer-encoding nil)
+    
+    ;; i dont use k8s
+    (doom-modeline-k8s-show-namespace nil)
+
+    ;; dont show line number in mode line
+    (line-number-mode nil)
+
+    ;; hide time from mode line to dispaly in tab-bar
+    (doom-modeline-time nil)
     :hook
-    ((after-init . doom-modeline-mode)
-     ;; filesize in modeline
-     (doom-modeline-mode . size-indication-mode)
-     ;; cursor column in modeline)
-     (doom-modeline-mode . column-number-mode)))
+    (after-init . doom-modeline-mode))
 #+end_src
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
