@@ -1213,6 +1213,7 @@ Sidebar showing a "mini-map" of a buffer.
     (minimap-window-location 'right)
     (minimap-hide-fringes t)
     (minimap-minimum-width 25)
+    (minimap-width-fraction 0)
     (minimap-major-modes '(prog-mode conf-mode))
     :config
     (with-eval-after-load 'golden-ratio
