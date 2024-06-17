@@ -3461,16 +3461,21 @@ Configure emacs documentation support.
     (eldoc-add-command-completions "combobulate-"))
 #+end_src
 **** [[https://github.com/purcell/envrc.git][envrc]]
+Emacs support for direnv which operates buffer-locally.
 #+begin_src emacs-lisp
   (use-package envrc
     :if (executable-find "direnv")
+    :demand t
     :config
     ;; Fix problem with python promt detection
     ;; https://github.com/purcell/envrc#troubleshooting
     (with-eval-after-load 'python
       (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
-    :hook
-    (after-init . envrc-global-mode))
+    :init
+    ;; The global mode should be enabled late in the startup sequence,
+    ;; to prevent inference with other other global minor modes.
+    ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
+    (add-hook 'after-init-hook #'envrc-global-mode 99))
 #+end_src
 **** [[https://github.com/emacs-ess/ESS.git][ESS]]
 Emacs Speaks Statistics: ESS.
