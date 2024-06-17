@@ -1304,8 +1304,7 @@ Paren mode for highlighting matcing paranthesis
       (setq popper-group-function #'popper-group-by-project))
     :hook
     ((after-init . popper-mode)
-     (after-init . popper-echo-mode)
-     (popper-open-popup . (lambda nil (tab-line-mode -1)))))
+     (after-init . popper-echo-mode)))
 #+end_src
 **** recentf :build_in:
 
