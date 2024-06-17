@@ -22,7 +22,6 @@
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#conventional-header][Conventional Header]]
     - [[#package-management][Package Management]]
-    - [[#benchmark-startup][Benchmark startup]]
     - [[#paths][Paths]]
     - [[#better-defaults][Better Defaults]]
     - [[#keymaps][Keymaps]]
@@ -288,27 +287,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 #+begin_src emacs-lisp
   (use-package emacs
     :straight nil
-    :preface
-    (defun my/backward-kill-thing ()
-      "Delete sexp, symbol, word or whitespace backward depending on the context at point."
-      (interactive)
-      (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
-        (cond
-         ;; If there are bounds and point is within them, kill the region
-         ((and bounds (< (car bounds) (point)))
-          (kill-region (car bounds) (point)))
-
-         ;; If there's whitespace before point, delete it
-         ((thing-at-point-looking-at "\\([ \n]+\\)")
-          (if (< (match-beginning 1) (point))
-              (kill-region (match-beginning 1) (point))
-            (kill-backward-chars 1)))
-
-         ;; If none of the above, delete one character backward
-         (t
-          (kill-backward-chars 1)))))
-    :bind
-    ("C-<backspace>" . my/backward-kill-thing)
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -447,16 +425,16 @@ Package specific keymap definitions are kept in preface of the respective packag
 
     :config
     ;; leader keymap
-    (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
-    (define-key my/leader-map "f" (cons "file" my/file-map))
-    (define-key my/leader-map "o" (cons "open" my/open-map))
-    (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
-    (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
-    (define-key my/leader-map "w" (cons "window" my/window-map))
+    (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+    (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
+    (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
+    (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+    (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+    (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
 
-    (define-key my/leader-map "g" (cons "goto" goto-map))
-    (define-key my/leader-map "h" (cons "help" help-map))
-    (define-key my/leader-map "s" (cons "search" search-map))
+    (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
+    (define-key my/leader-map (kbd "h") (cons "help" help-map))
+    (define-key my/leader-map (kbd "s") (cons "search" search-map))
 
     ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
     (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
@@ -979,7 +957,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (define-key tab-bar-map (kbd "<wheel-down>") nil t)
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
     :config
-    (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+    (define-key project-prefix-map (kbd "w") (cons "workspace" my/workspace-map))
     :bind
     (([remap winner-undo] . tab-bar-history-back)
      ([remap winner-undo] . tab-bar-history-forward)
@@ -1158,7 +1136,7 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
               (cdr (overlay-get ov 'display))
               :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
     :init
-    (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
+    (define-key my/buffer-map (kbd "z") (cons "scale" my/buffer-scale-map))
     :bind
     (:repeat-map my/buffer-scale-map
                  ("+" . text-scale-increase)
@@ -1286,7 +1264,7 @@ Enable repeat maps
            (put cmd 'repeat-map keymap)))
        (symbol-value keymap)))
     :config
-    (with-eval-after-load 'smerge
+    (with-eval-after-load 'smerge-mode
       (my/repeatize-keymap 'smerge-basic-map))
     :hook
     (after-init . repeat-mode))
@@ -1994,7 +1972,7 @@ A polished Dired with batteries included.
      ("M-s" . dirvish-setup-menu)
      ("M-t" . dirvish-layout-toggle)
      ("N"   . dirvish-narrow)
-     ("TAB" . dirvish-subtree-toggle)
+     ("<tab>" . dirvish-subtree-toggle)
      ("^"   . dirvish-history-last)
      ("a"   . dirvish-quick-access)
      ("b"   . dirvish-goto-bookmark)
@@ -2276,7 +2254,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
           ("&" . cape-sgml)
           ("r" . cape-rfc1345))
     :init
-    (define-key my/leader-map "." (cons "completion" my/completion-map))
+    (define-key my/leader-map (kbd ".") (cons "completion" my/completion-map))
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;; NOTE: The order matters!
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -2582,11 +2560,9 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :bind
     (("C-SPC" . completion-at-point)
      :map corfu-map
-     ("TAB" . corfu-next)
-     ([tab] . corfu-next)
-     ("S-TAB" . corfu-previous)
-     ([backtab] . corfu-previous)
-     ("SPC" . my/corfu-spc-handler))
+     ("<tab>"     . corfu-next)
+     ("<backtab>" . corfu-previous)
+     ("SPC"     . my/corfu-spc-handler))
     :hook
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
@@ -2772,7 +2748,6 @@ Emacs completion style that matches multiple regexps in any order
 #+end_src
 **** [[https://github.com/minad/tempel.git][tempel]]
 Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
-
 #+begin_src emacs-lisp
   ;; Configure Tempel
   (use-package tempel
@@ -2784,10 +2759,8 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
            ("M-*" . tempel-insert)
            :map tempel-map
-           ("TAB" . tempel-next)
-           ([tab] . tempel-next)
-           ("S-TAB" . tempel-previous)
-           ([backtab] . tempel-previous))
+           ("<tab>" . tempel-next)
+           ("<backtab>" . tempel-previous))
 
     :preface
     ;; Setup completion at point
@@ -2877,7 +2850,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :bind
     ;; Improve directory navigation
     (:map vertico-map
-          ("RET" . vertico-directory-enter))
+          ("<return>" . vertico-directory-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (after-init . vertico-mode)))
@@ -3011,10 +2984,13 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
   (use-package project
     :straight nil
     :autoload project-prefix-map
+    :bind
+    (:map my/leader-map
+          ("SPC" . project-list-buffers))
     :custom
     (project-vc-extra-root-markers '(".project"))
     :init
-    (define-key my/leader-map "p" (cons "project" project-prefix-map)))
+    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
 Enhancements to Emacs' built in project library.
@@ -3231,7 +3207,7 @@ Structured Editing and Navigation in Emacs.
     ;; ;; Note that you may have to restart Emacs for this to take effect!
     (combobulate-key-prefix "C-c o")
     :config
-    (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
+    (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-key-map))
     :bind
     (:map combobulate-key-map
           ("S-<down>"  . combobulate-navigate-down-list-maybe)
@@ -3276,7 +3252,7 @@ Debug Adapter Protocol for Emacs.
     :preface
     (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
     :init
-    (define-key my/leader-map "d" (cons "debug" my/debug-map))
+    (define-key my/leader-map (kbd "d") (cons "debug" my/debug-map))
     ;; To use window configuration like gud (gdb-mi)
     ;; (setq dape-buffer-window-arrangement 'gud)
     :bind
@@ -3351,7 +3327,7 @@ A client for Language Server Protocol servers.
     :preface
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
     :init
-    (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
+    (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
     :custom
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
@@ -3447,12 +3423,12 @@ Consistent ESS-like eval interface for various REPLs.
     :preface
     (defun my/setup-eir-python nil
       (require 'eval-in-repl-python)
-      (local-set-key (kbd "<C-return>") 'eir-eval-in-python))
+      (local-set-key (kbd "C-<return>") 'eir-eval-in-python))
     (defun my/setup-eir-lisp nil
       (require 'eval-in-repl-ielm)
       ;; Evaluate expression in the current buffer.
       (setq-local eir-ielm-eval-in-current-buffer t)
-      (local-set-key (kbd "<C-return>") 'eir-eval-in-ielm))
+      (local-set-key (kbd "C-<return>") 'eir-eval-in-ielm))
     :hook
     (((python-mode python-ts-mode) . my/setup-eir-python)
      ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
@@ -3605,11 +3581,6 @@ Meow is yet another modal editing mode for Emacs.
   (use-package meow
     :demand t
     :custom
-    (meow-keypad-start-keys . ())
-    (meow-keypad-meta-prefix . nil)
-    (meow-keypad-ctrl-meta-prefix . nil)
-    (meow-keypad-literal-prefix . nil)
-    (meow-keypad-self-insert-undefined . nil)
     ;; use system clipboard
     (meow-use-clipboard t)
     (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
@@ -3637,7 +3608,8 @@ Meow is yet another modal editing mode for Emacs.
     :config
     ;; Apply advice to 'meow--mode-get-state'
     (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
-    (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
+    (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
+    (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
     :bind
     (:map meow-motion-state-keymap
           ("<escape>" . meow-cancel-selection)
@@ -3657,23 +3629,6 @@ Meow is yet another modal editing mode for Emacs.
           ("W" . meow-mark-symbol)
           ("X" . meow-goto-line)
           :map my/leader-map
-          ;; ("j" . "H-j")
-          ;; ("k" . "H-k")
-          ;; ("x" ("C-x" . ctl-x-map))
-          ;;("m" . (lambda ()(meow--execute-kbd-macro "C-c")))
-          ;; Use SPC (0-9) for digit arguments.
-          ("SPC" . project-list-buffers)
-          ("1" . meow-digit-argument)
-          ("2" . meow-digit-argument)
-          ("3" . meow-digit-argument)
-          ("4" . meow-digit-argument)
-          ("5" . meow-digit-argument)
-          ("6" . meow-digit-argument)
-          ("7" . meow-digit-argument)
-          ("8" . meow-digit-argument)
-          ("9" . meow-digit-argument)
-          ("0" . meow-digit-argument)
-          ("/" . meow-keypad-describe-key)
           ("?" . meow-cheatsheet)
           :map meow-normal-state-keymap
           ("'" . repeat)
