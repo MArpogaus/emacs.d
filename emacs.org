@@ -264,14 +264,6 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
           use-package-compute-statistics t
           debug-on-error t))
 #+end_src
-*** Benchmark startup
-#+begin_src emacs-lisp :tangle no
-  (use-package benchmark-init
-    :demand t
-    ;; To disable collection of benchmark data after init is done.
-    :config
-    (add-hook 'after-init-hook #'benchmark-init/deactivate 99))
-#+end_src
 *** Paths
 Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 #+begin_src emacs-lisp
