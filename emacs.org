@@ -1225,6 +1225,42 @@ Sidebar showing a "mini-map" of a buffer.
     (:map my/toggle-map
           ("m" . minimap-mode)))
 #+end_src
+**** [[https://github.com/jdtsmith/outli.git][outli]]
+Simple comment-based outline folding for Emacs.
+#+begin_src emacs-lisp
+  (use-package outli
+    :straight (:host github :repo "jdtsmith/outli")
+    :bind (:map outli-mode-map ; convenience key to get back to containing heading
+                ("M-<return>"  . outli-insert-heading-respect-content)
+  	      ("C-c C-p" . (lambda () (interactive) (outline-back-to-heading))))
+    :hook ((prog-mode text-mode) . outli-mode))
+#+end_src
+**** outline :build_in:
+Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
+#+begin_src emacs-lisp
+  (use-package outline
+    :straight nil
+    :preface
+    (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
+    :init
+    (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
+    :config
+    (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
+    (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
+    :bind
+    (("M-S-<down>"  . outline-move-subtree-down)
+     ("M-S-<left>"  . outline-demote)
+     ("M-S-<right>" . outline-promote)
+     ("M-S-<up>"    . outline-move-subtree-up)
+     ("M-<return>"  . outline-insert-heading)
+     ("<backtab>"   . outline-cycle-buffer)
+     :repeat-map my/outline-repeat-map
+     ("SPC"         . outline-mark-subtree)
+     ("TAB"         . outline-cycle)
+     ("a"           . outline-show-all))
+    :hook
+    ((text-mode prog-mode conf-mode) . outline-minor-mode))
+#+end_src
 **** paren :build_in:
 Paren mode for highlighting matcing paranthesis
 
