@@ -688,7 +688,13 @@ A fancy and fast mode-line inspired by minimalism design.
 #+end_src
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
-  (use-package doom-themes)
+  (use-package doom-themes
+    :preface
+    (defun my/patch-doom-themes (&rest args)
+      (ignore args)
+      (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
+    :init
+    (advice-add 'load-theme :after #'my/patch-doom-themes))
 #+end_src
 **** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 An Emacs plugin that hides (or masks) the current buffer's mode-line.
