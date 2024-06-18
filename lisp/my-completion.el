@@ -4,25 +4,29 @@ nil
 ;; Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 
 (use-package cape
+  :preface
+  (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
+  :bind
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  :bind (:map my/completion-map
-              ("p" . completion-at-point) ;; capf
-              ("t" . complete-tag)        ;; etags
-              ("d" . cape-dabbrev)        ;; or dabbrev-completion
-              ("h" . cape-history)
-              ("f" . cape-file)
-              ("k" . cape-keyword)
-              ("s" . cape-symbol)
-              ("a" . cape-abbrev)
-              ("l" . cape-line)
-              ("w" . cape-dict)
-              ("\\" . cape-tex)
-              ("_" . cape-tex)
-              ("^" . cape-tex)
-              ("&" . cape-sgml)
-              ("r" . cape-rfc1345))
+  (:map my/completion-map
+        ("p" . completion-at-point) ;; capf
+        ("t" . complete-tag)        ;; etags
+        ("d" . cape-dabbrev)        ;; or dabbrev-completion
+        ("h" . cape-history)
+        ("f" . cape-file)
+        ("k" . cape-keyword)
+        ("s" . cape-symbol)
+        ("a" . cape-abbrev)
+        ("l" . cape-line)
+        ("w" . cape-dict)
+        ("\\" . cape-tex)
+        ("_" . cape-tex)
+        ("^" . cape-tex)
+        ("&" . cape-sgml)
+        ("r" . cape-rfc1345))
   :init
+  (define-key my/leader-map (kbd ".") (cons "completion" my/completion-map))
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   ;; NOTE: The order matters!
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -263,15 +267,6 @@ nil
   (corfu-preselect 'directory)        ;; Preselect the prompt
 
   :preface
-  ;; fix uneeded duble return in eshell
-  (defun my/corfu-send-shell (&rest _)
-    "Send completion candidate when inside comint/eshell."
-    (cond
-     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-      (eshell-send-input))
-     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-      (comint-send-input))))
-
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
@@ -311,8 +306,6 @@ nil
   (require 'corfu-popupinfo)
   (eldoc-add-command #'corfu-insert)
 
-  ;; Completing in the Eshell or Shell
-  (advice-add #'corfu-insert :after #'my/corfu-send-shell)
   ;; Use TAB-and-Go completion
   ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
   (dolist (c (list (cons "." ".")
@@ -328,11 +321,9 @@ nil
   :bind
   (("C-SPC" . completion-at-point)
    :map corfu-map
-   ("TAB" . corfu-next)
-   ([tab] . corfu-next)
-   ("S-TAB" . corfu-previous)
-   ([backtab] . corfu-previous)
-   ("SPC" . my/corfu-spc-handler))
+   ("<tab>"     . corfu-next)
+   ("<backtab>" . corfu-previous)
+   ("SPC"     . my/corfu-spc-handler))
   :hook
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
@@ -519,7 +510,6 @@ the completing-read prompter."
 ;; [[https://github.com/minad/tempel.git][tempel]]
 ;; Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
 
-
 ;; Configure Tempel
 (use-package tempel
   :custom
@@ -530,10 +520,8 @@ the completing-read prompter."
   :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
          ("M-*" . tempel-insert)
          :map tempel-map
-         ("TAB" . tempel-next)
-         ([tab] . tempel-next)
-         ("S-TAB" . tempel-previous)
-         ([backtab] . tempel-previous))
+         ("<tab>" . tempel-next)
+         ("<backtab>" . tempel-previous))
 
   :preface
   ;; Setup completion at point
@@ -623,7 +611,7 @@ the completing-read prompter."
   :bind
   ;; Improve directory navigation
   (:map vertico-map
-        ("RET" . vertico-directory-enter))
+        ("<return>" . vertico-directory-enter))
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (after-init . vertico-mode)))

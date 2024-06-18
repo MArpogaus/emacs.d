@@ -51,6 +51,8 @@ nil
 (use-package face-remap
   :straight nil
   :preface
+  (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
+
   (defun my/text-scale-adjust-latex-previews ()
     "Adjust the size of latex preview fragments when changing the
 buffer's text scale."
@@ -73,6 +75,8 @@ buffer's text scale."
            (plist-put
             (cdr (overlay-get ov 'display))
             :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
+  :init
+  (define-key my/buffer-map (kbd "z") (cons "scale" my/buffer-scale-map))
   :bind
   (:repeat-map my/buffer-scale-map
                ("+" . text-scale-increase)
@@ -106,6 +110,7 @@ buffer's text scale."
   (minimap-window-location 'right)
   (minimap-hide-fringes t)
   (minimap-minimum-width 25)
+  (minimap-width-fraction 0)
   (minimap-major-modes '(prog-mode conf-mode))
   :config
   (with-eval-after-load 'golden-ratio
@@ -117,6 +122,42 @@ buffer's text scale."
   :bind
   (:map my/toggle-map
         ("m" . minimap-mode)))
+
+;; [[https://github.com/jdtsmith/outli.git][outli]]
+;; Simple comment-based outline folding for Emacs.
+
+(use-package outli
+  :straight (:host github :repo "jdtsmith/outli")
+  :bind (:map outli-mode-map ; convenience key to get back to containing heading
+              ("M-<return>"  . outli-insert-heading-respect-content)
+  	    ("C-c C-p" . (lambda () (interactive) (outline-back-to-heading))))
+  :hook ((prog-mode text-mode) . outli-mode))
+
+;; outline :build_in:
+;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
+
+(use-package outline
+  :straight nil
+  :preface
+  (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
+  :init
+  (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
+  :config
+  (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
+  (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
+  :bind
+  (("M-S-<down>"  . outline-move-subtree-down)
+   ("M-S-<left>"  . outline-demote)
+   ("M-S-<right>" . outline-promote)
+   ("M-S-<up>"    . outline-move-subtree-up)
+   ("M-<return>"  . outline-insert-heading)
+   ("<backtab>"   . outline-cycle-buffer)
+   :repeat-map my/outline-repeat-map
+   ("SPC"         . outline-mark-subtree)
+   ("TAB"         . outline-cycle)
+   ("a"           . outline-show-all))
+  :hook
+  ((text-mode prog-mode conf-mode) . outline-minor-mode))
 
 ;; paren :build_in:
 ;; Paren mode for highlighting matcing paranthesis
@@ -152,6 +193,7 @@ buffer's text scale."
      "^\\*.*shell.*\\*$"  shell-mode  ;shell as a popup
      "^\\*.*term.*\\*$"   term-mode   ;term as a popup
      "^\\*.*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+     "^\\*Flymake diagnostics for .*\\*" flymake-diagnostics-buffer-mode
      ))
   ;; grouping popups by project
   (popper-mode-line nil)
@@ -160,8 +202,7 @@ buffer's text scale."
     (setq popper-group-function #'popper-group-by-project))
   :hook
   ((after-init . popper-mode)
-   (after-init . popper-echo-mode)
-   (popper-open-popup . (lambda nil (tab-line-mode -1)))))
+   (after-init . popper-echo-mode)))
 
 ;; recentf :build_in:
 
@@ -200,7 +241,7 @@ buffer's text scale."
          (put cmd 'repeat-map keymap)))
      (symbol-value keymap)))
   :config
-  (with-eval-after-load 'smerge
+  (with-eval-after-load 'smerge-mode
     (my/repeatize-keymap 'smerge-basic-map))
   :hook
   (after-init . repeat-mode))

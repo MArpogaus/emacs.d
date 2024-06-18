@@ -290,14 +290,13 @@ nil
 
 
 (use-package org-modern
-  :hook (org-mode . org-modern-mode)
   :custom
   (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
   (org-modern-star 'fold)
   (org-modern-label-border 0.3)
 
   ;; Edit settings
-  (org-auto-align-tags t)
+  (org-auto-align-tags nil)
   (org-tags-column 0)
   (org-catch-invisible-edits 'show-and-error)
   (org-special-ctrl-a/e t)
@@ -315,7 +314,9 @@ nil
      (800 1000 1200 1400 1600 1800 2000)
      " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
    org-agenda-current-time-string
-   "⭠ now ─────────────────────────────────────────────────"))
+   "◀── now ─────────────────────────────────────────────────")
+  :hook ((org-mode . org-modern-mode)
+         (org-agenda-finalize . org-modern-agenda)))
 
 ;; [[https://github.com/jdtsmith/org-modern-indent.git][org-modern-indent]]
 ;; Modern block styling with org-indent.

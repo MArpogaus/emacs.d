@@ -6,11 +6,6 @@ nil
 (use-package meow
   :demand t
   :custom
-  (meow-keypad-start-keys . ())
-  (meow-keypad-meta-prefix . nil)
-  (meow-keypad-ctrl-meta-prefix . nil)
-  (meow-keypad-literal-prefix . nil)
-  (meow-keypad-self-insert-undefined . nil)
   ;; use system clipboard
   (meow-use-clipboard t)
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
@@ -38,7 +33,8 @@ nil
   :config
   ;; Apply advice to 'meow--mode-get-state'
   (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
-  (add-to-list 'meow-keymap-alist `(leader . ,my/leader-map))
+  (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
+  (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
   :bind
   (:map meow-motion-state-keymap
         ("<escape>" . meow-cancel-selection)
@@ -58,23 +54,6 @@ nil
         ("W" . meow-mark-symbol)
         ("X" . meow-goto-line)
         :map my/leader-map
-        ;; ("j" . "H-j")
-        ;; ("k" . "H-k")
-        ;; ("x" ("C-x" . ctl-x-map))
-        ;;("m" . (lambda ()(meow--execute-kbd-macro "C-c")))
-        ;; Use SPC (0-9) for digit arguments.
-        ("SPC" . project-list-buffers)
-        ("1" . meow-digit-argument)
-        ("2" . meow-digit-argument)
-        ("3" . meow-digit-argument)
-        ("4" . meow-digit-argument)
-        ("5" . meow-digit-argument)
-        ("6" . meow-digit-argument)
-        ("7" . meow-digit-argument)
-        ("8" . meow-digit-argument)
-        ("9" . meow-digit-argument)
-        ("0" . meow-digit-argument)
-        ("/" . meow-keypad-describe-key)
         ("?" . meow-cheatsheet)
         :map meow-normal-state-keymap
         ("'" . repeat)
@@ -150,6 +129,8 @@ nil
 (use-package which-key
   :custom
   (which-key-idle-delay 0.1)
+  :config
+  (which-key-setup-minibuffer)
   :hook
   (meow-mode . which-key-mode))
 

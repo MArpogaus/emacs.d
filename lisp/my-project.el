@@ -5,10 +5,13 @@ nil
 (use-package project
   :straight nil
   :autoload project-prefix-map
+  :bind
+  (:map my/leader-map
+        ("SPC" . project-list-buffers))
   :custom
   (project-vc-extra-root-markers '(".project"))
   :init
-  (define-key my/leader-map "p" (cons "project" project-prefix-map)))
+  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
 ;; Enhancements to Emacs' built in project library.
@@ -17,8 +20,8 @@ nil
   :straight (:host github :repo "karthink/project-x")
   :after project
   :bind (:map project-prefix-map
-              ("w" . project-x-window-state-save)
-              ("j" . project-x-window-state-load))
+              ("S" . project-x-window-state-save)
+              ("l" . project-x-window-state-load))
   :commands project-x-try-local project-x--window-state-write
   :init
   (add-to-list 'project-switch-commands

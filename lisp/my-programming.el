@@ -77,7 +77,7 @@ nil
   ;; ;; Note that you may have to restart Emacs for this to take effect!
   (combobulate-key-prefix "C-c o")
   :config
-  (define-key my/open-map "c" (cons "combobulate" combobulate-key-map))
+  (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-key-map))
   :bind
   (:map combobulate-key-map
         ("S-<down>"  . combobulate-navigate-down-list-maybe)
@@ -119,8 +119,11 @@ nil
 ;; Debug Adapter Protocol for Emacs.
 
 (use-package dape
+  :preface
+  (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
+  :init
+  (define-key my/leader-map (kbd "d") (cons "debug" my/debug-map))
   ;; To use window configuration like gud (gdb-mi)
-  ;; :init
   ;; (setq dape-buffer-window-arrangement 'gud)
   :bind
   (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
@@ -191,6 +194,10 @@ nil
 ;; A client for Language Server Protocol servers.
 
 (use-package eglot
+  :preface
+  (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
+  :init
+  (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
   :custom
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
@@ -244,16 +251,21 @@ nil
   (eldoc-add-command-completions "combobulate-"))
 
 ;; [[https://github.com/purcell/envrc.git][envrc]]
+;; Emacs support for direnv which operates buffer-locally.
 
 (use-package envrc
   :if (executable-find "direnv")
+  :demand t
   :config
   ;; Fix problem with python promt detection
   ;; https://github.com/purcell/envrc#troubleshooting
   (with-eval-after-load 'python
     (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
-  :hook
-  (after-init . envrc-global-mode))
+  :init
+  ;; The global mode should be enabled late in the startup sequence,
+  ;; to prevent inference with other other global minor modes.
+  ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
+  (add-hook 'after-init-hook #'envrc-global-mode 99))
 
 ;; [[https://github.com/emacs-ess/ESS.git][ESS]]
 ;; Emacs Speaks Statistics: ESS.
@@ -286,12 +298,12 @@ nil
   :preface
   (defun my/setup-eir-python nil
     (require 'eval-in-repl-python)
-    (local-set-key (kbd "<C-return>") 'eir-eval-in-python))
+    (local-set-key (kbd "C-<return>") 'eir-eval-in-python))
   (defun my/setup-eir-lisp nil
     (require 'eval-in-repl-ielm)
     ;; Evaluate expression in the current buffer.
     (setq-local eir-ielm-eval-in-current-buffer t)
-    (local-set-key (kbd "<C-return>") 'eir-eval-in-ielm))
+    (local-set-key (kbd "C-<return>") 'eir-eval-in-ielm))
   :hook
   (((python-mode python-ts-mode) . my/setup-eir-python)
    ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
