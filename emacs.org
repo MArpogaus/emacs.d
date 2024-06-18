@@ -2575,15 +2575,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (corfu-preselect 'directory)        ;; Preselect the prompt
 
     :preface
-    ;; fix uneeded duble return in eshell
-    (defun my/corfu-send-shell (&rest _)
-      "Send completion candidate when inside comint/eshell."
-      (cond
-       ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-        (eshell-send-input))
-       ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-        (comint-send-input))))
-
     ;; Completing in the minibuffer
     (defun my/corfu-enable-always-in-minibuffer ()
       "Enable Corfu in the minibuffer if Vertico/Mct are not active."
@@ -2623,8 +2614,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (require 'corfu-popupinfo)
     (eldoc-add-command #'corfu-insert)
 
-    ;; Completing in the Eshell or Shell
-    (advice-add #'corfu-insert :after #'my/corfu-send-shell)
     ;; Use TAB-and-Go completion
     ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
     (dolist (c (list (cons "." ".")
