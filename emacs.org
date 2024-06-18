@@ -54,7 +54,7 @@ This Emacs literate configuration has been inspired by the following projects:
 *** Add git url to pkg headlines
 #+begin_src bash :results none
   for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
-      url=$(git -C ~/.emacs.d/straight/repos/*$p* remote get-url origin)
+      url=$(git -C ~/.emacs.d/straight/repos/$p* remote get-url origin)
       if [ $? -eq 0 ]; then
           sed "s|\*\*\*\* $p|**** [[$url][$p]]|" -i emacs.org
       fi;
@@ -1296,6 +1296,7 @@ Paren mode for highlighting matcing paranthesis
        "^\\*.*shell.*\\*$"  shell-mode  ;shell as a popup
        "^\\*.*term.*\\*$"   term-mode   ;term as a popup
        "^\\*.*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+       "^\\*Flymake diagnostics for .*\\*" flymake-diagnostics-buffer-mode
        ))
     ;; grouping popups by project
     (popper-mode-line nil)
