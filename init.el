@@ -41,27 +41,6 @@ nil
 
 (use-package emacs
   :straight nil
-  :preface
-  (defun my/backward-kill-thing ()
-    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
-    (interactive)
-    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
-      (cond
-       ;; If there are bounds and point is within them, kill the region
-       ((and bounds (< (car bounds) (point)))
-        (kill-region (car bounds) (point)))
-
-       ;; If there's whitespace before point, delete it
-       ((thing-at-point-looking-at "\\([ \n]+\\)")
-        (if (< (match-beginning 1) (point))
-            (kill-region (match-beginning 1) (point))
-          (kill-backward-chars 1)))
-
-       ;; If none of the above, delete one character backward
-       (t
-        (kill-backward-chars 1)))))
-  :bind
-  ("C-<backspace>" . my/backward-kill-thing)
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -156,12 +135,6 @@ nil
   :config
   ;; Load customization File
   (load custom-file 'noerror 'nomessage)
-
-  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
-  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil t)
-  :bind
-  ;;ESC Cancels All
-  (("<escape>" . keyboard-escape-quit))
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode) . visual-line-mode)
@@ -169,7 +142,8 @@ nil
 
 ;; Keymaps
 
-;; This section initializes various keymaps used for different purposes.
+;; We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
+;; Package specific keymap definitions are kept in preface of the respective package declaration.
 
 
 ;; setup keymaps
@@ -177,81 +151,99 @@ nil
   :straight nil
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
-  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-  (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
   (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-  (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
   (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
   (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-  (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
-  (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
+  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+
+  (defun my/backward-kill-thing ()
+    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
+    (interactive)
+    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
+      (cond
+       ;; If there are bounds and point is within them, kill the region
+       ((and bounds (< (car bounds) (point)))
+        (kill-region (car bounds) (point)))
+
+       ;; If there's whitespace before point, delete it
+       ((thing-at-point-looking-at "\\([ \n]+\\)")
+        (if (< (match-beginning 1) (point))
+            (kill-region (match-beginning 1) (point))
+          (kill-backward-chars 1)))
+
+       ;; If none of the above, delete one character backward
+       (t
+        (kill-backward-chars 1)))))
+
   :config
+  ;; leader keymap
+  (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+  (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
+  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
+  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
+
+  (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
+  (define-key my/leader-map (kbd "h") (cons "help" help-map))
+  (define-key my/leader-map (kbd "s") (cons "search" search-map))
+
+  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
+
   ;; remove keybind for suspend-frame
   (global-unset-key (kbd "C-z"))
 
-  ;; buffer keymap
-  (define-key my/buffer-map "z" (cons "scale" my/buffer-scale-map))
-  ;;    (define-key my/leader-map "x" (cons "C-x" ctl-x-map))
-
-  ;; leader keymap
-  (define-key my/leader-map "." (cons "completion" my/completion-map))
-  (define-key my/leader-map "b" (cons "buffer" my/buffer-map))
-  (define-key my/leader-map "d" (cons "debug" my/debug-map))
-  (define-key my/leader-map "f" (cons "file" my/file-map))
-  (define-key my/leader-map "l" (cons "lsp" my/lsp-map))
-  (define-key my/leader-map "o" (cons "open" my/open-map))
-  (define-key my/leader-map "t" (cons "toggle" my/toggle-map))
-  (define-key my/leader-map "v" (cons "version-control" my/version-control-map))
-  (define-key my/leader-map "w" (cons "window" my/window-map))
-
-  (define-key my/leader-map "g" (cons "goto" goto-map))
-  (define-key my/leader-map "h" (cons "help" help-map))
-  (define-key my/leader-map "s" (cons "search" search-map))
-
+  ;; Don't kill windows when clicking on the mode line
+  (global-unset-key [mode-line mouse-2])
+  (global-unset-key [mode-line mouse-3])
   :bind
-  (:map my/buffer-map
-        ("e" . eval-buffer)
-        ("k" . kill-this-buffer)
-        ("K" . kill-buffer)
-        ("c" . clone-buffer)
-        ("r" . revert-buffer)
-        ("e" . eval-buffer)
-        ("s" . save-buffer)
-        :map my/file-map
-        ("f" . find-file)
-        ("F" . find-file-other-window)
-        ("d" . find-dired)
-        ("c" . copy-file)
-        ("f" . find-file)
-        ("d" . delete-file)
-        ("r" . rename-file)
-        ("w" . write-file)
-        :map my/open-map
-        ("F" . make-frame)
-        ("i" . ielm)
-        ("e" . eshell)
-        ("t" . term)
-        ("s" . scratch-buffer)
-        :repeat-map my/window-map
-        ("n" . next-window-any-frame)
-        ("p" . previous-window-any-frame)
-        ("k" . delete-window)
-        ("K" . kill-buffer-and-window)
-        ("+" . enlarge-window)
-        ("-" . shrink-window)
-        ("*" . enlarge-window-horizontally)
-        ("’" . shrink-window-horizontally)
-        ("r" . split-window-right)
-        ("b" . split-window-below)
-        ("v" . split-window-vertically)
-        ("h" . split-window-horizontally)
-        ("m" . delete-other-windows)
-        ("m" . delete-other-windows)
-        ("M" . delete-other-windows-vertically)
-        :exit
-        ("=" . balance-windows)))
+  ;;ESC Cancels All
+  (("<escape>" . keyboard-escape-quit)
+   ("C-<backspace>" . my/backward-kill-thing)
+   :map my/buffer-map
+   ("e" . eval-buffer)
+   ("k" . kill-this-buffer)
+   ("K" . kill-buffer)
+   ("c" . clone-buffer)
+   ("r" . revert-buffer)
+   ("e" . eval-buffer)
+   ("s" . save-buffer)
+   :map my/file-map
+   ("f" . find-file)
+   ("F" . find-file-other-window)
+   ("d" . find-dired)
+   ("c" . copy-file)
+   ("f" . find-file)
+   ("d" . delete-file)
+   ("r" . rename-file)
+   ("w" . write-file)
+   :map my/open-map
+   ("F" . make-frame)
+   ("i" . ielm)
+   ("e" . eshell)
+   ("t" . term)
+   ("s" . scratch-buffer)
+   :repeat-map my/window-map
+   ("n" . next-window-any-frame)
+   ("p" . previous-window-any-frame)
+   ("k" . delete-window)
+   ("K" . kill-buffer-and-window)
+   ("+" . enlarge-window)
+   ("-" . shrink-window)
+   ("*" . enlarge-window-horizontally)
+   ("’" . shrink-window-horizontally)
+   ("r" . split-window-right)
+   ("b" . split-window-below)
+   ("v" . split-window-vertically)
+   ("h" . split-window-horizontally)
+   ("m" . delete-other-windows)
+   ("m" . delete-other-windows)
+   ("M" . delete-other-windows-vertically)
+   :exit
+   ("=" . balance-windows)))
 
 ;; Custom Lisp Functions
 

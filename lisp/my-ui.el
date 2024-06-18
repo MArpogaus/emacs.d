@@ -72,32 +72,53 @@ nil
   ;;   relative-from-project => emacs/lisp/comint.el
   ;;   relative-to-project => lisp/comint.el
   ;;   file-name => comint.el
+  ;;   file-name-with-project => FOSS|comint.el
   ;;   buffer-name => comint.el<2> (uniquify buffer name)
   ;;
   ;; If you are experiencing the laggy issue, especially while editing remote files
   ;; with tramp, please try `file-name' style.
   ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
-  (doom-modeline-buffer-file-name-style 'relative-to-project)
+  (doom-modeline-buffer-file-name-style 'file-name-with-project)
 
   ;; Whether display icons in the mode-line.
   ;; While using the server mode in GUI, should set the value explicitly.
   (doom-modeline-icon t)
 
   ;; If non-nil, only display one number for checker information if applicable.
-  ;; (doom-modeline-checker-simple-format nil)
+  (doom-modeline-checker-simple-format t)
+
+  ;; Whether display the workspace name. Non-nil to display in the mode-line.
+  (doom-modeline-workspace-name nil)
 
   ;; Don't display offset percentage
   (doom-modeline-percent-position nil)
+
+  ;; Don't show env version
+  (doom-modeline-env-version nil)
+
+  ;; Dont show buffer encoding
+  (doom-modeline-buffer-encoding nil)
+
+  ;; i dont use k8s
+  (doom-modeline-k8s-show-namespace nil)
+
+  ;; dont show line number in mode line
+  (line-number-mode nil)
+
+  ;; hide time from mode line to dispaly in tab-bar
+  (doom-modeline-time nil)
   :hook
-  ((after-init . doom-modeline-mode)
-   ;; filesize in modeline
-   (doom-modeline-mode . size-indication-mode)
-   ;; cursor column in modeline)
-   (doom-modeline-mode . column-number-mode)))
+  (after-init . doom-modeline-mode))
 
 ;; [[https://github.com/doomemacs/themes][doom-themes]]
 
-(use-package doom-themes)
+(use-package doom-themes
+  :preface
+  (defun my/patch-doom-themes (&rest args)
+    (ignore args)
+    (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
+  :init
+  (advice-add 'load-theme :after #'my/patch-doom-themes))
 
 ;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 ;; An Emacs plugin that hides (or masks) the current buffer's mode-line.
@@ -257,6 +278,27 @@ nil
   :config
   (procress-load-default-svg-images))
 
+;; time :build_in:
+
+(use-package time
+  :straight nil
+  :functions display-time-mode
+  :custom
+  ;; (display-time-format "%H:%M")
+  (display-time-default-load-average nil)
+  (display-time-24hr-format t)
+  (display-time-day-and-date t)
+  :preface
+  (defun my/toggle-display-time-mode (&rest args)
+    (ignore args)
+    (display-time-mode 'toggle))
+  :config
+  ;; BUG: time is displayed twice
+  (setq global-mode-string '(display-time-string))
+  :init
+  (advice-add 'toggle-frame-fullscreen
+              :after #'my/toggle-display-time-mode))
+
 ;; [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
 ;; Increase the padding/spacing of GNU Emacs frames and windows.
 
@@ -368,7 +410,7 @@ nil
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
   :config
-  (define-key project-prefix-map "w" (cons "workspace" my/workspace-map))
+  (define-key project-prefix-map (kbd "w") (cons "workspace" my/workspace-map))
   :bind
   (([remap winner-undo] . tab-bar-history-back)
    ([remap winner-undo] . tab-bar-history-forward)
@@ -404,7 +446,8 @@ nil
   (tab-line-tab-name-function #'my/tab-line-tab-name-function)
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
-                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode dired-mode flymake-diagnostics-buffer-mode
+                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                            dired-mode dirvish-directory-view-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)

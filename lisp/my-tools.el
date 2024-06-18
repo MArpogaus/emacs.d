@@ -103,7 +103,7 @@ nil
    ("M-s" . dirvish-setup-menu)
    ("M-t" . dirvish-layout-toggle)
    ("N"   . dirvish-narrow)
-   ("TAB" . dirvish-subtree-toggle)
+   ("<tab>" . dirvish-subtree-toggle)
    ("^"   . dirvish-history-last)
    ("a"   . dirvish-quick-access)
    ("b"   . dirvish-goto-bookmark)
