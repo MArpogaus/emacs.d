@@ -1,4 +1,18 @@
-nil
+;;; my-project.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; project :build_in:
 

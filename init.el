@@ -1,4 +1,18 @@
-nil
+;;; init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; Package Management
 ;; Lets install and configure =use-package= and use =straight= as the underlying package manager.
@@ -195,7 +209,7 @@ nil
 
   ;; remove keybind for suspend-frame
   (global-unset-key (kbd "C-z"))
-
+  
   ;; Don't kill windows when clicking on the mode line
   (global-unset-key [mode-line mouse-2])
   (global-unset-key [mode-line mouse-3])

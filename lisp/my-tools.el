@@ -1,4 +1,18 @@
-nil
+;;; my-tools.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; dired :build_in:
 
@@ -163,6 +177,7 @@ nil
 ;; flyspell :build_in:
 
 (use-package flyspell
+  :if (not (executable-find "enchant-2"))
   :straight nil
   :custom
   ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
@@ -230,6 +245,17 @@ nil
   :config
   (ispell-set-spellchecker-params)
   (ispell-hunspell-add-multi-dic "en_US,de_DE"))
+
+;; [[https://github.com/minad/jinx.git][jinx]]
+;; Enchanted Spell Checker.
+
+(use-package jinx
+  :if (executable-find "enchant-2")
+  :custom
+  (jinx-languages "en_US de_DE")
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages)))
 
 ;; [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 ;; Emacs support library for PDF files.
