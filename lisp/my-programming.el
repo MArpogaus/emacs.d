@@ -1,4 +1,18 @@
-nil
+;;; my-programming.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; [[https://github.com/emacs-straight/auctex.git][auctex]]
 ;; Integrated environment for *TeX*
@@ -61,6 +75,12 @@ nil
     (code-cells-forward-cell 1))
   :config
   (add-to-list 'code-cells-eval-region-commands '(python-base-mode . python-shell-send-region))
+  ;; Setup speed keys
+  (let ((map code-cells-mode-map))
+    (define-key map "n" (code-cells-speed-key 'code-cells-forward-cell))
+    (define-key map "p" (code-cells-speed-key 'code-cells-backward-cell))
+    (define-key map "e" (code-cells-speed-key 'code-cells-eval))
+    (define-key map (kbd "TAB") (code-cells-speed-key 'outline-cycle)))
   :bind
   (:map code-cells-mode-map
         ("C-S-<return>" . my/code-cells-eval))
@@ -413,18 +433,18 @@ nil
   :hook
   (after-init . global-treesit-auto-mode))
 
-;; [[https://github.com/garyo/ts-fold.git][ts-fold]]
-;; Code-folding using tree-sitter.
-;; Using the forked version with treesit support here
+;; [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
+;; Code-folding using =treesit.el=.
 
-(use-package ts-fold
-  :straight (:host github :repo "garyo/ts-fold" :branch "andrew-sw/treesit-el-support")
+(use-package treesit-fold
+  :straight (:type git :host github :repo "emacs-tree-sitter/treesit-fold")
   :preface
-  (defun my/ts-fold-mode-hook ()
-    (keymap-local-set "<backtab>" 'ts-fold-toggle))
+  (defun my/treesit-fold-mode-hook ()
+    (keymap-local-set "<backtab>" 'treesit-fold-toggle))
   :hook
-  (((yaml-ts-mode python-ts-mode) . ts-fold-mode)
-   (ts-fold-mode . my/ts-fold-mode-hook)))
+  (((yaml-ts-mode python-ts-mode) . treesit-fold-mode)
+   (treesit-fold-mode . treesit-fold-indicators-mode)
+   (treesit-fold-mode . my/treesit-fold-mode-hook)))
 
 ;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 ;; The emacs major mode for editing files in the YAML data serialization format.

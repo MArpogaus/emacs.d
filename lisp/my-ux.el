@@ -1,4 +1,18 @@
-nil
+;;; my-ux.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; autorevert :build_in:
 ;; Revert buffers when the underlying file has changed
@@ -123,16 +137,6 @@ buffer's text scale."
   (:map my/toggle-map
         ("m" . minimap-mode)))
 
-;; [[https://github.com/jdtsmith/outli.git][outli]]
-;; Simple comment-based outline folding for Emacs.
-
-(use-package outli
-  :straight (:host github :repo "jdtsmith/outli")
-  :bind (:map outli-mode-map ; convenience key to get back to containing heading
-              ("M-<return>"  . outli-insert-heading-respect-content)
-  	    ("C-c C-p" . (lambda () (interactive) (outline-back-to-heading))))
-  :hook ((prog-mode text-mode) . outli-mode))
-
 ;; outline :build_in:
 ;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
 
@@ -146,18 +150,23 @@ buffer's text scale."
   (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
   (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
   :bind
-  (("M-S-<down>"  . outline-move-subtree-down)
-   ("M-S-<left>"  . outline-demote)
-   ("M-S-<right>" . outline-promote)
-   ("M-S-<up>"    . outline-move-subtree-up)
-   ("M-<return>"  . outline-insert-heading)
-   ("<backtab>"   . outline-cycle-buffer)
-   :repeat-map my/outline-repeat-map
-   ("SPC"         . outline-mark-subtree)
-   ("TAB"         . outline-cycle)
-   ("a"           . outline-show-all))
+  (:map outline-minor-mode-map
+        ("M-S-<down>"  . outline-move-subtree-down)
+        ("M-S-<left>"  . outline-demote)
+        ("M-S-<right>" . outline-promote)
+        ("M-S-<up>"    . outline-move-subtree-up)
+        ("M-<return>"  . outline-insert-heading)
+        ("C-S-<tab>"   . outline-cycle-buffer)
+        ("C-<backtab>" . outline-cycle-buffer)
+        :repeat-map my/outline-repeat-map
+        ("SPC"         . outline-mark-subtree)
+        ("TAB"         . outline-cycle)
+        ("S-<tab>"     . outline-cycle-buffer)
+        ("<backtab>"   . outline-cycle-buffer)
+        ("a"           . outline-show-all))
   :hook
-  ((text-mode prog-mode conf-mode) . outline-minor-mode))
+  (((text-mode prog-mode conf-mode) . outline-minor-mode)
+   (outline-mode . reveal-mode)))
 
 ;; paren :build_in:
 ;; Paren mode for highlighting matcing paranthesis

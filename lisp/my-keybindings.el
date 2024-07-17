@@ -1,4 +1,18 @@
-nil
+;;; my-keybindings.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; [[https://github.com/meow-edit/meow.git][meow]]
 ;; Meow is yet another modal editing mode for Emacs.
@@ -129,6 +143,9 @@ nil
 (use-package which-key
   :custom
   (which-key-idle-delay 0.1)
+  (which-key-compute-remaps t)
+  (which-key-prefix-prefix "󰜄 ")
+  (which-key-separator " ")
   :config
   (which-key-setup-minibuffer)
   :hook

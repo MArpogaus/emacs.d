@@ -1,4 +1,18 @@
-nil
+;;; my-ui.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;; Copyright (C) 2023-2024 Marcel Arpogaus
+
+;; Author: Marcel Arpogaus
+;; Created: 2024-07-17
+;; Keywords: configuration
+;; Homepage: https://github.com/MArpogaus/emacs.d/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This file has been generated from emacs.org file. DO NOT EDIT.
+
+;;; Code:
 
 ;; [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
 ;; Make org-brain-visualize-mode look a bit nicer.
@@ -98,7 +112,7 @@ nil
 
   ;; Dont show buffer encoding
   (doom-modeline-buffer-encoding nil)
-
+  
   ;; i dont use k8s
   (doom-modeline-k8s-show-namespace nil)
 
@@ -278,27 +292,6 @@ nil
   :config
   (procress-load-default-svg-images))
 
-;; time :build_in:
-
-(use-package time
-  :straight nil
-  :functions display-time-mode
-  :custom
-  ;; (display-time-format "%H:%M")
-  (display-time-default-load-average nil)
-  (display-time-24hr-format t)
-  (display-time-day-and-date t)
-  :preface
-  (defun my/toggle-display-time-mode (&rest args)
-    (ignore args)
-    (display-time-mode 'toggle))
-  :config
-  ;; BUG: time is displayed twice
-  (setq global-mode-string '(display-time-string))
-  :init
-  (advice-add 'toggle-frame-fullscreen
-              :after #'my/toggle-display-time-mode))
-
 ;; [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]]
 ;; Increase the padding/spacing of GNU Emacs frames and windows.
 
@@ -414,6 +407,8 @@ nil
   :bind
   (([remap winner-undo] . tab-bar-history-back)
    ([remap winner-undo] . tab-bar-history-forward)
+   :map my/toggle-map
+   ("t" . tab-bar-mode)
    :repeat-map my/window-map
    ("u" . tab-bar-history-back)
    ("i" . tab-bar-history-forward)
@@ -497,6 +492,27 @@ nil
                     'help-echo "Click to close tab"))
   :hook
   (after-init . global-tab-line-mode))
+
+;; time :build_in:
+
+(use-package time
+  :straight nil
+  :functions display-time-mode
+  :custom
+  ;; (display-time-format "%H:%M")
+  (display-time-default-load-average nil)
+  (display-time-24hr-format t)
+  (display-time-day-and-date t)
+  :preface
+  (defun my/toggle-display-time-mode (&rest args)
+    (ignore args)
+    (display-time-mode 'toggle))
+  :config
+  ;; BUG: time is displayed twice
+  (setq global-mode-string '(display-time-string))
+  :init
+  (advice-add 'toggle-frame-fullscreen
+              :after #'my/toggle-display-time-mode))
 
 ;; Library Footer
 
