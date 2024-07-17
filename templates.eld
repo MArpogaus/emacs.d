@@ -2,20 +2,17 @@ python-base-mode sh-base-mode lua-mode
 
 (header
  comment-start "-*- time-stamp-pattern: \"changed[\\s]+:[\\s]+%%$\"; -*-" n
- comment-start "AUTHOR INFORMATION " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n
+ comment-start "%% Author " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n
  comment-start "file    : " (file-name-nondirectory (or (buffer-file-name) (buffer-name))) n
  comment-start "author  : " user-full-name " <" user-mail-address ">" n
  comment-start n
  comment-start "created : " (format-time-string "%04Y-%02m-%02d %02H:%02M:%02S") " (" user-full-name ")" n
- comment-start "changed : " (format-time-string "%Y-%m-%d %H:%M:%S") " (" user-full-name ")" n
- comment-start "DESCRIPTION " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n
- comment-start "..." n
- comment-start "LICENSE " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n
- comment-start "..." n
- (make-string (- fill-column (current-column)) (string-to-char comment-start)) n
+ comment-start "changed : " (format-time-string "%Y-%m-%d %H:%M:%S") " (" user-full-name ")" n n
+ comment-start "%% License " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n n
+ comment-start "%% Description " (make-string (- fill-column (current-column)) (string-to-char comment-start)) n n
  r)
 
-(sep comment-start (s str) " " (make-string (- fill-column (length str) (length comment-start) (current-indentation) 1) (string-to-char comment-start)) n> r)
+(sep comment-start "%% " (s str) " " (make-string (- fill-column (length str) (length comment-start) (current-indentation) 4) (string-to-char comment-start)) n> r)
 
 sh-mode bash-ts-mode
 
