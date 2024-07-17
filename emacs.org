@@ -1003,6 +1003,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :bind
     (([remap winner-undo] . tab-bar-history-back)
      ([remap winner-undo] . tab-bar-history-forward)
+     :map my/toggle-map
+     ("t" . tab-bar-mode)
      :repeat-map my/window-map
      ("u" . tab-bar-history-back)
      ("i" . tab-bar-history-forward)
