@@ -2819,26 +2819,10 @@ Icons for corfu via nerd-icons.
 Emacs completion style that matches multiple regexps in any order
 #+begin_src emacs-lisp
   (use-package orderless
-    :after vertico
-    :preface
-    ;; In combination with Orderless or other non-prefix completion styles like substring or flex,
-    ;; host names and user names are not made available for completion after entering /ssh:.
-    (defun basic-remote-try-completion (string table pred point)
-      (and (vertico--remote-p string)
-           (completion-basic-try-completion string table pred point)))
-    (defun basic-remote-all-completions (string table pred point)
-      (and (vertico--remote-p string)
-           (completion-basic-all-completions string table pred point)))
-
-    :config
-    (add-to-list
-     'completion-styles-alist
-     '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
-
     :custom
     (completion-styles '(orderless basic))
     (completion-category-defaults nil)
-    (completion-category-overrides '((file (styles basic-remote partial-completion)))))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
 #+end_src
 **** [[https://github.com/minad/tempel.git][tempel]]
 Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
