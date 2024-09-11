@@ -3454,6 +3454,8 @@ A client for Language Server Protocol servers.
     :config
     ;; Continuously update the candidates using cape cache buster
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+    ;; We explicitly require eglot-booster here to lazy load it before we start eglot
+    (require 'eglot-booster)
     :hook
     ((python-base-mode . eglot-ensure)
      (eglot-managed-mode . my/eglot-capf)))
@@ -3462,10 +3464,8 @@ A client for Language Server Protocol servers.
 Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 #+begin_src emacs-lisp
   (use-package eglot-booster
-    :after eglot
-    :if (executable-find "emacs-lsp-booster")
     :straight (:host github :repo "jdtsmith/eglot-booster")
-    :config	(eglot-booster-mode))
+    :config (eglot-booster-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 Configure emacs documentation support.
