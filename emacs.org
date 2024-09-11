@@ -2358,29 +2358,8 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 #+begin_src emacs-lisp
   (use-package cape
-    :preface
-    (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
-    :bind
-    ;; Bind dedicated completion commands
-    ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-    (:map my/completion-map
-          ("p" . completion-at-point) ;; capf
-          ("t" . complete-tag)        ;; etags
-          ("d" . cape-dabbrev)        ;; or dabbrev-completion
-          ("h" . cape-history)
-          ("f" . cape-file)
-          ("k" . cape-keyword)
-          ("s" . cape-symbol)
-          ("a" . cape-abbrev)
-          ("l" . cape-line)
-          ("w" . cape-dict)
-          ("\\" . cape-tex)
-          ("_" . cape-tex)
-          ("^" . cape-tex)
-          ("&" . cape-sgml)
-          ("r" . cape-rfc1345))
     :init
-    (define-key my/leader-map (kbd ".") (cons "completion" my/completion-map))
+    (define-key my/leader-map (kbd ".") (cons "completion" 'cape-prefix-map))
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
     ;; NOTE: The order matters!
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
