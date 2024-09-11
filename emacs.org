@@ -14,8 +14,8 @@
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#conventional-library-header][Conventional Library Header]]
-    - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#optimize-startup-time][Optimize Startup Time]]
+    - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
     - [[#configure-straight][Configure Straight]]
     - [[#conventional-library-footer][Conventional Library Footer]]
@@ -41,6 +41,7 @@
 ** References
 This Emacs literate configuration has been inspired by the following projects:
 
+- [[https://gist.github.com/axyz/76871b404df376271b521212fba8a621][.emacs.d · GitHub]]
 - [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
 - [[https://github.com/rougier/dotemacs][GitHub - rougier/dotemacs: Litterate configuration for GNU Emacs]]
@@ -48,6 +49,8 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://github.com/terlar/emacs-config][GitHub - terlar/emacs-config: Emacs configuration]]
 - [[https://github.com/zoliky/dotemacs][GitHub - zoliky/dotemacs: My GNU Emacs configuration.]]
 - [[https://protesilaos.com/emacs/dotemacs][GNU Emacs configuration | Protesilaos Stavrou]]
+- [[https://codeberg.org/joe-adams/hydrogen][joe-adams/hydrogen: Hydrogen is a very small framework that aims to make Emac...]]
+- [[https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el][minimal-emacs.d/early-init.el at main · jamescherti/minimal-emacs.d · GitHub]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
 ** Notes
@@ -90,31 +93,24 @@ It should only consist of code that is independent of any package.
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
-*** Configure Byte Compile
-#+begin_src emacs-lisp
-  ;; If an `.el' file is newer than its corresponding `.elc', load the `.el'.
-  (setq load-prefer-newer t)
-
-  ;; Disable certain byte compiler warnings to cut down on the noise.
-  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-#+end_src
 *** Optimize Startup Time
-We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
 
-The following optimisatzion have been inspired by:
+The following optimizations have been inspired by:
 
-- https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
-- https://github.com/mnewt/dotemacs/blob/master/early-init.el
+- https://gist.github.com/axyz/76871b404df376271b521212fba8a621
 - https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+- https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el
+- https://github.com/mnewt/dotemacs/blob/master/early-init.el
+- https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
 
 #+begin_src emacs-lisp
+  ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
   (setq gc-cons-threshold most-positive-fixnum
         gc-cons-percentage 0.6)
   ;; Let's lower our GC thresholds back down to a sane level.
   (add-hook 'after-init-hook (lambda ()
                                ;; restore after startup
-                               (setq gc-cons-threshold (* 2 1000 1000)
-                                     gc-cons-percentage 0.1)))
+                               (setq gc-cons-threshold (* 16 1024 1024))))
 
   ;; Profile emacs startup
   (add-hook 'emacs-startup-hook
@@ -136,6 +132,22 @@ The following optimisatzion have been inspired by:
   ;; cursor color is concerned).
   (advice-add #'x-apply-session-resources :override #'ignore)
 
+  ;; remove "for information about gnu emacs..." message at startup
+  (advice-add #'display-startup-echo-area-message :override #'ignore)
+
+  ;; suppress the vanilla startup screen completely. we've disabled it with
+  ;; `inhibit-startup-screen', but it would still initialize anyway.
+  (advice-add #'display-startup-screen :override #'ignore)
+
+  ;; never show the hello file
+  (defalias #'view-hello-file #'ignore)
+
+  ;; Disable warnings from the legacy advice API. They aren't useful.
+  (setq ad-redefinition-action 'accept)
+
+  ;; Ignore warnings about "existing variables being aliased".
+  (setq warning-suppress-types '((defvaralias) (lexical-binding)))
+
   ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
   ;; loaded by Emacs will run through this list to check for a proper handler for
   ;; the file, but during startup, it won’t need any of them.
@@ -152,6 +164,16 @@ The following optimisatzion have been inspired by:
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
+#+end_src
+*** Configure Byte Compile
+#+begin_src emacs-lisp
+  ;; In noninteractive sessions, prioritize non-byte-compiled source files to
+  ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
+  ;; to skip the mtime checks on every *.elc file.
+  (setq load-prefer-newer noninteractive)
+
+  ;; Disable certain byte compiler warnings to cut down on the noise.
+  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 #+end_src
 *** DOOM runtime optimizations
 The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
@@ -261,6 +283,10 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
     (setq use-package-verbose t
           use-package-expand-minimally nil
           use-package-compute-statistics t
+          jka-compr-verbose t
+          byte-compile-warnings t
+          byte-compile-verbose t
+          native-comp-warning-on-missing-source t
           debug-on-error t))
 #+end_src
 *** Paths
@@ -290,9 +316,11 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (inhibit-startup-screen t)                           ; Disable start-up screen
-    (inhibit-startup-message t)                          ; Disable startup message
+    (inhibit-splash-screen t)                            ; disable startup screens and messages
+    (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
     (inhibit-startup-echo-area-message t)                ; Disable initial echo message
+    (inhibit-startup-message t)                          ; Disable startup message
+    (inhibit-startup-screen t)                           ; Disable start-up screen
     (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
 
     ;; Encoding
@@ -350,8 +378,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
     ;; Default mode
     ;; Default & initial mode is text.
-    (initial-major-mode 'text-mode)                      ; Initial mode is text
-    (default-major-mode 'text-mode)                      ; Default mode is text
+    (initial-major-mode 'fundamental-mode)               ; Initial mode is text
+    (default-major-mode 'fundamental-mode)               ; Default mode is text
 
     ;; Tabulations
     ;; No tabulation, ever.
@@ -365,7 +393,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
 
     ;; Miscellaneous
-    (native-comp-async-report-warnings-errors nil)       ; disable native compiler warnings
+    (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
     (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
     (window-resize-pixelwise t)                          ; Resize windows pixelwise
     (frame-resize-pixelwise t)                           ; Resize frame pixelwise
@@ -441,7 +469,7 @@ Package specific keymap definitions are kept in preface of the respective packag
 
     ;; remove keybind for suspend-frame
     (global-unset-key (kbd "C-z"))
-    
+
     ;; Don't kill windows when clicking on the mode line
     (global-unset-key [mode-line mouse-2])
     (global-unset-key [mode-line mouse-3])
@@ -674,7 +702,7 @@ A fancy and fast mode-line inspired by minimalism design.
 
     ;; Dont show buffer encoding
     (doom-modeline-buffer-encoding nil)
-    
+
     ;; i dont use k8s
     (doom-modeline-k8s-show-namespace nil)
 
