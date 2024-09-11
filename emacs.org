@@ -1060,33 +1060,41 @@ References:
                 (nerd-icons-icon-for-file name)
                 (format " %s " name))))
 
+    (defun my/tab-line-get-buffer (tab)
+      "Return the buffer represented by TAB."
+      (if (bufferp tab) tab (cdr (assq 'buffer tab))))
+
+    (defun my/tab-line-windows-with-buffer (buffer)
+      "Return a list of windows displaying BUFFER across all frames."
+      (seq-filter (lambda (window)
+                    (eq buffer (window-buffer window)))
+                  (window-list-1 nil nil t)))
+
+    (defun my/tab-line-close-or-bury-buffer (buffer)
+      "Close or bury BUFFER based on its presence in other windows."
+      (let ((other-windows (my/tab-line-windows-with-buffer buffer)))
+        (if (> (length other-windows) 1)
+            (progn
+              (message "Burying buffer %s" buffer)
+              (bury-buffer))
+          (progn
+            (message "Closing buffer %s" buffer)
+            (kill-buffer buffer)))))
+
     (defun my/tab-line-close-tab-function (tab)
       "Close the selected tab.
-      If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-      If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-      Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+  If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+  If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+  Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
       (interactive (list (current-buffer)))
       (let ((window (selected-window))
-            (buffer (if (bufferp tab) tab (cdr (assq 'buffer tab)))))
+            (buffer (my/tab-line-get-buffer tab)))
         (with-selected-window window
-          (let ((tab-list (tab-line-tabs-window-buffers))
-                (buffer-list (flatten-list
-                              (seq-reduce (lambda (list window)
-                                            (select-window window t)
-                                            (cons (tab-line-tabs-window-buffers) list))
-                                          (window-list) nil))))
-            (select-window window)
-            (if (> (seq-count (lambda (b) (eq b buffer)) buffer-list) 1)
-                (progn
-                  (message "Burry tab %s of buffer %s" tab buffer)
-                  (bury-buffer))
-              (progn
-                (message "Closing tab %s of buffer %s" tab buffer)
-                (kill-buffer buffer)))
+          (let ((tab-list (tab-line-tabs-window-buffers)))
+            (my/tab-line-close-or-bury-buffer buffer)
             (unless (cdr tab-list)
-              (progn
-                (message "Closing window")
-                (ignore-errors (delete-window window))))))))
+              (message "Closing window")
+              (ignore-errors (delete-window window)))))))
     :config
     (setq tab-line-close-button
           (propertize "󰅖 "
