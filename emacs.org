@@ -2589,16 +2589,13 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (tab-always-indent 'complete)
 
     ;; Additional Customisations
-    (corfu-cycle t)                  ;; Enable cycling for `corfu-next/previous'
-    ;;(corfu-auto t)                   ;; Enable auto completion
-    (corfu-quit-no-match 'separator) ;; Quit auto complete if there is no match
-    (corfu-auto-prefix 1)            ;; Complete with less prefix keys)
-    (corfu-auto-delay 0.0)           ;; No delay for completion
-    (corfu-popupinfo-delay 0.5)      ;; speed up documentation popup
-    (corfu-quit-at-boundary nil)     ;; Never quit at completion boundary
-    (corfu-preview-current t)        ;; Disable current candidate preview
-    (corfu-preselect 'directory)        ;; Preselect the prompt
-
+    (corfu-cycle t)                    ;; Enable cycling for `corfu-next/previous'
+    (corfu-auto t)                     ;; Enable auto completion
+    (corfu-quit-no-match 'separator)   ;; Quit auto complete if there is no match
+    (corfu-auto-prefix 2)              ;; Complete with less prefix keys
+    (corfu-quit-at-boundary nil)       ;; Never quit at completion boundary
+    (corfu-preview-current 'seperator) ;; Disable current candidate preview
+    (corfu-preselect 'directory)       ;; Preselect the fisrt canidate exept for directories select the prompt
     :preface
     ;; Completing in the minibuffer
     (defun my/corfu-enable-always-in-minibuffer ()
@@ -2630,6 +2627,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
               (insert " "))
           (corfu-insert-separator))))
     :config
+    ;; Free the RET key for less intrusive behavior.
+    (keymap-unset corfu-map "RET")
     (when (fboundp 'straight-use-package)
       (add-to-list 'load-path
                    (expand-file-name "straight/build/corfu/extensions"
@@ -2641,22 +2640,34 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 
     ;; Use TAB-and-Go completion
     ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
-    (dolist (c (list (cons "." ".")
-                     (cons "," ",")
-                     (cons ":" ":")
-                     (cons ")" ")")
-                     (cons "}" "}")
-                     (cons "]" "]")))
-      (define-key corfu-map (kbd (car c)) `(lambda ()
-                                             (interactive)
-                                             (corfu-insert)
-                                             (insert ,(cdr c)))))
+    (dolist (c '(("." . ".")
+                 ("," . ",")
+                 (")" . ")")
+                 ("}" . "}")
+                 ("]" . "]")
+                 ("(" . "(_)")
+                 ("{" . "{_}")
+                 ("[" . "[_]")))
+      (keymap-set corfu-map (kbd (car c))
+                  `(menu-item "" nil :filter
+                              ,(lambda (&optional _)
+                                 (when (derived-mode-p 'prog-mode 'conf-mode)
+                                   (corfu-insert)
+                                   (let ((inserted (cdr c)))
+                                     (insert inserted)
+                                     (when (string-match-p "_" inserted)
+                                       (search-backward "_")
+                                       (delete-char 1)))
+                                   (completion-at-point))))))
     :bind
-    (("C-SPC" . completion-at-point)
+    (("C-SPC"     . completion-at-point)
      :map corfu-map
+     ("C-SPC"     . corfu-insert)
      ("<tab>"     . corfu-next)
+     ("TAB"       . corfu-next)
      ("<backtab>" . corfu-previous)
-     ("SPC"     . my/corfu-spc-handler))
+     ;; ("SPC"    . my/corfu-spc-handler)
+     ("<escape>"  . corfu-quit))
     :hook
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
