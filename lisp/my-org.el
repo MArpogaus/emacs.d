@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -497,6 +497,21 @@
 
 (use-package org-tidy
   :after org)
+
+;; [[https://github.com/emacsorphanage/ox-pandoc.git][ox-pandoc]]
+;; org-mode exporter via pandoc.
+
+(use-package ox-pandoc
+  :if (executable-find "pandoc")
+  :after ox
+  :demand t
+  :custom
+  (org-pandoc-options
+   '((standalone . t)
+     (mathjax . t)
+     (variable . "revealjs-url=https://revealjs.com")))
+  :config
+  (add-to-list 'org-export-backends 'pandoc))
 
 ;; [[https://github.com/tarsius/orglink.git][orglink]]
 ;; Use Org Mode links in other modes.

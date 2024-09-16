@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -29,6 +29,10 @@
   (setq use-package-verbose t
         use-package-expand-minimally nil
         use-package-compute-statistics t
+        jka-compr-verbose t
+        byte-compile-warnings t
+        byte-compile-verbose t
+        native-comp-warning-on-missing-source t
         debug-on-error t))
 
 ;; Paths
@@ -58,9 +62,11 @@
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-  (inhibit-startup-screen t)                           ; Disable start-up screen
-  (inhibit-startup-message t)                          ; Disable startup message
+  (inhibit-splash-screen t)                            ; disable startup screens and messages
+  (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
   (inhibit-startup-echo-area-message t)                ; Disable initial echo message
+  (inhibit-startup-message t)                          ; Disable startup message
+  (inhibit-startup-screen t)                           ; Disable start-up screen
   (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
 
   ;; Encoding
@@ -118,8 +124,8 @@
 
   ;; Default mode
   ;; Default & initial mode is text.
-  (initial-major-mode 'text-mode)                      ; Initial mode is text
-  (default-major-mode 'text-mode)                      ; Default mode is text
+  (initial-major-mode 'fundamental-mode)               ; Initial mode is text
+  (default-major-mode 'fundamental-mode)               ; Default mode is text
 
   ;; Tabulations
   ;; No tabulation, ever.
@@ -133,7 +139,7 @@
   (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
 
   ;; Miscellaneous
-  (native-comp-async-report-warnings-errors nil)       ; disable native compiler warnings
+  (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
   (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
   (window-resize-pixelwise t)                          ; Resize windows pixelwise
   (frame-resize-pixelwise t)                           ; Resize frame pixelwise
@@ -209,7 +215,7 @@
 
   ;; remove keybind for suspend-frame
   (global-unset-key (kbd "C-z"))
-  
+
   ;; Don't kill windows when clicking on the mode line
   (global-unset-key [mode-line mouse-2])
   (global-unset-key [mode-line mouse-3])

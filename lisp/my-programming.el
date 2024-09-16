@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -244,6 +244,8 @@
   :config
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  ;; We explicitly require eglot-booster here to lazy load it before we start eglot
+  (require 'eglot-booster)
   :hook
   ((python-base-mode . eglot-ensure)
    (eglot-managed-mode . my/eglot-capf)))
@@ -252,10 +254,8 @@
 ;; Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 
 (use-package eglot-booster
-  :after eglot
-  :if (executable-find "emacs-lsp-booster")
   :straight (:host github :repo "jdtsmith/eglot-booster")
-  :config	(eglot-booster-mode))
+  :config (eglot-booster-mode))
 
 ;; [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 ;; Configure emacs documentation support.
@@ -279,8 +279,8 @@
   :config
   ;; Fix problem with python promt detection
   ;; https://github.com/purcell/envrc#troubleshooting
-  (with-eval-after-load 'python
-    (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+  ;; (with-eval-after-load 'python
+  ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
   :init
   ;; The global mode should be enabled late in the startup sequence,
   ;; to prevent inference with other other global minor modes.
@@ -390,7 +390,9 @@
                   python-shell-interpreter-args "--simple-prompt --classic"))
      ((executable-find "python3")
       (setq-local python-shell-interpreter "python3")
-      (kill-local-variable 'python-shell-interpreter-args))))
+      (kill-local-variable 'python-shell-interpreter-args))
+     (t (kill-local-variable 'python-shell-interpreter)
+        (kill-local-variable 'python-shell-interpreter-args))))
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)

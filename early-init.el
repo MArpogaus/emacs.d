@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,31 +14,24 @@
 
 ;;; Code:
 
-;; Configure Byte Compile
-
-;; If an `.el' file is newer than its corresponding `.elc', load the `.el'.
-(setq load-prefer-newer t)
-
-;; Disable certain byte compiler warnings to cut down on the noise.
-(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-
 ;; Optimize Startup Time
-;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
 
-;; The following optimisatzion have been inspired by:
+;; The following optimizations have been inspired by:
 
-;; - https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
-;; - https://github.com/mnewt/dotemacs/blob/master/early-init.el
+;; - https://gist.github.com/axyz/76871b404df376271b521212fba8a621
 ;; - https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+;; - https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el
+;; - https://github.com/mnewt/dotemacs/blob/master/early-init.el
+;; - https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
 
 
+;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
 ;; Let's lower our GC thresholds back down to a sane level.
 (add-hook 'after-init-hook (lambda ()
                              ;; restore after startup
-                             (setq gc-cons-threshold (* 2 1000 1000)
-                                   gc-cons-percentage 0.1)))
+                             (setq gc-cons-threshold (* 16 1024 1024))))
 
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
@@ -60,6 +53,22 @@
 ;; cursor color is concerned).
 (advice-add #'x-apply-session-resources :override #'ignore)
 
+;; remove "for information about gnu emacs..." message at startup
+(advice-add #'display-startup-echo-area-message :override #'ignore)
+
+;; suppress the vanilla startup screen completely. we've disabled it with
+;; `inhibit-startup-screen', but it would still initialize anyway.
+(advice-add #'display-startup-screen :override #'ignore)
+
+;; never show the hello file
+(defalias #'view-hello-file #'ignore)
+
+;; Disable warnings from the legacy advice API. They aren't useful.
+(setq ad-redefinition-action 'accept)
+
+;; Ignore warnings about "existing variables being aliased".
+(setq warning-suppress-types '((defvaralias) (lexical-binding)))
+
 ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
 ;; loaded by Emacs will run through this list to check for a proper handler for
 ;; the file, but during startup, it won’t need any of them.
@@ -76,6 +85,16 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+
+;; Configure Byte Compile
+
+;; In noninteractive sessions, prioritize non-byte-compiled source files to
+;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
+;; to skip the mtime checks on every *.elc file.
+(setq load-prefer-newer noninteractive)
+
+;; Disable certain byte compiler warnings to cut down on the noise.
+(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 
 ;; DOOM runtime optimizations
 ;; The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].

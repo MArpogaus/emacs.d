@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -18,29 +18,8 @@
 ;; Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
 
 (use-package cape
-  :preface
-  (defvar my/completion-map (make-sparse-keymap) "key-map for completion commands")
-  :bind
-  ;; Bind dedicated completion commands
-  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  (:map my/completion-map
-        ("p" . completion-at-point) ;; capf
-        ("t" . complete-tag)        ;; etags
-        ("d" . cape-dabbrev)        ;; or dabbrev-completion
-        ("h" . cape-history)
-        ("f" . cape-file)
-        ("k" . cape-keyword)
-        ("s" . cape-symbol)
-        ("a" . cape-abbrev)
-        ("l" . cape-line)
-        ("w" . cape-dict)
-        ("\\" . cape-tex)
-        ("_" . cape-tex)
-        ("^" . cape-tex)
-        ("&" . cape-sgml)
-        ("r" . cape-rfc1345))
   :init
-  (define-key my/leader-map (kbd ".") (cons "completion" my/completion-map))
+  (define-key my/leader-map (kbd ".") (cons "completion" 'cape-prefix-map))
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   ;; NOTE: The order matters!
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -270,16 +249,13 @@
   (tab-always-indent 'complete)
 
   ;; Additional Customisations
-  (corfu-cycle t)                  ;; Enable cycling for `corfu-next/previous'
-  ;;(corfu-auto t)                   ;; Enable auto completion
-  (corfu-quit-no-match 'separator) ;; Quit auto complete if there is no match
-  (corfu-auto-prefix 1)            ;; Complete with less prefix keys)
-  (corfu-auto-delay 0.0)           ;; No delay for completion
-  (corfu-popupinfo-delay 0.5)      ;; speed up documentation popup
-  (corfu-quit-at-boundary nil)     ;; Never quit at completion boundary
-  (corfu-preview-current t)        ;; Disable current candidate preview
-  (corfu-preselect 'directory)        ;; Preselect the prompt
-
+  (corfu-cycle t)                    ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                     ;; Enable auto completion
+  (corfu-quit-no-match 'separator)   ;; Quit auto complete if there is no match
+  (corfu-auto-prefix 2)              ;; Complete with less prefix keys
+  (corfu-quit-at-boundary nil)       ;; Never quit at completion boundary
+  (corfu-preview-current 'seperator) ;; Disable current candidate preview
+  (corfu-preselect 'directory)       ;; Preselect the fisrt canidate exept for directories select the prompt
   :preface
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
@@ -311,6 +287,8 @@
             (insert " "))
         (corfu-insert-separator))))
   :config
+  ;; Free the RET key for less intrusive behavior.
+  (keymap-unset corfu-map "RET")
   (when (fboundp 'straight-use-package)
     (add-to-list 'load-path
                  (expand-file-name "straight/build/corfu/extensions"
@@ -322,22 +300,34 @@
 
   ;; Use TAB-and-Go completion
   ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
-  (dolist (c (list (cons "." ".")
-                   (cons "," ",")
-                   (cons ":" ":")
-                   (cons ")" ")")
-                   (cons "}" "}")
-                   (cons "]" "]")))
-    (define-key corfu-map (kbd (car c)) `(lambda ()
-                                           (interactive)
-                                           (corfu-insert)
-                                           (insert ,(cdr c)))))
+  (dolist (c '(("." . ".")
+               ("," . ",")
+               (")" . ")")
+               ("}" . "}")
+               ("]" . "]")
+               ("(" . "(_)")
+               ("{" . "{_}")
+               ("[" . "[_]")))
+    (keymap-set corfu-map (kbd (car c))
+                `(menu-item "" nil :filter
+                            ,(lambda (&optional _)
+                               (when (derived-mode-p 'prog-mode 'conf-mode)
+                                 (corfu-insert)
+                                 (let ((inserted (cdr c)))
+                                   (insert inserted)
+                                   (when (string-match-p "_" inserted)
+                                     (search-backward "_")
+                                     (delete-char 1)))
+                                 (completion-at-point))))))
   :bind
-  (("C-SPC" . completion-at-point)
+  (("C-SPC"     . completion-at-point)
    :map corfu-map
+   ("C-SPC"     . corfu-insert)
    ("<tab>"     . corfu-next)
+   ("TAB"       . corfu-next)
    ("<backtab>" . corfu-previous)
-   ("SPC"     . my/corfu-spc-handler))
+   ;; ("SPC"    . my/corfu-spc-handler)
+   ("<escape>"  . corfu-quit))
   :hook
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
@@ -500,26 +490,10 @@ the completing-read prompter."
 ;; Emacs completion style that matches multiple regexps in any order
 
 (use-package orderless
-  :after vertico
-  :preface
-  ;; In combination with Orderless or other non-prefix completion styles like substring or flex,
-  ;; host names and user names are not made available for completion after entering /ssh:.
-  (defun basic-remote-try-completion (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-try-completion string table pred point)))
-  (defun basic-remote-all-completions (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-all-completions string table pred point)))
-
-  :config
-  (add-to-list
-   'completion-styles-alist
-   '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
-
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles basic-remote partial-completion)))))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
 ;; [[https://github.com/minad/tempel.git][tempel]]
 ;; Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
