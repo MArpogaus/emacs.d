@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-07-17
+;; Created: 2024-09-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -85,7 +85,7 @@ buffer's text scale."
   (defun my/zoom-latex-preview (ov)
     (overlay-put
      ov 'display
-     (cons 'image 
+     (cons 'image
            (plist-put
             (cdr (overlay-get ov 'display))
             :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
