@@ -3499,8 +3499,8 @@ Emacs support for direnv which operates buffer-locally.
     :config
     ;; Fix problem with python promt detection
     ;; https://github.com/purcell/envrc#troubleshooting
-    (with-eval-after-load 'python
-      (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+    ;; (with-eval-after-load 'python
+    ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
     :init
     ;; The global mode should be enabled late in the startup sequence,
     ;; to prevent inference with other other global minor modes.
@@ -3610,7 +3610,9 @@ Py-isort.el integrates isort into Emacs.
                     python-shell-interpreter-args "--simple-prompt --classic"))
        ((executable-find "python3")
         (setq-local python-shell-interpreter "python3")
-        (kill-local-variable 'python-shell-interpreter-args))))
+        (kill-local-variable 'python-shell-interpreter-args))
+       (t (kill-local-variable 'python-shell-interpreter)
+          (kill-local-variable 'python-shell-interpreter-args))))
     :custom
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
