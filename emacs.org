@@ -7,7 +7,7 @@
 
 [[file:img/screenshot.png]]
 
-This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [[https://github.com/doomemacs/doomemacs][DOOM Emacs]], [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[id:f3a10440-c05c-4829-83bd-4c57ffcadfca][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
+This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [[https://github.com/doomemacs/doomemacs][DOOM Emacs]], [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[#references][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
 Here are some notable features:
 
 - *Literate Configuration:* The entire configuration is written in Org mode, making it self-documenting and easy to navigate. This file, =emacs.org=, is the single source of truth for all settings. The Org mode source code blocks are tangled to generate the actual Emacs Lisp files loaded by Emacs, for enhanced usability and easier debugging, as suggested by [[https://protesilaos.com/emacs/dotemacs][Protesilaos]]. 
