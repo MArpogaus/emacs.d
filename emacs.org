@@ -696,9 +696,6 @@ A fancy and fast mode-line inspired by minimalism design.
     ;; Don't display offset percentage
     (doom-modeline-percent-position nil)
 
-    ;; Don't show env version
-    (doom-modeline-env-version nil)
-
     ;; Dont show buffer encoding
     (doom-modeline-buffer-encoding nil)
 
