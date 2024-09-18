@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-16
+;; Created: 2024-09-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -19,13 +19,21 @@
 (use-package project
   :straight nil
   :autoload project-prefix-map
+  :preface
+  (defun my/project-name (project)
+    (let* ((project-root-dir (directory-file-name (project-root project)))
+           (name (file-name-nondirectory project-root-dir)))
+      (if (file-remote-p project-root-dir)
+          (concat "[R] " name) (concat "[P] " name))))
   :bind
   (:map my/leader-map
         ("SPC" . project-list-buffers))
   :custom
   (project-vc-extra-root-markers '(".project"))
   :init
-  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
+  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map))
+  :config
+  (advice-add #'project-name :override #'my/project-name))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
 ;; Enhancements to Emacs' built in project library.
