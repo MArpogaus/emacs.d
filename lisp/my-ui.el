@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-16
+;; Created: 2024-09-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -39,8 +39,7 @@
 
 (use-package auto-dark
   :custom
-  (auto-dark-dark-theme 'doom-one)
-  (auto-dark-light-theme 'doom-one-light)
+  (auto-dark-themes '((doom-one) (doom-one-light)))
   :hook
   (after-init . auto-dark-mode))
 
@@ -106,9 +105,6 @@
 
   ;; Don't display offset percentage
   (doom-modeline-percent-position nil)
-
-  ;; Don't show env version
-  (doom-modeline-env-version nil)
 
   ;; Dont show buffer encoding
   (doom-modeline-buffer-encoding nil)
@@ -333,19 +329,26 @@
     "Button to add a new tab."
     `((add-tab menu-item ,tab-bar-new-button project-switch-project
                :help "New")))
-
   (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
-    (let*((tab-group-name (funcall tab-bar-tab-group-function tab))
-          (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-          (color (face-attribute (if current-p
-                                     'mode-line-emphasis
-                                   'tab-bar-tab-group-inactive) :foreground))
-          (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
-                                                 :foreground color
-                                                 :background color)))
-          (group-icon (cond
-                       ((equal tab-group-name "HOME") "")
-                       (t ""))))
+    "Format the tab group name for tab-bar, handling special prefixes '[P]' and '[R]'.
+  TAB is the tab object. I is the tab index. CURRENT-P indicates if the tab is currently selected."
+    (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
+           (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
+           (color (face-attribute (if current-p
+                                      'mode-line-emphasis
+                                    'tab-bar-tab-group-inactive) :foreground))
+           (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
+                                                  :foreground color
+                                                  :background color)))
+           (group-icon (cond
+                        ((equal tab-group-name "HOME") "")
+                        ((string-match "^\\[P\\] *" tab-group-name)
+                         (setq tab-group-name (substring tab-group-name (match-end 0)))
+                         "")
+                        ((string-match "^\\[R\\] *" tab-group-name)
+                         (setq tab-group-name (substring tab-group-name (match-end 0)))
+                         "")
+                        (t ""))))
       (concat
        group-sep
        (propertize
@@ -353,7 +356,7 @@
          " "
          group-icon
          " "
-         (funcall tab-bar-tab-group-function tab)
+         tab-group-name
          " ")
         'face tab-group-face))))
 
