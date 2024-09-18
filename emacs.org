@@ -5,12 +5,35 @@
 #+PROPERTY: header-args :mkdirp yes :comments org
 #+EXCLUDE_TAGS: noexport
 
-* Configuration
-** Table of Contents :TOC_3_gh:noexport:
+[[file:img/screenshot.png]]
+
+This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [DOOM Emacs](https://github.com/doomemacs/doomemacs), [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[id:f3a10440-c05c-4829-83bd-4c57ffcadfca][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
+Here are some notable features:
+
+- *Literate Configuration:* The entire configuration is written in Org mode, making it self-documenting and easy to navigate. This file, =emacs.org=, is the single source of truth for all settings. The Org mode source code blocks are tangled to generate the actual Emacs Lisp files loaded by Emacs, for enhanced usability and easier debugging, as suggested by [[https://protesilaos.com/emacs/dotemacs][Protesilaos]]. 
+
+- *Optimized Startup:* Various techniques are employed to minimize startup time, including deferring package loading with [[https://github.com/jwiegley/use-package][use-package]], optimized garbage collection settings, and disabling non-essential services during initialization.
+
+- *Minimal UI:*  The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen real estate.
+
+- *Straight.el for Package Management:*  [[https://github.com/radian-software/straight.el][Straight.el]] is used for package management, offering a more modern and robust alternative to the built-in package.el.
+
+- *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
+
+- *Project and Workspace Management:*  [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html][Project.el]] (built-in), [[https://github.com/fritzgrabo/project-tab-groups][project-tab-groups]], and [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][tab-bar]] (built-in) are used for seamless project and workspace management, allowing for efficient organization and navigation between projects. These features are further enhanced by [[https://github.com/karthink/project-x][Project-x]], which provides additional enhancements to project management.
+
+- *Integrated Development Environment (IDE) Features:* The configuration includes powerful IDE-like features such as [[https://github.com/joaotavora/eglot][Eglot]] for Language Server Protocol integration, boosted by [[https://github.com/jdtsmith/eglot-booster][Eglot-booster]] for improved performance. [[https://github.com/svaante/dape][Dape]] is used for debugging, and [[https://www.gnu.org/software/emacs/manual/html_node/flymake/index.html][Flymake]] (built-in) provides on-the-fly syntax checking.
+
+- *Org Mode Power User Setup:* A comprehensive Org mode setup is provided, including features for task management, note-taking, literate programming, presentations, and more.  [[https://github.com/minad/org-modern][Org-modern]] provides a visually appealing modern theme, while [[https://github.com/awth13/org-appear][Org-appear]] enhances the visibility of hidden elements.  [[https://github.com/emacsorphanage/ox-pandoc][Ox-pandoc]] enables exporting Org documents using Pandoc, and [[https://github.com/org-noter/org-noter][Org-noter]] provides document annotation capabilities.
+
+- *Modal Editing with Meow:* [[https://github.com/meow-edit/meow][Meow]] introduces modal editing to Emacs, similar to Vim, for efficient text manipulation and navigation. The modal experience is further enhanced by [[https://github.com/justbur/emacs-which-key][which-key]], providing a helpful popup of available keybindings. 
+
+* Table of Contents :TOC_3_gh:noexport:
+- [[#installation][Installation]]
+- [[#references][References]]
+- [[#notes][Notes]]
+  - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
 - [[#configuration][Configuration]]
-  - [[#references][References]]
-  - [[#notes][Notes]]
-    - [[#add-git-url-to-pkg-headlines][Add git url to pkg headlines]]
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#conventional-library-header][Conventional Library Header]]
@@ -38,7 +61,38 @@
     - [[#keybindings][Keybindings]]
   - [[#conventional-library-footer-for-initel][Conventional Library Footer for =init.el=]]
 
-** References
+* Installation
+
+1. /Prerequisites:/
+
+   - *Nerd Fonts:* The configuration uses Nerd Fonts for icons. You can download and install a Nerd Font patched version of your preferred font from [https://www.nerdfonts.com/](https://www.nerdfonts.com/).
+   - *Command Line Utilities:* Ensure you have the following command line utilities installed:
+     - [pandoc](https://pandoc.org/) for exporting Org mode files
+     - [enchant-2](https://abiword.github.io/enchant/) or [hunspell](http://hunspell.github.io/) for spell checking
+     - [ctags](http://ctags.sourceforge.net/) or a [Language Server Protocol (LSP)](https://microsoft.github.io/language-server-protocol/) server for symbol indexing
+     - [direnv](https://direnv.net/) for managing project-specific environments (optional)
+
+2. /Clone the Repository:/
+
+   #+begin_src bash
+     git clone https://github.com/MArpogaus/emacs.d ~/.emacs.d
+   #+end_src
+
+3. /Install Packages:/
+
+   Start Emacs and it will automatically install the required packages via Straight.el.
+
+4. /Configure Emacs:/
+
+   - Open the =emacs.org= file in Emacs.
+   - Customize any settings in the source code blocks as needed.
+   - After making changes, press =C-c C-v t= to tangle the Org mode file and generate the Emacs Lisp files.
+
+5. /Enjoy!/
+* References
+:PROPERTIES:
+:ID:       f3a10440-c05c-4829-83bd-4c57ffcadfca
+:END:
 This Emacs literate configuration has been inspired by the following projects:
 
 - [[https://gist.github.com/axyz/76871b404df376271b521212fba8a621][.emacs.d · GitHub]]
@@ -53,8 +107,8 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el][minimal-emacs.d/early-init.el at main · jamescherti/minimal-emacs.d · GitHub]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
-** Notes
-*** Add git url to pkg headlines
+* Notes
+** Add git url to pkg headlines
 #+begin_src bash :results none
   for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
       url=$(git -C ~/.emacs.d/straight/repos/$p* remote get-url origin)
@@ -63,6 +117,8 @@ This Emacs literate configuration has been inspired by the following projects:
       fi;
   done
 #+end_src
+
+* Configuration
 ** Common Header for Emacs Libraries
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+NAME: header
