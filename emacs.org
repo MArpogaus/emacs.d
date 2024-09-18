@@ -629,8 +629,7 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
-    (auto-dark-dark-theme 'doom-one)
-    (auto-dark-light-theme 'doom-one-light)
+    (auto-dark-themes '((doom-one) (doom-one-light)))
     :hook
     (after-init . auto-dark-mode))
 #+end_src
