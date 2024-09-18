@@ -935,19 +935,26 @@ Increase the padding/spacing of GNU Emacs frames and windows.
       "Button to add a new tab."
       `((add-tab menu-item ,tab-bar-new-button project-switch-project
                  :help "New")))
-
     (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
-      (let*((tab-group-name (funcall tab-bar-tab-group-function tab))
-            (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-            (color (face-attribute (if current-p
-                                       'mode-line-emphasis
-                                     'tab-bar-tab-group-inactive) :foreground))
-            (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
-                                                   :foreground color
-                                                   :background color)))
-            (group-icon (cond
-                         ((equal tab-group-name "HOME") "")
-                         (t ""))))
+      "Format the tab group name for tab-bar, handling special prefixes '[P]' and '[R]'.
+    TAB is the tab object. I is the tab index. CURRENT-P indicates if the tab is currently selected."
+      (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
+             (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
+             (color (face-attribute (if current-p
+                                        'mode-line-emphasis
+                                      'tab-bar-tab-group-inactive) :foreground))
+             (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
+                                                    :foreground color
+                                                    :background color)))
+             (group-icon (cond
+                          ((equal tab-group-name "HOME") "")
+                          ((string-match "^\\[P\\] *" tab-group-name)
+                           (setq tab-group-name (substring tab-group-name (match-end 0)))
+                           "")
+                          ((string-match "^\\[R\\] *" tab-group-name)
+                           (setq tab-group-name (substring tab-group-name (match-end 0)))
+                           "")
+                          (t ""))))
         (concat
          group-sep
          (propertize
@@ -955,7 +962,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
            " "
            group-icon
            " "
-           (funcall tab-bar-tab-group-function tab)
+           tab-group-name
            " ")
           'face tab-group-face))))
 
@@ -3087,13 +3094,21 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
   (use-package project
     :straight nil
     :autoload project-prefix-map
+    :preface
+    (defun my/project-name (project)
+      (let* ((project-root-dir (directory-file-name (project-root project)))
+             (name (file-name-nondirectory project-root-dir)))
+        (if (file-remote-p project-root-dir)
+            (concat "[R] " name) (concat "[P] " name))))
     :bind
     (:map my/leader-map
           ("SPC" . project-list-buffers))
     :custom
     (project-vc-extra-root-markers '(".project"))
     :init
-    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
+    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map))
+    :config
+    (advice-add #'project-name :override #'my/project-name))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
 Enhancements to Emacs' built in project library.
