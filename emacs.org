@@ -7,7 +7,7 @@
 
 [[file:img/screenshot.png]]
 
-This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [DOOM Emacs](https://github.com/doomemacs/doomemacs), [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[id:f3a10440-c05c-4829-83bd-4c57ffcadfca][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
+This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [[https://github.com/doomemacs/doomemacs][DOOM Emacs]], [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[id:f3a10440-c05c-4829-83bd-4c57ffcadfca][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
 Here are some notable features:
 
 - *Literate Configuration:* The entire configuration is written in Org mode, making it self-documenting and easy to navigate. This file, =emacs.org=, is the single source of truth for all settings. The Org mode source code blocks are tangled to generate the actual Emacs Lisp files loaded by Emacs, for enhanced usability and easier debugging, as suggested by [[https://protesilaos.com/emacs/dotemacs][Protesilaos]]. 
@@ -64,13 +64,13 @@ Here are some notable features:
 * Installation
 
 1. /Prerequisites:/
-
-   - *Nerd Fonts:* The configuration uses Nerd Fonts for icons. You can download and install a Nerd Font patched version of your preferred font from [https://www.nerdfonts.com/](https://www.nerdfonts.com/).
+*
+   - *Nerd Fonts:* The configuration uses Nerd Fonts for icons. You can download and install a Nerd Font patched version of your preferred font from [[https://www.nerdfonts.com/][nerd fonts]].
    - *Command Line Utilities:* Ensure you have the following command line utilities installed:
-     - [pandoc](https://pandoc.org/) for exporting Org mode files
-     - [enchant-2](https://abiword.github.io/enchant/) or [hunspell](http://hunspell.github.io/) for spell checking
-     - [ctags](http://ctags.sourceforge.net/) or a [Language Server Protocol (LSP)](https://microsoft.github.io/language-server-protocol/) server for symbol indexing
-     - [direnv](https://direnv.net/) for managing project-specific environments (optional)
+     - [[https://pandoc.org/][pandoc]] for exporting Org mode files
+     - [[https://abiword.github.io/enchant/][enchant-2]] or [[http://hunspell.github.io/][hunspell]] for spell checking
+     - [[http://ctags.sourceforge.net/][ctags]] or a [[https://microsoft.github.io/language-server-protocol/][Language Server Protocol (LSP)]] server for symbol indexing
+     - [[https://direnv.net/][direnv]] for managing project-specific environments (optional)
 
 2. /Clone the Repository:/
 
