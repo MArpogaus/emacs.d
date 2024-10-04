@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-18
+;; Created: 2024-10-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -15,11 +15,13 @@
 ;;; Code:
 
 ;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
-
 ;; Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
 
 
 (use-package org
+  :init
+  (setq org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
+        org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
   :custom
   (org-ellipsis "…")
   (org-src-fontify-natively t)
@@ -235,62 +237,6 @@
 (use-package org-auto-tangle
   :after org
   :hook (org-mode . org-auto-tangle-mode))
-
-;; [[https://github.com/Kungsgeten/org-brain.git][org-brain]]
-;; Org-mode wiki + concept-mapping.
-
-(use-package org-brain
-  :after org org-noter
-  :preface
-  ;; from org brain README
-  ;; Here’s a command which uses org-cliplink to add a link from the clipboard
-  ;; as an org-brain resource.
-  ;; It guesses the description from the URL title.
-  ;; Here I’ve bound it to L in org-brain-visualize.
-  (defun org-brain-cliplink-resource ()
-    "Add a URL from the clipboard as an org-brain resource.
-  Suggest the URL title as a description for resource."
-    (interactive)
-    (let ((url (org-cliplink-clipboard-content)))
-      (org-brain-add-resource
-       url
-       (org-cliplink-retrieve-title-synchronously url)
-       t)))
-
-  (defun org-brain-open-org-noter (entry)
-    "Open `org-noter' on the ENTRY.
-  If run interactively, get ENTRY from context."
-    (interactive (list (org-brain-entry-at-pt)))
-    (org-with-point-at (org-brain-entry-marker entry)
-      (org-noter)))
-
-  (defun org-brain-insert-resource-icon (link)
-    "Insert an icon, based on content of org-mode LINK."
-    (insert (format "%s "
-                    (cond ((string-prefix-p "brain:" link)
-                           (nerd-icons-flicon "brain"))
-                          ((string-prefix-p "info:" link)
-                           (nerd-icons-octicon "info"))
-                          ((string-prefix-p "help:" link)
-                           (nerd-icons-material "help"))
-                          ((string-prefix-p "http" link)
-                           (nerd-icons-icon-for-url link))
-                          (t
-                           (nerd-icons-icon-for-file link))))))
-
-  :config
-  (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
-  :custom
-  (org-id-track-globally t)
-  (org-id-locations-file (expand-file-name "/org-id-locations" user-emacs-directory))
-  (org-brain-visualize-default-choices 'all)
-  (org-brain-title-max-length 24)
-  (org-brain-include-file-entries t)
-  (org-brain-file-entries-use-title t)
-  :commands
-  org-brain-visualize
-  :hook
-  (before-save . org-brain-ensure-ids-in-buffer))
 
 ;; [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 ;; A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.

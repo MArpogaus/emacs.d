@@ -43,10 +43,8 @@ org-mode
  (make-string (+ 2 proj-level) ?*) " TODO " p
  )
 
-(protokol
- "#+BRAIN_PARENTS: 3c9bed62-0bba-4f63-9cdc-be1c1dbeed34" n
+(minutes
  "#+FILETAGS: showchildren:" n
- "#+TITLE: Protokoll: Jour fixe vom " (format-time-string "%-d. %-d. %Y") n
  "#+OPTIONS: date:nil" n
  "#+LATEX_CLASS_OPTIONS: [ngerman, a4paper]" n
  "#+LATEX_HEADER: \\usepackage[margin=2.5cm]{geometry}" n
@@ -61,7 +59,7 @@ org-mode
  "+TOC: headlines 2" n n
  "* " r n n
  "* To-dos" n
- " - XXX : YYY"
+ " - XXX :: YYY"
  )
 
 (README

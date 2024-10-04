@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-18
+;; Created: 2024-10-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -35,22 +35,17 @@
         native-comp-warning-on-missing-source t
         debug-on-error t))
 
-;; Paths
+;; no-littering
 ;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 
 (use-package no-littering
   :demand t
   :init
-  (setq org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
-        org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory))
-        org-brain-path (expand-file-name "brain/" org-directory)
-        my/templates-path (expand-file-name "templates.eld" user-emacs-directory)
-        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-        custom-file (expand-file-name "custom.el" user-emacs-directory))
-
-  ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-  (setq user-emacs-directory (expand-file-name "~/.cache/emacs/"))
-
+  (setq emacs-config-directory user-emacs-directory
+   ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+   custom-file (expand-file-name "custom.el" user-emacs-directory)
+   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+   user-emacs-directory (expand-file-name "~/.cache/emacs/"))
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups))
@@ -359,6 +354,13 @@
 ;; :END:
 
 (require 'my-org)
+
+;; Denote
+;; :PROPERTIES:
+;; :header-args+: :tangle lisp/my-denote.el
+;; :END:
+
+(require 'my-denote)
 
 ;; Tools
 ;; :PROPERTIES:

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-18
+;; Created: 2024-10-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -54,11 +54,11 @@
   (org-cite-activate-processor 'citar)
   (citar-bibliography org-cite-global-bibliography)
   (citar-at-point-function 'embark-act)
-  (citar-notes-paths (list (concat org-directory "brain/bib_notes/")))
+  (citar-notes-paths (list (concat denote-directory "bib_notes/")))
   (citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
                      (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
                      (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-                     (note . ,(concat "#+TITLE: ${title}\n"
+                     (note . ,(concat "${title}\n"
                                       "#+AUTHOR: ${author editor}\n"
                                       "#+DATE: ${date}\n"
                                       "#+SOURCE: ${doi url}\n"
@@ -503,7 +503,7 @@ the completing-read prompter."
   :custom
   ;; Require trigger prefix before template name when completing.
   ;; (tempel-trigger-prefix ">")
-  (tempel-path my/templates-path)
+  (tempel-path (expand-file-name "templates.eld" emacs-config-directory))
 
   :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
          ("M-*" . tempel-insert)

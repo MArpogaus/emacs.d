@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-18
+;; Created: 2024-10-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -136,6 +136,22 @@ buffer's text scale."
   :bind
   (:map my/toggle-map
         ("m" . minimap-mode)))
+
+;; [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
+
+(use-package multiple-cursors
+  :preface
+  (defvar my/mc-map (make-sparse-keymap) "key-map for multiple cursor commands")
+  :init
+  (define-key my/leader-map (kbd "m") (cons "mc" my/mc-map))
+  :bind
+  (("C-S-<mouse-1>" . mc/add-cursor-on-click)
+   :repeat-map my/mc-map
+   ("n" . mc/mark-next-like-this)
+   ("p" . mc/mark-previous-like-this)
+   :exit
+   ("a" . mc/mark-all-like-this)
+   ("m" . mc/edit-lines)))
 
 ;; outline :build_in:
 ;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
