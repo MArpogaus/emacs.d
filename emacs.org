@@ -1323,6 +1323,22 @@ Sidebar showing a "mini-map" of a buffer.
     (:map my/toggle-map
           ("m" . minimap-mode)))
 #+end_src
+**** [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :preface
+    (defvar my/mc-map (make-sparse-keymap) "key-map for multiple cursor commands")
+    :init
+    (define-key my/leader-map (kbd "m") (cons "mc" my/mc-map))
+    :bind
+    (("C-S-<mouse-1>" . mc/add-cursor-on-click)
+     :repeat-map my/mc-map
+     ("n" . mc/mark-next-like-this)
+     ("p" . mc/mark-previous-like-this)
+     :exit
+     ("a" . mc/mark-all-like-this)
+     ("m" . mc/edit-lines)))
+#+end_src
 **** outline :build_in:
 Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
 #+begin_src emacs-lisp
