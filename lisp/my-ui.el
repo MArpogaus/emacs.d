@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-09-18
+;; Created: 2024-10-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,26 +13,6 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
-
-;; [[https://github.com/emacs-straight/ascii-art-to-unicode.git][ascii-art-to-unicode]]
-;; Make org-brain-visualize-mode look a bit nicer.
-
-(use-package ascii-art-to-unicode
-  :after org-brain
-  :preface
-  (defface aa2u-face '((t . nil))
-    "Face for aa2u box drawing characters")
-  (defun aa2u-org-brain-buffer ()
-    (let ((inhibit-read-only t))
-      (make-local-variable 'face-remapping-alist)
-      (add-to-list 'face-remapping-alist
-                   '(aa2u-face . org-brain-wires))
-      (ignore-errors (aa2u (point-min) (point-max)))))
-  :config
-  (advice-add #'aa2u-1c :filter-return
-              (lambda (str) (propertize str 'face 'aa2u-face)))
-  :hook
-  (org-brain-after-visualize . aa2u-org-brain-buffer))
 
 ;; [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
 ;; Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS, Linux or Windows Dark Mode settings.
@@ -140,7 +120,6 @@
    (diff-mode . hide-mode-line-mode)
    (eshell-mode  . hide-mode-line-mode)
    (magit-status-mode . hide-mode-line-mode)
-   (org-brain-visualize-mode . hide-mode-line-mode)
    (pdf-view-mode  . hide-mode-line-mode)
    (shell-mode  . hide-mode-line-mode)
    (special-mode . hide-mode-line-mode)
@@ -348,6 +327,9 @@
                         ((string-match "^\\[R\\] *" tab-group-name)
                          (setq tab-group-name (substring tab-group-name (match-end 0)))
                          "")
+                        ((string-match "^\\[N\\] *" tab-group-name)
+                         (setq tab-group-name (substring tab-group-name (match-end 0)))
+                         "󱓩")
                         (t ""))))
       (concat
        group-sep
