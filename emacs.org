@@ -1298,8 +1298,8 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
     :bind
     (:map outline-minor-mode-map
           ("M-S-<down>"  . outline-move-subtree-down)
-          ("M-S-<left>"  . outline-demote)
-          ("M-S-<right>" . outline-promote)
+          ("M-S-<right>"  . outline-demote)
+          ("M-S-<left>" . outline-promote)
           ("M-S-<up>"    . outline-move-subtree-up)
           ("M-<return>"  . outline-insert-heading)
           ("C-S-<tab>"   . outline-cycle-buffer)
