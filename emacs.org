@@ -3727,7 +3727,7 @@ built-in tree-sitter integration for Emacs
 Code-folding using =treesit.el=.
 #+begin_src emacs-lisp
   (use-package treesit-fold
-    :straight (:type git :host github :repo "emacs-tree-sitter/treesit-fold")
+    :straight (:host github :repo "emacs-tree-sitter/treesit-fold")
     :preface
     (defun my/treesit-fold-mode-hook ()
       (keymap-local-set "<backtab>" 'treesit-fold-toggle))
