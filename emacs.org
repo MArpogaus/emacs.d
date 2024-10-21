@@ -96,6 +96,7 @@ Here are some notable features:
 :END:
 This Emacs literate configuration has been inspired by the following projects:
 
+- [[https://idiomdrottning.org/bad-emacs-defaults][Bad Emacs defaults]] 
 - [[https://gist.github.com/axyz/76871b404df376271b521212fba8a621][.emacs.d · GitHub]]
 - [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
@@ -181,8 +182,7 @@ The following optimizations have been inspired by:
   ;; Resizing the Emacs frame can be a terribly expensive part of changing the
   ;; font. By inhibiting this, we easily halve startup times with fonts that are
   ;; larger than the system default.
-  (setq frame-inhibit-implied-resize t
-        frame-resize-pixelwise t)
+  (setq frame-inhibit-implied-resize t)
 
   ;; Ignore X resources; its settings would be redundant with the other settings
   ;; in this file and can conflict with later config (particularly where the
@@ -353,10 +353,10 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :demand t
     :init
     (setq emacs-config-directory user-emacs-directory
-     ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-     custom-file (expand-file-name "custom.el" user-emacs-directory)
-     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-     user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+          custom-file (expand-file-name "custom.el" user-emacs-directory)
+          ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+          user-emacs-directory (expand-file-name "~/.cache/emacs/"))
     :config
     ;; store backup and auto-save files in =no-littering-var-directory=
     (no-littering-theme-backups))
@@ -388,6 +388,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (auto-save-default t)                                ; Auto-save every buffer that visits a file
     (auto-save-timeout 10)                               ; Number of seconds between auto-save
     (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
+
+    ;; Backups
+    (backup-by-copying t)                                ; Backs up by moving the actual file
 
     ;; Dialogs
     ;; use simple text prompts
@@ -440,7 +443,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Performance
     ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
     (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
-    (frame-inhibit-implied-resize t)                     ; Inhibit frame resizing for performance
     (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
     (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
 
