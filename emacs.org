@@ -677,72 +677,36 @@ Enable line numbers for some modes
      ;; disable for org mode
      (org-mode . (lambda () (display-line-numbers-mode 0)))))
 #+end_src
-**** [[https://github.com/seagle0128/doom-modeline.git][doom-modeline]]
-A fancy and fast mode-line inspired by minimalism design.
+**** mood-line
 #+begin_src emacs-lisp
-  (use-package doom-modeline
+  (use-package mood-line
+    ;; Use pretty Fira Code-compatible glyphs
     :custom
-    ;; If non-nil, cause imenu to see `doom-modeline' declarations.
-    ;; This is done by adjusting `lisp-imenu-generic-expression' to
-    ;; include support for finding `doom-modeline-def-*' forms.
-    ;; Must be set before loading doom-modeline.
-    (doom-modeline-support-imenu t)
-
-    ;; How tall the mode-line should be. It's only respected in GUI.
-    ;; If the actual char height is larger, it respects the actual height.
-    (doom-modeline-height 20)
-
-    ;; display the real names, please put this into your init file.
-    (find-file-visit-truename t)
-
-    ;; Determines the style used by `doom-modeline-buffer-file-name'.
-    ;;
-    ;; Given ~/Projects/FOSS/emacs/lisp/comint.el
-    ;;   auto => emacs/l/comint.el (in a project) or comint.el
-    ;;   truncate-upto-project => ~/P/F/emacs/lisp/comint.el
-    ;;   truncate-from-project => ~/Projects/FOSS/emacs/l/comint.el
-    ;;   truncate-with-project => emacs/l/comint.el
-    ;;   truncate-except-project => ~/P/F/emacs/l/comint.el
-    ;;   truncate-upto-root => ~/P/F/e/lisp/comint.el
-    ;;   truncate-all => ~/P/F/e/l/comint.el
-    ;;   truncate-nil => ~/Projects/FOSS/emacs/lisp/comint.el
-    ;;   relative-from-project => emacs/lisp/comint.el
-    ;;   relative-to-project => lisp/comint.el
-    ;;   file-name => comint.el
-    ;;   file-name-with-project => FOSS|comint.el
-    ;;   buffer-name => comint.el<2> (uniquify buffer name)
-    ;;
-    ;; If you are experiencing the laggy issue, especially while editing remote files
-    ;; with tramp, please try `file-name' style.
-    ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
-    (doom-modeline-buffer-file-name-style 'file-name-with-project)
-
-    ;; Whether display icons in the mode-line.
-    ;; While using the server mode in GUI, should set the value explicitly.
-    (doom-modeline-icon t)
-
-    ;; If non-nil, only display one number for checker information if applicable.
-    (doom-modeline-checker-simple-format t)
-
-    ;; Whether display the workspace name. Non-nil to display in the mode-line.
-    (doom-modeline-workspace-name nil)
-
-    ;; Don't display offset percentage
-    (doom-modeline-percent-position nil)
-
-    ;; Dont show buffer encoding
-    (doom-modeline-buffer-encoding nil)
-
-    ;; i dont use k8s
-    (doom-modeline-k8s-show-namespace nil)
-
-    ;; dont show line number in mode line
-    (line-number-mode nil)
-
-    ;; hide time from mode line to dispaly in tab-bar
-    (doom-modeline-time nil)
+    (mood-line-glyph-alist mood-line-glyphs-fira-code)
+    (mood-line-format
+     (mood-line-defformat
+      :left
+      (((mood-line-segment-modal) . " ")
+       ((mood-line-segment-anzu)             . "  ")
+       ((mood-line-segment-multiple-cursors) . "  ")
+       )
+      :right
+      (((mood-line-segment-process)     . "  ")
+       ((mood-line-segment-buffer-status) . " ")
+       ((mood-line-segment-misc-info)   . "  ")
+       ((mood-line-segment-major-mode)  . "  ")
+       ;; ((when (or mood-line-segment-vc
+       ;;            mood-line-segment-checker "") "|") . "  ")
+       ((mood-line-segment-vc)          . "  ")
+       ((mood-line-segment-checker)     . "  "))))
+    (mood-line-segment-modal-meow-state-alist
+     '((normal "󰰓" . font-lock-variable-name-face)
+       (insert "󰰄" . font-lock-string-face)
+       (keypad "󰰊" . font-lock-keyword-face)
+       (beacon "󰯯" . font-lock-type-face)
+       (motion "󰰐" . font-lock-constant-face)))
     :hook
-    (after-init . doom-modeline-mode))
+    (after-init . mood-line-mode))
 #+end_src
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
