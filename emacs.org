@@ -617,6 +617,16 @@ In this section, I define some custom Lisp functions.
                     (setq description (concat description ".")))
                   (insert description))
               (error "No description, website, or topics provided."))))))
+
+    ;; Thanks doom-modeline: https://github.com/seagle0128/doom-modeline/blob/ec6bc00ac035e75ad10b52e516ea5d95cc9e0bd9/doom-modeline-core.el#L1454C8-L1454C39
+    (defun my/get-bar-image (height width color)
+      "Get a rectangular bar image with specified height, width and color."
+      (propertize
+       " " 'display
+       (ignore-errors
+         (create-image
+          (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
+          'pbm t :scale 1 :foreground color :ascent 'center))))
     ;; (cl-defun create-org-entry-for-package (recipe)
     ;;   (interactive (list (straight-get-recipe nil nil)))
     ;;   (straight--with-plist recipe
@@ -677,37 +687,6 @@ Enable line numbers for some modes
      ;; disable for org mode
      (org-mode . (lambda () (display-line-numbers-mode 0)))))
 #+end_src
-**** mood-line
-#+begin_src emacs-lisp
-  (use-package mood-line
-    ;; Use pretty Fira Code-compatible glyphs
-    :custom
-    (mood-line-glyph-alist mood-line-glyphs-fira-code)
-    (mood-line-format
-     (mood-line-defformat
-      :left
-      (((mood-line-segment-modal) . " ")
-       ((mood-line-segment-anzu)             . "  ")
-       ((mood-line-segment-multiple-cursors) . "  ")
-       )
-      :right
-      (((mood-line-segment-process)     . "  ")
-       ((mood-line-segment-buffer-status) . " ")
-       ((mood-line-segment-misc-info)   . "  ")
-       ((mood-line-segment-major-mode)  . "  ")
-       ;; ((when (or mood-line-segment-vc
-       ;;            mood-line-segment-checker "") "|") . "  ")
-       ((mood-line-segment-vc)          . "  ")
-       ((mood-line-segment-checker)     . "  "))))
-    (mood-line-segment-modal-meow-state-alist
-     '((normal "󰰓" . font-lock-variable-name-face)
-       (insert "󰰄" . font-lock-string-face)
-       (keypad "󰰊" . font-lock-keyword-face)
-       (beacon "󰯯" . font-lock-type-face)
-       (motion "󰰐" . font-lock-constant-face)))
-    :hook
-    (after-init . mood-line-mode))
-#+end_src
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
   (use-package doom-themes
@@ -724,11 +703,11 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
   (use-package hide-mode-line
     :hook
     (((completion-list-mode-hook Man-mode-hook) . hide-mode-line-mode)
-     (comint-mode . hide-mode-line-mode)
+     ;; (comint-mode . hide-mode-line-mode)
      (diff-mode . hide-mode-line-mode)
-     (eshell-mode  . hide-mode-line-mode)
      (magit-status-mode . hide-mode-line-mode)
      (pdf-view-mode  . hide-mode-line-mode)
+     (eshell-mode  . hide-mode-line-mode)
      (shell-mode  . hide-mode-line-mode)
      (special-mode . hide-mode-line-mode)
      (symbols-outline-mode . hide-mode-line-mode)
@@ -871,6 +850,39 @@ https://protesilaos.com/emacs/modus-themes
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs nil))
 #+end_src
+**** mood-line
+#+begin_src emacs-lisp
+  (use-package mood-line
+    :after tab-bar
+    :config
+    (setq my/modeline-height my/tab-bar-tab-height)
+    :custom
+    ;; Use pretty Fira Code-compatible glyphs
+    (mood-line-glyph-alist mood-line-glyphs-fira-code)
+    (mood-line-format
+     (mood-line-defformat
+      :left
+      (((my/get-bar-image my/modeline-height 2 nil) . " ")
+       ((mood-line-segment-modal)                   . " ")
+       ((mood-line-segment-anzu)                    . " ")
+       ((mood-line-segment-multiple-cursors)        . " ")
+       )
+      :right
+      (((mood-line-segment-process)                 . " ")
+       ((mood-line-segment-buffer-status)           . " ")
+       ((mood-line-segment-misc-info)               . " ")
+       ((mood-line-segment-major-mode)              . " ")
+       ((mood-line-segment-vc)                      . " ")
+       ((mood-line-segment-checker)                 . " "))))
+    (mood-line-segment-modal-meow-state-alist
+     '((normal "󰰓" . font-lock-variable-name-face)
+       (insert "󰰄" . font-lock-string-face)
+       (keypad "󰰊" . font-lock-keyword-face)
+       (beacon "󰯯" . font-lock-type-face)
+       (motion "󰰐" . font-lock-constant-face)))
+    :hook
+    (after-init . mood-line-mode))
+#+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
 #+begin_src emacs-lisp
@@ -881,7 +893,6 @@ display LaTeX compilation information in the mode line
 #+begin_src emacs-lisp
   (use-package procress
     :straight (:host github :repo "haji-ali/procress")
-    :after doom-modeline
     :commands procress-auctex-mode
     :hook
     (LaTeX-mode . procress-auctex-mode)
@@ -929,17 +940,17 @@ Increase the padding/spacing of GNU Emacs frames and windows.
       "Button to add a new tab."
       `((add-tab menu-item ,tab-bar-new-button project-switch-project
                  :help "New")))
+    (setq my/tab-bar-tab-height 25)
     (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
       "Format the tab group name for tab-bar, handling special prefixes '[P]' and '[R]'.
     TAB is the tab object. I is the tab index. CURRENT-P indicates if the tab is currently selected."
       (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
              (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-             (color (face-attribute (if current-p
-                                        'mode-line-emphasis
-                                      'tab-bar-tab-group-inactive) :foreground))
-             (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
-                                                    :foreground color
-                                                    :background color)))
+             (color (face-foreground (if current-p 'mode-line-emphasis 'shadow)))
+             ;; (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
+             ;;                                        :foreground color
+             ;;                                        :background color)))
+             (group-sep (my/get-bar-image my/tab-bar-tab-height (if current-p 4 2) color))
              (group-icon (cond
                           ((equal tab-group-name "HOME") "")
                           ((string-match "^\\[P\\] *" tab-group-name)
@@ -1059,7 +1070,8 @@ References:
     :preface
     (defun my/tab-line-tab-name-function (buffer &optional _buffers)
       (let ((name (buffer-name buffer)))
-        (concat " "
+        (concat (my/get-bar-image 20 2 nil)
+                " "
                 (nerd-icons-icon-for-file name)
                 (format " %s " name))))
 
@@ -2137,7 +2149,7 @@ Extra Emacs font lock rules for a more colourful dired.
 A polished Dired with batteries included.
 #+begin_src emacs-lisp
   (use-package dirvish
-    :after dired
+    :after dired mood-line
     :custom
     (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
      '(("h" "~/"                          "Home")
@@ -2154,6 +2166,8 @@ A polished Dired with batteries included.
                               (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
     ;; (dirvish-use-header-line nil)
     ;; (dirvish-use-mode-line nil)
+    (dirvish-mode-line-height my/modeline-height)
+    (dirvish-header-line-height my/modeline-height)
     :preface
     (defun my/dirvish-side-hide-buffer (&rest app)
       "make dirvish-side buffer 'uninteresting' for buffer related commands"
@@ -2165,10 +2179,6 @@ A polished Dired with batteries included.
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
     :config
     (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-    (with-eval-after-load 'doom-modeline
-      (setq dirvish-mode-line-height doom-modeline-height)
-      (setq dirvish-header-line-height
-            doom-modeline-height))
     (advice-add #'dirvish-side--new :around #'my/dirvish-side-hide-buffer)
     :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
     (("C-c f" . dirvish-fd)
