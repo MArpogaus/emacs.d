@@ -3402,13 +3402,14 @@ Debug Adapter Protocol for Emacs.
     ;; Projectile users
     ;; (setq dape-cwd-fn 'projectile-project-root)
 
+    ;; Set breakpints via fringe or margin mouse clicks
+    (dape-breakpoint-global-mode t)
     :hook
     ;; Kill compile buffer on build success
     ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
 
     ;; Save buffers on startup, useful for interpreted languages
-    ((dape-on-start-hooks . (lambda () (save-some-buffers t t)))
-     (prog-mode . dape-breakpoint-global-mode)))
+    (dape-on-start-hooks . (lambda () (save-some-buffers t t))))
 #+end_src
 **** [[https://github.com/spotify/dockerfile-mode.git][docker]]
 An emacs mode for handling Dockerfiles.
