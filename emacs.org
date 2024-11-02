@@ -1219,6 +1219,9 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
     :straight nil
     :preface
     (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
+    (defun my/outline-mode-hook nil
+      (when (not (eq major-mode 'org-mode))
+        (reveal-mode 1)))
     :init
     (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
     :config
@@ -1241,7 +1244,7 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
           ("a"           . outline-show-all))
     :hook
     (((text-mode prog-mode conf-mode) . outline-minor-mode)
-     (outline-mode . reveal-mode)))
+     (outline-minor-mode . my/outline-mode-hook)))
 #+end_src
 **** paren :build_in:
 Paren mode for highlighting matcing paranthesis
