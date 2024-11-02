@@ -2666,7 +2666,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      ("<tab>"     . corfu-next)
      ("TAB"       . corfu-next)
      ("<backtab>" . corfu-previous)
-     ;; ("SPC"    . my/corfu-spc-handler)
+     ("SPC"       . corfu-insert-separator)
      ("<escape>"  . corfu-quit))
     :hook
     ;; Recommended: Enable Corfu globally.
