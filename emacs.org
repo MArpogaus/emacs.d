@@ -554,6 +554,8 @@ Package specific keymap definitions are kept in preface of the respective packag
      ("e" . eshell)
      ("t" . term)
      ("s" . scratch-buffer)
+     :map my/toggle-map
+     ("M" . my/toggle-minimal-ui)
      :repeat-map my/window-map
      ("n" . next-window-any-frame)
      ("p" . previous-window-any-frame)
@@ -621,12 +623,22 @@ In this section, I define some custom Lisp functions.
     ;; Thanks doom-modeline: https://github.com/seagle0128/doom-modeline/blob/ec6bc00ac035e75ad10b52e516ea5d95cc9e0bd9/doom-modeline-core.el#L1454C8-L1454C39
     (defun my/get-bar-image (height width color)
       "Get a rectangular bar image with specified height, width and color."
-      (propertize
-       " " 'display
-       (ignore-errors
-         (create-image
-          (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-          'pbm t :scale 1 :foreground color :ascent 'center))))
+      (if (and (image-type-available-p 'pbm) (display-graphic-p))
+          (propertize
+           " " 'display
+           (create-image
+            (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
+            'pbm t :scale 1 :foreground color :ascent 'center))
+        (propertize "|" 'face (list :foreground color
+                                    :background color))))
+    (defun my/toggle-minimal-ui ()
+      "Diable tab bars, to save some space"
+      (interactive)
+      (setq tab-bar-show (not tab-bar-mode))
+      (tab-bar-mode 'toggle)
+      (global-tab-line-mode 'toggle)
+      (global-hide-mode-line-mode 'toggle)
+      (spacious-padding-mode 'toggle))
     ;; (cl-defun create-org-entry-for-package (recipe)
     ;;   (interactive (list (straight-get-recipe nil nil)))
     ;;   (straight--with-plist recipe
