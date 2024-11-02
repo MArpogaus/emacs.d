@@ -2610,7 +2610,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
     (corfu-auto-prefix 2)               ;; Complete with less prefix keys
     (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
-    (corfu-preview-current 'seperator)  ;; Disable current candidate preview
+    (corfu-preview-current nil)         ;; Disable current candidate preview
     (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
     :preface
     ;; Completing in the minibuffer
