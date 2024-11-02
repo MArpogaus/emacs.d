@@ -1264,7 +1264,7 @@ Paren mode for highlighting matcing paranthesis
   (use-package popper
     :bind
     (:map my/toggle-map
-          ("p"   . popper-toggle)
+          ("p" . popper-toggle)
           ("P" . popper-toggle-type))
     :custom
     ;; Define popup buffers
@@ -1284,9 +1284,19 @@ Paren mode for highlighting matcing paranthesis
        ))
     ;; grouping popups by project
     (popper-mode-line nil)
+    :preface
+    (defun my/popper-toggle-advice (&rest _)
+      (with-current-buffer (current-buffer)
+        (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
+    (defun my/popper-display-function (buffer &optional alist)
+      (popper-select-popup-at-bottom buffer alist)
+      (with-current-buffer buffer
+        (tab-line-mode -1)))
     :config
     (with-eval-after-load 'project
       (setq popper-group-function #'popper-group-by-project))
+    (setq popper-display-function #'my/popper-display-function)
+    (advice-add #'popper-toggle-type :after #'my/popper-toggle-advice)    
     :hook
     ((after-init . popper-mode)
      (after-init . popper-echo-mode)))
