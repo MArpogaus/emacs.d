@@ -20,7 +20,7 @@ Here are some notable features:
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
 
-- *Project and Workspace Management:*  [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html][Project.el]] (built-in), [[https://github.com/fritzgrabo/project-tab-groups][project-tab-groups]], and [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][tab-bar]] (built-in) are used for seamless project and workspace management, allowing for efficient organization and navigation between projects. These features are further enhanced by [[https://github.com/karthink/project-x][Project-x]], which provides additional enhancements to project management.
+- *Project and Workspace Management:*  [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html][Project.el]] (built-in), [[https://github.com/MArpogaus/auto-tab-groups][auto-tab-groups]], and [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][tab-bar]] (built-in) are used for seamless project and workspace management, allowing for efficient organization and navigation between projects. These features are further enhanced by [[https://github.com/karthink/project-x][Project-x]], which provides additional enhancements to project management.
 
 - *Integrated Development Environment (IDE) Features:* The configuration includes powerful IDE-like features such as [[https://github.com/joaotavora/eglot][Eglot]] for Language Server Protocol integration, boosted by [[https://github.com/jdtsmith/eglot-booster][Eglot-booster]] for improved performance. [[https://github.com/svaante/dape][Dape]] is used for debugging, and [[https://www.gnu.org/software/emacs/manual/html_node/flymake/index.html][Flymake]] (built-in) provides on-the-fly syntax checking.
 
@@ -850,12 +850,11 @@ https://protesilaos.com/emacs/modus-themes
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs nil))
 #+end_src
-**** mood-line
+**** [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 #+begin_src emacs-lisp
   (use-package mood-line
-    :after tab-bar
     :config
-    (setq my/modeline-height my/tab-bar-tab-height)
+    (setq my/modeline-height 30)
     :custom
     ;; Use pretty Fira Code-compatible glyphs
     (mood-line-glyph-alist mood-line-glyphs-fira-code)
@@ -924,98 +923,10 @@ Increase the padding/spacing of GNU Emacs frames and windows.
   (use-package tab-bar
     :straight nil
     :custom
-    (tab-bar-format '(tab-bar-format-tabs-groups
-                      my/tab-bar-format-new
-                      tab-bar-format-align-right
-                      tab-bar-format-global
-                      tab-bar-format-menu-bar))
-    (tab-bar-separator "")
-    (tab-bar-auto-width nil)
-    (tab-bar-close-button-show t)
-    (tab-bar-new-tab-choice "*scratch*")
     (tab-bar-history-limit 100)
     :preface
     (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
-    (defun my/tab-bar-format-new ()
-      "Button to add a new tab."
-      `((add-tab menu-item ,tab-bar-new-button project-switch-project
-                 :help "New")))
-    (setq my/tab-bar-tab-height 25)
-    (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
-      "Format the tab group name for tab-bar, handling special prefixes '[P]' and '[R]'.
-    TAB is the tab object. I is the tab index. CURRENT-P indicates if the tab is currently selected."
-      (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
-             (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-             (color (face-foreground (if current-p 'mode-line-emphasis 'shadow)))
-             ;; (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
-             ;;                                        :foreground color
-             ;;                                        :background color)))
-             (group-sep (my/get-bar-image my/tab-bar-tab-height (if current-p 4 2) color))
-             (group-icon (cond
-                          ((equal tab-group-name "HOME") "")
-                          ((string-match "^\\[P\\] *" tab-group-name)
-                           (setq tab-group-name (substring tab-group-name (match-end 0)))
-                           "")
-                          ((string-match "^\\[R\\] *" tab-group-name)
-                           (setq tab-group-name (substring tab-group-name (match-end 0)))
-                           "")
-                          ((string-match "^\\[N\\] *" tab-group-name)
-                           (setq tab-group-name (substring tab-group-name (match-end 0)))
-                           "󱓩")
-                          (t ""))))
-        (concat
-         group-sep
-         (propertize
-          (concat
-           " "
-           group-icon
-           " "
-           tab-group-name
-           " ")
-          'face tab-group-face))))
-
-    (defun my/tab-bar-tab-name-format-function (tab i)
-      (let ((current-p (eq (car tab) 'current-tab)))
-        (propertize
-         (concat (if current-p " " " ")
-                 (if tab-bar-tab-hints (format "%d " i) "")
-                 (alist-get 'name tab)
-                 (if (and tab-bar-close-button-show current-p)
-                     tab-bar-close-button " "))
-         'face (list :inherit 'tab-bar-tab :weight (if current-p 'bold 'normal)))))
-
-    (defun my/create-home-tab-group (&optional frame)
-      (let ((tab-group-name (funcall tab-bar-tab-group-function (tab-bar--current-tab))))
-        (when frame (select-frame frame))
-        (tab-group (if tab-group-name tab-group-name "HOME"))))
     :config
-    (when (>= emacs-major-version 29)
-      (require 'icons)
-      (define-icon tab-bar-new nil
-        '((symbol "  " :face tab-bar-tab-inactive)
-          (text " + "))
-        "Icon for creating a new tab."
-        :version "29.1"
-        :help-echo "New tab")
-      (define-icon tab-bar-close nil
-        '((symbol " 󰅖 ") ;; "ⓧ"
-          (text " x "))
-        "Icon for closing the clicked tab."
-        :version "29.1"
-        :help-echo "Click to close tab")
-      (define-icon tab-bar-menu-bar nil
-        '((symbol " 󰍜 " :face tab-bar-tab-inactive)
-          (text "Menu" :face tab-bar-tab-inactive))
-        "Icon for the menu bar."
-        :version "29.1"
-        :help-echo "Menu bar"))
-
-    (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function
-          tab-bar-tab-name-format-function #'my/tab-bar-tab-name-format-function)
-
-    (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
-    (my/create-home-tab-group)
-
     ;; Prevent accidental tab switches when scrolling the buffer
     (define-key tab-bar-map (kbd "<wheel-down>") nil t)
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
@@ -2007,11 +1918,6 @@ Simple note taking and file naming.
        (plain . nil)))
     :preface
     (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
-    (defun my/denote-tab-group-hook ()
-      "Hook function to run after creating a new note with Denote."
-      (setq-local tab-bar-new-tab-choice t)
-      (tab-bar-new-tab)
-      (tab-group "[N] Denote"))
     :init
     (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
     :bind
@@ -2037,15 +1943,12 @@ Simple note taking and file naming.
     :hook
     ((text-mode . denote-fontify-links-mode-maybe)
      (dired-mode . denote-dired-mode)
-     (after-init . denote-rename-buffer-mode)
-     (denote-after-new-note . my/denote-tab-group-hook)))
+     (after-init . denote-rename-buffer-mode)))
 #+end_src
 **** [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 #+begin_src emacs-lisp
   (use-package denote-menu
     :after denote
-    :config
-    (advice-add #'list-denotes :after #'my/denote-tab-group-hook)
     :bind
     (:map my/denote-map
           ("m" . list-denotes)))
@@ -3165,21 +3068,13 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
   (use-package project
     :straight nil
     :autoload project-prefix-map
-    :preface
-    (defun my/project-name (project)
-      (let* ((project-root-dir (directory-file-name (project-root project)))
-             (name (file-name-nondirectory project-root-dir)))
-        (if (file-remote-p project-root-dir)
-            (concat "[R] " name) (concat "[P] " name))))
     :bind
     (:map my/leader-map
           ("SPC" . project-list-buffers))
     :custom
     (project-vc-extra-root-markers '(".project"))
     :init
-    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map))
-    :config
-    (advice-add #'project-name :override #'my/project-name))
+    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 #+end_src
 **** [[https://github.com/karthink/project-x.git][project-x]]
 Enhancements to Emacs' built in project library.
@@ -3197,17 +3092,38 @@ Enhancements to Emacs' built in project library.
     (add-hook 'project-find-functions 'project-x-try-local 90)
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
-**** [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
-Support a "one tab group per project" workflow.
+**** [[https://github.com/MArpogaus/auto-tab-groups.git][auto-tab-groups]]
+Tab group based workflow isolation.
 #+begin_src emacs-lisp
-  (use-package project-tab-groups
-    :after tab-bar project
-    :config
-    (with-eval-after-load 'tab-bar-echo-area
-      (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
-      (tab-bar-echo-area-apply-display-tab-names-advice))
+  (use-package auto-tab-groups
+    :straight (:host github :repo "MArpogaus/auto-tab-groups")
+    :after tab-bar mood-line
+    :custom
+    ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
+    (auto-tab-groups-create-commands
+     '(((project-prompt-project-dir project-switch-to-buffer) . auto-tab-groups-group-name-project)
+       ((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+       ((dirvish dirvish-fd) . "dirvish")))
+    (auto-tab-groups-close-commands
+     '((project-kill-buffers . auto-tab-groups-group-name-project)
+       (dirvish-quit . "dirvish")))
+    ;; Enable modern tabs style
+    (auto-tab-groups-eyecandy-mode t)
+    ;; height of tabs
+    (auto-tab-groups-eyecandy-tab-height my/modeline-height)
+    ;; Assign Icons to tab groups
+    (auto-tab-groups-eyecandy-icons
+     '(("HOME"                                   . "")
+       ("dirvish"                                . "")
+       ("denote"                                 . "󱓩")
+       (auto-tab-groups-eyecandy-name-is-project . auto-tab-groups-eyecandy-group-icon-project)))
+    :bind
+    (:map my/workspace-map
+          ("w" . auto-tab-groups-new-group))
     :init
-    (project-tab-groups-mode))
+    (auto-tab-groups-mode)
+    :hook
+    (tab-bar-mode . auto-tab-groups-eyecandy-mode))
 #+end_src
 **** speedbar :build_in:
 #+begin_src emacs-lisp
