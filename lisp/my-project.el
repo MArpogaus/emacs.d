@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -19,21 +19,13 @@
 (use-package project
   :straight nil
   :autoload project-prefix-map
-  :preface
-  (defun my/project-name (project)
-    (let* ((project-root-dir (directory-file-name (project-root project)))
-           (name (file-name-nondirectory project-root-dir)))
-      (if (file-remote-p project-root-dir)
-          (concat "[R] " name) (concat "[P] " name))))
   :bind
   (:map my/leader-map
         ("SPC" . project-list-buffers))
   :custom
   (project-vc-extra-root-markers '(".project"))
   :init
-  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map))
-  :config
-  (advice-add #'project-name :override #'my/project-name))
+  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
 ;; Enhancements to Emacs' built in project library.
@@ -51,17 +43,38 @@
   (add-hook 'project-find-functions 'project-x-try-local 90)
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
-;; [[https://github.com/fritzgrabo/project-tab-groups.git][project-tab-groups]]
-;; Support a "one tab group per project" workflow.
+;; [[https://github.com/MArpogaus/auto-tab-groups.git][auto-tab-groups]]
+;; Tab group based workflow isolation.
 
-(use-package project-tab-groups
-  :after tab-bar project
-  :config
-  (with-eval-after-load 'tab-bar-echo-area
-    (push #'project-switch-project tab-bar-echo-area-trigger-display-functions)
-    (tab-bar-echo-area-apply-display-tab-names-advice))
+(use-package auto-tab-groups
+  :straight (:host github :repo "MArpogaus/auto-tab-groups")
+  :after tab-bar mood-line
+  :custom
+  ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
+  (auto-tab-groups-create-commands
+   '(((project-prompt-project-dir project-switch-to-buffer) . auto-tab-groups-group-name-project)
+     ((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+     ((dirvish dirvish-fd) . "dirvish")))
+  (auto-tab-groups-close-commands
+   '((project-kill-buffers . auto-tab-groups-group-name-project)
+     (dirvish-quit . "dirvish")))
+  ;; Enable modern tabs style
+  (auto-tab-groups-eyecandy-mode t)
+  ;; height of tabs
+  (auto-tab-groups-eyecandy-tab-height my/modeline-height)
+  ;; Assign Icons to tab groups
+  (auto-tab-groups-eyecandy-icons
+   '(("HOME"                                   . "")
+     ("dirvish"                                . "")
+     ("denote"                                 . "󱓩")
+     (auto-tab-groups-eyecandy-name-is-project . auto-tab-groups-eyecandy-group-icon-project)))
+  :bind
+  (:map my/workspace-map
+        ("w" . auto-tab-groups-new-group))
   :init
-  (project-tab-groups-mode))
+  (auto-tab-groups-mode)
+  :hook
+  (tab-bar-mode . auto-tab-groups-eyecandy-mode))
 
 ;; speedbar :build_in:
 

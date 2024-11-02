@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -33,73 +33,6 @@
    ;; disable for org mode
    (org-mode . (lambda () (display-line-numbers-mode 0)))))
 
-;; [[https://github.com/seagle0128/doom-modeline.git][doom-modeline]]
-;; A fancy and fast mode-line inspired by minimalism design.
-
-(use-package doom-modeline
-  :custom
-  ;; If non-nil, cause imenu to see `doom-modeline' declarations.
-  ;; This is done by adjusting `lisp-imenu-generic-expression' to
-  ;; include support for finding `doom-modeline-def-*' forms.
-  ;; Must be set before loading doom-modeline.
-  (doom-modeline-support-imenu t)
-
-  ;; How tall the mode-line should be. It's only respected in GUI.
-  ;; If the actual char height is larger, it respects the actual height.
-  (doom-modeline-height 20)
-
-  ;; display the real names, please put this into your init file.
-  (find-file-visit-truename t)
-
-  ;; Determines the style used by `doom-modeline-buffer-file-name'.
-  ;;
-  ;; Given ~/Projects/FOSS/emacs/lisp/comint.el
-  ;;   auto => emacs/l/comint.el (in a project) or comint.el
-  ;;   truncate-upto-project => ~/P/F/emacs/lisp/comint.el
-  ;;   truncate-from-project => ~/Projects/FOSS/emacs/l/comint.el
-  ;;   truncate-with-project => emacs/l/comint.el
-  ;;   truncate-except-project => ~/P/F/emacs/l/comint.el
-  ;;   truncate-upto-root => ~/P/F/e/lisp/comint.el
-  ;;   truncate-all => ~/P/F/e/l/comint.el
-  ;;   truncate-nil => ~/Projects/FOSS/emacs/lisp/comint.el
-  ;;   relative-from-project => emacs/lisp/comint.el
-  ;;   relative-to-project => lisp/comint.el
-  ;;   file-name => comint.el
-  ;;   file-name-with-project => FOSS|comint.el
-  ;;   buffer-name => comint.el<2> (uniquify buffer name)
-  ;;
-  ;; If you are experiencing the laggy issue, especially while editing remote files
-  ;; with tramp, please try `file-name' style.
-  ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
-  (doom-modeline-buffer-file-name-style 'file-name-with-project)
-
-  ;; Whether display icons in the mode-line.
-  ;; While using the server mode in GUI, should set the value explicitly.
-  (doom-modeline-icon t)
-
-  ;; If non-nil, only display one number for checker information if applicable.
-  (doom-modeline-checker-simple-format t)
-
-  ;; Whether display the workspace name. Non-nil to display in the mode-line.
-  (doom-modeline-workspace-name nil)
-
-  ;; Don't display offset percentage
-  (doom-modeline-percent-position nil)
-
-  ;; Dont show buffer encoding
-  (doom-modeline-buffer-encoding nil)
-
-  ;; i dont use k8s
-  (doom-modeline-k8s-show-namespace nil)
-
-  ;; dont show line number in mode line
-  (line-number-mode nil)
-
-  ;; hide time from mode line to dispaly in tab-bar
-  (doom-modeline-time nil)
-  :hook
-  (after-init . doom-modeline-mode))
-
 ;; [[https://github.com/doomemacs/themes][doom-themes]]
 
 (use-package doom-themes
@@ -115,17 +48,9 @@
 
 (use-package hide-mode-line
   :hook
-  (((completion-list-mode-hook Man-mode-hook) . hide-mode-line-mode)
-   (comint-mode . hide-mode-line-mode)
-   (diff-mode . hide-mode-line-mode)
-   (eshell-mode  . hide-mode-line-mode)
-   (magit-status-mode . hide-mode-line-mode)
-   (pdf-view-mode  . hide-mode-line-mode)
-   (shell-mode  . hide-mode-line-mode)
-   (special-mode . hide-mode-line-mode)
-   (symbols-outline-mode . hide-mode-line-mode)
-   (term-mode  . hide-mode-line-mode)
-   (vterm-mode . hide-mode-line-mode)))
+  ((completion-list-mode . hide-mode-line-mode)
+   (Man-mode             . hide-mode-line-mode)
+   (symbols-outline-mode . hide-mode-line-mode)))
 
 ;; hl-line :build_in:
 
@@ -250,6 +175,38 @@
   :hook
   (after-init . my/setup-ligatures))
 
+;; [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
+
+(use-package mood-line
+  :config
+  (setq my/modeline-height 30)
+  :custom
+  ;; Use pretty Fira Code-compatible glyphs
+  (mood-line-glyph-alist mood-line-glyphs-fira-code)
+  (mood-line-format
+   (mood-line-defformat
+    :left
+    (((my/get-bar-image my/modeline-height 2 nil) . " ")
+     ((mood-line-segment-modal)                   . " ")
+     ((mood-line-segment-anzu)                    . " ")
+     ((mood-line-segment-multiple-cursors)        . " ")
+     )
+    :right
+    (((mood-line-segment-process)                 . " ")
+     ((mood-line-segment-buffer-status)           . " ")
+     ((mood-line-segment-misc-info)               . " ")
+     ((mood-line-segment-major-mode)              . " ")
+     ((mood-line-segment-vc)                      . " ")
+     ((mood-line-segment-checker)                 . " "))))
+  (mood-line-segment-modal-meow-state-alist
+   '((normal "󰰓" . font-lock-variable-name-face)
+     (insert "󰰄" . font-lock-string-face)
+     (keypad "󰰊" . font-lock-keyword-face)
+     (beacon "󰯯" . font-lock-type-face)
+     (motion "󰰐" . font-lock-constant-face)))
+  :hook
+  (after-init . mood-line-mode))
+
 ;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 ;; A Library for Nerd Font icons. Required for modline icons.
 
@@ -260,7 +217,6 @@
 
 (use-package procress
   :straight (:host github :repo "haji-ali/procress")
-  :after doom-modeline
   :commands procress-auctex-mode
   :hook
   (LaTeX-mode . procress-auctex-mode)
@@ -292,98 +248,10 @@
 (use-package tab-bar
   :straight nil
   :custom
-  (tab-bar-format '(tab-bar-format-tabs-groups
-                    my/tab-bar-format-new
-                    tab-bar-format-align-right
-                    tab-bar-format-global
-                    tab-bar-format-menu-bar))
-  (tab-bar-separator "")
-  (tab-bar-auto-width nil)
-  (tab-bar-close-button-show t)
-  (tab-bar-new-tab-choice "*scratch*")
   (tab-bar-history-limit 100)
   :preface
   (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
-  (defun my/tab-bar-format-new ()
-    "Button to add a new tab."
-    `((add-tab menu-item ,tab-bar-new-button project-switch-project
-               :help "New")))
-  (defun my/tab-bar-tab-group-format-function (tab i &optional current-p)
-    "Format the tab group name for tab-bar, handling special prefixes '[P]' and '[R]'.
-  TAB is the tab object. I is the tab index. CURRENT-P indicates if the tab is currently selected."
-    (let* ((tab-group-name (funcall tab-bar-tab-group-function tab))
-           (tab-group-face (if current-p 'tab-bar-tab-group-current 'tab-bar-tab-group-inactive))
-           (color (face-attribute (if current-p
-                                      'mode-line-emphasis
-                                    'tab-bar-tab-group-inactive) :foreground))
-           (group-sep (propertize " " 'face (list :height (if current-p 0.4 0.2)
-                                                  :foreground color
-                                                  :background color)))
-           (group-icon (cond
-                        ((equal tab-group-name "HOME") "")
-                        ((string-match "^\\[P\\] *" tab-group-name)
-                         (setq tab-group-name (substring tab-group-name (match-end 0)))
-                         "")
-                        ((string-match "^\\[R\\] *" tab-group-name)
-                         (setq tab-group-name (substring tab-group-name (match-end 0)))
-                         "")
-                        ((string-match "^\\[N\\] *" tab-group-name)
-                         (setq tab-group-name (substring tab-group-name (match-end 0)))
-                         "󱓩")
-                        (t ""))))
-      (concat
-       group-sep
-       (propertize
-        (concat
-         " "
-         group-icon
-         " "
-         tab-group-name
-         " ")
-        'face tab-group-face))))
-
-  (defun my/tab-bar-tab-name-format-function (tab i)
-    (let ((current-p (eq (car tab) 'current-tab)))
-      (propertize
-       (concat (if current-p " " " ")
-               (if tab-bar-tab-hints (format "%d " i) "")
-               (alist-get 'name tab)
-               (if (and tab-bar-close-button-show current-p)
-                   tab-bar-close-button " "))
-       'face (list :inherit 'tab-bar-tab :weight (if current-p 'bold 'normal)))))
-
-  (defun my/create-home-tab-group (&optional frame)
-    (let ((tab-group-name (funcall tab-bar-tab-group-function (tab-bar--current-tab))))
-      (when frame (select-frame frame))
-      (tab-group (if tab-group-name tab-group-name "HOME"))))
   :config
-  (when (>= emacs-major-version 29)
-    (require 'icons)
-    (define-icon tab-bar-new nil
-      '((symbol "  " :face tab-bar-tab-inactive)
-        (text " + "))
-      "Icon for creating a new tab."
-      :version "29.1"
-      :help-echo "New tab")
-    (define-icon tab-bar-close nil
-      '((symbol " 󰅖 ") ;; "ⓧ"
-        (text " x "))
-      "Icon for closing the clicked tab."
-      :version "29.1"
-      :help-echo "Click to close tab")
-    (define-icon tab-bar-menu-bar nil
-      '((symbol " 󰍜 " :face tab-bar-tab-inactive)
-        (text "Menu" :face tab-bar-tab-inactive))
-      "Icon for the menu bar."
-      :version "29.1"
-      :help-echo "Menu bar"))
-
-  (setq tab-bar-tab-group-format-function #'my/tab-bar-tab-group-format-function
-        tab-bar-tab-name-format-function #'my/tab-bar-tab-name-format-function)
-
-  (add-hook 'after-make-frame-functions 'my/create-home-tab-group)
-  (my/create-home-tab-group)
-
   ;; Prevent accidental tab switches when scrolling the buffer
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
@@ -438,7 +306,8 @@
   :preface
   (defun my/tab-line-tab-name-function (buffer &optional _buffers)
     (let ((name (buffer-name buffer)))
-      (concat " "
+      (concat (my/get-bar-image 20 2 nil)
+              " "
               (nerd-icons-icon-for-file name)
               (format " %s " name))))
 

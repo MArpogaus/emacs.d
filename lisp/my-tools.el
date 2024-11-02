@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -65,7 +65,7 @@
 ;; A polished Dired with batteries included.
 
 (use-package dirvish
-  :after dired
+  :after dired mood-line
   :custom
   (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
    '(("h" "~/"                          "Home")
@@ -82,6 +82,8 @@
                             (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
   ;; (dirvish-use-header-line nil)
   ;; (dirvish-use-mode-line nil)
+  (dirvish-mode-line-height my/modeline-height)
+  (dirvish-header-line-height my/modeline-height)
   :preface
   (defun my/dirvish-side-hide-buffer (&rest app)
     "make dirvish-side buffer 'uninteresting' for buffer related commands"
@@ -93,10 +95,6 @@
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
   :config
   (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-  (with-eval-after-load 'doom-modeline
-    (setq dirvish-mode-line-height doom-modeline-height)
-    (setq dirvish-header-line-height
-          doom-modeline-height))
   (advice-add #'dirvish-side--new :around #'my/dirvish-side-hide-buffer)
   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
   (("C-c f" . dirvish-fd)

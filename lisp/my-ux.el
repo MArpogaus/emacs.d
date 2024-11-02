@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -146,6 +146,8 @@ buffer's text scale."
   (define-key my/leader-map (kbd "m") (cons "mc" my/mc-map))
   :bind
   (("C-S-<mouse-1>" . mc/add-cursor-on-click)
+   :map mc/keymap
+   ("<escape>" . mc/keyboard-quit)
    :repeat-map my/mc-map
    ("n" . mc/mark-next-like-this)
    ("p" . mc/mark-previous-like-this)
@@ -160,6 +162,9 @@ buffer's text scale."
   :straight nil
   :preface
   (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
+  (defun my/outline-mode-hook nil
+    (when (not (eq major-mode 'org-mode))
+      (reveal-mode 1)))
   :init
   (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
   :config
@@ -168,8 +173,8 @@ buffer's text scale."
   :bind
   (:map outline-minor-mode-map
         ("M-S-<down>"  . outline-move-subtree-down)
-        ("M-S-<left>"  . outline-demote)
-        ("M-S-<right>" . outline-promote)
+        ("M-S-<right>"  . outline-demote)
+        ("M-S-<left>" . outline-promote)
         ("M-S-<up>"    . outline-move-subtree-up)
         ("M-<return>"  . outline-insert-heading)
         ("C-S-<tab>"   . outline-cycle-buffer)
@@ -182,7 +187,7 @@ buffer's text scale."
         ("a"           . outline-show-all))
   :hook
   (((text-mode prog-mode conf-mode) . outline-minor-mode)
-   (outline-mode . reveal-mode)))
+   (outline-minor-mode . my/outline-mode-hook)))
 
 ;; paren :build_in:
 ;; Paren mode for highlighting matcing paranthesis
@@ -202,7 +207,7 @@ buffer's text scale."
 (use-package popper
   :bind
   (:map my/toggle-map
-        ("p"   . popper-toggle)
+        ("p" . popper-toggle)
         ("P" . popper-toggle-type))
   :custom
   ;; Define popup buffers
@@ -222,9 +227,19 @@ buffer's text scale."
      ))
   ;; grouping popups by project
   (popper-mode-line nil)
+  :preface
+  (defun my/popper-toggle-advice (&rest _)
+    (with-current-buffer (current-buffer)
+      (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
+  (defun my/popper-display-function (buffer &optional alist)
+    (popper-select-popup-at-bottom buffer alist)
+    (with-current-buffer buffer
+      (tab-line-mode -1)))
   :config
   (with-eval-after-load 'project
     (setq popper-group-function #'popper-group-by-project))
+  (setq popper-display-function #'my/popper-display-function)
+  (advice-add #'popper-toggle-type :after #'my/popper-toggle-advice)    
   :hook
   ((after-init . popper-mode)
    (after-init . popper-echo-mode)))
