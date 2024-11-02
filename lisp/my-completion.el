@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -249,13 +249,13 @@
   (tab-always-indent 'complete)
 
   ;; Additional Customisations
-  (corfu-cycle t)                    ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                     ;; Enable auto completion
-  (corfu-quit-no-match 'separator)   ;; Quit auto complete if there is no match
-  (corfu-auto-prefix 2)              ;; Complete with less prefix keys
-  (corfu-quit-at-boundary nil)       ;; Never quit at completion boundary
-  (corfu-preview-current 'seperator) ;; Disable current candidate preview
-  (corfu-preselect 'directory)       ;; Preselect the fisrt canidate exept for directories select the prompt
+  (corfu-cycle t)                     ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                      ;; Enable auto completion
+  (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
+  (corfu-auto-prefix 2)               ;; Complete with less prefix keys
+  (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
+  (corfu-preview-current nil)         ;; Disable current candidate preview
+  (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
   :preface
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
@@ -297,28 +297,6 @@
   (require 'corfu-history)
   (require 'corfu-popupinfo)
   (eldoc-add-command #'corfu-insert)
-
-  ;; Use TAB-and-Go completion
-  ;; https://github.com/minad/corfu/wiki#tab-and-go-completion
-  (dolist (c '(("." . ".")
-               ("," . ",")
-               (")" . ")")
-               ("}" . "}")
-               ("]" . "]")
-               ("(" . "(_)")
-               ("{" . "{_}")
-               ("[" . "[_]")))
-    (keymap-set corfu-map (kbd (car c))
-                `(menu-item "" nil :filter
-                            ,(lambda (&optional _)
-                               (when (derived-mode-p 'prog-mode 'conf-mode)
-                                 (corfu-insert)
-                                 (let ((inserted (cdr c)))
-                                   (insert inserted)
-                                   (when (string-match-p "_" inserted)
-                                     (search-backward "_")
-                                     (delete-char 1)))
-                                 (completion-at-point))))))
   :bind
   (("C-SPC"     . completion-at-point)
    :map corfu-map
@@ -326,7 +304,7 @@
    ("<tab>"     . corfu-next)
    ("TAB"       . corfu-next)
    ("<backtab>" . corfu-previous)
-   ;; ("SPC"    . my/corfu-spc-handler)
+   ("SPC"       . corfu-insert-separator)
    ("<escape>"  . corfu-quit))
   :hook
   ;; Recommended: Enable Corfu globally.
@@ -450,8 +428,9 @@ the completing-read prompter."
 
 ;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 
-(use-package lsp-snippet-tempel
+(use-package lsp-snippet
   :straight (:host github :repo "svaante/lsp-snippet")
+  :demand t
   :after tempel eglot
   :config
   ;; Initialize lsp-snippet -> tempel in eglot

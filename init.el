@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -42,10 +42,10 @@
   :demand t
   :init
   (setq emacs-config-directory user-emacs-directory
-   ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-   custom-file (expand-file-name "custom.el" user-emacs-directory)
-   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-   user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+        custom-file (expand-file-name "custom.el" user-emacs-directory)
+        ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+        user-emacs-directory (expand-file-name "~/.cache/emacs/"))
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups))
@@ -77,6 +77,9 @@
   (auto-save-default t)                                ; Auto-save every buffer that visits a file
   (auto-save-timeout 10)                               ; Number of seconds between auto-save
   (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
+
+  ;; Backups
+  (backup-by-copying t)                                ; Backs up by moving the actual file
 
   ;; Dialogs
   ;; use simple text prompts
@@ -129,7 +132,6 @@
   ;; Performance
   ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
   (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
-  (frame-inhibit-implied-resize t)                     ; Inhibit frame resizing for performance
   (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
   (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
 
@@ -241,6 +243,8 @@
    ("e" . eshell)
    ("t" . term)
    ("s" . scratch-buffer)
+   :map my/toggle-map
+   ("M" . my/toggle-minimal-ui)
    :repeat-map my/window-map
    ("n" . next-window-any-frame)
    ("p" . previous-window-any-frame)
@@ -304,6 +308,26 @@
                   (setq description (concat description ".")))
                 (insert description))
             (error "No description, website, or topics provided."))))))
+
+  ;; Thanks doom-modeline: https://github.com/seagle0128/doom-modeline/blob/ec6bc00ac035e75ad10b52e516ea5d95cc9e0bd9/doom-modeline-core.el#L1454C8-L1454C39
+  (defun my/get-bar-image (height width color)
+    "Get a rectangular bar image with specified height, width and color."
+    (if (and (image-type-available-p 'pbm) (display-graphic-p))
+        (propertize
+         " " 'display
+         (create-image
+          (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
+          'pbm t :scale 1 :foreground color :ascent 'center))
+      (propertize "|" 'face (list :foreground color
+                                  :background color))))
+  (defun my/toggle-minimal-ui ()
+    "Diable tab bars, to save some space"
+    (interactive)
+    (setq tab-bar-show (not tab-bar-mode))
+    (tab-bar-mode 'toggle)
+    (global-tab-line-mode 'toggle)
+    (global-hide-mode-line-mode 'toggle)
+    (spacious-padding-mode 'toggle))
   ;; (cl-defun create-org-entry-for-package (recipe)
   ;;   (interactive (list (straight-get-recipe nil nil)))
   ;;   (straight--with-plist recipe

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-10-04
+;; Created: 2024-11-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -91,13 +91,11 @@
 ;; Structured Editing and Navigation in Emacs.
 
 (use-package combobulate
-  :after treesit
   :custom
-  ;; ;; You can customize Combobulate's key prefix here.
-  ;; ;; Note that you may have to restart Emacs for this to take effect!
-  (combobulate-key-prefix "C-c o")
+  ;; Disable combobulate key prefix 
+  (combobulate-key-prefix nil)
   :config
-  (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-key-map))
+  (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
   :bind
   (:map combobulate-key-map
         ("S-<down>"  . combobulate-navigate-down-list-maybe)
@@ -113,12 +111,7 @@
   ;; You can manually enable Combobulate with `M-x
   ;; combobulate-mode'.
   :hook
-  ((python-ts-mode . combobulate-mode)
-   (js-ts-mode . combobulate-mode)
-   (css-ts-mode . combobulate-mode)
-   (yaml-ts-mode . combobulate-mode)
-   (typescript-ts-mode . combobulate-mode)
-   (tsx-ts-mode . combobulate-mode)))
+  (prog-mode . combobulate-mode))
 
 ;; [[https://github.com/necaris/conda.el.git][conda]]
 ;; Emacs helper library (and minor mode) to work with conda environments.
@@ -188,13 +181,14 @@
   ;; Projectile users
   ;; (setq dape-cwd-fn 'projectile-project-root)
 
+  ;; Set breakpints via fringe or margin mouse clicks
+  (dape-breakpoint-global-mode t)
   :hook
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
 
   ;; Save buffers on startup, useful for interpreted languages
-  ((dape-on-start-hooks . (lambda () (save-some-buffers t t)))
-   (prog-mode . dape-breakpoint-global-mode)))
+  (dape-on-start-hooks . (lambda () (save-some-buffers t t))))
 
 ;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
 ;; An emacs mode for handling Dockerfiles.
@@ -279,8 +273,8 @@
   :config
   ;; Fix problem with python promt detection
   ;; https://github.com/purcell/envrc#troubleshooting
-  ;; (with-eval-after-load 'python
-  ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+  (with-eval-after-load 'python
+    (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
   :init
   ;; The global mode should be enabled late in the startup sequence,
   ;; to prevent inference with other other global minor modes.
@@ -439,7 +433,7 @@
 ;; Code-folding using =treesit.el=.
 
 (use-package treesit-fold
-  :straight (:type git :host github :repo "emacs-tree-sitter/treesit-fold")
+  :straight (:host github :repo "emacs-tree-sitter/treesit-fold")
   :preface
   (defun my/treesit-fold-mode-hook ()
     (keymap-local-set "<backtab>" 'treesit-fold-toggle))
