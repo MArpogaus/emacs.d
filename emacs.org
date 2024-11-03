@@ -466,6 +466,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :hook
     ;; Enable word wrapping
     (((prog-mode conf-mode text-mode) . visual-line-mode)
+     ;; Enable automatic linebreaks before `fill-column' is eceeded
+     ((prog-mode conf-mode text-mode) . auto-fill-mode)
+     ;; Compress kill ring when exiting emacs
      (kill-emacs . unpropertize-kill-ring)))
 #+end_src
 *** Keymaps
