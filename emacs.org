@@ -452,6 +452,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (window-resize-pixelwise t)                          ; Resize windows pixelwise
     (frame-resize-pixelwise t)                           ; Resize frame pixelwise
     (windmove-mode nil)                                  ; Diasble windmove mode
+
+    ;; Enable window dividers
+    (window-divider-default-bottom-width 1)
+    (window-divider-default-places t)
+    (window-divider-default-right-width 1)
+    (window-divider-mode t)
     :preface
     ;; History
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
