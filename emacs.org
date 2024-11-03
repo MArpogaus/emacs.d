@@ -3331,6 +3331,7 @@ Emacs utilities for code split into cells, including Jupyter notebooks.
 Structured Editing and Navigation in Emacs.
 #+begin_src emacs-lisp
   (use-package combobulate
+    :straight (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
     ;; Disable combobulate key prefix 
     (combobulate-key-prefix nil)
@@ -3346,10 +3347,6 @@ Structured Editing and Navigation in Emacs.
           ("S-<up>"    . combobulate-navigate-up-list-maybe)
           ("M-<down>"  . combobulate-drag-down)
           ("M-<up>"    . combobulate-drag-up))
-    ;; Optional, but recommended.
-    ;;
-    ;; You can manually enable Combobulate with `M-x
-    ;; combobulate-mode'.
     :hook
     (prog-mode . combobulate-mode))
 #+end_src
