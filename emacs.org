@@ -2350,7 +2350,7 @@ Emacs libvterm integration.
     (defun my/project-vterm ()
       (interactive)
       (defvar vterm-buffer-name)
-      (let* ((default-directory (project-root     (project-current t)))
+      (let* ((default-directory (project-root (project-current t)))
              (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
              (vterm-buffer (get-buffer vterm-buffer-name)))
         (if (and vterm-buffer (not current-prefix-arg))
@@ -2358,8 +2358,8 @@ Emacs libvterm integration.
           (vterm))))
     :init
     (with-eval-after-load 'project
-      (add-to-list 'project-switch-commands     '(my/project-vterm "Vterm") t)
-      (add-to-list 'project-kill-buffer-conditions  '(major-mode . vterm-mode)))
+      (add-to-list 'project-switch-commands '(my/project-vterm "Vterm") t)
+      (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode)))
     :custom
     (vterm-copy-exclude-prompt t)
     (vterm-max-scrollback 100000)
@@ -3047,6 +3047,16 @@ functions we invoke regularly outside of magit is called.
 #+begin_src emacs-lisp
   (use-package magit
     :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
+    :preface
+    (defun my/project-magit-status ()
+      (interactive)
+      (defvar vterm-buffer-name)
+      (let* ((project-directory (project-root (project-current t))))
+        (magit-status project-directory)))
+    :init
+    (with-eval-after-load 'project
+      (add-to-list 'project-switch-commands
+                   '(?v "Version Control" my/project-magit-status) t))
     :bind
     (:map my/version-control-map
           ("F"  . magit-fetch-all)
@@ -3061,7 +3071,9 @@ functions we invoke regularly outside of magit is called.
           ("lf" . magit-log-buffer-file)
           ("p"  . magit-pull-branch)
           ("v"  . magit-status)
-          ("r"  . magit-rebase)))
+          ("r"  . magit-rebase)
+          :map project-prefix-map
+          ("v"  . my/project-magit-status)))
 #+end_src
 **** [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
@@ -3096,6 +3108,12 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
           ("SPC" . project-list-buffers))
     :custom
     (project-vc-extra-root-markers '(".project"))
+    (project-switch-commands '((project-find-file "Find file")
+                               (project-find-regexp "Find regexp")
+                               (project-find-dir "Find directory")
+                               ;; (project-vc-dir "VC-Dir")
+                               ;; (project-eshell "Eshell")
+                               ))
     :init
     (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 #+end_src
