@@ -1036,7 +1036,7 @@ References:
               (ignore-errors (delete-window window)))))))
     :config
     (setq tab-line-close-button
-          (propertize "󰅖 "
+          (propertize "✕ "
                       'keymap tab-line-tab-close-map
                       'mouse-face 'tab-line-close-highlight
                       'help-echo "Click to close tab"))
