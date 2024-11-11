@@ -291,6 +291,9 @@ The code includes optimization for startup time, disables file modification chec
   ;;disable checking (for speedup).
   (setq straight-check-for-modifications nil)
 
+  ;; HACK: https://github.com/radian-software/straight.el/issues/1146
+  (setq straight-built-in-pseudo-packages '(emacs nadvice python image-mode project flymake xref))
+
   ;; cache the autoloads of all used packages in a single file
   (setq straight-cache-autoloads t)
 
@@ -637,7 +640,7 @@ In this section, I define some custom Lisp functions.
            " " 'display
            (create-image
             (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-            'pbm t :scale 1 :foreground color :ascent 'center))
+            'pbm t :foreground color :ascent 'center))
         (propertize "|" 'face (list :foreground color
                                     :background color))))
     (defun my/toggle-minimal-ui ()
@@ -786,64 +789,65 @@ Display typographical ligatures in Emacs.
       ;; `variable-pitch' face supports it
       (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
       ;; Enable all Cascadia and Fira Code ligatures in programming modes
-      (ligature-set-ligatures '(prog-mode org-mode)
-                              '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                                ;; =:= =!=
-                                ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                                ;; ;; ;;;
-                                (";" (rx (+ ";")))
-                                ;; && &&&
-                                ("&" (rx (+ "&")))
-                                ;; !! !!! !. !: !!. != !== !~
-                                ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                                ;; ?? ??? ?:  ?=  ?.
-                                ("?" (rx (or ":" "=" "\." (+ "?"))))
-                                ;; %% %%%
-                                ("%" (rx (+ "%")))
-                                ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                                ;; |->>-||-<<-| |- |== ||=||
-                                ;; |==>>==<<==<=>==//==/=!==:===>
-                                ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                                "-" "=" ))))
-                                ;; \\ \\\ \/
-                                ("\\" (rx (or "/" (+ "\\"))))
-                                ;; ++ +++ ++++ +>
-                                ("+" (rx (or ">" (+ "+"))))
-                                ;; :: ::: :::: :> :< := :// ::=
-                                (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                                ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                                ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                                "="))))
-                                ;; .. ... .... .= .- .? ..= ..<
-                                ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                                ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                                ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                                ;; *> */ *)  ** *** ****
-                                ("*" (rx (or ">" "/" ")" (+ "*"))))
-                                ;; www wwww
-                                ("w" (rx (+ "w")))
-                                ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                                ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                                ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                                ;; << <<< <<<<
-                                ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                                "-"  "/" "|" "="))))
-                                ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                                ;; >> >>> >>>>
-                                (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                                ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                                ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                             (+ "#"))))
-                                ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                                ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                                ;; __ ___ ____ _|_ __|____|_
-                                ("_" (rx (+ (or "_" "|"))))
-                                ;; Fira code: 0xFF 0x12
-                                ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                                ;; Fira code:
-                                "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                                ;; The few not covered by the regexps.
-                                "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+      (ligature-set-ligatures
+       '(prog-mode org-mode)
+       '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+         ;; =:= =!=
+         ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+         ;; ;; ;;;
+         (";" (rx (+ ";")))
+         ;; && &&&
+         ("&" (rx (+ "&")))
+         ;; !! !!! !. !: !!. != !== !~
+         ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+         ;; ?? ??? ?:  ?=  ?.
+         ("?" (rx (or ":" "=" "\." (+ "?"))))
+         ;; %% %%%
+         ("%" (rx (+ "%")))
+         ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+         ;; |->>-||-<<-| |- |== ||=||
+         ;; |==>>==<<==<=>==//==/=!==:===>
+         ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                         "-" "=" ))))
+         ;; \\ \\\ \/
+         ("\\" (rx (or "/" (+ "\\"))))
+         ;; ++ +++ ++++ +>
+         ("+" (rx (or ">" (+ "+"))))
+         ;; :: ::: :::: :> :< := :// ::=
+         (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+         ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+         ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                         "="))))
+         ;; .. ... .... .= .- .? ..= ..<
+         ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+         ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+         ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+         ;; *> */ *)  ** *** ****
+         ("*" (rx (or ">" "/" ")" (+ "*"))))
+         ;; www wwww
+         ("w" (rx (+ "w")))
+         ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+         ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+         ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+         ;; << <<< <<<<
+         ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                         "-"  "/" "|" "="))))
+         ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+         ;; >> >>> >>>>
+         (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+         ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+         ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                      (+ "#"))))
+         ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+         ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+         ;; __ ___ ____ _|_ __|____|_
+         ("_" (rx (+ (or "_" "|"))))
+         ;; Fira code: 0xFF 0x12
+         ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+         ;; Fira code:
+         "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+         ;; The few not covered by the regexps.
+         "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
       ;; Enables ligature checks globally in all buffers. You can also do it
       ;; per mode with `ligature-mode'.
       (global-ligature-mode))
@@ -882,7 +886,7 @@ https://protesilaos.com/emacs/modus-themes
       :right
       (((mood-line-segment-process)                 . " ")
        ((mood-line-segment-buffer-status)           . " ")
-        ;; ((mood-line-segment-misc-info)               . " ")))
+       ;; ((mood-line-segment-misc-info)               . " ")))
        ((mood-line-segment-major-mode)              . " ")
        ((mood-line-segment-vc)                      . " ")
        ((mood-line-segment-checker)                 . " "))))
@@ -3467,6 +3471,7 @@ An emacs mode for handling Dockerfiles.
 A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
   (use-package eglot
+    :after project
     :preface
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
     :init
@@ -3507,6 +3512,7 @@ A client for Language Server Protocol servers.
 Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 #+begin_src emacs-lisp
   (use-package eglot-booster
+    :after eglot
     :straight (:host github :repo "jdtsmith/eglot-booster")
     :config (eglot-booster-mode))
 #+end_src
@@ -3585,6 +3591,7 @@ Consistent ESS-like eval interface for various REPLs.
 Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
   (use-package flymake
+    :after project
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe)
