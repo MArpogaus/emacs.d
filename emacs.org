@@ -516,7 +516,13 @@ Package specific keymap definitions are kept in preface of the respective packag
          ;; If none of the above, delete one character backward
          (t
           (kill-backward-chars 1)))))
-
+    (defun simulate-key-press (key)
+      "Pretend that KEY was pressed.
+  KEY must be given in `kbd' notation.
+  Refference: https://emacs.stackexchange.com/a/13432"
+      `(lambda () (interactive)
+         (setq prefix-arg current-prefix-arg)
+         (setq unread-command-events (listify-key-sequence (read-kbd-macro ,key)))))
     :config
     ;; leader keymap
     (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
@@ -529,7 +535,9 @@ Package specific keymap definitions are kept in preface of the respective packag
     (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
     (define-key my/leader-map (kbd "h") (cons "help" help-map))
     (define-key my/leader-map (kbd "s") (cons "search" search-map))
-
+    (define-key my/leader-map (kbd "c") (cons "C-c" (simulate-key-press "C-c")))
+    (define-key my/leader-map (kbd "x") (cons "C-x" (simulate-key-press "C-x")))
+    
     ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
     (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
 
@@ -948,7 +956,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (define-key tab-bar-map (kbd "<wheel-down>") nil t)
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
     :config
-    (define-key project-prefix-map (kbd "w") (cons "workspace" my/workspace-map))
+    (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
     :bind
     (([remap winner-undo] . tab-bar-history-back)
      ([remap winner-undo] . tab-bar-history-forward)
@@ -1596,7 +1604,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :hook
     (org-after-todo-state-change . my/log-todo-next-creation-date)
     :bind
-    (:map my/leader-map
+    (:map my/toggle-map
           ("c" . org-capture)
           :map my/open-map
           ("a" . org-agenda))
