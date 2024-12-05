@@ -1,8 +1,8 @@
-;;; early-init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; early-init.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -90,10 +90,19 @@
 ;; In noninteractive sessions, prioritize non-byte-compiled source files to
 ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
 ;; to skip the mtime checks on every *.elc file.
-(setq load-prefer-newer noninteractive)
+(setq load-prefer-newer t)
+
+;; Ensure JIT compilation is enabled for improved performance by
+;; native-compiling loaded .elc files asynchronously
+(setq native-comp-jit-compilation t)
 
 ;; Disable certain byte compiler warnings to cut down on the noise.
 (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+
+;; Ensure that quitting only occurs once Emacs finishes native compiling,
+;; preventing incomplete or leftover compilation files in `/tmp`.
+(setq native-comp-async-query-on-exit t)
+(setq confirm-kill-processes t)
 
 ;; DOOM runtime optimizations
 ;; The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
@@ -141,7 +150,7 @@
 ;; receiving input, which should help a little with scrolling performance.
 (setq redisplay-skip-fontification-on-input t)
 
-;; Configure Straight
+;; Install Straight
 ;; This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
 ;; The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
 
@@ -150,17 +159,10 @@
 (setq package-quickstart nil
       package-enable-at-startup nil)
 
-;; straight.el bootstrap code
 ;;disable checking (for speedup).
 (setq straight-check-for-modifications nil)
 
-;; cache the autoloads of all used packages in a single file
-(setq straight-cache-autoloads t)
-
-;; Enable straight use-package integration
-(setq straight-use-package-by-default t
-      use-package-always-defer t)
-
+;; straight.el bootstrap code
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))

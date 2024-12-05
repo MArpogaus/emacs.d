@@ -1,8 +1,8 @@
-;;; my-denote.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-denote.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-03
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -83,6 +83,7 @@
 ;; [[https://github.com/pprevos/citar-denote.git][citar-denote]]
 
 (use-package citar-denote
+  :after denote citar
   :custom
   (citar-denote-template 'biblio)
   (citar-denote-subdir "bib_notes")
@@ -98,8 +99,8 @@
                             "* Summary :childless:showchildren:export:\n"
                             "This is a summary of [cite/t:@${=key=}].\n"
                             "** Bibliography :ignore:\n")))
-  :hook
-  (after-init . citar-denote-mode))
+  :init
+  (citar-denote-mode))
 
 ;; [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 
