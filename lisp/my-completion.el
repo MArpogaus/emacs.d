@@ -1,8 +1,8 @@
-;;; my-completion.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-completion.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,6 +48,7 @@
 ;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 
 (use-package citar
+  :after nerd-icons
   :custom
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
@@ -289,7 +290,7 @@
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
-  (when (fboundp 'straight-use-package)
+  (when (featurep 'straight)
     (add-to-list 'load-path
                  (expand-file-name "straight/build/corfu/extensions"
                                    straight-base-dir)))
@@ -459,6 +460,7 @@ the completing-read prompter."
 ;; Icons for corfu via nerd-icons.
 
 (use-package nerd-icons-corfu
+  :after nerd-icons
   :preface
   (defun my/add-nerd-icons-formatter nil
     (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
@@ -569,7 +571,7 @@ the completing-read prompter."
   ;; available on the load-path. When using `straight.el', the
   ;; extensions are not built into the package, so have to add that path
   ;; to the load-path manually to enable the following require.
-  (when (fboundp 'straight-use-package)
+  (when (featurep 'straight)
     (add-to-list 'load-path
                  (expand-file-name "straight/build/vertico/extensions"
                                    straight-base-dir)))

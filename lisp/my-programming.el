@@ -1,8 +1,8 @@
-;;; my-programming.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-programming.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -91,6 +91,7 @@
 ;; Structured Editing and Navigation in Emacs.
 
 (use-package combobulate
+  :straight (:host github :repo "mickeynp/combobulate" :nonrecursive t)
   :custom
   ;; Disable combobulate key prefix 
   (combobulate-key-prefix nil)
@@ -106,27 +107,8 @@
         ("S-<up>"    . combobulate-navigate-up-list-maybe)
         ("M-<down>"  . combobulate-drag-down)
         ("M-<up>"    . combobulate-drag-up))
-  ;; Optional, but recommended.
-  ;;
-  ;; You can manually enable Combobulate with `M-x
-  ;; combobulate-mode'.
   :hook
   (prog-mode . combobulate-mode))
-
-;; [[https://github.com/necaris/conda.el.git][conda]]
-;; Emacs helper library (and minor mode) to work with conda environments.
-
-(use-package conda
-  :after python
-  :custom
-  ;; support for mambaforge envs
-  (conda-anaconda-home "~/mambaforge/")
-  (conda-env-home-directory "~/mambaforge/")
-  :config
-  ;; interactive shell support
-  (conda-env-initialize-interactive-shells)
-  ;; eshell support
-  (conda-env-initialize-eshell))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -208,6 +190,7 @@
 ;; A client for Language Server Protocol servers.
 
 (use-package eglot
+  :after project
   :preface
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
   :init
@@ -238,8 +221,6 @@
   :config
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-  ;; We explicitly require eglot-booster here to lazy load it before we start eglot
-  (require 'eglot-booster)
   :hook
   ((python-base-mode . eglot-ensure)
    (eglot-managed-mode . my/eglot-capf)))
@@ -248,8 +229,9 @@
 ;; Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 
 (use-package eglot-booster
+  :after eglot
   :straight (:host github :repo "jdtsmith/eglot-booster")
-  :config (eglot-booster-mode))
+  :init (eglot-booster-mode))
 
 ;; [[https://github.com/emacs-straight/eldoc.git][eldoc]]
 ;; Configure emacs documentation support.
@@ -326,6 +308,7 @@
 ;; Universal on-the-fly syntax checker for Emacs.
 
 (use-package flymake
+  :after project
   :custom
   ;; Let git gutter have left fringe, flymake can have right fringe
   (flymake-fringe-indicator-position 'right-fringe)

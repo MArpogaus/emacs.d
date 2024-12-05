@@ -1,8 +1,8 @@
-;;; init.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; init.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,7 +14,7 @@
 
 ;;; Code:
 
-;; Package Management
+;; Configure Straight
 ;; Lets install and configure =use-package= and use =straight= as the underlying package manager.
 ;; We also load =bind-key= here which is used by =use-package= for keybindings.
 
@@ -23,6 +23,16 @@
   (straight-use-package 'use-package)
   (use-package bind-key))
 
+;; HACK: https://github.com/radian-software/straight.el/issues/1146
+(setq straight-built-in-pseudo-packages '(emacs nadvice python image-mode project flymake xref))
+
+;; cache the autoloads of all used packages in a single file
+(setq straight-cache-autoloads t)
+
+;; Enable straight use-package integration
+(setq straight-use-package-by-default t
+      use-package-always-defer t)
+
 ;; make use-package more verbose when ´‘--debug-init´ is passed
 ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
 (when init-file-debug
@@ -30,6 +40,7 @@
         use-package-expand-minimally nil
         use-package-compute-statistics t
         jka-compr-verbose t
+        warning-minimum-level :warning
         byte-compile-warnings t
         byte-compile-verbose t
         native-comp-warning-on-missing-source t
@@ -141,6 +152,13 @@
   (window-resize-pixelwise t)                          ; Resize windows pixelwise
   (frame-resize-pixelwise t)                           ; Resize frame pixelwise
   (windmove-mode nil)                                  ; Diasble windmove mode
+  (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
+  
+  ;; Enable window dividers
+  (window-divider-default-bottom-width 1)
+  (window-divider-default-places t)
+  (window-divider-default-right-width 1)
+  (window-divider-mode t)
   :preface
   ;; History
   ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
@@ -155,26 +173,17 @@
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode) . visual-line-mode)
+   ;; Enable automatic linebreaks before `fill-column' is eceeded
+   ((prog-mode conf-mode text-mode) . auto-fill-mode)
+   ;; Compress kill ring when exiting emacs
    (kill-emacs . unpropertize-kill-ring)))
 
-;; Keymaps
+;; Custom Lisp Functions
 
-;; We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
-;; Package specific keymap definitions are kept in preface of the respective package declaration.
+;; In this section, I define some custom Lisp functions.
 
-
-;; setup keymaps
 (use-package emacs
-  :straight nil
   :preface
-  (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
-  (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
-  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
-  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-
   (defun my/backward-kill-thing ()
     "Delete sexp, symbol, word or whitespace backward depending on the context at point."
     (interactive)
@@ -194,82 +203,14 @@
        (t
         (kill-backward-chars 1)))))
 
-  :config
-  ;; leader keymap
-  (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
-  (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
-  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
-  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
-  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
+  (defun simulate-key-press (key)
+    "Pretend that KEY was pressed.
+KEY must be given in `kbd' notation.
+Refference: https://emacs.stackexchange.com/a/13432"
+    `(lambda () (interactive)
+       (setq prefix-arg current-prefix-arg)
+       (setq unread-command-events (listify-key-sequence (read-kbd-macro ,key)))))
 
-  (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
-  (define-key my/leader-map (kbd "h") (cons "help" help-map))
-  (define-key my/leader-map (kbd "s") (cons "search" search-map))
-
-  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
-  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
-
-  ;; remove keybind for suspend-frame
-  (global-unset-key (kbd "C-z"))
-
-  ;; Don't kill windows when clicking on the mode line
-  (global-unset-key [mode-line mouse-2])
-  (global-unset-key [mode-line mouse-3])
-  :bind
-  ;;ESC Cancels All
-  (("<escape>" . keyboard-escape-quit)
-   ("C-<backspace>" . my/backward-kill-thing)
-   :map my/buffer-map
-   ("e" . eval-buffer)
-   ("k" . kill-this-buffer)
-   ("K" . kill-buffer)
-   ("c" . clone-buffer)
-   ("r" . revert-buffer)
-   ("e" . eval-buffer)
-   ("s" . save-buffer)
-   :map my/file-map
-   ("f" . find-file)
-   ("F" . find-file-other-window)
-   ("d" . find-dired)
-   ("c" . copy-file)
-   ("f" . find-file)
-   ("d" . delete-file)
-   ("r" . rename-file)
-   ("w" . write-file)
-   :map my/open-map
-   ("F" . make-frame)
-   ("i" . ielm)
-   ("e" . eshell)
-   ("t" . term)
-   ("s" . scratch-buffer)
-   :map my/toggle-map
-   ("M" . my/toggle-minimal-ui)
-   :repeat-map my/window-map
-   ("n" . next-window-any-frame)
-   ("p" . previous-window-any-frame)
-   ("k" . delete-window)
-   ("K" . kill-buffer-and-window)
-   ("+" . enlarge-window)
-   ("-" . shrink-window)
-   ("*" . enlarge-window-horizontally)
-   ("’" . shrink-window-horizontally)
-   ("r" . split-window-right)
-   ("b" . split-window-below)
-   ("v" . split-window-vertically)
-   ("h" . split-window-horizontally)
-   ("m" . delete-other-windows)
-   ("m" . delete-other-windows)
-   ("M" . delete-other-windows-vertically)
-   :exit
-   ("=" . balance-windows)))
-
-;; Custom Lisp Functions
-
-;; In this section, I define some custom Lisp functions.
-
-(use-package emacs
-  :preface
   (defun my/extract-username-repo ()
     "Extract the username and repository name from a GitHub repository link at point."
     (interactive)
@@ -317,46 +258,128 @@
          " " 'display
          (create-image
           (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-          'pbm t :scale 1 :foreground color :ascent 'center))
+          'pbm t :foreground color :ascent 'center))
       (propertize "|" 'face (list :foreground color
                                   :background color))))
-  (defun my/toggle-minimal-ui ()
-    "Diable tab bars, to save some space"
-    (interactive)
-    (setq tab-bar-show (not tab-bar-mode))
-    (tab-bar-mode 'toggle)
-    (global-tab-line-mode 'toggle)
-    (global-hide-mode-line-mode 'toggle)
-    (spacious-padding-mode 'toggle))
-  ;; (cl-defun create-org-entry-for-package (recipe)
-  ;;   (interactive (list (straight-get-recipe nil nil)))
-  ;;   (straight--with-plist recipe
-  ;;       (package local-repo type)
-  ;;     (message-box type)
-  ;;     (if (eq type 'git)
-  ;;         (straight-vc-git--destructure recipe
-  ;;             (package local-repo branch nonrecursive depth
-  ;;                      remote upstream-remote
-  ;;                      host upstream-host
-  ;;                      protocol upstream-protocol
-  ;;                      repo upstream-repo fork-repo)
-  ;;           (message upstream-remote)
-  ;;           (let ((parent-headline-level (org-outline-level)))
-  ;;             (save-excursion
-  ;;               (org-insert-heading (1+ parent-headline-level))
-  ;;               (insert (format "*** [[%s][%s]]\n" upstream-remote package))
-  ;;               ;; (insert (format "%s\n" description))
-  ;;               (insert (format "#+begin_src emacs-lisp\n(use-package %s\n  :demand t\n  :after (eglot consult))\n#+end_src\n" package))
-  ;;               (org-edit-src-code)))
-  ;;           )
-  ;;       )))
-  )
+  (define-minor-mode my/minimal-ui-mode
+    "Toggle automatic tab group management based on command execution."
+    :global t
+    :group 'frames
+    (if my/minimal-ui-mode
+        (progn
+          (setq tab-bar-show nil)
+          (tab-bar-mode -1)
+          (global-tab-line-mode -1)
+          (global-hide-mode-line-mode 1)
+          (spacious-padding-mode -1))
+      (progn
+        (setq tab-bar-show t)
+        (tab-bar-mode 1)
+        (global-tab-line-mode 1)
+        (global-hide-mode-line-mode -1)
+        (spacious-padding-mode 1)))))
+
+;; Keymaps
+
+;; We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
+;; Package specific keymap definitions are kept in preface of the respective package declaration.
+
+
+;; setup keymaps
+(use-package emacs
+  :straight nil
+  :preface
+  (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
+  (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+  :config
+  ;; leader keymap
+  (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+  (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
+  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
+  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
+
+  (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
+  (define-key my/leader-map (kbd "h") (cons "help" help-map))
+  (define-key my/leader-map (kbd "s") (cons "search" search-map))
+  (define-key my/leader-map (kbd "c") (cons "C-c" (simulate-key-press "C-c")))
+  (define-key my/leader-map (kbd "x") (cons "C-x" (simulate-key-press "C-x")))
+  
+  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
+
+  ;; remove keybind for suspend-frame
+  (global-unset-key (kbd "C-z"))
+
+  ;; Don't kill windows when clicking on the mode line
+  (global-unset-key [mode-line mouse-2])
+  (global-unset-key [mode-line mouse-3])
+  :bind
+  ;;ESC Cancels All
+  (("<escape>" . keyboard-escape-quit)
+   ("C-<backspace>" . my/backward-kill-thing)
+   :map my/buffer-map
+   ("e" . eval-buffer)
+   ("k" . kill-this-buffer)
+   ("K" . kill-buffer)
+   ("c" . clone-buffer)
+   ("r" . revert-buffer)
+   ("e" . eval-buffer)
+   ("s" . save-buffer)
+   :map my/file-map
+   ("f" . find-file)
+   ("F" . find-file-other-window)
+   ("d" . find-dired)
+   ("c" . copy-file)
+   ("f" . find-file)
+   ("d" . delete-file)
+   ("r" . rename-file)
+   ("w" . write-file)
+   :map my/open-map
+   ("F" . make-frame)
+   ("i" . ielm)
+   ("e" . eshell)
+   ("t" . term)
+   ("s" . scratch-buffer)
+   :map my/toggle-map
+   ("M" . my/minimal-ui-mode)
+   :repeat-map my/window-map
+   ("n" . next-window-any-frame)
+   ("p" . previous-window-any-frame)
+   ("k" . delete-window)
+   ("K" . kill-buffer-and-window)
+   ("+" . enlarge-window)
+   ("-" . shrink-window)
+   ("*" . enlarge-window-horizontally)
+   ("’" . shrink-window-horizontally)
+   ("r" . split-window-right)
+   ("b" . split-window-below)
+   ("v" . split-window-vertically)
+   ("h" . split-window-horizontally)
+   ("m" . delete-other-windows)
+   ("m" . delete-other-windows)
+   ("M" . delete-other-windows-vertically)
+   :exit
+   ("=" . balance-windows)))
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.
 ;; To load the we have to add this directory to the =load-path=.
 
 (add-to-list 'load-path "~/.emacs.d/lisp/")
+
+;; Org
+;; :PROPERTIES:
+;; :header-args+: :tangle lisp/my-org.el
+;; :END:
+
+(require 'my-org)
 
 ;; UI
 ;; :PROPERTIES:
@@ -371,13 +394,6 @@
 ;; :END:
 
 (require 'my-ux)
-
-;; Org
-;; :PROPERTIES:
-;; :header-args+: :tangle lisp/my-org.el
-;; :END:
-
-(require 'my-org)
 
 ;; Denote
 ;; :PROPERTIES:

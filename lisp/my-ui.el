@@ -1,8 +1,8 @@
-;;; my-ui.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-ui.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -111,64 +111,65 @@
     ;; `variable-pitch' face supports it
     (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
     ;; Enable all Cascadia and Fira Code ligatures in programming modes
-    (ligature-set-ligatures '(prog-mode org-mode)
-                            '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-                              ;; =:= =!=
-                              ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-                              ;; ;; ;;;
-                              (";" (rx (+ ";")))
-                              ;; && &&&
-                              ("&" (rx (+ "&")))
-                              ;; !! !!! !. !: !!. != !== !~
-                              ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-                              ;; ?? ??? ?:  ?=  ?.
-                              ("?" (rx (or ":" "=" "\." (+ "?"))))
-                              ;; %% %%%
-                              ("%" (rx (+ "%")))
-                              ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-                              ;; |->>-||-<<-| |- |== ||=||
-                              ;; |==>>==<<==<=>==//==/=!==:===>
-                              ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-                                              "-" "=" ))))
-                              ;; \\ \\\ \/
-                              ("\\" (rx (or "/" (+ "\\"))))
-                              ;; ++ +++ ++++ +>
-                              ("+" (rx (or ">" (+ "+"))))
-                              ;; :: ::: :::: :> :< := :// ::=
-                              (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-                              ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-                              ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-                                              "="))))
-                              ;; .. ... .... .= .- .? ..= ..<
-                              ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-                              ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-                              ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-                              ;; *> */ *)  ** *** ****
-                              ("*" (rx (or ">" "/" ")" (+ "*"))))
-                              ;; www wwww
-                              ("w" (rx (+ "w")))
-                              ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-                              ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-                              ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-                              ;; << <<< <<<<
-                              ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-                                              "-"  "/" "|" "="))))
-                              ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-                              ;; >> >>> >>>>
-                              (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-                              ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-                              ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-                                           (+ "#"))))
-                              ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-                              ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-                              ;; __ ___ ____ _|_ __|____|_
-                              ("_" (rx (+ (or "_" "|"))))
-                              ;; Fira code: 0xFF 0x12
-                              ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-                              ;; Fira code:
-                              "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-                              ;; The few not covered by the regexps.
-                              "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+    (ligature-set-ligatures
+     '(prog-mode org-mode)
+     '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+       ;; =:= =!=
+       ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+       ;; ;; ;;;
+       (";" (rx (+ ";")))
+       ;; && &&&
+       ("&" (rx (+ "&")))
+       ;; !! !!! !. !: !!. != !== !~
+       ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+       ;; ?? ??? ?:  ?=  ?.
+       ("?" (rx (or ":" "=" "\." (+ "?"))))
+       ;; %% %%%
+       ("%" (rx (+ "%")))
+       ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+       ;; |->>-||-<<-| |- |== ||=||
+       ;; |==>>==<<==<=>==//==/=!==:===>
+       ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+                       "-" "=" ))))
+       ;; \\ \\\ \/
+       ("\\" (rx (or "/" (+ "\\"))))
+       ;; ++ +++ ++++ +>
+       ("+" (rx (or ">" (+ "+"))))
+       ;; :: ::: :::: :> :< := :// ::=
+       (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+       ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+       ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+                       "="))))
+       ;; .. ... .... .= .- .? ..= ..<
+       ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+       ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+       ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+       ;; *> */ *)  ** *** ****
+       ("*" (rx (or ">" "/" ")" (+ "*"))))
+       ;; www wwww
+       ("w" (rx (+ "w")))
+       ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+       ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+       ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+       ;; << <<< <<<<
+       ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+                       "-"  "/" "|" "="))))
+       ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+       ;; >> >>> >>>>
+       (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+       ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+       ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+                    (+ "#"))))
+       ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+       ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+       ;; __ ___ ____ _|_ __|____|_
+       ("_" (rx (+ (or "_" "|"))))
+       ;; Fira code: 0xFF 0x12
+       ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+       ;; Fira code:
+       "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+       ;; The few not covered by the regexps.
+       "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
     (global-ligature-mode))
@@ -194,7 +195,7 @@
     :right
     (((mood-line-segment-process)                 . " ")
      ((mood-line-segment-buffer-status)           . " ")
-     ((mood-line-segment-misc-info)               . " ")
+     ;; ((mood-line-segment-misc-info)               . " ")))
      ((mood-line-segment-major-mode)              . " ")
      ((mood-line-segment-vc)                      . " ")
      ((mood-line-segment-checker)                 . " "))))
@@ -256,7 +257,7 @@
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
   :config
-  (define-key project-prefix-map (kbd "w") (cons "workspace" my/workspace-map))
+  (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
   :bind
   (([remap winner-undo] . tab-bar-history-back)
    ([remap winner-undo] . tab-bar-history-forward)
@@ -348,7 +349,7 @@ Lastly, if no tabs are left in the window, it is deleted with the `delete-window
             (ignore-errors (delete-window window)))))))
   :config
   (setq tab-line-close-button
-        (propertize "󰅖 "
+        (propertize "✕ "
                     'keymap tab-line-tab-close-map
                     'mouse-face 'tab-line-close-highlight
                     'help-echo "Click to close tab"))
@@ -359,9 +360,7 @@ Lastly, if no tabs are left in the window, it is deleted with the `delete-window
 
 (use-package time
   :straight nil
-  :functions display-time-mode
   :custom
-  ;; (display-time-format "%H:%M")
   (display-time-default-load-average nil)
   (display-time-24hr-format t)
   (display-time-day-and-date t)
@@ -369,9 +368,6 @@ Lastly, if no tabs are left in the window, it is deleted with the `delete-window
   (defun my/toggle-display-time-mode (&rest args)
     (ignore args)
     (display-time-mode 'toggle))
-  :config
-  ;; BUG: time is displayed twice
-  (setq global-mode-string '(display-time-string))
   :init
   (advice-add 'toggle-frame-fullscreen
               :after #'my/toggle-display-time-mode))

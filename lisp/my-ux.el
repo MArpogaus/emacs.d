@@ -1,8 +1,8 @@
-;;; my-ux.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-ux.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,6 +13,18 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
+
+;; [[https://github.com/emacscollective/auto-compile.git][auto-compile]]
+;; Automatically compile outdated Emacs Lisp libraries.
+
+(use-package auto-compile
+  :custom
+  (auto-compile-display-buffer nil)
+  (auto-compile-mode-line-counter t)
+  :init
+  (auto-compile-on-load-mode)
+  :hook
+  (emacs-lisp-mode . auto-compile-on-save-mode))
 
 ;; autorevert :build_in:
 ;; Revert buffers when the underlying file has changed
@@ -38,8 +50,7 @@
 
 (use-package comint-mime
   :hook
-  ((shell-mode . comint-mime-setup)
-   (inferior-python-mode . comint-mime-setup)))
+  (inferior-python-mode . comint-mime-setup))
 
 ;; delsel :build_in:
 ;; Replace selected text when typing

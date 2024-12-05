@@ -1,8 +1,8 @@
-;;; my-vc.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-vc.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -82,7 +82,17 @@
 
 
 (use-package magit
-  :commands (magit-status magit-blame magit-log-buffer-file magit-log-all)
+  :commands (magit-status magit-log-buffer-file magit-log-all)
+  :preface
+  (defun my/project-magit-status ()
+    (interactive)
+    (defvar vterm-buffer-name)
+    (let* ((project-directory (project-root (project-current t))))
+      (magit-status-setup-buffer project-directory)))
+  :init
+  (with-eval-after-load 'project
+    (add-to-list 'project-switch-commands
+                 '(?v "Version Control" my/project-magit-status) t))
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
@@ -97,7 +107,9 @@
         ("lf" . magit-log-buffer-file)
         ("p"  . magit-pull-branch)
         ("v"  . magit-status)
-        ("r"  . magit-rebase)))
+        ("r"  . magit-rebase)
+        :map project-prefix-map
+        ("v"  . my/project-magit-status)))
 
 ;; [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 ;; Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.

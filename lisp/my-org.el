@@ -1,8 +1,8 @@
-;;; my-org.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-org.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -174,7 +174,7 @@
   :hook
   (org-after-todo-state-change . my/log-todo-next-creation-date)
   :bind
-  (:map my/leader-map
+  (:map my/toggle-map
         ("c" . org-capture)
         :map my/open-map
         ("a" . org-agenda))
@@ -346,21 +346,28 @@
 
     ;; Tweak font sizes
     (setq-local face-remapping-alist '((header-line (:height 4.0) variable-pitch)
-                                       (org-document-title (:height 2.0) org-document-title)
-                                       (org-level-1 (:height 1.2) org-level-1)
-                                       (org-level-2 (:height 1.1) org-level-2)
-                                       (org-default (:inherit fixed-pitch) org-default)
+                                       (org-document-title (:inherit variable-pitch :height 2.0) org-document-title)
+                                       (org-level-1 (:inherit variable-pitch :height 1.5) org-level-1)
+                                       (org-level-2 (:inherit variable-pitch :height 1.3) org-level-2)
+                                       (org-level-3 (:inherit variable-pitch :height 1.2) org-level-3)
+                                       (org-level-4 (:inherit variable-pitch :height 1.1) org-level-4)
+                                       (org-level-5 (:inherit variable-pitch :height 1.1) org-level-5)
+                                       (org-level-6 (:inherit variable-pitch :height 1.1) org-level-6)
+                                       (org-level-7 (:inherit variable-pitch :height 1.1) org-level-7)
+                                       (org-level-8 (:inherit variable-pitch :height 1.1) org-level-8)
+                                       (org-default (:inherit variable-pitch) org-default)
                                        (org-table (:inherit fixed-pitch) org-table)
                                        (org-code (:inherit fixed-pitch) org-code)
                                        (org-verbatim (:inherit fixed-pitch) org-verbatim)
-                                       (org-hide (:inherit fixed-pitch) org-hide)
-                                       (default (:inherit variable-pitch))))
+                                       ;; (org-hide (:inherit fixed-pitch) org-hide)
+                                       ;; (default (:inherit variable-pitch))
+                                       ))
 
     ;; Set a blank header line string to create blank space at the top
     (setq-local header-line-format " ")
 
     ;; Configure fill width
-    (setq-local visual-fill-column-width 80
+    (setq-local visual-fill-column-width 160
                 visual-fill-column-center-text t)
 
     ;; Remove org modern borders from blocks
@@ -369,14 +376,15 @@
     ;; Center the presentation and wrap lines
     (visual-fill-column-mode 1)
 
-    ;; hide the mode line
-    (hide-mode-line-mode 1)
+    ;; Swicth to minimal ui mode
+    (my/minimal-ui-mode 1)
 
     ;; disable fringes
     (set-fringe-mode 0)
 
     ;; Increase font size
-    (org-present-big))
+    ;;(org-present-big)
+    )
   (defun my/org-present-quit ()
     (org-present-read-write)
     (org-remove-inline-images)
@@ -401,27 +409,30 @@
     ;; Stop centering the presentation and wrap lines
     (visual-fill-column-mode 0)
 
-    ;; Stop hiding the mode line
-    (hide-mode-line-mode 0)
+    ;; Disable minimal ui mode
+    (my/minimal-ui-mode -1)
 
     ;; reset fringes to default style
     (set-fringe-mode nil)
 
     ;; Restore font size
-    (org-present-small))
+    ;;(org-present-small)
+    )
   (defun my/org-present-prepare-slide (buffer-name heading)
     ;; Show only top-level headlines
     (org-overview)
 
     ;; Unfold the current entry
-    (org-show-entry)
+    (org-fold-show-entry)
 
     ;; Show only direct subheadings of the slide but don't expand them
-    (org-show-children))
+    (org-fold-show-children))
   :bind
-  (:map org-present-mode-keymap
-        ("q" . org-present-quit)
-        ("C-<left>" . org-present-prev)
+  (:map org-mode-map
+        ("C-c p"         . org-present)
+        :map org-present-mode-keymap
+        ("q"         . org-present-quit)
+        ("C-<left>"  . org-present-prev)
         ("C-<right>" . org-present-next))
   :config
   (define-key org-present-mode-keymap (kbd "<left>") nil t)

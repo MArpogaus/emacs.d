@@ -1,8 +1,8 @@
-;;; my-tools.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-tools.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -340,7 +340,7 @@
   (defun my/project-vterm ()
     (interactive)
     (defvar vterm-buffer-name)
-    (let* ((default-directory (project-root     (project-current t)))
+    (let* ((default-directory (project-root (project-current t)))
            (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
            (vterm-buffer (get-buffer vterm-buffer-name)))
       (if (and vterm-buffer (not current-prefix-arg))
@@ -348,8 +348,8 @@
         (vterm))))
   :init
   (with-eval-after-load 'project
-    (add-to-list 'project-switch-commands     '(my/project-vterm "Vterm") t)
-    (add-to-list 'project-kill-buffer-conditions  '(major-mode . vterm-mode)))
+    (add-to-list 'project-switch-commands '(my/project-vterm "Vterm") t)
+    (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode)))
   :custom
   (vterm-copy-exclude-prompt t)
   (vterm-max-scrollback 100000)

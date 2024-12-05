@@ -1,8 +1,8 @@
-;;; my-keybindings.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-keybindings.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -18,6 +18,7 @@
 ;; Meow is yet another modal editing mode for Emacs.
 
 (use-package meow
+  :straight (:build (:not autoloads))
   :demand t
   :custom
   ;; use system clipboard

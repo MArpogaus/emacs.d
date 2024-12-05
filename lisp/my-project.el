@@ -1,8 +1,8 @@
-;;; my-project.el --- Emacs configuration file  -*- lexical-binding: t; -*-
+;;; my-project.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-11-02
+;; Created: 2024-12-05
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -24,6 +24,12 @@
         ("SPC" . project-list-buffers))
   :custom
   (project-vc-extra-root-markers '(".project"))
+  (project-switch-commands '((project-find-file "Find file")
+                             (project-find-regexp "Find regexp")
+                             (project-find-dir "Find directory")
+                             ;; (project-vc-dir "VC-Dir")
+                             ;; (project-eshell "Eshell")
+                             ))
   :init
   (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 
@@ -48,30 +54,35 @@
 
 (use-package auto-tab-groups
   :straight (:host github :repo "MArpogaus/auto-tab-groups")
-  :after tab-bar mood-line
+  :after tab-bar mood-line project nerd-icons
   :custom
   ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
   (auto-tab-groups-create-commands
-   '(((project-prompt-project-dir project-switch-to-buffer) . auto-tab-groups-group-name-project)
-     ((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+   '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
      ((dirvish dirvish-fd) . "dirvish")))
   (auto-tab-groups-close-commands
-   '((project-kill-buffers . auto-tab-groups-group-name-project)
-     (dirvish-quit . "dirvish")))
+   '((dirvish-quit "dirvish" :ignore-result t)))
   ;; Enable modern tabs style
   (auto-tab-groups-eyecandy-mode t)
   ;; height of tabs
   (auto-tab-groups-eyecandy-tab-height my/modeline-height)
   ;; Assign Icons to tab groups
   (auto-tab-groups-eyecandy-icons
-   '(("HOME"                                   . "")
-     ("dirvish"                                . "")
-     ("denote"                                 . "󱓩")
-     (auto-tab-groups-eyecandy-name-is-project . auto-tab-groups-eyecandy-group-icon-project)))
+   '(("HOME"       . "")
+     ("dirvish"    . "")
+     ("denote"     . "󱓩")
+     ("^\\[P\\] *" . "")
+     ("^\\[T\\] *" . "")))
+  (auto-tab-groups-eyecandy-tab-bar-group-name-format-function
+   (lambda (tab-group-name)
+     (if (string-match "^\\[.\\] *" tab-group-name)
+         (substring tab-group-name (match-end 0))
+       tab-group-name)))
   :bind
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
   :init
+  (auto-tab-groups-project-mode)
   (auto-tab-groups-mode)
   :hook
   (tab-bar-mode . auto-tab-groups-eyecandy-mode))
