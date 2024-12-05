@@ -125,7 +125,7 @@ This Emacs literate configuration has been inspired by the following projects:
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+NAME: header
 #+begin_src shell :var file_name="init.el" :results output
-  echo ";;; $file_name --- Emacs configuration file  -*- lexical-binding: t; -*-
+  echo ";;; $file_name --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
   ;; Copyright (C) 2023-$(date +%Y) Marcel Arpogaus
 
   ;; Author: Marcel Arpogaus
@@ -296,6 +296,9 @@ The code includes optimization for startup time, disables file modification chec
   (setq package-quickstart nil
         package-enable-at-startup nil)
 
+  ;;disable checking (for speedup).
+  (setq straight-check-for-modifications nil)
+
   ;; straight.el bootstrap code
   (defvar bootstrap-version)
   (let ((bootstrap-file
@@ -333,9 +336,6 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
     (straight-use-package 'use-package)
     (use-package bind-key))
 
-  ;;disable checking (for speedup).
-  (setq straight-check-for-modifications nil)
-
   ;; HACK: https://github.com/radian-software/straight.el/issues/1146
   (setq straight-built-in-pseudo-packages '(emacs nadvice python image-mode project flymake xref))
 
@@ -353,6 +353,7 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
           use-package-expand-minimally nil
           use-package-compute-statistics t
           jka-compr-verbose t
+          warning-minimum-level :warning
           byte-compile-warnings t
           byte-compile-verbose t
           native-comp-warning-on-missing-source t
@@ -464,7 +465,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (window-resize-pixelwise t)                          ; Resize windows pixelwise
     (frame-resize-pixelwise t)                           ; Resize frame pixelwise
     (windmove-mode nil)                                  ; Diasble windmove mode
-
+    (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
+    
     ;; Enable window dividers
     (window-divider-default-bottom-width 1)
     (window-divider-default-places t)
@@ -1571,6 +1573,18 @@ References:
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ux.el")>>
 #+end_src
+**** [[https://github.com/emacscollective/auto-compile.git][auto-compile]]
+Automatically compile outdated Emacs Lisp libraries.
+#+begin_src emacs-lisp
+  (use-package auto-compile
+    :custom
+    (auto-compile-display-buffer nil)
+    (auto-compile-mode-line-counter t)
+    :init
+    (auto-compile-on-load-mode)
+    :hook
+    (emacs-lisp-mode . auto-compile-on-save-mode))
+#+end_src
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed
 #+begin_src emacs-lisp
@@ -1595,8 +1609,7 @@ Provides a mechanism for REPLs (or comint buffers, in Emacs parlance) to display
 #+begin_src emacs-lisp
   (use-package comint-mime
     :hook
-    ((shell-mode . comint-mime-setup)
-     (inferior-python-mode . comint-mime-setup)))
+    (inferior-python-mode . comint-mime-setup))
 #+end_src
 **** delsel :build_in:
 Replace selected text when typing
@@ -1998,6 +2011,7 @@ Simple note taking and file naming.
 **** [[https://github.com/pprevos/citar-denote.git][citar-denote]]
 #+begin_src emacs-lisp
   (use-package citar-denote
+    :after denote citar
     :custom
     (citar-denote-template 'biblio)
     (citar-denote-subdir "bib_notes")
@@ -2013,8 +2027,8 @@ Simple note taking and file naming.
                               "* Summary :childless:showchildren:export:\n"
                               "This is a summary of [cite/t:@${=key=}].\n"
                               "** Bibliography :ignore:\n")))
-    :hook
-    (after-init . citar-denote-mode))
+    :init
+    (citar-denote-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 #+begin_src emacs-lisp
@@ -2446,6 +2460,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
+    :after nerd-icons
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
@@ -2687,7 +2702,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :config
     ;; Free the RET key for less intrusive behavior.
     (keymap-unset corfu-map "RET")
-    (when (fboundp 'straight-use-package)
+    (when (featurep 'straight)
       (add-to-list 'load-path
                    (expand-file-name "straight/build/corfu/extensions"
                                      straight-base-dir)))
@@ -2968,7 +2983,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ;; available on the load-path. When using `straight.el', the
     ;; extensions are not built into the package, so have to add that path
     ;; to the load-path manually to enable the following require.
-    (when (fboundp 'straight-use-package)
+    (when (featurep 'straight)
       (add-to-list 'load-path
                    (expand-file-name "straight/build/vertico/extensions"
                                      straight-base-dir)))
@@ -3740,6 +3755,7 @@ The emacs major mode for editing files in the YAML data serialization format.
 Meow is yet another modal editing mode for Emacs.
 #+begin_src emacs-lisp
   (use-package meow
+    :straight (:build (:not autoloads))
     :demand t
     :custom
     ;; use system clipboard
