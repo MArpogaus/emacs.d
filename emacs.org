@@ -3397,21 +3397,6 @@ Structured Editing and Navigation in Emacs.
     :hook
     (prog-mode . combobulate-mode))
 #+end_src
-**** [[https://github.com/necaris/conda.el.git][conda]]
-Emacs helper library (and minor mode) to work with conda environments.
-#+begin_src emacs-lisp
-  (use-package conda
-    :after python
-    :custom
-    ;; support for mambaforge envs
-    (conda-anaconda-home "~/mambaforge/")
-    (conda-env-home-directory "~/mambaforge/")
-    :config
-    ;; interactive shell support
-    (conda-env-initialize-interactive-shells)
-    ;; eshell support
-    (conda-env-initialize-eshell))
-#+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 Debug Adapter Protocol for Emacs.
 #+begin_src emacs-lisp
