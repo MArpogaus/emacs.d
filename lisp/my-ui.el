@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-05
+;; Created: 2024-12-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -200,11 +200,11 @@
      ((mood-line-segment-vc)                      . " ")
      ((mood-line-segment-checker)                 . " "))))
   (mood-line-segment-modal-meow-state-alist
-   '((normal "󰰓" . font-lock-variable-name-face)
-     (insert "󰰄" . font-lock-string-face)
-     (keypad "󰰊" . font-lock-keyword-face)
-     (beacon "󰯯" . font-lock-type-face)
-     (motion "󰰐" . font-lock-constant-face)))
+   `((normal ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-variable-name-face)
+     (insert ,(nerd-icons-mdicon "nf-md-alpha_i_circle") . font-lock-string-face)
+     (keypad ,(nerd-icons-mdicon "nf-md-alpha_k_circle") . font-lock-keyword-face)
+     (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
+     (motion ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-constant-face)))
   :hook
   (after-init . mood-line-mode))
 
@@ -295,7 +295,7 @@
   (tab-line-tab-name-function #'my/tab-line-tab-name-function)
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
-                            doc-view-mode imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                            imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
                             dired-mode dirvish-directory-view-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
