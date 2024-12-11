@@ -3401,16 +3401,16 @@ Structured Editing and Navigation in Emacs.
     (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
     :bind
     (:map combobulate-key-map
-          ("S-<down>"  . combobulate-navigate-down-list-maybe)
           ("S-<left>"  . combobulate-navigate-previous)
           ("S-<right>" . combobulate-navigate-next)
+          ("S-<down>"  . combobulate-navigate-down)
+          ("S-<up>"    . combobulate-navigate-up)
           ("M-<left>"  . combobulate-navigate-logical-previous)
           ("M-<right>" . combobulate-navigate-logical-next)
-          ("S-<up>"    . combobulate-navigate-up-list-maybe)
           ("M-<down>"  . combobulate-drag-down)
           ("M-<up>"    . combobulate-drag-up))
     :hook
-    (prog-mode . combobulate-mode))
+    ((prog-mode yaml-ts-mode) . combobulate-mode))
 #+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 Debug Adapter Protocol for Emacs.
