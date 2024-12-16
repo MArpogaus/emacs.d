@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -59,9 +59,11 @@
   ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
   (auto-tab-groups-create-commands
    '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+     ((custom-buffer-create) . "Customize")
      ((dirvish dirvish-fd) . "dirvish")))
   (auto-tab-groups-close-commands
-   '((dirvish-quit "dirvish" :ignore-result t)))
+   '((dirvish-quit "dirvish" :ignore-result t)
+     (Custom-buffer-done "Customize" :ignore-result t)))
   ;; Enable modern tabs style
   (auto-tab-groups-eyecandy-mode t)
   ;; height of tabs
@@ -71,6 +73,7 @@
    '(("HOME"       . "")
      ("dirvish"    . "")
      ("denote"     . "󱓩")
+     ("Customize"  . "")
      ("^\\[P\\] *" . "")
      ("^\\[T\\] *" . "")))
   (auto-tab-groups-eyecandy-tab-bar-group-name-format-function

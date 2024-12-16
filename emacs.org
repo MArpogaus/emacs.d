@@ -466,7 +466,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (frame-resize-pixelwise t)                           ; Resize frame pixelwise
     (windmove-mode nil)                                  ; Diasble windmove mode
     (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
-    
+    (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+
     ;; Enable window dividers
     (window-divider-default-bottom-width 1)
     (window-divider-default-places t)
@@ -3179,9 +3180,11 @@ Tab group based workflow isolation.
     ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
     (auto-tab-groups-create-commands
      '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+       ((custom-buffer-create) . "Customize")
        ((dirvish dirvish-fd) . "dirvish")))
     (auto-tab-groups-close-commands
-     '((dirvish-quit "dirvish" :ignore-result t)))
+     '((dirvish-quit "dirvish" :ignore-result t)
+       (Custom-buffer-done "Customize" :ignore-result t)))
     ;; Enable modern tabs style
     (auto-tab-groups-eyecandy-mode t)
     ;; height of tabs
@@ -3191,6 +3194,7 @@ Tab group based workflow isolation.
      '(("HOME"       . "")
        ("dirvish"    . "")
        ("denote"     . "󱓩")
+       ("Customize"  . "")
        ("^\\[P\\] *" . "")
        ("^\\[T\\] *" . "")))
     (auto-tab-groups-eyecandy-tab-bar-group-name-format-function

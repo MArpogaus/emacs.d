@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -153,7 +153,8 @@
   (frame-resize-pixelwise t)                           ; Resize frame pixelwise
   (windmove-mode nil)                                  ; Diasble windmove mode
   (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
-  
+  (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+
   ;; Enable window dividers
   (window-divider-default-bottom-width 1)
   (window-divider-default-places t)
