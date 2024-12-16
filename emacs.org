@@ -2280,6 +2280,7 @@ It is a bit slow to load so we do need load it explicitely.
   (use-package ispell
     :straight nil
     :after flyspell
+    :if (executable-find "hunspell")
     :custom
     (ispell-program-name "hunspell")
     (ispell-dictionary "en_US,de_DE")
