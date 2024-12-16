@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-16
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -237,6 +237,7 @@
 (use-package ispell
   :straight nil
   :after flyspell
+  :if (executable-find "hunspell")
   :custom
   (ispell-program-name "hunspell")
   (ispell-dictionary "en_US,de_DE")
