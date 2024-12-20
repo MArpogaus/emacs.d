@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-16
+;; Created: 2024-12-20
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -59,23 +59,22 @@
   ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
   (auto-tab-groups-create-commands
    '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
-     ((custom-buffer-create) . "Customize")
+     ((custom-buffer-create-internal) . "customize")
      ((dirvish dirvish-fd) . "dirvish")))
   (auto-tab-groups-close-commands
    '((dirvish-quit "dirvish" :ignore-result t)
-     (Custom-buffer-done "Customize" :ignore-result t)))
-  ;; Enable modern tabs style
-  (auto-tab-groups-eyecandy-mode t)
+     (Custom-buffer-done "customize" :ignore-result t)))
   ;; height of tabs
   (auto-tab-groups-eyecandy-tab-height my/modeline-height)
   ;; Assign Icons to tab groups
   (auto-tab-groups-eyecandy-icons
-   '(("HOME"       . "")
-     ("dirvish"    . "")
-     ("denote"     . "󱓩")
-     ("Customize"  . "")
-     ("^\\[P\\] *" . "")
-     ("^\\[T\\] *" . "")))
+   '(("HOME"       . (:style "suc" :icon "custom-emacs"))
+     ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
+     ("denote"     . (:style "md"  :icon "notebook_edit"))
+     ("customize"  . (:style "cod" :icon "settings"))
+     ("^\\[P\\] *" . (:style "oct" :icon "repo"))
+     ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
+  ;; Remove prefix from project groups
   (auto-tab-groups-eyecandy-tab-bar-group-name-format-function
    (lambda (tab-group-name)
      (if (string-match "^\\[.\\] *" tab-group-name)
@@ -85,9 +84,14 @@
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
   :init
+  ;; automatically assign projects to groups
   (auto-tab-groups-project-mode)
+  ;; Enable modern tabs style
+  (auto-tab-groups-eyecandy-mode)
+  ;; Enable automatic tab group management based on the rules defined above
   (auto-tab-groups-mode)
   :hook
+  ;; HACK: Re-nable eyecandy mode after tab-bar-mode has been disabled
   (tab-bar-mode . auto-tab-groups-eyecandy-mode))
 
 ;; speedbar :build_in:

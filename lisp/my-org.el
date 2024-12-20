@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-20
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -137,6 +137,7 @@
 
   (org-babel-load-languages '((emacs-lisp . t)
                               (python . t)
+                              (latex . t)
                               (shell . t)))
   (org-export-backends '(md beamer odt latex icalendar html ascii))
   (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
