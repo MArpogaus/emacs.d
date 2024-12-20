@@ -822,6 +822,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 
     (org-babel-load-languages '((emacs-lisp . t)
                                 (python . t)
+                                (latex . t)
                                 (shell . t)))
     (org-export-backends '(md beamer odt latex icalendar html ascii))
     (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
