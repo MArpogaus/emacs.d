@@ -2896,8 +2896,8 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
            ("M-*" . tempel-insert)
            :map tempel-map
-           ("<tab>" . tempel-next)
-           ("<backtab>" . tempel-previous))
+           ("C-SPC" . tempel-next)
+           ("S-C-SPC" . tempel-previous))
 
     :preface
     ;; Setup completion at point
