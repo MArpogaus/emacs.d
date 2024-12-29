@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -83,6 +83,13 @@
     (define-key map (kbd "TAB") (code-cells-speed-key 'outline-cycle)))
   :bind
   (:map code-cells-mode-map
+        ("M-S-<down>"   . outline-move-subtree-down)
+        ("M-S-<right>"  . outline-demote)
+        ("M-S-<left>"   . outline-promote)
+        ("M-S-<up>"     . outline-move-subtree-up)
+        ("M-<return>"   . outline-insert-heading)
+        ("C-S-<tab>"    . outline-cycle-buffer)
+        ("C-<backtab>"  . outline-cycle-buffer)
         ("C-S-<return>" . my/code-cells-eval))
   :hook
   (python-base-mode . code-cells-mode-maybe))

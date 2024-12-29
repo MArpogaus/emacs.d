@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -182,20 +182,12 @@ buffer's text scale."
   (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
   (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
   :bind
-  (:map outline-minor-mode-map
-        ("M-S-<down>"  . outline-move-subtree-down)
-        ("M-S-<right>"  . outline-demote)
-        ("M-S-<left>" . outline-promote)
-        ("M-S-<up>"    . outline-move-subtree-up)
-        ("M-<return>"  . outline-insert-heading)
-        ("C-S-<tab>"   . outline-cycle-buffer)
-        ("C-<backtab>" . outline-cycle-buffer)
-        :repeat-map my/outline-repeat-map
-        ("SPC"         . outline-mark-subtree)
-        ("TAB"         . outline-cycle)
-        ("S-<tab>"     . outline-cycle-buffer)
-        ("<backtab>"   . outline-cycle-buffer)
-        ("a"           . outline-show-all))
+  (:repeat-map my/outline-repeat-map
+               ("SPC"         . outline-mark-subtree)
+               ("TAB"         . outline-cycle)
+               ("S-<tab>"     . outline-cycle-buffer)
+               ("<backtab>"   . outline-cycle-buffer)
+               ("a"           . outline-show-all))
   :hook
   (((text-mode prog-mode conf-mode) . outline-minor-mode)
    (outline-minor-mode . my/outline-mode-hook)))
