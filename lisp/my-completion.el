@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2024 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2024-12-29
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -489,8 +489,8 @@ the completing-read prompter."
   :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
          ("M-*" . tempel-insert)
          :map tempel-map
-         ("<tab>" . tempel-next)
-         ("<backtab>" . tempel-previous))
+         ("C-SPC" . tempel-next)
+         ("S-C-SPC" . tempel-previous))
 
   :preface
   ;; Setup completion at point
