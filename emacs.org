@@ -1743,20 +1743,12 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
     (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
     (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
     :bind
-    (:map outline-minor-mode-map
-          ("M-S-<down>"  . outline-move-subtree-down)
-          ("M-S-<right>"  . outline-demote)
-          ("M-S-<left>" . outline-promote)
-          ("M-S-<up>"    . outline-move-subtree-up)
-          ("M-<return>"  . outline-insert-heading)
-          ("C-S-<tab>"   . outline-cycle-buffer)
-          ("C-<backtab>" . outline-cycle-buffer)
-          :repeat-map my/outline-repeat-map
-          ("SPC"         . outline-mark-subtree)
-          ("TAB"         . outline-cycle)
-          ("S-<tab>"     . outline-cycle-buffer)
-          ("<backtab>"   . outline-cycle-buffer)
-          ("a"           . outline-show-all))
+    (:repeat-map my/outline-repeat-map
+                 ("SPC"         . outline-mark-subtree)
+                 ("TAB"         . outline-cycle)
+                 ("S-<tab>"     . outline-cycle-buffer)
+                 ("<backtab>"   . outline-cycle-buffer)
+                 ("a"           . outline-show-all))
     :hook
     (((text-mode prog-mode conf-mode) . outline-minor-mode)
      (outline-minor-mode . my/outline-mode-hook)))
@@ -3395,6 +3387,13 @@ Emacs utilities for code split into cells, including Jupyter notebooks.
       (define-key map (kbd "TAB") (code-cells-speed-key 'outline-cycle)))
     :bind
     (:map code-cells-mode-map
+          ("M-S-<down>"   . outline-move-subtree-down)
+          ("M-S-<right>"  . outline-demote)
+          ("M-S-<left>"   . outline-promote)
+          ("M-S-<up>"     . outline-move-subtree-up)
+          ("M-<return>"   . outline-insert-heading)
+          ("C-S-<tab>"    . outline-cycle-buffer)
+          ("C-<backtab>"  . outline-cycle-buffer)
           ("C-S-<return>" . my/code-cells-eval))
     :hook
     (python-base-mode . code-cells-mode-maybe))
