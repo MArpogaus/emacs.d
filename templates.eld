@@ -92,7 +92,7 @@ org-mode
  "** License" n n
  "Distributed under the [[file:LICENSE][" (p "TODO: License") "]]" n n
  "** Contact" n n
- "[[https://" forge "." domain "/" user "/][" user-full-name "]] - [[mailto:" user-mail-address "][" user-mail-address "]] (encrypted with [ROT13](https://rot13.com/))" n n
+ "[[https://" forge "." domain "/" user "/][" user-full-name "]] - [[mailto:" user-mail-address "][" user-mail-address "]] (encrypted with [[(https://rot13.com/)][ROT13]])" n n
  "Project Link:" n
  "[[https://" forge "." domain "/" user "/" repo"]]" n n
  "** Acknowledgments" n n "..."
