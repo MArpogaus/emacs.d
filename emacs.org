@@ -2066,8 +2066,6 @@ Simple note taking and file naming.
     (delete-by-moving-to-trash t)
     (dired-listing-switches
      "-l --almost-all --human-readable --group-directories-first --no-group")
-    ;; kill all session buffers on quit
-    (dirvish-reuse-session nil)
     ;; Enable mouse drag-and-drop support
     (dired-mouse-drag-files t)                   ; added in Emacs 29
     (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
@@ -2113,11 +2111,13 @@ A polished Dired with batteries included.
                               (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
     ;; (dirvish-use-header-line nil)
     ;; (dirvish-use-mode-line nil)
+    ;; kill all session buffers on quit
+    (dirvish-reuse-session nil)
     (dirvish-mode-line-height my/modeline-height)
     (dirvish-header-line-height my/modeline-height)
     :preface
     (defun my/dirvish-side-hide-buffer (&rest app)
-      "make dirvish-side buffer 'uninteresting' for buffer related commands"
+      "make dirvish-side buffer `uninteresting' for buffer related commands"
       (apply app)
       (with-selected-window (dirvish-side--session-visible-p)
         (rename-buffer (concat " " (buffer-name)))))
