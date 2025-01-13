@@ -418,19 +418,14 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (mouse-yank-at-point t)                              ; Yank at point rather than pointer
     (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
 
-    ;; Scroll
-    ;; Smoother scrolling.
-    (auto-window-vscroll nil)                            ; Disable automatic adjusting of =window-vscroll=
-    (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified region
-    (hscroll-margin 1)                                   ; Reduce margin triggering automatic horizontal scrolling
-    (hscroll-step 1)                                     ; Slower horizontal scrolling
-    (mouse-wheel-scroll-amount '(1 ((shift) . hscroll))) ; Reduce vertical scroll speed
-    (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
+    ;; Smoother scrolling
+    (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
+    (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
+    (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
+    (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
     (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
     (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
     (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
-    (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
-    (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
 
     ;; Cursor
     ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
@@ -455,7 +450,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
 
     ;; Performance
     ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
-    (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
     (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
     (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
 
