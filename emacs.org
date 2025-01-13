@@ -3425,7 +3425,7 @@ Debug Adapter Protocol for Emacs.
     ;; To use window configuration like gud (gdb-mi)
     ;; (setq dape-buffer-window-arrangement 'gud)
     :bind
-    (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
+    (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
      :repeat-map my/debug-map
      ("d" . dape)
      ("p" . dape-pause)
@@ -3466,15 +3466,13 @@ Debug Adapter Protocol for Emacs.
 
     ;; Projectile users
     ;; (setq dape-cwd-fn 'projectile-project-root)
-
-    ;; Set breakpints via fringe or margin mouse clicks
-    (dape-breakpoint-global-mode t)
     :hook
     ;; Kill compile buffer on build success
     ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
-
-    ;; Save buffers on startup, useful for interpreted languages
-    (dape-on-start-hooks . (lambda () (save-some-buffers t t))))
+    ;; Set breakpints via fringe or margin mouse clicks
+    ((prog-mode . dape-breakpoint-global-mode)
+     ;; Save buffers on startup, useful for interpreted languages
+     (dape-on-start-hooks . (lambda () (save-some-buffers t t)))))
 #+end_src
 **** [[https://github.com/spotify/dockerfile-mode.git][docker]]
 An emacs mode for handling Dockerfiles.
@@ -3721,6 +3719,9 @@ Code-folding using =treesit.el=.
 #+begin_src emacs-lisp
   (use-package treesit-fold
     :straight (:host github :repo "emacs-tree-sitter/treesit-fold")
+    :custom
+    ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
+    (treesit-fold-indicators-priority -1)
     :preface
     (defun my/treesit-fold-mode-hook ()
       (keymap-local-set "<backtab>" 'treesit-fold-toggle))
