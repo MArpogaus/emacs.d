@@ -2344,17 +2344,16 @@ remote file editing through ssh/scp.
   (use-package tramp
     :straight nil
     :custom
-    (tramp-default-method "ssh")
-    (tramp-encoding-shell "/usr/bin/zsh")
-    (remote-file-name-inhibit-cache nil)
-    (vc-ignore-dir-regexp
-     (format "%s\\|%s"
-             vc-ignore-dir-regexp
-             tramp-file-name-regexp))
-    :config
-    (add-to-list 'tramp-connection-properties
-                 (list (regexp-quote "/sshx:user@host:")
-                       "remote-shell" "/bin/bash")))
+    (tramp-verbose 0)
+    :init
+    ;; Enable full-featured Dirvish over TRAMP on certain connections
+    ;; https://www.gnu.org/software/tramp/#Improving-performance-of-asynchronous-remote-processes-1.
+    (connection-local-set-profile-variables
+     'remote-direct-async-process
+     '((tramp-direct-async-process . t)))
+    (connection-local-set-profiles
+     '(:application tramp :protocol "ssh")
+     'remote-direct-async-process))
 #+end_src
 **** [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 Emacs libvterm integration.
