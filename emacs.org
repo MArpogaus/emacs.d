@@ -1766,10 +1766,16 @@ Paren mode for highlighting matcing paranthesis
 **** [[https://github.com/karthink/popper.git][popper]]
 #+begin_src emacs-lisp
   (use-package popper
-    :bind
-    (:map my/toggle-map
-          ("p" . popper-toggle)
-          ("P" . popper-toggle-type))
+    :preface
+    (defun my/popper-toggle-advice (&rest _)
+      (with-current-buffer (current-buffer)
+        (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
+    (defun my/popper-open-popup ()
+      (tab-line-mode -1))
+    (defun my/popper-display-function (buffer &optional alist)
+      (popper-select-popup-at-bottom buffer alist)
+      (with-current-buffer buffer
+        (tab-line-mode -1)))
     :custom
     ;; Define popup buffers
     (popper-reference-buffers
@@ -1788,22 +1794,19 @@ Paren mode for highlighting matcing paranthesis
        ))
     ;; grouping popups by project
     (popper-mode-line nil)
-    :preface
-    (defun my/popper-toggle-advice (&rest _)
-      (with-current-buffer (current-buffer)
-        (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
-    (defun my/popper-display-function (buffer &optional alist)
-      (popper-select-popup-at-bottom buffer alist)
-      (with-current-buffer buffer
-        (tab-line-mode -1)))
+    (popper-display-function #'my/popper-display-function)
     :config
     (with-eval-after-load 'project
       (setq popper-group-function #'popper-group-by-project))
-    (setq popper-display-function #'my/popper-display-function)
     (advice-add #'popper-toggle-type :after #'my/popper-toggle-advice)    
+    :bind
+    (:map my/toggle-map
+          ("p" . popper-toggle)
+          ("P" . popper-toggle-type))
     :hook
     ((after-init . popper-mode)
-     (after-init . popper-echo-mode)))
+     (after-init . popper-echo-mode)
+     (popper-open-popup . my/popper-open-popup)))
 #+end_src
 **** recentf :build_in:
 
