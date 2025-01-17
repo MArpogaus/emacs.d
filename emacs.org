@@ -463,9 +463,9 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (custom-buffer-done-kill t)                          ; Kill custom buffer when done
 
     ;; Enable window dividers
-    (window-divider-default-bottom-width 1)
+    (window-divider-default-bottom-width 2)
+    (window-divider-default-right-width 2)
     (window-divider-default-places t)
-    (window-divider-default-right-width 1)
     (window-divider-mode t)
     :preface
     ;; History
