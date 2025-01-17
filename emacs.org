@@ -1196,10 +1196,13 @@ Enable line numbers for some modes
 #+begin_src emacs-lisp
   (use-package display-line-numbers
     :straight nil
+    :custom
+    ;; Count total number of line on startup for correct width
+    (display-line-numbers-width-start t)
     :hook
     (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
      ;; disable for org mode
-     (org-mode . (lambda () (display-line-numbers-mode 0)))))
+     (org-mode . (lambda () (display-line-numbers-mode -1)))))
 #+end_src
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
