@@ -3738,13 +3738,11 @@ Code-folding using =treesit.el=.
     :custom
     ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
     (treesit-fold-indicators-priority -1)
-    :preface
-    (defun my/treesit-fold-mode-hook ()
-      (keymap-local-set "<backtab>" 'treesit-fold-toggle))
+    :bind
+    (:map treesit-fold-mode-map
+          ("<backtab>" . treesit-fold-toggle))
     :hook
-    (((yaml-ts-mode python-ts-mode) . treesit-fold-mode)
-     (treesit-fold-mode . treesit-fold-indicators-mode)
-     (treesit-fold-mode . my/treesit-fold-mode-hook)))
+    (((yaml-ts-mode python-ts-mode) . treesit-fold-indicators-mode)))
 #+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 The emacs major mode for editing files in the YAML data serialization format.
