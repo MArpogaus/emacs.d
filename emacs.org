@@ -2383,15 +2383,25 @@ Emacs libvterm integration.
         (if (and vterm-buffer (not current-prefix-arg))
             (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
           (vterm))))
+    ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
+    (defun my/vterm--get-shell-adv (vterm-shell)
+      "Quote VTERM-SHELL if it's a remote shell."
+      (if (and (ignore-errors (file-remote-p default-directory))
+               (not (string-match-p "'.*'" vterm-shell)))
+          (format "'%s'" vterm-shell)
+        vterm-shell))
     :init
     (with-eval-after-load 'project
       (add-to-list 'project-switch-commands '(my/project-vterm "Vterm") t)
       (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode)))
+    (advice-add #'vterm--get-shell :filter-return #'my/vterm--get-shell-adv)
     :custom
     (vterm-copy-exclude-prompt t)
     (vterm-max-scrollback 100000)
-    (vterm-tramp-shells '(("ssh" "/bin/bash")
-                          ("podman" "/bin/bash"))))
+    (vterm-shell "zsh")
+    (vterm-tramp-shells '(("ssh" "zsh")
+                          ("docker" "sh")
+                          ("podman" "sh"))))
 #+end_src
 **** [[https://github.com/emacs-straight/vundo.git][vundo]]
 Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.
