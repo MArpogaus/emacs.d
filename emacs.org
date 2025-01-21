@@ -388,14 +388,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (inhibit-startup-screen t)                           ; Disable start-up screen
     (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
 
-    ;; Encoding
-    ;; We tell emacs to use UTF-8 encoding as much as possible.
-    (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
-    (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
-    (set-terminal-coding-system 'utf-8)                  ; Set coding system of terminal output
-    (set-keyboard-coding-system 'utf-8)                  ; Set coding system for keyboard input on TERMINAL
-    (set-language-environment "English")                 ; Set up multilingual environment
-
     ;; Recovery
     ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
     (auto-save-default t)                                ; Auto-save every buffer that visits a file
@@ -478,6 +470,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :config
     ;; Load customization File
     (load custom-file 'noerror 'nomessage)
+    ;; We tell emacs to use UTF-8 encoding as much as possible.
+    (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
+    (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
+    (set-terminal-coding-system 'utf-8)                  ; Set coding system of terminal output
+    (set-keyboard-coding-system 'utf-8)                  ; Set coding system for keyboard input on TERMINAL
+    (set-language-environment "English")                 ; Set up multilingual environment
     :hook
     ;; Enable word wrapping
     (((prog-mode conf-mode text-mode) . visual-line-mode)
@@ -657,6 +655,10 @@ Package specific keymap definitions are kept in preface of the respective packag
      ("s" . scratch-buffer)
      :map my/toggle-map
      ("M" . my/minimal-ui-mode)
+     :map global-map
+     ("M-o" . other-window-prefix)
+     ("M-t" . other-tab-prefix)
+     ("M-f" . other-frame-prefix)
      :repeat-map my/window-map
      ("n" . next-window-any-frame)
      ("p" . previous-window-any-frame)
