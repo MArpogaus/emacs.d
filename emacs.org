@@ -1969,6 +1969,13 @@ Simple note taking and file naming.
        (plain . nil)))
     :preface
     (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+    (defun my/kill-denote-buffers ()
+      "Kill all denote buffers."
+      (interactive)
+      (dolist (buf (buffer-list))
+        (when (or (string-prefix-p "[D]" (buffer-name buf))
+                  (string-prefix-p "*Denote" (buffer-name buf)))
+          (kill-buffer buf))))
     :init
     (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
     :bind
@@ -1981,9 +1988,7 @@ Simple note taking and file naming.
           ("i" . denote-link)
           ("I" . denote-add-links)
           ("b" . denote-backlinks)
-          ;; :map org-mode-map
-          ;; ("l" . denote-org-extras-dblock-insert-links)
-          ;; ("b" . denote-org-extras-dblock-insert-links)
+          ("k" . my/kill-denote-buffers)
           :map dired-mode-map
           ("i" . denote-link-dired-marked-notes)
           ("r" . denote-dired-rename-marked-files)
@@ -3187,10 +3192,11 @@ Tab group based workflow isolation.
     ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
     (auto-tab-groups-create-commands
      '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
-       ((custom-buffer-create-internal) . "customize")
+       ((custom-buffer-create custom-buffer-create-other-window) . "customize")
        ((dirvish dirvish-fd) . "dirvish")))
     (auto-tab-groups-close-commands
      '((dirvish-quit "dirvish" :ignore-result t)
+       (my/kill-denote-buffers "denote" :ignore-result t)
        (Custom-buffer-done "customize" :ignore-result t)))
     ;; height of tabs
     (auto-tab-groups-eyecandy-tab-height my/modeline-height)
@@ -3219,7 +3225,7 @@ Tab group based workflow isolation.
     ;; Enable automatic tab group management based on the rules defined above
     (auto-tab-groups-mode)
     :hook
-    ;; HACK: Re-nable eyecandy mode after tab-bar-mode has been disabled
+    ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
     (tab-bar-mode . auto-tab-groups-eyecandy-mode))
 #+end_src
 **** speedbar :build_in:
