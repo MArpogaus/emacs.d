@@ -1574,6 +1574,42 @@ References:
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ux.el")>>
 #+end_src
+**** [[https://github.com/abo-abo/ace-window.git][ace-window]]
+Quickly switch windows in Emacs.
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :preface
+    ;; https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window
+    (defun my/ace-window-prefix ()
+      "Use `ace-window' to display the buffer of the next command.
+  The next buffer is the buffer displayed by the next command invoked
+  immediately after this command (ignoring reading from the minibuffer).
+  Creates a new window before displaying the buffer.
+  When `switch-to-buffer-obey-display-actions' is non-nil,
+  `switch-to-buffer' commands are also supported."
+      (interactive)
+      (display-buffer-override-next-command
+       (lambda (buffer _)
+         (let (window type)
+           (setq
+            window (aw-select (propertize " ACE" 'face 'mode-line-highlight))
+            type 'reuse)
+           (cons window type)))
+       nil "[ace-window]")
+      (message "Use `ace-window' to display next command buffer..."))
+    :custom
+    (aw-dispatch-always t)
+    (aw-minibuffer-flag nil)
+    ;; Make Emacs ask where to place a new buffer
+    (display-buffer-base-action '((display-buffer-reuse-window
+                                   ace-display-buffer)))
+    :config
+    ;; Ignore the inibuffer
+    (add-to-list 'aw-ignored-buffers 'minibuffer-mode)
+    :bind
+    (("M-O" . ace-window)
+     ("M-o" . my/ace-window-prefix)))
+#+end_src
 **** [[https://github.com/emacscollective/auto-compile.git][auto-compile]]
 Automatically compile outdated Emacs Lisp libraries.
 #+begin_src emacs-lisp
@@ -1788,11 +1824,12 @@ Paren mode for highlighting matcing paranthesis
        help-mode
        helpful-mode
        compilation-mode
-       "^\\*.*eshell.*\\*$" eshell-mode ;eshell as a popup
-       "^\\*.*shell.*\\*$"  shell-mode  ;shell as a popup
-       "^\\*.*term.*\\*$"   term-mode   ;term as a popup
-       "^\\*.*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+       "^\\*.*eshell.*\\*$" eshell-mode ; eshell as a popup
+       "^\\*.*shell.*\\*$"  shell-mode  ; shell as a popup
+       "^\\*.*term.*\\*$"   term-mode   ; term as a popup
+       "^\\*.*vterm.*\\*$"  vterm-mode  ; vterm as a popup
        "^\\*Flymake diagnostics for .*\\*" flymake-diagnostics-buffer-mode
+       "\\*diff-hl\\*" ; diff shown wehn reverting hunks with diff-hl
        ))
     ;; grouping popups by project
     (popper-mode-line nil)
@@ -2835,25 +2872,20 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
     ;; strategy, if you want to see the documentation from multiple providers.
     (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-    ;; Hide the mode line of the Embark live/completions buffers
-    (add-to-list 'display-buffer-alist
-                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                   nil
-                   (window-parameters (mode-line-format . none))))
 
     (setq embark-indicators
           '(embark-which-key-indicator
             embark-highlight-indicator
             embark-isearch-highlight-indicator))
 
-
     (advice-add #'embark-completing-read-prompter
                 :around #'embark-hide-which-key-indicator))
-
-  ;; Consult users will also want the embark-consult package.
+#+end_src
+**** [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
+Consult users will also want the embark-consult package.
+#+begin_src emacs-lisp
   (use-package embark-consult
+    :after embark
     :hook
     (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
