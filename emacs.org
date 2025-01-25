@@ -444,6 +444,8 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
     (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
     (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
+    (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
+
 
     ;; Miscellaneous
     (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
@@ -2401,16 +2403,23 @@ remote file editing through ssh/scp.
     (tramp-verbose 0)
     (tramp-otp-password-prompt-regexp
      (rx bol (* nonl)
-         ;; JumpCloud.
          (group (| "Verification code" "OTP"))
          (* nonl) (any ":：៖") (* blank)))
     (tramp-histfile-override nil)
+    (tramp-default-method "ssh")
     :config
     ;; ;; Enable full-featured Dirvish over TRAMP on certain connections
-    ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-asynchronous-remote-processes-1.
+    ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-async;; hronous-remote-processes-1.
     (add-to-list 'tramp-connection-properties
                  (list (regexp-quote "/ssh:")
-                       "direct-async-process" t)))
+                       "direct-async-process" t))
+    ;; (connection-local-set-profile-variables
+    ;;  'remote-direct-async-process
+    ;;  '((tramp-direct-async-process . t)))
+    ;; (connection-local-set-profiles
+    ;;  '(:application tramp :protocol "ssh")
+    ;;  'remote-direct-async-process)
+    )
 #+end_src
 **** [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 Emacs libvterm integration.
