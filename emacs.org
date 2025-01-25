@@ -1746,6 +1746,19 @@ Sidebar showing a "mini-map" of a buffer.
     (:map my/toggle-map
           ("m" . minimap-mode)))
 #+end_src
+**** [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
+Prevent windows from jumping on minibuffer activation.
+#+begin_src emacs-lisp
+  (use-package mini-ontop
+    :straight (:host github :repo "hkjels/mini-ontop.el")
+    :custom
+    (mini-ontop-lines 22)
+    :config
+    (with-eval-after-load 'embark
+      (add-to-list 'mini-ontop-ignore-predicates (lambda nil (eq this-command #'embark-act))))
+    :hook
+    (after-init . mini-ontop-mode))
+#+end_src
 **** [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
 #+begin_src emacs-lisp
   (use-package multiple-cursors
@@ -3582,6 +3595,7 @@ A client for Language Server Protocol servers.
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
     (completion-category-defaults nil)
+    (eglot-send-changes-idle-time 0.1)
     :preface
     (defun my/eglot-capf ()
       (setq-local completion-at-point-functions
@@ -3600,10 +3614,11 @@ A client for Language Server Protocol servers.
           ("k" . eglot-shutdown)
           ("o" . eglot-code-action-organize-imports)
           ("q" . eglot-code-action-quickfix)
-          ("r". eglot-rename))
+          ("r" . eglot-rename))
     :config
     ;; Continuously update the candidates using cape cache buster
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+    (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
     :hook
     ((python-base-mode . eglot-ensure)
      (eglot-managed-mode . my/eglot-capf)))
