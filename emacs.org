@@ -3611,14 +3611,31 @@ Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]]
 Configure emacs documentation support.
 #+begin_src emacs-lisp
   (use-package eldoc
+    :after eglot
     :custom
     (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+    :bind
+    (:map my/lsp-map
+          ("d" . eldoc-doc-buffer))
     :config
     (add-to-list 'display-buffer-alist
                  '("^\\*eldoc for" display-buffer-at-bottom
                    (window-height . 4)))
     (eldoc-add-command-completions "paredit-")
     (eldoc-add-command-completions "combobulate-"))
+#+end_src
+**** [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
+Childframe doc for eglot and anything that uses eldoc.
+#+begin_src emacs-lisp
+  (use-package eldoc-box
+    :after eglot
+    :bind
+    (:map my/lsp-map
+          ("D" . eldoc-box-hover-at-point-mode))
+    :config
+    (with-eval-after-load 'pixel-scroll
+      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
+      (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 #+end_src
 **** [[https://github.com/purcell/envrc.git][envrc]]
 Emacs support for direnv which operates buffer-locally.
