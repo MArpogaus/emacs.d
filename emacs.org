@@ -1954,6 +1954,15 @@ Automatically update file timestamps when file is saved
     :hook
     (before-save . time-stamp))
 #+end_src
+**** [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
+Writable grep buffer and apply the changes to files.
+#+begin_src emacs-lisp
+  (use-package wgrep
+    :after grep
+    :demand t
+    :custom
+    (wgrep-auto-save-buffer t))
+#+end_src
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
 #+begin_src emacs-lisp
