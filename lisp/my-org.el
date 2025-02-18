@@ -1,8 +1,8 @@
-;;; my-org.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-org.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-20
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -185,7 +185,7 @@
                 (my/gtd-save-org-buffers))))
 
 (use-package ox-latex
-  :straight nil
+  :ensure nil
   :after org
   :config
   ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
@@ -211,14 +211,14 @@
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
 (use-package ox-beamer
-  :straight nil
+  :ensure nil
   :after org
   :config
   (add-to-list 'org-beamer-environments-extra
                '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 
 (use-package ox-extra
-  :straight nil
+  :ensure nil
   :after org
   :config
   (ox-extras-activate '(ignore-headlines)))
@@ -283,7 +283,7 @@
 ;; Modern block styling with org-indent.
 
 (use-package org-modern-indent
-  :straight (:host github :repo "jdtsmith/org-modern-indent")
+  :ensure (:host github :repo "jdtsmith/org-modern-indent")
   :hook
   (org-indent-mode . org-modern-indent-mode))
 
@@ -446,7 +446,7 @@
 ;; [[https://github.com/karthink/org-preview.git][org-preview]]
 
 (use-package org-preview
-  :straight (:host github :repo "karthink/org-preview")
+  :ensure (:host github :repo "karthink/org-preview")
   :hook
   (org-mode . org-preview-mode))
 

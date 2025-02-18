@@ -1,8 +1,8 @@
-;;; init.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; init.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-16
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,24 +14,11 @@
 
 ;;; Code:
 
-;; Configure Straight
-;; Lets install and configure =use-package= and use =straight= as the underlying package manager.
-;; We also load =bind-key= here which is used by =use-package= for keybindings.
+;; Configure use-package
 
-
-(when (< emacs-major-version 29)
-  (straight-use-package 'use-package)
-  (use-package bind-key))
-
-;; HACK: https://github.com/radian-software/straight.el/issues/1146
-(setq straight-built-in-pseudo-packages '(emacs nadvice python image-mode project flymake xref))
-
-;; cache the autoloads of all used packages in a single file
-(setq straight-cache-autoloads t)
-
-;; Enable straight use-package integration
-(setq straight-use-package-by-default t
-      use-package-always-defer t)
+;; Enable lazy loading per default
+(setq use-package-always-defer t
+      use-package-always-ensure t)
 
 ;; make use-package more verbose when ´‘--debug-init´ is passed
 ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
@@ -46,6 +33,21 @@
         native-comp-warning-on-missing-source t
         debug-on-error t))
 
+;; Configure Elpaca
+
+;; Use elpaca lockfile
+(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+
+;; Install never version of transient and jsonrpc
+(setq elpaca-ignored-dependencies
+      (seq-remove (lambda (x) (memq x '(transient jsonrpc)))
+                  elpaca-ignored-dependencies))
+
+;; Enable use-package integration
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
+
 ;; no-littering
 ;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 
@@ -59,12 +61,14 @@
         user-emacs-directory (expand-file-name "~/.cache/emacs/"))
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
-  (no-littering-theme-backups))
+  (no-littering-theme-backups)
+  ;; Load customization File
+  (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 
 ;; Better Defaults
 
 (use-package emacs
-  :straight nil
+  :ensure nil
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -74,14 +78,6 @@
   (inhibit-startup-message t)                          ; Disable startup message
   (inhibit-startup-screen t)                           ; Disable start-up screen
   (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
-
-  ;; Encoding
-  ;; We tell emacs to use UTF-8 encoding as much as possible.
-  (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
-  (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
-  (set-terminal-coding-system 'utf-8)                  ; Set coding system of terminal output
-  (set-keyboard-coding-system 'utf-8)                  ; Set coding system for keyboard input on TERMINAL
-  (set-language-environment "English")                 ; Set up multilingual environment
 
   ;; Recovery
   ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
@@ -105,19 +101,14 @@
   (mouse-yank-at-point t)                              ; Yank at point rather than pointer
   (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
 
-  ;; Scroll
-  ;; Smoother scrolling.
-  (auto-window-vscroll nil)                            ; Disable automatic adjusting of =window-vscroll=
-  (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified region
-  (hscroll-margin 1)                                   ; Reduce margin triggering automatic horizontal scrolling
-  (hscroll-step 1)                                     ; Slower horizontal scrolling
-  (mouse-wheel-scroll-amount '(1 ((shift) . hscroll))) ; Reduce vertical scroll speed
-  (mouse-wheel-scroll-amount-horizontal 2)             ; Reduce horizontal scroll speed
+  ;; Smoother scrolling
+  (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
+  (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
+  (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
+  (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
   (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
-  (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
-  (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
 
   ;; Cursor
   ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
@@ -142,9 +133,10 @@
 
   ;; Performance
   ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
-  (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
   (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
   (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
+  (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
+
 
   ;; Miscellaneous
   (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
@@ -156,9 +148,9 @@
   (custom-buffer-done-kill t)                          ; Kill custom buffer when done
 
   ;; Enable window dividers
-  (window-divider-default-bottom-width 1)
+  (window-divider-default-bottom-width 2)
+  (window-divider-default-right-width 2)
   (window-divider-default-places t)
-  (window-divider-default-right-width 1)
   (window-divider-mode t)
   :preface
   ;; History
@@ -169,8 +161,12 @@
   (modify-all-frames-parameters '((width . 200)
                                   (height . 50)))
   :config
-  ;; Load customization File
-  (load custom-file 'noerror 'nomessage)
+  ;; We tell emacs to use UTF-8 encoding as much as possible.
+  (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
+  (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
+  (set-terminal-coding-system 'utf-8)                  ; Set coding system of terminal output
+  (set-keyboard-coding-system 'utf-8)                  ; Set coding system for keyboard input on TERMINAL
+  (set-language-environment "English")                 ; Set up multilingual environment
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode) . visual-line-mode)
@@ -180,10 +176,10 @@
    (kill-emacs . unpropertize-kill-ring)))
 
 ;; Custom Lisp Functions
-
 ;; In this section, I define some custom Lisp functions.
 
 (use-package emacs
+  :ensure nil
   :preface
   (defun my/backward-kill-thing ()
     "Delete sexp, symbol, word or whitespace backward depending on the context at point."
@@ -288,7 +284,7 @@ Refference: https://emacs.stackexchange.com/a/13432"
 
 ;; setup keymaps
 (use-package emacs
-  :straight nil
+  :ensure nil
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
   (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
@@ -350,6 +346,10 @@ Refference: https://emacs.stackexchange.com/a/13432"
    ("s" . scratch-buffer)
    :map my/toggle-map
    ("M" . my/minimal-ui-mode)
+   :map global-map
+   ("M-o" . other-window-prefix)
+   ("M-t" . other-tab-prefix)
+   ("M-f" . other-frame-prefix)
    :repeat-map my/window-map
    ("n" . next-window-any-frame)
    ("p" . previous-window-any-frame)

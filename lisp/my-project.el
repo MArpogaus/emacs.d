@@ -1,8 +1,8 @@
-;;; my-project.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-project.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-20
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -17,7 +17,7 @@
 ;; project :build_in:
 
 (use-package project
-  :straight nil
+  :ensure nil
   :autoload project-prefix-map
   :bind
   (:map my/leader-map
@@ -37,7 +37,7 @@
 ;; Enhancements to Emacs' built in project library.
 
 (use-package project-x
-  :straight (:host github :repo "karthink/project-x")
+  :ensure (:host github :repo "karthink/project-x")
   :after project
   :bind (:map project-prefix-map
               ("S" . project-x-window-state-save)
@@ -53,16 +53,17 @@
 ;; Tab group based workflow isolation.
 
 (use-package auto-tab-groups
-  :straight (:host github :repo "MArpogaus/auto-tab-groups")
+  :ensure (:host github :repo "MArpogaus/auto-tab-groups")
   :after tab-bar mood-line project nerd-icons
   :custom
   ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
   (auto-tab-groups-create-commands
    '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
-     ((custom-buffer-create-internal) . "customize")
+     ((custom-buffer-create custom-buffer-create-other-window) . "customize")
      ((dirvish dirvish-fd) . "dirvish")))
   (auto-tab-groups-close-commands
    '((dirvish-quit "dirvish" :ignore-result t)
+     (my/kill-denote-buffers "denote" :ignore-result t)
      (Custom-buffer-done "customize" :ignore-result t)))
   ;; height of tabs
   (auto-tab-groups-eyecandy-tab-height my/modeline-height)
@@ -91,13 +92,13 @@
   ;; Enable automatic tab group management based on the rules defined above
   (auto-tab-groups-mode)
   :hook
-  ;; HACK: Re-nable eyecandy mode after tab-bar-mode has been disabled
+  ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
   (tab-bar-mode . auto-tab-groups-eyecandy-mode))
 
 ;; speedbar :build_in:
 
 (use-package speedbar
-  :straight nil
+  :ensure nil
   :custom
   (speedbar-frame-parameters
    '((name . "speedbar")

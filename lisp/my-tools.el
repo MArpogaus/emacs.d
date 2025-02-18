@@ -1,8 +1,8 @@
-;;; my-tools.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-tools.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-16
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -17,7 +17,7 @@
 ;; dired :build_in:
 
 (use-package dired
-  :straight nil
+  :ensure nil
   :custom
   ;; inspired by doom
   ;; https://github.com/doomemacs/doomemacs/blob/c2818bcfaa5dc1a0139d1deff7d77bf42a08eede/modules/emacs/dired/config.el#L9C1-L25C36
@@ -35,8 +35,8 @@
   (delete-by-moving-to-trash t)
   (dired-listing-switches
    "-l --almost-all --human-readable --group-directories-first --no-group")
-  ;; kill all session buffers on quit
-  (dirvish-reuse-session nil)
+  (dired-find-subdir t) ; Reuse dired buffers if the directory is a sub directory
+  (dired-isearch-filenames t) ; limit search to filenames
   ;; Enable mouse drag-and-drop support
   (dired-mouse-drag-files t)                   ; added in Emacs 29
   (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
@@ -45,7 +45,7 @@
         ("d" . dired)))
 
 (use-package dired-x
-  :straight nil
+  :ensure nil
   :config
   ;; Make dired-omit-mode hide all "dotfiles"
   (setq dired-omit-files
@@ -82,11 +82,13 @@
                             (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
   ;; (dirvish-use-header-line nil)
   ;; (dirvish-use-mode-line nil)
+  ;; kill all session buffers on quit
+  (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
   :preface
   (defun my/dirvish-side-hide-buffer (&rest app)
-    "make dirvish-side buffer 'uninteresting' for buffer related commands"
+    "make dirvish-side buffer `uninteresting' for buffer related commands"
     (apply app)
     (with-selected-window (dirvish-side--session-visible-p)
       (rename-buffer (concat " " (buffer-name)))))
@@ -133,7 +135,7 @@
 
 
 (use-package ediff
-  :straight nil
+  :ensure nil
   :preface
   (defvar my-ediff-original-windows nil)
   (defun my/store-pre-ediff-winconfig ()
@@ -158,7 +160,11 @@
         ("f" . elfeed))
   :config
   (setq elfeed-feeds
-        (split-string (shell-command-to-string "for d in ~/.emacs.d/straight/repos/*; do git -C $d remote get-url origin; done | grep -P '(github)' | sed 's:\\.git:/releases.atom:'"))))
+        (split-string (shell-command-to-string
+                       (concat "for d in ~/.emacs.d/elpaca/repos/*; do"
+                               "  git -C $d remote get-url origin;"
+                               "done | grep -P '(github)' "
+                               "     | sed 's:\\.git:/releases.atom:'")))))
 
 ;; [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 ;; Make Emacs use the $PATH set up by the user's shell.
@@ -169,14 +175,14 @@
     (exec-path-from-shell-copy-env "SSH_AGENT_PID")
     (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
   :hook
-  ((after-init . exec-path-from-shell-initialize)
+  ((elpaca-after-init . exec-path-from-shell-initialize)
    (magit-credential . my/copy-ssh-env)))
 
 ;; flyspell :build_in:
 
 (use-package flyspell
   :if (not (executable-find "enchant-2"))
-  :straight nil
+  :ensure nil
   :custom
   ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
   (flyspell-issue-welcome-flag nil)
@@ -235,7 +241,7 @@
 ;; ispell :build_in:
 
 (use-package ispell
-  :straight nil
+  :ensure nil
   :after flyspell
   :if (executable-find "hunspell")
   :custom
@@ -280,7 +286,7 @@
 
 ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 (use-package re-builder
-  :straight nil
+  :ensure nil
   :commands re-builder
   :custom
   (reb-re-syntax 'string))
@@ -291,7 +297,7 @@
 
 
 (use-package server
-  :straight nil
+  :ensure nil
   :config
   (unless (server-running-p)
     (server-start)))
@@ -300,7 +306,7 @@
 ;; Major mode for interacting with a terminal
 
 (use-package term
-  :straight nil
+  :ensure nil
   :commands term
   :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
   :custom
@@ -311,19 +317,28 @@
 ;; remote file editing through ssh/scp.
 
 (use-package tramp
-  :straight nil
+  :ensure nil
   :custom
+  (tramp-verbose 0)
+  (tramp-otp-password-prompt-regexp
+   (rx bol (* nonl)
+       (group (| "Verification code" "OTP"))
+       (* nonl) (any ":：៖") (* blank)))
+  (tramp-histfile-override nil)
   (tramp-default-method "ssh")
-  (tramp-encoding-shell "/usr/bin/zsh")
-  (remote-file-name-inhibit-cache nil)
-  (vc-ignore-dir-regexp
-   (format "%s\\|%s"
-           vc-ignore-dir-regexp
-           tramp-file-name-regexp))
   :config
+  ;; ;; Enable full-featured Dirvish over TRAMP on certain connections
+  ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-async;; hronous-remote-processes-1.
   (add-to-list 'tramp-connection-properties
-               (list (regexp-quote "/sshx:user@host:")
-                     "remote-shell" "/bin/bash")))
+               (list (regexp-quote "/ssh:")
+                     "direct-async-process" t))
+  ;; (connection-local-set-profile-variables
+  ;;  'remote-direct-async-process
+  ;;  '((tramp-direct-async-process . t)))
+  ;; (connection-local-set-profiles
+  ;;  '(:application tramp :protocol "ssh")
+  ;;  'remote-direct-async-process)
+  )
 
 ;; [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 ;; Emacs libvterm integration.
@@ -347,15 +362,25 @@
       (if (and vterm-buffer (not current-prefix-arg))
           (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
         (vterm))))
+  ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
+  (defun my/vterm--get-shell-adv (vterm-shell)
+    "Quote VTERM-SHELL if it's a remote shell."
+    (if (and (ignore-errors (file-remote-p default-directory))
+             (not (string-match-p "'.*'" vterm-shell)))
+        (format "'%s'" vterm-shell)
+      vterm-shell))
   :init
   (with-eval-after-load 'project
     (add-to-list 'project-switch-commands '(my/project-vterm "Vterm") t)
     (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode)))
+  (advice-add #'vterm--get-shell :filter-return #'my/vterm--get-shell-adv)
   :custom
   (vterm-copy-exclude-prompt t)
   (vterm-max-scrollback 100000)
-  (vterm-tramp-shells '(("ssh" "/bin/bash")
-                        ("podman" "/bin/bash"))))
+  (vterm-shell "zsh")
+  (vterm-tramp-shells '(("ssh" "zsh")
+                        ("docker" "sh")
+                        ("podman" "sh"))))
 
 ;; [[https://github.com/emacs-straight/vundo.git][vundo]]
 ;; Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to previous buffer states.

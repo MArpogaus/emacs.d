@@ -1,8 +1,8 @@
-;;; my-keybindings.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-keybindings.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -18,7 +18,7 @@
 ;; Meow is yet another modal editing mode for Emacs.
 
 (use-package meow
-  :straight (:build (:not autoloads))
+  ;; :ensure (:build (:not autoloads))
   :demand t
   :custom
   ;; use system clipboard
@@ -40,16 +40,13 @@
   (defun my/meow-git-timemachine-hook ()
     "Hook to set my/meow-desired-state to =motion= when entering git-timemachine mode."
     (my/meow-set-desired-state 'motion))
-  (defun my/tab-line-mode-hook ()
-    "modify behavior of meow commands when tab-line-mode is active"
-    (if tab-line-mode
-        (advice-add #'meow-quit :override #'my/tab-line-close-tab-function)
-      (advice-remove #'meow-quit #'my/tab-line-close-tab-function)))
   :config
   ;; Apply advice to 'meow--mode-get-state'
-  (advice-add 'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
+  (advice-add #'meow--mode-get-state :around #'my/meow-mode-get-state-advice)
   (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
+  (with-eval-after-load 'tab-line
+    (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
   :bind
   (:map meow-motion-state-keymap
         ("<escape>" . meow-cancel-selection)
@@ -135,8 +132,7 @@
         ("z" . meow-pop-selection))
   :hook
   ((git-timemachine-mode . my/meow-git-timemachine-hook)
-   (after-init . meow-global-mode)
-   (tab-line-mode . my/tab-line-mode-hook)))
+   (elpaca-after-init . meow-global-mode)))
 
 ;; [[https://github.com/justbur/emacs-which-key.git][which-key]]
 ;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.

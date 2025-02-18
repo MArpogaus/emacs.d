@@ -1,8 +1,8 @@
-;;; my-completion.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-completion.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-29
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -290,10 +290,6 @@
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
-  (when (featurep 'straight)
-    (add-to-list 'load-path
-                 (expand-file-name "straight/build/corfu/extensions"
-                                   straight-base-dir)))
   (require 'corfu-echo)
   (require 'corfu-history)
   (require 'corfu-popupinfo)
@@ -311,10 +307,10 @@
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
   ;; See also `corfu-exclude-modes'.
-  ((after-init . global-corfu-mode)
-   (after-init . corfu-popupinfo-mode)
-   (after-init . corfu-echo-mode)
-   (after-init . corfu-history-mode)
+  ((elpaca-after-init . global-corfu-mode)
+   (elpaca-after-init . corfu-popupinfo-mode)
+   (elpaca-after-init . corfu-echo-mode)
+   (elpaca-after-init . corfu-history-mode)
    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
    (eshell-mode-hook . (lambda ()
                          (setq-local corfu-auto nil)
@@ -332,7 +328,7 @@
 
 
 (use-package corfu-candidate-overlay
-  :straight (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
+  :ensure (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
   :after corfu
   :hook
   ;; enable corfu-candidate-overlay mode globally
@@ -342,7 +338,7 @@
 ;; dabbrev :build_in:
 
 (use-package dabbrev
-  :straight nil
+  :ensure nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand))
@@ -405,32 +401,27 @@ the completing-read prompter."
   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
   ;; strategy, if you want to see the documentation from multiple providers.
   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none))))
 
   (setq embark-indicators
         '(embark-which-key-indicator
           embark-highlight-indicator
           embark-isearch-highlight-indicator))
 
-
   (advice-add #'embark-completing-read-prompter
               :around #'embark-hide-which-key-indicator))
 
+;; [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 ;; Consult users will also want the embark-consult package.
+
 (use-package embark-consult
+  :after embark
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
 ;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 
 (use-package lsp-snippet
-  :straight (:host github :repo "svaante/lsp-snippet")
+  :ensure (:host github :repo "svaante/lsp-snippet")
   :demand t
   :after tempel eglot
   :config
@@ -564,26 +555,14 @@ the completing-read prompter."
           (cdr args)))
   :config
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
-  ;; from: https://github.com/SystemCrafters/crafted-emacs/blob/c9ab29592b728954d3acc11d66e76cfbfbcb6189/modules/crafted-completion.el#L43
-  ;; Straight and Package bundle the vertico package differently. When
-  ;; using `package.el', the extensions are built into the package and
-  ;; available on the load-path. When using `straight.el', the
-  ;; extensions are not built into the package, so have to add that path
-  ;; to the load-path manually to enable the following require.
-  (when (featurep 'straight)
-    (add-to-list 'load-path
-                 (expand-file-name "straight/build/vertico/extensions"
-                                   straight-base-dir)))
   (require 'vertico-directory)
-
   :bind
   ;; Improve directory navigation
   (:map vertico-map
         ("<return>" . vertico-directory-enter))
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
-   (after-init . vertico-mode)))
+   (elpaca-after-init . vertico-mode)))
 
 ;; Library Footer
 
