@@ -436,3 +436,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/emacs,latex,linux,macos,windows
 eln-cache
 straight/*
+elpaca/*

@@ -1,8 +1,8 @@
-;;; my-programming.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-programming.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-29
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -98,7 +98,7 @@
 ;; Structured Editing and Navigation in Emacs.
 
 (use-package combobulate
-  :straight (:host github :repo "mickeynp/combobulate" :nonrecursive t)
+  :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
   :custom
   ;; Disable combobulate key prefix 
   (combobulate-key-prefix nil)
@@ -128,7 +128,7 @@
   ;; To use window configuration like gud (gdb-mi)
   ;; (setq dape-buffer-window-arrangement 'gud)
   :bind
-  (("<left-fringe> <mouse-1>" . dape-mouse-breakpoint-toggle)
+  (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
    :repeat-map my/debug-map
    ("d" . dape)
    ("p" . dape-pause)
@@ -169,15 +169,13 @@
 
   ;; Projectile users
   ;; (setq dape-cwd-fn 'projectile-project-root)
-
-  ;; Set breakpints via fringe or margin mouse clicks
-  (dape-breakpoint-global-mode t)
   :hook
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
-
-  ;; Save buffers on startup, useful for interpreted languages
-  (dape-on-start-hooks . (lambda () (save-some-buffers t t))))
+  ;; Set breakpints via fringe or margin mouse clicks
+  ((prog-mode . dape-breakpoint-global-mode)
+   ;; Save buffers on startup, useful for interpreted languages
+   (dape-on-start-hooks . (lambda () (save-some-buffers t t)))))
 
 ;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
 ;; An emacs mode for handling Dockerfiles.
@@ -190,13 +188,14 @@
   :mode "\\.dockerfile\\'"
   :mode "\\.containerfile\\'")
 (use-package tramp-container
-  :straight nil
+  :ensure nil
   :after docker)
 
-;; [[https://github.com/emacs-straight/eglot.git][eglot]]
+;; [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 ;; A client for Language Server Protocol servers.
 
 (use-package eglot
+  :ensure nil
   :after project
   :preface
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
@@ -206,6 +205,7 @@
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
   (completion-category-defaults nil)
+  (eglot-send-changes-idle-time 0.1)
   :preface
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
@@ -224,10 +224,11 @@
         ("k" . eglot-shutdown)
         ("o" . eglot-code-action-organize-imports)
         ("q" . eglot-code-action-quickfix)
-        ("r". eglot-rename))
+        ("r" . eglot-rename))
   :config
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
   :hook
   ((python-base-mode . eglot-ensure)
    (eglot-managed-mode . my/eglot-capf)))
@@ -237,21 +238,36 @@
 
 (use-package eglot-booster
   :after eglot
-  :straight (:host github :repo "jdtsmith/eglot-booster")
+  :ensure (:host github :repo "jdtsmith/eglot-booster")
   :init (eglot-booster-mode))
 
-;; [[https://github.com/emacs-straight/eldoc.git][eldoc]]
+;; [[https://github.com/emacs-straight/eldoc.git][eldoc]] :build_in:
 ;; Configure emacs documentation support.
 
 (use-package eldoc
+  :ensure nil
   :custom
   (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+  :bind
+  (:map my/lsp-map
+        ("d" . eldoc-doc-buffer))
   :config
-  (add-to-list 'display-buffer-alist
-               '("^\\*eldoc for" display-buffer-at-bottom
-                 (window-height . 4)))
   (eldoc-add-command-completions "paredit-")
-  (eldoc-add-command-completions "combobulate-"))
+  (with-eval-after-load 'combobulate
+    (eldoc-add-command-completions "combobulate-")))
+
+;; [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
+;; Childframe doc for eglot and anything that uses eldoc.
+
+(use-package eldoc-box
+  :after eglot
+  :bind
+  (:map my/lsp-map
+        ("D" . eldoc-box-hover-at-point-mode))
+  :config
+  (with-eval-after-load 'pixel-scroll
+    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
+    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 
 ;; [[https://github.com/purcell/envrc.git][envrc]]
 ;; Emacs support for direnv which operates buffer-locally.
@@ -268,7 +284,7 @@
   ;; The global mode should be enabled late in the startup sequence,
   ;; to prevent inference with other other global minor modes.
   ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-  (add-hook 'after-init-hook #'envrc-global-mode 99))
+  (add-hook 'elpaca-after-init-hook #'envrc-global-mode 98))
 
 ;; [[https://github.com/emacs-ess/ESS.git][ESS]]
 ;; Emacs Speaks Statistics: ESS.
@@ -311,10 +327,11 @@
   (((python-mode python-ts-mode) . my/setup-eir-python)
    ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 
-;; [[https://github.com/emacs-straight/flymake.git][flymake]]
+;; [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
 ;; Universal on-the-fly syntax checker for Emacs.
 
 (use-package flymake
+  :ensure nil
   :after project
   :custom
   ;; Let git gutter have left fringe, flymake can have right fringe
@@ -364,7 +381,7 @@
 ;; python :build_in:
 
 (use-package python
-  :straight nil
+  :ensure nil
   :preface
   (defun my/find-python-interpreter-advice (&rest _)
     "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
@@ -389,7 +406,7 @@
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.
 
 (use-package sphinx-doc
-  :straight (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
+  :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
   :hook
   (python-mode . sphinx-doc-mode))
 
@@ -417,20 +434,21 @@
   :custom
   (treesit-auto-install 'prompt)
   :hook
-  (after-init . global-treesit-auto-mode))
+  (elpaca-after-init . global-treesit-auto-mode))
 
 ;; [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
 ;; Code-folding using =treesit.el=.
 
 (use-package treesit-fold
-  :straight (:host github :repo "emacs-tree-sitter/treesit-fold")
-  :preface
-  (defun my/treesit-fold-mode-hook ()
-    (keymap-local-set "<backtab>" 'treesit-fold-toggle))
+  :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
+  :custom
+  ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
+  (treesit-fold-indicators-priority -1)
+  :bind
+  (:map treesit-fold-mode-map
+        ("<backtab>" . treesit-fold-toggle))
   :hook
-  (((yaml-ts-mode python-ts-mode) . treesit-fold-mode)
-   (treesit-fold-mode . treesit-fold-indicators-mode)
-   (treesit-fold-mode . my/treesit-fold-mode-hook)))
+  (((yaml-ts-mode python-ts-mode) . treesit-fold-indicators-mode)))
 
 ;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 ;; The emacs major mode for editing files in the YAML data serialization format.

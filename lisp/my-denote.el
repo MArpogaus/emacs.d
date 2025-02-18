@@ -1,8 +1,8 @@
-;;; my-denote.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-denote.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -45,6 +45,13 @@
      (plain . nil)))
   :preface
   (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+  (defun my/kill-denote-buffers ()
+    "Kill all denote buffers."
+    (interactive)
+    (dolist (buf (buffer-list))
+      (when (or (string-prefix-p "[D]" (buffer-name buf))
+                (string-prefix-p "*Denote" (buffer-name buf)))
+        (kill-buffer buf))))
   :init
   (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
   :bind
@@ -57,9 +64,7 @@
         ("i" . denote-link)
         ("I" . denote-add-links)
         ("b" . denote-backlinks)
-        ;; :map org-mode-map
-        ;; ("l" . denote-org-extras-dblock-insert-links)
-        ;; ("b" . denote-org-extras-dblock-insert-links)
+        ("k" . my/kill-denote-buffers)
         :map dired-mode-map
         ("i" . denote-link-dired-marked-notes)
         ("r" . denote-dired-rename-marked-files)
@@ -70,7 +75,7 @@
   :hook
   ((text-mode . denote-fontify-links-mode-maybe)
    (dired-mode . denote-dired-mode)
-   (after-init . denote-rename-buffer-mode)))
+   (elpaca-after-init . denote-rename-buffer-mode)))
 
 ;; [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 

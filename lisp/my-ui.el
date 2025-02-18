@@ -1,8 +1,8 @@
-;;; my-ui.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-ui.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-11
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -21,17 +21,20 @@
   :custom
   (auto-dark-themes '((doom-one) (doom-one-light)))
   :hook
-  (after-init . auto-dark-mode))
+  (elpaca-after-init . auto-dark-mode))
 
 ;; display-line-numbers :build_in:
 ;; Enable line numbers for some modes
 
 (use-package display-line-numbers
-  :straight nil
+  :ensure nil
+  :custom
+  ;; Count total number of line on startup for correct width
+  (display-line-numbers-width-start t)
   :hook
   (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
    ;; disable for org mode
-   (org-mode . (lambda () (display-line-numbers-mode 0)))))
+   (org-mode . (lambda () (display-line-numbers-mode -1)))))
 
 ;; [[https://github.com/doomemacs/themes][doom-themes]]
 
@@ -58,7 +61,7 @@
 
 
 (use-package hl-line
-  :straight nil
+  :ensure nil
   :hook
   ((prog-mode org-mode) . global-hl-line-mode))
 
@@ -77,7 +80,7 @@
 ;; Fast, configurable indentation guide-bars for Emacs.
 
 (use-package indent-bars
-  :straight (:host github :repo "jdtsmith/indent-bars")
+  :ensure (:host github :repo "jdtsmith/indent-bars")
   :custom
   (indent-bars-treesit-support t)
   (indent-bars-treesit-ignore-blank-lines-types '("module"))
@@ -174,7 +177,7 @@
     ;; per mode with `ligature-mode'.
     (global-ligature-mode))
   :hook
-  (after-init . my/setup-ligatures))
+  (elpaca-after-init . my/setup-ligatures))
 
 ;; [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 
@@ -206,7 +209,7 @@
      (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
      (motion ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-constant-face)))
   :hook
-  (after-init . mood-line-mode))
+  (elpaca-after-init . mood-line-mode))
 
 ;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 ;; A Library for Nerd Font icons. Required for modline icons.
@@ -217,7 +220,7 @@
 ;; display LaTeX compilation information in the mode line
 
 (use-package procress
-  :straight (:host github :repo "haji-ali/procress")
+  :ensure (:host github :repo "haji-ali/procress")
   :commands procress-auctex-mode
   :hook
   (LaTeX-mode . procress-auctex-mode)
@@ -242,12 +245,12 @@
                              ))
   (spacious-padding-subtle-mode-line t)
   :hook
-  (after-init . spacious-padding-mode))
+  (elpaca-after-init . spacious-padding-mode))
 
 ;; tab-bar :build_in:
 
 (use-package tab-bar
-  :straight nil
+  :ensure nil
   :custom
   (tab-bar-history-limit 100)
   :preface
@@ -274,8 +277,8 @@
    :exit
    ("k" . tab-close-group))
   :hook
-  ((after-init . tab-bar-history-mode)
-   (after-init . tab-bar-mode)))
+  ((elpaca-after-init . tab-bar-history-mode)
+   (elpaca-after-init . tab-bar-mode)))
 
 ;; tab-line :build_in:
 ;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
@@ -288,7 +291,7 @@
 
 
 (use-package tab-line
-  :straight nil
+  :ensure nil
   :custom
   (tab-line-new-tab-choice nil)
   (tab-line-new-button-show nil)
@@ -300,17 +303,16 @@
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)
-  (tab-line-separator "")
   :bind
   (:map my/toggle-map
         ("T" . global-tab-line-mode))
   :preface
   (defun my/tab-line-tab-name-function (buffer &optional _buffers)
     (let ((name (buffer-name buffer)))
-      (concat (my/get-bar-image 20 2 nil)
-              " "
-              (nerd-icons-icon-for-file name)
-              (format " %s " name))))
+      (concat ;;(my/get-bar-image 20 2 nil)
+       " "
+       (nerd-icons-icon-for-file name)
+       (format " %s " name))))
 
   (defun my/tab-line-get-buffer (tab)
     "Return the buffer represented by TAB."
@@ -333,33 +335,44 @@
           (message "Closing buffer %s" buffer)
           (kill-buffer buffer)))))
 
+  (defun my/multi-buffer-window-p ()
+    "Evaluates to `t' if windows has mutible tab-line buffers, else `nil'."
+    (> (length (tab-line-tabs-window-buffers)) 1))
+
   (defun my/tab-line-close-tab-function (tab)
     "Close the selected tab.
-If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+      If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+      If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+      Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
     (interactive (list (current-buffer)))
     (let ((window (selected-window))
+          (kill-window-p (not (my/multi-buffer-window-p)))
           (buffer (my/tab-line-get-buffer tab)))
-      (with-selected-window window
-        (let ((tab-list (tab-line-tabs-window-buffers)))
-          (my/tab-line-close-or-bury-buffer buffer)
-          (unless (cdr tab-list)
-            (message "Closing window")
-            (ignore-errors (delete-window window)))))))
+      (my/tab-line-close-or-bury-buffer buffer)
+      (when kill-window-p 
+        (message "Closing window")
+        (ignore-errors (delete-window window)))))
+
+  ;; (defun my/enable-tab-line-if-multiple-buffers ()
+  ;;   "Enable tab line mode if there are multiple buffers in the current window."
+  ;;   (if (my/multi-buffer-window-p)
+  ;;       (tab-line-mode 1)
+  ;;     (tab-line-mode -1)))
   :config
   (setq tab-line-close-button
         (propertize "✕ "
                     'keymap tab-line-tab-close-map
                     'mouse-face 'tab-line-close-highlight
-                    'help-echo "Click to close tab"))
+                    'help-echo "Click to close tab")
+        tab-line-separator "")
   :hook
-  (after-init . global-tab-line-mode))
+  ;; (window-configuration-change . my/enable-tab-line-if-multiple-buffers)
+  (elpaca-after-init . global-tab-line-mode))
 
 ;; time :build_in:
 
 (use-package time
-  :straight nil
+  :ensure nil
   :custom
   (display-time-default-load-average nil)
   (display-time-24hr-format t)

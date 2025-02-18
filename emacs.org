@@ -2,7 +2,7 @@
 #+AUTHOR: Marcel Arpogaus
 #+STARTUP: show2levels indent
 #+auto_tangle: t
-#+PROPERTY: header-args :mkdirp yes :comments org
+#+PROPERTY: header-args :mkdirp yes :comments org :results none
 #+EXCLUDE_TAGS: noexport
 
 [[file:img/screenshot.png]]
@@ -16,7 +16,7 @@ Here are some notable features:
 
 - *Minimal UI:*  The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen real estate.
 
-- *Straight.el for Package Management:*  [[https://github.com/radian-software/straight.el][Straight.el]] is used for package management, offering a more modern and robust alternative to the built-in package.el.
+- *Elpaca for Package Management:*  [[https://github.com/progfolio/elpaca][Elpaca]] is used for package management, offering a more modern and robust alternative to the built-in package.el.
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
 
@@ -40,11 +40,12 @@ Here are some notable features:
     - [[#optimize-startup-time][Optimize Startup Time]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
-    - [[#install-straight][Install Straight]]
+    - [[#install-elpaca][Install Elpaca]]
     - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#conventional-header][Conventional Header]]
-    - [[#configure-straight][Configure Straight]]
+    - [[#configure-use-package][Configure use-package]]
+    - [[#configure-elpaca][Configure Elpaca]]
     - [[#no-littering][no-littering]]
     - [[#better-defaults][Better Defaults]]
     - [[#custom-lisp-functions][Custom Lisp Functions]]
@@ -81,7 +82,7 @@ Here are some notable features:
 
 3. /Install Packages:/
 
-   Start Emacs and it will automatically install the required packages via Straight.el.
+   Start Emacs and it will automatically install the required packages.
 
 4. /Configure Emacs:/
 
@@ -113,7 +114,7 @@ This Emacs literate configuration has been inspired by the following projects:
 ** Add git url to pkg headlines
 #+begin_src bash :results none
   for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
-      url=$(git -C ~/.emacs.d/straight/repos/$p* remote get-url origin)
+      url=$(git -C ~/.emacs.d/elpaca/repos/$p* remote get-url origin)
       if [ $? -eq 0 ]; then
           sed "s|\*\*\*\* $p|**** [[$url][$p]]|" -i emacs.org
       fi;
@@ -125,7 +126,7 @@ This Emacs literate configuration has been inspired by the following projects:
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+NAME: header
 #+begin_src shell :var file_name="init.el" :results output
-  echo ";;; $file_name --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
+  echo ";;; $file_name --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
   ;; Copyright (C) 2023-$(date +%Y) Marcel Arpogaus
 
   ;; Author: Marcel Arpogaus
@@ -165,18 +166,20 @@ The following optimizations have been inspired by:
   ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
   (setq gc-cons-threshold most-positive-fixnum
         gc-cons-percentage 0.6)
+
   ;; Let's lower our GC thresholds back down to a sane level.
-  (add-hook 'after-init-hook (lambda ()
-                               ;; restore after startup
-                               (setq gc-cons-threshold (* 16 1024 1024))))
+  (add-hook 'elpaca-after-init-hook
+            (lambda ()
+              ;; restore after startup
+              (setq gc-cons-threshold (* 16 1024 1024))) 99)
 
   ;; Profile emacs startup
-  (add-hook 'emacs-startup-hook
+  (add-hook 'elpaca-after-init-hook
             (lambda ()
-              (message "*** Emacs loaded in %s with %d garbage collections."
+              (message "🚀 Emacs loaded in %s with %d garbage collections."
                        (format "%.2f seconds"
                                (float-time
-                                (time-subtract after-init-time before-init-time)))
+                                (time-subtract elpaca-after-init-time before-init-time)))
                        gcs-done)))
 
   ;; Resizing the Emacs frame can be a terribly expensive part of changing the
@@ -221,7 +224,7 @@ The following optimizations have been inspired by:
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
-#+end_src
+  #+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
@@ -287,31 +290,51 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   ;; receiving input, which should help a little with scrolling performance.
   (setq redisplay-skip-fontification-on-input t)
 #+end_src
-*** Install Straight
-This section provides the bootstrap code for =straight.el=, a package manager for Emacs.
-The code includes optimization for startup time, disables file modification checking for performance, and loads the =straight.el= bootstrap file, which contains essential functionality.
-
+*** Install Elpaca
+This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
   ;; prevent package.el loading packages prior to their init-file loading.
   (setq package-quickstart nil
         package-enable-at-startup nil)
 
-  ;;disable checking (for speedup).
-  (setq straight-check-for-modifications nil)
-
-  ;; straight.el bootstrap code
-  (defvar bootstrap-version)
-  (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 6))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
+  (defvar elpaca-installer-version 0.9)
+  (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                                :ref nil :depth 1 :inherit ignore
+                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                                :build (:not elpaca--activate-package)))
+  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+         (build (expand-file-name "elpaca/" elpaca-builds-directory))
+         (order (cdr elpaca-order))
+         (default-directory repo))
+    (add-to-list 'load-path (if (file-exists-p build) build repo))
+    (unless (file-exists-p repo)
+      (make-directory repo t)
+      (when (< emacs-major-version 28) (require 'subr-x))
+      (condition-case-unless-debug err
+          (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                    ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                    ,@(when-let* ((depth (plist-get order :depth)))
+                                                        (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                    ,(plist-get order :repo) ,repo))))
+                    ((zerop (call-process "git" nil buffer t "checkout"
+                                          (or (plist-get order :ref) "--"))))
+                    (emacs (concat invocation-directory invocation-name))
+                    ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                          "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                    ((require 'elpaca))
+                    ((elpaca-generate-autoloads "elpaca" repo)))
+              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+            (error "%s" (with-current-buffer buffer (buffer-string))))
+        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+    (unless (require 'elpaca-autoloads nil t)
+      (require 'elpaca)
+      (elpaca-generate-autoloads "elpaca" repo)
+      (load "./elpaca-autoloads")))
+  (add-hook 'after-init-hook #'elpaca-process-queues)
+  (elpaca `(,@elpaca-order))
 #+end_src
 *** Conventional Library Footer
 #+begin_src emacs-lisp
@@ -327,24 +350,11 @@ The main initialization file, =init.el=, is responsible for defining essential c
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="init.el")>>
 #+end_src
-*** Configure Straight
-Lets install and configure =use-package= and use =straight= as the underlying package manager.
-We also load =bind-key= here which is used by =use-package= for keybindings.
-
+*** Configure use-package
 #+begin_src emacs-lisp
-  (when (< emacs-major-version 29)
-    (straight-use-package 'use-package)
-    (use-package bind-key))
-
-  ;; HACK: https://github.com/radian-software/straight.el/issues/1146
-  (setq straight-built-in-pseudo-packages '(emacs nadvice python image-mode project flymake xref))
-
-  ;; cache the autoloads of all used packages in a single file
-  (setq straight-cache-autoloads t)
-
-  ;; Enable straight use-package integration
-  (setq straight-use-package-by-default t
-        use-package-always-defer t)
+  ;; Enable lazy loading per default
+  (setq use-package-always-defer t
+        use-package-always-ensure t)
 
   ;; make use-package more verbose when ´‘--debug-init´ is passed
   ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
@@ -359,6 +369,21 @@ We also load =bind-key= here which is used by =use-package= for keybindings.
           native-comp-warning-on-missing-source t
           debug-on-error t))
 #+end_src
+*** Configure Elpaca
+#+begin_src emacs-lisp
+  ;; Use elpaca lockfile
+  (setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+
+  ;; Install never version of transient and jsonrpc
+  (setq elpaca-ignored-dependencies
+        (seq-remove (lambda (x) (memq x '(transient jsonrpc)))
+                    elpaca-ignored-dependencies))
+
+  ;; Enable use-package integration
+  (elpaca elpaca-use-package
+    ;; Enable use-package :ensure support for Elpaca.
+    (elpaca-use-package-mode))
+#+end_src
 *** no-littering
 Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
 #+begin_src emacs-lisp
@@ -372,12 +397,14 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
           user-emacs-directory (expand-file-name "~/.cache/emacs/"))
     :config
     ;; store backup and auto-save files in =no-littering-var-directory=
-    (no-littering-theme-backups))
+    (no-littering-theme-backups)
+    ;; Load customization File
+    (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 #+end_src
 *** Better Defaults
 #+begin_src emacs-lisp
   (use-package emacs
-    :straight nil
+    :ensure nil
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
@@ -470,8 +497,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     (modify-all-frames-parameters '((width . 200)
                                     (height . 50)))
     :config
-    ;; Load customization File
-    (load custom-file 'noerror 'nomessage)
     ;; We tell emacs to use UTF-8 encoding as much as possible.
     (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
     (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
@@ -487,10 +512,10 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
      (kill-emacs . unpropertize-kill-ring)))
 #+end_src
 *** Custom Lisp Functions
-
 In this section, I define some custom Lisp functions.
 #+BEGIN_SRC emacs-lisp
   (use-package emacs
+    :ensure nil
     :preface
     (defun my/backward-kill-thing ()
       "Delete sexp, symbol, word or whitespace backward depending on the context at point."
@@ -595,7 +620,7 @@ Package specific keymap definitions are kept in preface of the respective packag
 #+begin_src emacs-lisp
   ;; setup keymaps
   (use-package emacs
-    :straight nil
+    :ensure nil
     :preface
     (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
@@ -868,7 +893,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
                   (my/gtd-save-org-buffers))))
 
   (use-package ox-latex
-    :straight nil
+    :ensure nil
     :after org
     :config
     ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
@@ -894,14 +919,14 @@ Agenda view and task management has been inspired by https://github.com/rougier/
                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
   (use-package ox-beamer
-    :straight nil
+    :ensure nil
     :after org
     :config
     (add-to-list 'org-beamer-environments-extra
                  '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 
   (use-package ox-extra
-    :straight nil
+    :ensure nil
     :after org
     :config
     (ox-extras-activate '(ignore-headlines)))
@@ -966,7 +991,7 @@ This package implements a modern style for your Org buffers using font locking a
 Modern block styling with org-indent.
 #+begin_src emacs-lisp
   (use-package org-modern-indent
-    :straight (:host github :repo "jdtsmith/org-modern-indent")
+    :ensure (:host github :repo "jdtsmith/org-modern-indent")
     :hook
     (org-indent-mode . org-modern-indent-mode))
 #+end_src
@@ -1129,7 +1154,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
 **** [[https://github.com/karthink/org-preview.git][org-preview]]
 #+begin_src emacs-lisp
   (use-package org-preview
-    :straight (:host github :repo "karthink/org-preview")
+    :ensure (:host github :repo "karthink/org-preview")
     :hook
     (org-mode . org-preview-mode))
 #+end_src
@@ -1193,13 +1218,13 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
     :custom
     (auto-dark-themes '((doom-one) (doom-one-light)))
     :hook
-    (after-init . auto-dark-mode))
+    (elpaca-after-init . auto-dark-mode))
 #+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
 #+begin_src emacs-lisp
   (use-package display-line-numbers
-    :straight nil
+    :ensure nil
     :custom
     ;; Count total number of line on startup for correct width
     (display-line-numbers-width-start t)
@@ -1233,7 +1258,7 @@ Highlighting of the current line (native mode)
 
 #+begin_src emacs-lisp
   (use-package hl-line
-    :straight nil
+    :ensure nil
     :hook
     ((prog-mode org-mode) . global-hl-line-mode))
 #+end_src
@@ -1252,7 +1277,7 @@ Highlight TODO keywords.
 Fast, configurable indentation guide-bars for Emacs.
 #+begin_src emacs-lisp
   (use-package indent-bars
-    :straight (:host github :repo "jdtsmith/indent-bars")
+    :ensure (:host github :repo "jdtsmith/indent-bars")
     :custom
     (indent-bars-treesit-support t)
     (indent-bars-treesit-ignore-blank-lines-types '("module"))
@@ -1349,7 +1374,7 @@ Display typographical ligatures in Emacs.
       ;; per mode with `ligature-mode'.
       (global-ligature-mode))
     :hook
-    (after-init . my/setup-ligatures))
+    (elpaca-after-init . my/setup-ligatures))
 #+end_src
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
@@ -1394,7 +1419,7 @@ https://protesilaos.com/emacs/modus-themes
        (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
        (motion ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-constant-face)))
     :hook
-    (after-init . mood-line-mode))
+    (elpaca-after-init . mood-line-mode))
 #+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
@@ -1405,7 +1430,7 @@ A Library for Nerd Font icons. Required for modline icons.
 display LaTeX compilation information in the mode line
 #+begin_src emacs-lisp
   (use-package procress
-    :straight (:host github :repo "haji-ali/procress")
+    :ensure (:host github :repo "haji-ali/procress")
     :commands procress-auctex-mode
     :hook
     (LaTeX-mode . procress-auctex-mode)
@@ -1430,12 +1455,12 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                                ))
     (spacious-padding-subtle-mode-line t)
     :hook
-    (after-init . spacious-padding-mode))
+    (elpaca-after-init . spacious-padding-mode))
 #+end_src
 **** tab-bar :build_in:
 #+begin_src emacs-lisp
   (use-package tab-bar
-    :straight nil
+    :ensure nil
     :custom
     (tab-bar-history-limit 100)
     :preface
@@ -1462,8 +1487,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
      :exit
      ("k" . tab-close-group))
     :hook
-    ((after-init . tab-bar-history-mode)
-     (after-init . tab-bar-mode)))
+    ((elpaca-after-init . tab-bar-history-mode)
+     (elpaca-after-init . tab-bar-mode)))
 #+end_src
 **** tab-line :build_in:
 Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
@@ -1476,7 +1501,7 @@ References:
 
 #+begin_src emacs-lisp
   (use-package tab-line
-    :straight nil
+    :ensure nil
     :custom
     (tab-line-new-tab-choice nil)
     (tab-line-new-button-show nil)
@@ -1488,17 +1513,16 @@ References:
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
     (tab-line-close-button-show 'selected)
-    (tab-line-separator "")
     :bind
     (:map my/toggle-map
           ("T" . global-tab-line-mode))
     :preface
     (defun my/tab-line-tab-name-function (buffer &optional _buffers)
       (let ((name (buffer-name buffer)))
-        (concat (my/get-bar-image 20 2 nil)
-                " "
-                (nerd-icons-icon-for-file name)
-                (format " %s " name))))
+        (concat ;;(my/get-bar-image 20 2 nil)
+         " "
+         (nerd-icons-icon-for-file name)
+         (format " %s " name))))
 
     (defun my/tab-line-get-buffer (tab)
       "Return the buffer represented by TAB."
@@ -1521,33 +1545,44 @@ References:
             (message "Closing buffer %s" buffer)
             (kill-buffer buffer)))))
 
+    (defun my/multi-buffer-window-p ()
+      "Evaluates to `t' if windows has mutible tab-line buffers, else `nil'."
+      (> (length (tab-line-tabs-window-buffers)) 1))
+
     (defun my/tab-line-close-tab-function (tab)
       "Close the selected tab.
-  If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-  If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-  Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
+        If the tab is presented in another window, close the tab by using the `bury-buffer` function.
+        If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
+        Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
       (interactive (list (current-buffer)))
       (let ((window (selected-window))
+            (kill-window-p (not (my/multi-buffer-window-p)))
             (buffer (my/tab-line-get-buffer tab)))
-        (with-selected-window window
-          (let ((tab-list (tab-line-tabs-window-buffers)))
-            (my/tab-line-close-or-bury-buffer buffer)
-            (unless (cdr tab-list)
-              (message "Closing window")
-              (ignore-errors (delete-window window)))))))
+        (my/tab-line-close-or-bury-buffer buffer)
+        (when kill-window-p 
+          (message "Closing window")
+          (ignore-errors (delete-window window)))))
+
+    ;; (defun my/enable-tab-line-if-multiple-buffers ()
+    ;;   "Enable tab line mode if there are multiple buffers in the current window."
+    ;;   (if (my/multi-buffer-window-p)
+    ;;       (tab-line-mode 1)
+    ;;     (tab-line-mode -1)))
     :config
     (setq tab-line-close-button
           (propertize "✕ "
                       'keymap tab-line-tab-close-map
                       'mouse-face 'tab-line-close-highlight
-                      'help-echo "Click to close tab"))
+                      'help-echo "Click to close tab")
+          tab-line-separator "")
     :hook
-    (after-init . global-tab-line-mode))
+    ;; (window-configuration-change . my/enable-tab-line-if-multiple-buffers)
+    (elpaca-after-init . global-tab-line-mode))
 #+end_src
 **** time :build_in:
 #+begin_src emacs-lisp
   (use-package time
-    :straight nil
+    :ensure nil
     :custom
     (display-time-default-load-average nil)
     (display-time-24hr-format t)
@@ -1578,7 +1613,7 @@ References:
 #+end_src
 **** [[https://github.com/abo-abo/ace-window.git][ace-window]]
 Quickly switch windows in Emacs.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package ace-window
     :preface
     ;; https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window
@@ -1605,6 +1640,7 @@ Quickly switch windows in Emacs.
     ;; Make Emacs ask where to place a new buffer
     (display-buffer-base-action '((display-buffer-reuse-window
                                    ace-display-buffer)))
+    :autoload ace-display-buffer
     :config
     ;; Ignore the inibuffer
     (add-to-list 'aw-ignored-buffers 'minibuffer-mode)
@@ -1628,17 +1664,20 @@ Automatically compile outdated Emacs Lisp libraries.
 Revert buffers when the underlying file has changed
 #+begin_src emacs-lisp
   (use-package autorevert
-    :straight nil
+    :ensure nil
     :custom
     ;; Revert Dired and other buffers
     (global-auto-revert-non-file-buffers t)
+    ;; Avoid polling for changes and rathe get notified by the system
+    (auto-revert-use-notify t)
+    (auto-revert-avoid-polling t)
     :hook
-    (after-init . global-auto-revert-mode))
+    (elpaca-after-init . global-auto-revert-mode))
 #+end_src
 **** bookmark :build_in:
 #+begin_src emacs-lisp
   (use-package bookmark
-    :straight nil
+    :ensure nil
     :custom
     (bookmark-save-flag 1))
 #+end_src
@@ -1654,7 +1693,7 @@ Provides a mechanism for REPLs (or comint buffers, in Emacs parlance) to display
 Replace selected text when typing
 #+begin_src emacs-lisp
   (use-package delsel
-    :straight nil
+    :ensure nil
     :hook
     ((prog-mode conf-mode text-mode) . delete-selection-mode))
 #+end_src
@@ -1662,7 +1701,7 @@ Replace selected text when typing
 Automatically add closing parentheses, quotes, etc.
 #+begin_src emacs-lisp
   (use-package elec-pair
-    :straight nil
+    :ensure nil
     :hook
     ((prog-mode conf-mode) . electric-pair-mode))
 #+end_src
@@ -1672,7 +1711,7 @@ https://github.com/karthink/.emacs.d/blob/4ab4829fde086cb665cba00ee5c6a42d167e14
 https://karthinks.com/software/scaling-latex-previews-in-emacs/
 #+begin_src emacs-lisp
   (use-package face-remap
-    :straight nil
+    :ensure nil
     :preface
     (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
 
@@ -1750,14 +1789,14 @@ Sidebar showing a "mini-map" of a buffer.
 Prevent windows from jumping on minibuffer activation.
 #+begin_src emacs-lisp
   (use-package mini-ontop
-    :straight (:host github :repo "hkjels/mini-ontop.el")
+    :ensure (:host github :repo "hkjels/mini-ontop.el")
     :custom
     (mini-ontop-lines 22)
     :config
     (with-eval-after-load 'embark
       (add-to-list 'mini-ontop-ignore-predicates (lambda nil (eq this-command #'embark-act))))
     :hook
-    (after-init . mini-ontop-mode))
+    (elpaca-after-init . mini-ontop-mode))
 #+end_src
 **** [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
 #+begin_src emacs-lisp
@@ -1781,7 +1820,7 @@ Prevent windows from jumping on minibuffer activation.
 Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
 #+begin_src emacs-lisp
   (use-package outline
-    :straight nil
+    :ensure nil
     :preface
     (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
     (defun my/outline-mode-hook nil
@@ -1808,7 +1847,7 @@ Paren mode for highlighting matcing paranthesis
 
 #+begin_src emacs-lisp
   (use-package paren
-    :straight nil
+    :ensure nil
     :custom
     (show-paren-style 'parenthesis)
     (show-paren-when-point-in-periphery t)
@@ -1833,19 +1872,21 @@ Paren mode for highlighting matcing paranthesis
     ;; Define popup buffers
     (popper-reference-buffers
      '("\\*Messages\\*"
-       "Output\\*$"
        "\\*Async Shell Command\\*"
        "\\*Process List\\*"
        help-mode
        helpful-mode
-       compilation-mode
        "^\\*.*eshell.*\\*$" eshell-mode ; eshell as a popup
        "^\\*.*shell.*\\*$"  shell-mode  ; shell as a popup
        "^\\*.*term.*\\*$"   term-mode   ; term as a popup
        "^\\*.*vterm.*\\*$"  vterm-mode  ; vterm as a popup
-       "^\\*Flymake diagnostics for .*\\*" flymake-diagnostics-buffer-mode
-       "\\*diff-hl\\*" ; diff shown wehn reverting hunks with diff-hl
-       ))
+       "^\\*Flymake diagnostics for .*\\*$" flymake-diagnostics-buffer-mode
+       "\\*diff-hl\\*$" ; diff shown wehn reverting hunks with diff-hl
+       "magit:.*$" magit-status-mode
+       "magit-diff:.*$" magit-diff-mode
+       ("Output\\*$" . hide)
+       ("\\*Compile-Log\\$*" . hide)
+       (compilation-mode . hide)))
     ;; grouping popups by project
     (popper-mode-line nil)
     (popper-display-function #'my/popper-display-function)
@@ -1858,8 +1899,8 @@ Paren mode for highlighting matcing paranthesis
           ("p" . popper-toggle)
           ("P" . popper-toggle-type))
     :hook
-    ((after-init . popper-mode)
-     (after-init . popper-echo-mode)
+    ((elpaca-after-init . popper-mode)
+     (elpaca-after-init . popper-echo-mode)
      (popper-open-popup . my/popper-open-popup)))
 #+end_src
 **** recentf :build_in:
@@ -1868,7 +1909,7 @@ Paren mode for highlighting matcing paranthesis
 
 #+begin_src emacs-lisp
   (use-package recentf
-    :straight nil
+    :ensure nil
     :custom
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
@@ -1882,13 +1923,13 @@ Paren mode for highlighting matcing paranthesis
     (:map my/open-map
           ("r" . recentf-open))
     :hook
-    (after-init . recentf-mode))
+    (elpaca-after-init . recentf-mode))
 #+end_src
 **** repeat :build_in:
 Enable repeat maps
 #+begin_src emacs-lisp
   (use-package repeat
-    :straight nil
+    :ensure nil
     :preface
     ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
     (defun my/repeatize-keymap (keymap)
@@ -1902,7 +1943,7 @@ Enable repeat maps
     (with-eval-after-load 'smerge-mode
       (my/repeatize-keymap 'smerge-basic-map))
     :hook
-    (after-init . repeat-mode))
+    (elpaca-after-init . repeat-mode))
 #+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 Rotate the layout of emacs.
@@ -1916,7 +1957,7 @@ Rotate the layout of emacs.
 **** savehist :build_in:
 #+begin_src emacs-lisp
   (use-package savehist
-    :straight nil
+    :ensure nil
     :custom
     (kill-ring-max 500)
     (history-length 500)
@@ -1946,21 +1987,21 @@ Rotate the layout of emacs.
     (put 'bookmark-history           'history-length 250)
     :hook
     ;;Start history mode.
-    (after-init . savehist-mode))
+    (elpaca-after-init . savehist-mode))
 #+end_src
 **** saveplace :build_in:
 Record cursor position from one session to the other
 #+begin_src emacs-lisp
   (use-package saveplace
-    :straight nil
+    :ensure nil
     :hook
-    (after-init . save-place-mode))
+    (elpaca-after-init . save-place-mode))
 #+end_src
 **** time-stamp :build_in:
 Automatically update file timestamps when file is saved
 #+begin_src emacs-lisp
   (use-package time-stamp
-    :straight nil
+    :ensure nil
     :custom
     (time-stamp-active t)
     (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
@@ -2060,7 +2101,7 @@ Simple note taking and file naming.
     :hook
     ((text-mode . denote-fontify-links-mode-maybe)
      (dired-mode . denote-dired-mode)
-     (after-init . denote-rename-buffer-mode)))
+     (elpaca-after-init . denote-rename-buffer-mode)))
 #+end_src
 **** [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 #+begin_src emacs-lisp
@@ -2122,7 +2163,7 @@ Simple note taking and file naming.
 **** dired :build_in:
 #+begin_src emacs-lisp
   (use-package dired
-    :straight nil
+    :ensure nil
     :custom
     ;; inspired by doom
     ;; https://github.com/doomemacs/doomemacs/blob/c2818bcfaa5dc1a0139d1deff7d77bf42a08eede/modules/emacs/dired/config.el#L9C1-L25C36
@@ -2140,6 +2181,8 @@ Simple note taking and file naming.
     (delete-by-moving-to-trash t)
     (dired-listing-switches
      "-l --almost-all --human-readable --group-directories-first --no-group")
+    (dired-find-subdir t) ; Reuse dired buffers if the directory is a sub directory
+    (dired-isearch-filenames t) ; limit search to filenames
     ;; Enable mouse drag-and-drop support
     (dired-mouse-drag-files t)                   ; added in Emacs 29
     (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
@@ -2148,7 +2191,7 @@ Simple note taking and file naming.
           ("d" . dired)))
 
   (use-package dired-x
-    :straight nil
+    :ensure nil
     :config
     ;; Make dired-omit-mode hide all "dotfiles"
     (setq dired-omit-files
@@ -2238,7 +2281,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
 
 #+begin_src emacs-lisp
   (use-package ediff
-    :straight nil
+    :ensure nil
     :preface
     (defvar my-ediff-original-windows nil)
     (defun my/store-pre-ediff-winconfig ()
@@ -2264,7 +2307,7 @@ An Emacs web feeds client.
     :config
     (setq elfeed-feeds
           (split-string (shell-command-to-string
-                         (concat "for d in ~/.emacs.d/straight/repos/*; do"
+                         (concat "for d in ~/.emacs.d/elpaca/repos/*; do"
                                  "  git -C $d remote get-url origin;"
                                  "done | grep -P '(github)' "
                                  "     | sed 's:\\.git:/releases.atom:'")))))
@@ -2278,14 +2321,14 @@ Make Emacs use the $PATH set up by the user's shell.
       (exec-path-from-shell-copy-env "SSH_AGENT_PID")
       (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
     :hook
-    ((after-init . exec-path-from-shell-initialize)
+    ((elpaca-after-init . exec-path-from-shell-initialize)
      (magit-credential . my/copy-ssh-env)))
 #+end_src
 **** flyspell :build_in:
 #+begin_src emacs-lisp
   (use-package flyspell
     :if (not (executable-find "enchant-2"))
-    :straight nil
+    :ensure nil
     :custom
     ;; Doom: https://github.com/doomemacs/doomemacs/blob/dbb48712eea6dfe16815a3e5e5746b31dab6bb2f/modules/checkers/spell/config.el#L195C11-L198C42
     (flyspell-issue-welcome-flag nil)
@@ -2344,7 +2387,7 @@ It is a bit slow to load so we do need load it explicitely.
 **** ispell :build_in:
 #+begin_src emacs-lisp
   (use-package ispell
-    :straight nil
+    :ensure nil
     :after flyspell
     :if (executable-find "hunspell")
     :custom
@@ -2389,7 +2432,7 @@ Change re-builder syntax
 #+begin_src emacs-lisp
   ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
   (use-package re-builder
-    :straight nil
+    :ensure nil
     :commands re-builder
     :custom
     (reb-re-syntax 'string))
@@ -2400,7 +2443,7 @@ Server start.
 
 #+begin_src emacs-lisp
   (use-package server
-    :straight nil
+    :ensure nil
     :config
     (unless (server-running-p)
       (server-start)))
@@ -2409,7 +2452,7 @@ Server start.
 Major mode for interacting with a terminal
 #+begin_src emacs-lisp
   (use-package term
-    :straight nil
+    :ensure nil
     :commands term
     :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
     :custom
@@ -2420,7 +2463,7 @@ Major mode for interacting with a terminal
 remote file editing through ssh/scp.
 #+begin_src emacs-lisp
   (use-package tramp
-    :straight nil
+    :ensure nil
     :custom
     (tramp-verbose 0)
     (tramp-otp-password-prompt-regexp
@@ -2788,10 +2831,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :config
     ;; Free the RET key for less intrusive behavior.
     (keymap-unset corfu-map "RET")
-    (when (featurep 'straight)
-      (add-to-list 'load-path
-                   (expand-file-name "straight/build/corfu/extensions"
-                                     straight-base-dir)))
     (require 'corfu-echo)
     (require 'corfu-history)
     (require 'corfu-popupinfo)
@@ -2809,10 +2848,10 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; Recommended: Enable Corfu globally.
     ;; This is recommended since Dabbrev can be used globally (M-/).
     ;; See also `corfu-exclude-modes'.
-    ((after-init . global-corfu-mode)
-     (after-init . corfu-popupinfo-mode)
-     (after-init . corfu-echo-mode)
-     (after-init . corfu-history-mode)
+    ((elpaca-after-init . global-corfu-mode)
+     (elpaca-after-init . corfu-popupinfo-mode)
+     (elpaca-after-init . corfu-echo-mode)
+     (elpaca-after-init . corfu-history-mode)
      ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
      (eshell-mode-hook . (lambda ()
                            (setq-local corfu-auto nil)
@@ -2830,7 +2869,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 
 #+begin_src emacs-lisp
   (use-package corfu-candidate-overlay
-    :straight (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
+    :ensure (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
     :after corfu
     :hook
     ;; enable corfu-candidate-overlay mode globally
@@ -2840,7 +2879,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
   (use-package dabbrev
-    :straight nil
+    :ensure nil
     ;; Swap M-/ and C-M-/
     :bind (("M-/" . dabbrev-completion)
            ("C-M-/" . dabbrev-expand))
@@ -2923,7 +2962,7 @@ Consult users will also want the embark-consult package.
 **** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 #+begin_src emacs-lisp
   (use-package lsp-snippet
-    :straight (:host github :repo "svaante/lsp-snippet")
+    :ensure (:host github :repo "svaante/lsp-snippet")
     :demand t
     :after tempel eglot
     :config
@@ -3057,26 +3096,14 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
             (cdr args)))
     :config
     (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
-    ;; from: https://github.com/SystemCrafters/crafted-emacs/blob/c9ab29592b728954d3acc11d66e76cfbfbcb6189/modules/crafted-completion.el#L43
-    ;; Straight and Package bundle the vertico package differently. When
-    ;; using `package.el', the extensions are built into the package and
-    ;; available on the load-path. When using `straight.el', the
-    ;; extensions are not built into the package, so have to add that path
-    ;; to the load-path manually to enable the following require.
-    (when (featurep 'straight)
-      (add-to-list 'load-path
-                   (expand-file-name "straight/build/vertico/extensions"
-                                     straight-base-dir)))
     (require 'vertico-directory)
-
     :bind
     ;; Improve directory navigation
     (:map vertico-map
           ("<return>" . vertico-directory-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
-     (after-init . vertico-mode)))
+     (elpaca-after-init . vertico-mode)))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
@@ -3217,7 +3244,7 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 **** project :build_in:
 #+begin_src emacs-lisp
   (use-package project
-    :straight nil
+    :ensure nil
     :autoload project-prefix-map
     :bind
     (:map my/leader-map
@@ -3237,7 +3264,7 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 Enhancements to Emacs' built in project library.
 #+begin_src emacs-lisp
   (use-package project-x
-    :straight (:host github :repo "karthink/project-x")
+    :ensure (:host github :repo "karthink/project-x")
     :after project
     :bind (:map project-prefix-map
                 ("S" . project-x-window-state-save)
@@ -3253,7 +3280,7 @@ Enhancements to Emacs' built in project library.
 Tab group based workflow isolation.
 #+begin_src emacs-lisp
   (use-package auto-tab-groups
-    :straight (:host github :repo "MArpogaus/auto-tab-groups")
+    :ensure (:host github :repo "MArpogaus/auto-tab-groups")
     :after tab-bar mood-line project nerd-icons
     :custom
     ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
@@ -3298,7 +3325,7 @@ Tab group based workflow isolation.
 **** speedbar :build_in:
 #+begin_src emacs-lisp
   (use-package speedbar
-    :straight nil
+    :ensure nil
     :custom
     (speedbar-frame-parameters
      '((name . "speedbar")
@@ -3489,7 +3516,7 @@ Emacs utilities for code split into cells, including Jupyter notebooks.
 Structured Editing and Navigation in Emacs.
 #+begin_src emacs-lisp
   (use-package combobulate
-    :straight (:host github :repo "mickeynp/combobulate" :nonrecursive t)
+    :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
     ;; Disable combobulate key prefix 
     (combobulate-key-prefix nil)
@@ -3579,13 +3606,14 @@ An emacs mode for handling Dockerfiles.
     :mode "\\.dockerfile\\'"
     :mode "\\.containerfile\\'")
   (use-package tramp-container
-    :straight nil
+    :ensure nil
     :after docker)
 #+end_src
-**** [[https://github.com/emacs-straight/eglot.git][eglot]]
+**** [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
   (use-package eglot
+    :ensure nil
     :after project
     :preface
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
@@ -3628,25 +3656,23 @@ Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]]
 #+begin_src emacs-lisp
   (use-package eglot-booster
     :after eglot
-    :straight (:host github :repo "jdtsmith/eglot-booster")
+    :ensure (:host github :repo "jdtsmith/eglot-booster")
     :init (eglot-booster-mode))
 #+end_src
-**** [[https://github.com/emacs-straight/eldoc.git][eldoc]]
+**** [[https://github.com/emacs-straight/eldoc.git][eldoc]] :build_in:
 Configure emacs documentation support.
 #+begin_src emacs-lisp
   (use-package eldoc
-    :after eglot
+    :ensure nil
     :custom
     (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
     :bind
     (:map my/lsp-map
           ("d" . eldoc-doc-buffer))
     :config
-    (add-to-list 'display-buffer-alist
-                 '("^\\*eldoc for" display-buffer-at-bottom
-                   (window-height . 4)))
     (eldoc-add-command-completions "paredit-")
-    (eldoc-add-command-completions "combobulate-"))
+    (with-eval-after-load 'combobulate
+      (eldoc-add-command-completions "combobulate-")))
 #+end_src
 **** [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
 Childframe doc for eglot and anything that uses eldoc.
@@ -3676,7 +3702,7 @@ Emacs support for direnv which operates buffer-locally.
     ;; The global mode should be enabled late in the startup sequence,
     ;; to prevent inference with other other global minor modes.
     ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-    (add-hook 'after-init-hook #'envrc-global-mode 99))
+    (add-hook 'elpaca-after-init-hook #'envrc-global-mode 98))
 #+end_src
 **** [[https://github.com/emacs-ess/ESS.git][ESS]]
 Emacs Speaks Statistics: ESS.
@@ -3719,10 +3745,11 @@ Consistent ESS-like eval interface for various REPLs.
     (((python-mode python-ts-mode) . my/setup-eir-python)
      ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 #+end_src
-**** [[https://github.com/emacs-straight/flymake.git][flymake]]
+**** [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
 Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
   (use-package flymake
+    :ensure nil
     :after project
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
@@ -3772,7 +3799,7 @@ Py-isort.el integrates isort into Emacs.
 **** python :build_in:
 #+begin_src emacs-lisp
   (use-package python
-    :straight nil
+    :ensure nil
     :preface
     (defun my/find-python-interpreter-advice (&rest _)
       "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
@@ -3797,7 +3824,7 @@ Py-isort.el integrates isort into Emacs.
 Generate Sphinx friendly docstrings for Python functions in Emacs.
 #+begin_src emacs-lisp
   (use-package sphinx-doc
-    :straight (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
+    :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
     :hook
     (python-mode . sphinx-doc-mode))
 #+end_src
@@ -3825,13 +3852,13 @@ built-in tree-sitter integration for Emacs
     :custom
     (treesit-auto-install 'prompt)
     :hook
-    (after-init . global-treesit-auto-mode))
+    (elpaca-after-init . global-treesit-auto-mode))
 #+end_src
 **** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
 Code-folding using =treesit.el=.
 #+begin_src emacs-lisp
   (use-package treesit-fold
-    :straight (:host github :repo "emacs-tree-sitter/treesit-fold")
+    :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
     :custom
     ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
     (treesit-fold-indicators-priority -1)
@@ -3869,7 +3896,7 @@ The emacs major mode for editing files in the YAML data serialization format.
 Meow is yet another modal editing mode for Emacs.
 #+begin_src emacs-lisp
   (use-package meow
-    :straight (:build (:not autoloads))
+    ;; :ensure (:build (:not autoloads))
     :demand t
     :custom
     ;; use system clipboard
@@ -3983,7 +4010,7 @@ Meow is yet another modal editing mode for Emacs.
           ("z" . meow-pop-selection))
     :hook
     ((git-timemachine-mode . my/meow-git-timemachine-hook)
-     (after-init . meow-global-mode)))
+     (elpaca-after-init . meow-global-mode)))
 #+end_src
 **** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.

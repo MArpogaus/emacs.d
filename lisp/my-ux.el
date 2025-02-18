@@ -1,8 +1,8 @@
-;;; my-ux.el --- Emacs configuration file  -*- no-byte-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2024 Marcel Arpogaus
+;;; my-ux.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2024-12-29
+;; Created: 2025-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -30,17 +30,20 @@
 ;; Revert buffers when the underlying file has changed
 
 (use-package autorevert
-  :straight nil
+  :ensure nil
   :custom
   ;; Revert Dired and other buffers
   (global-auto-revert-non-file-buffers t)
+  ;; Avoid polling for changes and rathe get notified by the system
+  (auto-revert-use-notify t)
+  (auto-revert-avoid-polling t)
   :hook
-  (after-init . global-auto-revert-mode))
+  (elpaca-after-init . global-auto-revert-mode))
 
 ;; bookmark :build_in:
 
 (use-package bookmark
-  :straight nil
+  :ensure nil
   :custom
   (bookmark-save-flag 1))
 
@@ -56,7 +59,7 @@
 ;; Replace selected text when typing
 
 (use-package delsel
-  :straight nil
+  :ensure nil
   :hook
   ((prog-mode conf-mode text-mode) . delete-selection-mode))
 
@@ -64,7 +67,7 @@
 ;; Automatically add closing parentheses, quotes, etc.
 
 (use-package elec-pair
-  :straight nil
+  :ensure nil
   :hook
   ((prog-mode conf-mode) . electric-pair-mode))
 
@@ -74,7 +77,7 @@
 ;; https://karthinks.com/software/scaling-latex-previews-in-emacs/
 
 (use-package face-remap
-  :straight nil
+  :ensure nil
   :preface
   (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
 
@@ -148,6 +151,19 @@ buffer's text scale."
   (:map my/toggle-map
         ("m" . minimap-mode)))
 
+;; [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
+;; Prevent windows from jumping on minibuffer activation.
+
+(use-package mini-ontop
+  :ensure (:host github :repo "hkjels/mini-ontop.el")
+  :custom
+  (mini-ontop-lines 22)
+  :config
+  (with-eval-after-load 'embark
+    (add-to-list 'mini-ontop-ignore-predicates (lambda nil (eq this-command #'embark-act))))
+  :hook
+  (elpaca-after-init . mini-ontop-mode))
+
 ;; [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
 
 (use-package multiple-cursors
@@ -170,7 +186,7 @@ buffer's text scale."
 ;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
 
 (use-package outline
-  :straight nil
+  :ensure nil
   :preface
   (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
   (defun my/outline-mode-hook nil
@@ -197,7 +213,7 @@ buffer's text scale."
 
 
 (use-package paren
-  :straight nil
+  :ensure nil
   :custom
   (show-paren-style 'parenthesis)
   (show-paren-when-point-in-periphery t)
@@ -208,44 +224,50 @@ buffer's text scale."
 ;; [[https://github.com/karthink/popper.git][popper]]
 
 (use-package popper
-  :bind
-  (:map my/toggle-map
-        ("p" . popper-toggle)
-        ("P" . popper-toggle-type))
-  :custom
-  ;; Define popup buffers
-  (popper-reference-buffers
-   '("\\*Messages\\*"
-     "Output\\*$"
-     "\\*Async Shell Command\\*"
-     "\\*Process List\\*"
-     help-mode
-     helpful-mode
-     compilation-mode
-     "^\\*.*eshell.*\\*$" eshell-mode ;eshell as a popup
-     "^\\*.*shell.*\\*$"  shell-mode  ;shell as a popup
-     "^\\*.*term.*\\*$"   term-mode   ;term as a popup
-     "^\\*.*vterm.*\\*$"  vterm-mode  ;vterm as a popup
-     "^\\*Flymake diagnostics for .*\\*" flymake-diagnostics-buffer-mode
-     ))
-  ;; grouping popups by project
-  (popper-mode-line nil)
   :preface
   (defun my/popper-toggle-advice (&rest _)
     (with-current-buffer (current-buffer)
       (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
+  (defun my/popper-open-popup ()
+    (tab-line-mode -1))
   (defun my/popper-display-function (buffer &optional alist)
     (popper-select-popup-at-bottom buffer alist)
     (with-current-buffer buffer
       (tab-line-mode -1)))
+  :custom
+  ;; Define popup buffers
+  (popper-reference-buffers
+   '("\\*Messages\\*"
+     "\\*Async Shell Command\\*"
+     "\\*Process List\\*"
+     help-mode
+     helpful-mode
+     "^\\*.*eshell.*\\*$" eshell-mode ; eshell as a popup
+     "^\\*.*shell.*\\*$"  shell-mode  ; shell as a popup
+     "^\\*.*term.*\\*$"   term-mode   ; term as a popup
+     "^\\*.*vterm.*\\*$"  vterm-mode  ; vterm as a popup
+     "^\\*Flymake diagnostics for .*\\*$" flymake-diagnostics-buffer-mode
+     "\\*diff-hl\\*$" ; diff shown wehn reverting hunks with diff-hl
+     "magit:.*$" magit-status-mode
+     "magit-diff:.*$" magit-diff-mode
+     ("Output\\*$" . hide)
+     ("\\*Compile-Log\\$*" . hide)
+     (compilation-mode . hide)))
+  ;; grouping popups by project
+  (popper-mode-line nil)
+  (popper-display-function #'my/popper-display-function)
   :config
   (with-eval-after-load 'project
     (setq popper-group-function #'popper-group-by-project))
-  (setq popper-display-function #'my/popper-display-function)
   (advice-add #'popper-toggle-type :after #'my/popper-toggle-advice)    
+  :bind
+  (:map my/toggle-map
+        ("p" . popper-toggle)
+        ("P" . popper-toggle-type))
   :hook
-  ((after-init . popper-mode)
-   (after-init . popper-echo-mode)))
+  ((elpaca-after-init . popper-mode)
+   (elpaca-after-init . popper-echo-mode)
+   (popper-open-popup . my/popper-open-popup)))
 
 ;; recentf :build_in:
 
@@ -253,7 +275,7 @@ buffer's text scale."
 
 
 (use-package recentf
-  :straight nil
+  :ensure nil
   :custom
   (recentf-keep '(file-remote-p file-readable-p))
   (recentf-max-menu-items 10)
@@ -267,13 +289,13 @@ buffer's text scale."
   (:map my/open-map
         ("r" . recentf-open))
   :hook
-  (after-init . recentf-mode))
+  (elpaca-after-init . recentf-mode))
 
 ;; repeat :build_in:
 ;; Enable repeat maps
 
 (use-package repeat
-  :straight nil
+  :ensure nil
   :preface
   ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
   (defun my/repeatize-keymap (keymap)
@@ -287,7 +309,7 @@ buffer's text scale."
   (with-eval-after-load 'smerge-mode
     (my/repeatize-keymap 'smerge-basic-map))
   :hook
-  (after-init . repeat-mode))
+  (elpaca-after-init . repeat-mode))
 
 ;; [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 ;; Rotate the layout of emacs.
@@ -301,7 +323,7 @@ buffer's text scale."
 ;; savehist :build_in:
 
 (use-package savehist
-  :straight nil
+  :ensure nil
   :custom
   (kill-ring-max 500)
   (history-length 500)
@@ -331,26 +353,35 @@ buffer's text scale."
   (put 'bookmark-history           'history-length 250)
   :hook
   ;;Start history mode.
-  (after-init . savehist-mode))
+  (elpaca-after-init . savehist-mode))
 
 ;; saveplace :build_in:
 ;; Record cursor position from one session to the other
 
 (use-package saveplace
-  :straight nil
+  :ensure nil
   :hook
-  (after-init . save-place-mode))
+  (elpaca-after-init . save-place-mode))
 
 ;; time-stamp :build_in:
 ;; Automatically update file timestamps when file is saved
 
 (use-package time-stamp
-  :straight nil
+  :ensure nil
   :custom
   (time-stamp-active t)
   (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
   :hook
   (before-save . time-stamp))
+
+;; [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
+;; Writable grep buffer and apply the changes to files.
+
+(use-package wgrep
+  :after grep
+  :demand t
+  :custom
+  (wgrep-auto-save-buffer t))
 
 ;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 ;; Distraction-free writing for Emacs.
