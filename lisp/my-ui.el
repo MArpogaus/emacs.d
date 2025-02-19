@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-18
+;; Created: 2025-02-19
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -51,9 +51,7 @@
 
 (use-package hide-mode-line
   :hook
-  ((completion-list-mode . hide-mode-line-mode)
-   (Man-mode             . hide-mode-line-mode)
-   (symbols-outline-mode . hide-mode-line-mode)))
+  (symbols-outline-mode . hide-mode-line-mode))
 
 ;; hl-line :build_in:
 
