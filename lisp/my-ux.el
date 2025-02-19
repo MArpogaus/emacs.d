@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-18
+;; Created: 2025-02-19
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,6 +13,44 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
+
+;; [[https://github.com/abo-abo/ace-window.git][ace-window]]
+;; Quickly switch windows in Emacs.
+
+(use-package ace-window
+  :preface
+  ;; https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window
+  (defun my/ace-window-prefix ()
+    "Use `ace-window' to display the buffer of the next command.
+The next buffer is the buffer displayed by the next command invoked
+immediately after this command (ignoring reading from the minibuffer).
+Creates a new window before displaying the buffer.
+When `switch-to-buffer-obey-display-actions' is non-nil,
+`switch-to-buffer' commands are also supported."
+    (interactive)
+    (display-buffer-override-next-command
+     (lambda (buffer _)
+       (let (window type)
+         (setq
+          window (aw-select (propertize " ACE" 'face 'mode-line-highlight))
+          type 'reuse)
+         (cons window type)))
+     nil "[ace-window]")
+    (message "Use `ace-window' to display next command buffer..."))
+  :custom
+  (aw-dispatch-always t)
+  (aw-minibuffer-flag nil)
+  ;; Make Emacs ask where to place a new buffer
+  (display-buffer-base-action '((display-buffer-reuse-window
+                                 display-buffer-in-previous-window
+                                 ace-display-buffer)))
+  :autoload ace-display-buffer
+  :config
+  ;; Ignore the inibuffer
+  (add-to-list 'aw-ignored-buffers 'minibuffer-mode)
+  :bind
+  (("M-O" . ace-window)
+   ("M-o" . my/ace-window-prefix)))
 
 ;; [[https://github.com/emacscollective/auto-compile.git][auto-compile]]
 ;; Automatically compile outdated Emacs Lisp libraries.
@@ -225,49 +263,121 @@ buffer's text scale."
 
 (use-package popper
   :preface
-  (defun my/popper-toggle-advice (&rest _)
-    (with-current-buffer (current-buffer)
-      (tab-line-mode (if (eq popper-popup-status 'raised) 1 -1))))
-  (defun my/popper-open-popup ()
-    (tab-line-mode -1))
-  (defun my/popper-display-function (buffer &optional alist)
-    (popper-select-popup-at-bottom buffer alist)
-    (with-current-buffer buffer
-      (tab-line-mode -1)))
+  (defvar my/popper-top-modes-list
+    '(flymake-diagnostics-buffer-mode
+      locate-mode
+      occur-mode
+      xref--xref-buffer-mode)
+    "List of major-modes displayed above.")
+
+  (defvar my/popper-top-names-list
+    '("^\\*TeX Help\\*$"
+      "^\\*TeX errors\\*$"
+      "^COMMIT_EDITMSG$")
+    "List of buffer names displayed above.")
+
+  (defvar my/popper-bottom-modes-list
+    '(eshell-mode
+      shell-mode
+      term-mode
+      vterm-mode
+      comint-mode)
+    "List of major-modes displayed below.")
+
+  (defvar my/popper-bottom-names-list
+    '("^\\*.*eshell.*\\*$"
+      "^\\*.*shell.*\\*$"
+      "^\\*.*term.*\\*$"
+      "^\\*.*vterm.*\\*$"
+      "^\\*diff-hl\\*$"
+      "^\\*Process List\\*$")
+    "List of buffer names displayed below.")
+
+  (defvar my/popper-right-modes-list
+    '(Info-mode
+      TeX-output-mode
+      pdf-view-mode
+      eldoc-mode
+      grep-mode
+      help-mode
+      helpful-mode
+      magit-status-mode)
+    "List of major-modes displayed right.")
+
+  (defvar my/popper-right-names-list
+    '("^\\*eldoc.*\\*$"
+      "^\\*info\\*$"
+      "^magit-diff:.*$")
+    "List of buffer names displayed right.")
+
+  (defun my/get-buffer-match-condtion (modes-list &optional names-list)
+    (let ((modes-cond `(or ,@(mapcar (lambda (mode) `(derived-mode . ,mode)) modes-list))))
+      (if names-list `(or ,modes-cond (or ,@names-list))
+        modes-cond)))
+  (setq magit-display-buffer-function #'display-buffer
+        magit-commit-diff-inhibit-same-window t)
+  (setq display-buffer-alist
+        `(
+          ;; Windows on top
+          (,(my/get-buffer-match-condtion my/popper-top-modes-list my/popper-top-names-list)
+           (display-buffer-in-side-window)
+           (direction . above)
+           (side . top)
+           (window-height . (lambda (win) (fit-window-to-buffer win 20 10)))
+           (dedicated . t)
+           (window-parameters . ((tab-line-format . none)
+                                 (mode-line-format . none))))
+          ;; Windows on the right side
+          (,(my/get-buffer-match-condtion my/popper-right-modes-list my/popper-right-names-list)
+           (display-buffer-in-side-window)
+           (side . right)
+           (window-width . 80)
+           (dedicated . t)
+           (inhibit-same-window . t)
+           (window-parameters . ((tab-line-format . none)
+                                 (mode-line-format . none))))
+          ;; Windows at the bottom
+          (,(my/get-buffer-match-condtion my/popper-bottom-modes-list my/popper-bottom-names-list)
+           (display-buffer-in-side-window)
+           (side . bottom)
+           (preserve-size . (nil . t))
+           (window-height . 20)
+           (dedicated . t)
+           (window-parameters . ((tab-line-format . none)
+                                 (mode-line-format . none))))))
+
+  ;; (setq window-combination-resize t
+  ;;       even-window-sizes 'height-only
+  ;;       window-sides-vertical t
+  ;;       fit-window-to-buffer-horizontally t)
+
   :custom
   ;; Define popup buffers
   (popper-reference-buffers
-   '("\\*Messages\\*"
-     "\\*Async Shell Command\\*"
-     "\\*Process List\\*"
-     help-mode
-     helpful-mode
-     "^\\*.*eshell.*\\*$" eshell-mode ; eshell as a popup
-     "^\\*.*shell.*\\*$"  shell-mode  ; shell as a popup
-     "^\\*.*term.*\\*$"   term-mode   ; term as a popup
-     "^\\*.*vterm.*\\*$"  vterm-mode  ; vterm as a popup
-     "^\\*Flymake diagnostics for .*\\*$" flymake-diagnostics-buffer-mode
-     "\\*diff-hl\\*$" ; diff shown wehn reverting hunks with diff-hl
-     "magit:.*$" magit-status-mode
-     "magit-diff:.*$" magit-diff-mode
-     ("Output\\*$" . hide)
-     ("\\*Compile-Log\\$*" . hide)
-     (compilation-mode . hide)))
-  ;; grouping popups by project
-  (popper-mode-line nil)
-  (popper-display-function #'my/popper-display-function)
+   (append my/popper-top-modes-list
+           my/popper-top-names-list
+           my/popper-right-modes-list
+           my/popper-right-names-list
+           my/popper-bottom-modes-list
+           my/popper-bottom-names-list
+           '(("^\\*Warnings\\*$" . hide)
+             ("^\\*Compile-Log\\*$" . hide)
+             ("^\\*[Oo]utput\\*" . hide)
+             ("^\\*Async Shell Command\\*$" . hide)
+             ("^\\*Detached Shell Command\\*$" . hide))))
+  ;; Respect the rules in display-buffer-alist
+  (popper-display-control 'user)
   :config
+  ;; grouping popups by project
   (with-eval-after-load 'project
     (setq popper-group-function #'popper-group-by-project))
-  (advice-add #'popper-toggle-type :after #'my/popper-toggle-advice)    
   :bind
   (:map my/toggle-map
         ("p" . popper-toggle)
         ("P" . popper-toggle-type))
   :hook
   ((elpaca-after-init . popper-mode)
-   (elpaca-after-init . popper-echo-mode)
-   (popper-open-popup . my/popper-open-popup)))
+   (elpaca-after-init . popper-echo-mode)))
 
 ;; recentf :build_in:
 
