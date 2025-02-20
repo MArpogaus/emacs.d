@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-19
+;; Created: 2025-02-20
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -141,8 +141,6 @@
   ;; Miscellaneous
   (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
   (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
-  (window-resize-pixelwise t)                          ; Resize windows pixelwise
-  (frame-resize-pixelwise t)                           ; Resize frame pixelwise
   (windmove-mode nil)                                  ; Diasble windmove mode
   (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
   (custom-buffer-done-kill t)                          ; Kill custom buffer when done
@@ -288,7 +286,6 @@ Refference: https://emacs.stackexchange.com/a/13432"
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
   (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
   (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
@@ -300,7 +297,6 @@ Refference: https://emacs.stackexchange.com/a/13432"
   (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
   (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
   (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
 
   (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
   (define-key my/leader-map (kbd "h") (cons "help" help-map))
@@ -345,29 +341,7 @@ Refference: https://emacs.stackexchange.com/a/13432"
    ("t" . term)
    ("s" . scratch-buffer)
    :map my/toggle-map
-   ("M" . my/minimal-ui-mode)
-   :map global-map
-   ("M-o" . other-window-prefix)
-   ("M-t" . other-tab-prefix)
-   ("M-f" . other-frame-prefix)
-   :repeat-map my/window-map
-   ("n" . next-window-any-frame)
-   ("p" . previous-window-any-frame)
-   ("k" . delete-window)
-   ("K" . kill-buffer-and-window)
-   ("+" . enlarge-window)
-   ("-" . shrink-window)
-   ("*" . enlarge-window-horizontally)
-   ("’" . shrink-window-horizontally)
-   ("r" . split-window-right)
-   ("b" . split-window-below)
-   ("v" . split-window-vertically)
-   ("h" . split-window-horizontally)
-   ("m" . delete-other-windows)
-   ("m" . delete-other-windows)
-   ("M" . delete-other-windows-vertically)
-   :exit
-   ("=" . balance-windows)))
+   ("M" . my/minimal-ui-mode)))
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.

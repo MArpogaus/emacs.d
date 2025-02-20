@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-19
+;; Created: 2025-02-20
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -259,126 +259,6 @@ buffer's text scale."
   :hook
   (prog-mode . show-paren-mode))
 
-;; [[https://github.com/karthink/popper.git][popper]]
-
-(use-package popper
-  :preface
-  (defvar my/popper-top-modes-list
-    '(flymake-diagnostics-buffer-mode
-      locate-mode
-      occur-mode
-      xref--xref-buffer-mode)
-    "List of major-modes displayed above.")
-
-  (defvar my/popper-top-names-list
-    '("^\\*TeX Help\\*$"
-      "^\\*TeX errors\\*$"
-      "^COMMIT_EDITMSG$")
-    "List of buffer names displayed above.")
-
-  (defvar my/popper-bottom-modes-list
-    '(eshell-mode
-      shell-mode
-      term-mode
-      vterm-mode
-      comint-mode)
-    "List of major-modes displayed below.")
-
-  (defvar my/popper-bottom-names-list
-    '("^\\*.*eshell.*\\*$"
-      "^\\*.*shell.*\\*$"
-      "^\\*.*term.*\\*$"
-      "^\\*.*vterm.*\\*$"
-      "^\\*diff-hl\\*$"
-      "^\\*Process List\\*$")
-    "List of buffer names displayed below.")
-
-  (defvar my/popper-right-modes-list
-    '(Info-mode
-      TeX-output-mode
-      pdf-view-mode
-      eldoc-mode
-      grep-mode
-      help-mode
-      helpful-mode
-      magit-status-mode)
-    "List of major-modes displayed right.")
-
-  (defvar my/popper-right-names-list
-    '("^\\*eldoc.*\\*$"
-      "^\\*info\\*$"
-      "^magit-diff:.*$")
-    "List of buffer names displayed right.")
-
-  (defun my/get-buffer-match-condtion (modes-list &optional names-list)
-    (let ((modes-cond `(or ,@(mapcar (lambda (mode) `(derived-mode . ,mode)) modes-list))))
-      (if names-list `(or ,modes-cond (or ,@names-list))
-        modes-cond)))
-  (setq magit-display-buffer-function #'display-buffer
-        magit-commit-diff-inhibit-same-window t)
-  (setq display-buffer-alist
-        `(
-          ;; Windows on top
-          (,(my/get-buffer-match-condtion my/popper-top-modes-list my/popper-top-names-list)
-           (display-buffer-in-side-window)
-           (direction . above)
-           (side . top)
-           (window-height . (lambda (win) (fit-window-to-buffer win 20 10)))
-           (dedicated . t)
-           (window-parameters . ((tab-line-format . none)
-                                 (mode-line-format . none))))
-          ;; Windows on the right side
-          (,(my/get-buffer-match-condtion my/popper-right-modes-list my/popper-right-names-list)
-           (display-buffer-in-side-window)
-           (side . right)
-           (window-width . 80)
-           (dedicated . t)
-           (inhibit-same-window . t)
-           (window-parameters . ((tab-line-format . none)
-                                 (mode-line-format . none))))
-          ;; Windows at the bottom
-          (,(my/get-buffer-match-condtion my/popper-bottom-modes-list my/popper-bottom-names-list)
-           (display-buffer-in-side-window)
-           (side . bottom)
-           (preserve-size . (nil . t))
-           (window-height . 20)
-           (dedicated . t)
-           (window-parameters . ((tab-line-format . none)
-                                 (mode-line-format . none))))))
-
-  ;; (setq window-combination-resize t
-  ;;       even-window-sizes 'height-only
-  ;;       window-sides-vertical t
-  ;;       fit-window-to-buffer-horizontally t)
-
-  :custom
-  ;; Define popup buffers
-  (popper-reference-buffers
-   (append my/popper-top-modes-list
-           my/popper-top-names-list
-           my/popper-right-modes-list
-           my/popper-right-names-list
-           my/popper-bottom-modes-list
-           my/popper-bottom-names-list
-           '(("^\\*Warnings\\*$" . hide)
-             ("^\\*Compile-Log\\*$" . hide)
-             ("^\\*[Oo]utput\\*" . hide)
-             ("^\\*Async Shell Command\\*$" . hide)
-             ("^\\*Detached Shell Command\\*$" . hide))))
-  ;; Respect the rules in display-buffer-alist
-  (popper-display-control 'user)
-  :config
-  ;; grouping popups by project
-  (with-eval-after-load 'project
-    (setq popper-group-function #'popper-group-by-project))
-  :bind
-  (:map my/toggle-map
-        ("p" . popper-toggle)
-        ("P" . popper-toggle-type))
-  :hook
-  ((elpaca-after-init . popper-mode)
-   (elpaca-after-init . popper-echo-mode)))
-
 ;; recentf :build_in:
 
 ;; 50 Recents files with some exclusion (regex patterns).
@@ -498,6 +378,204 @@ buffer's text scale."
 
 (use-package writeroom-mode
   :bind (:map my/toggle-map ("z" . writeroom-mode)))
+
+;; window :build_in:
+
+(use-package window
+  :ensure nil
+  :preface
+  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+
+  (defvar my/top-side-window-modes-list
+    '(flymake-diagnostics-buffer-mode
+      locate-mode
+      occur-mode
+      grep-mode
+      xref--xref-buffer-mode)
+    "List of major-modes displayed above.")
+
+  (defvar my/top-side-window-names-list
+    '("^\\*TeX Help\\*$"
+      "^\\*TeX errors\\*$"
+      "^COMMIT_EDITMSG$")
+    "List of buffer names displayed above.")
+
+  (defvar my/bottom-side-window-modes-list
+    '(eshell-mode
+      shell-mode
+      term-mode
+      vterm-mode
+      comint-mode
+      debugger-mode)
+    "List of major-modes displayed below.")
+
+  (defvar my/bottom-side-window-names-list
+    '("^\\*.*eshell.*\\*$"
+      "^\\*.*shell.*\\*$"
+      "^\\*.*term.*\\*$"
+      "^\\*.*vterm.*\\*$"
+      "^\\*diff-hl\\*$"
+      "^\\*Process List\\*$")
+    "List of buffer names displayed below.")
+
+  (defvar my/right-side-window-modes-list
+    '(Info-mode
+      TeX-output-mode
+      pdf-view-mode
+      eldoc-mode
+      help-mode
+      helpful-mode
+      magit-status-mode
+      magit-log-mode
+      magit-diff-mode
+      magit-process-mode
+      shortdoc-mode)
+    "List of major-modes displayed right.")
+
+  (defvar my/right-side-window-names-list
+    '("^\\*eldoc.*\\*$"
+      "^\\*info\\*$"
+      "^magit-diff:.*$")
+    "List of buffer names displayed right.")
+
+  (defvar my/side-window-parameters
+    '((no-other-window . t)
+      (tab-line-format . none)
+      (mode-line-format . none))
+    "window parameters used for side-windows.")
+
+  (defun my/get-buffer-match-condtion (majormodes &optional buffernames)
+    "Get condition to match buffers with given MAJORMODES od BUFFERNAMES."
+    (let ((modes-cond `(or ,@(mapcar (lambda (mode) `(derived-mode . ,mode)) majormodes))))
+      (if buffernames `(or ,modes-cond (or ,@buffernames))
+        modes-cond)))
+
+  (defun my/get-next-free-slot-on-side (side)
+    "Return the next free window slot number for windows on SIDE.
+If no windows are present on that side, return 0. If no free slot is found, return nil."
+    (let* ((max-slots (nth (cond ((eq side 'left) 0)
+                                 ((eq side 'top) 1)
+                                 ((eq side 'right) 2)
+                                 ((eq side 'bottom) 3))
+                           window-sides-slots))
+           used-slots next-slot)
+      ;; Collect used slots
+      (dolist (win (window-list))
+        (when (equal (window-parameter win 'window-side) side)
+          (let ((slot (window-parameter win 'window-slot)))
+            (when slot
+              (setq used-slots (cons slot used-slots))))))
+
+      (unless (null used-slots)
+        ;; Find the next free slot
+        (catch 'next-slot
+          (dotimes (i max-slots)
+            (unless (member i used-slots)
+              (throw 'next-slot i)))))))
+  (defun my/display-buffer-in-side-window-next-free-slot (buffer alist)
+    "Display BUFFER in a side window, using the next free slot if not provided in ALIST.
+ALIST can contain the side and optionally the slot. If the slot is not given,
+the function finds the next available slot for that side."
+    (let* ((side (cdr (assq 'side alist)))
+           (slot (or (cdr (assq 'slot alist)) (my/get-next-free-slot-on-side side))))
+      (message (format "displaying buffer in slot: %s" slot))
+      (add-to-list 'alist `(slot . ,slot))
+      (display-buffer-in-side-window buffer alist)))
+  (defun my/toggle-side-window nil
+    "Place the current buffer in the side window at the bottom."
+    (interactive)
+    (let ((window (selected-window))
+          (buf (current-buffer)))
+      (with-selected-window window
+        (cond
+         ((window-parameter window 'window-side)
+          (progn
+            (setq-local was-side-window t)
+            ;; (let ((display-buffer-overriding-action
+            ;;        `(display-buffer-in-previous-window . ((previous-window . ,(previous-window window))))))
+            ;;   (display-buffer buf))
+            (display-buffer-in-previous-window
+             buf
+             `((previous-window . ,(previous-window window))))
+            (delete-window window)))
+         ((local-variable-if-set-p 'was-side-window buf)
+          (progn
+            (kill-local-variable 'was-side-window)
+            (switch-to-prev-buffer window 'bury)
+            (display-buffer buf)))
+         (t
+          (error "Not a side window"))))))
+  :custom
+  (window-resize-pixelwise t)   ; Resize windows pixelwise
+  (frame-resize-pixelwise t)    ; Resize frame pixelwise
+  (window-combination-resize t)
+  (window-sides-vertical t)
+  (window-sides-slots '(2 1 2 4)) ; maximum number of side windows on the left, top, right and bottom
+  (window-persistent-parameters
+   (append window-persistent-parameters
+           '((tab-line-format . t)
+             (mode-line-format . t))))
+  (transient-display-buffer-action
+   `(display-buffer-in-side-window
+     (side . top)
+     (dedicated . t)
+     (inhibit-same-window . t)
+     (window-parameters . ,my/side-window-parameters)))
+  :config
+  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
+  (with-eval-after-load 'magit
+    (setq magit-display-buffer-function #'display-buffer
+          magit-commit-diff-inhibit-same-window t))
+  (setq display-buffer-alist
+        `(
+          ;; Windows on top
+          (,(my/get-buffer-match-condtion my/top-side-window-modes-list my/top-side-window-names-list)
+           (my/display-buffer-in-side-window-next-free-slot)
+           (side . top)
+           (window-height . (lambda (win) (fit-window-to-buffer win 20 10)))
+           (dedicated . t)
+           (window-parameters . ,my/side-window-parameters))
+          ;; Windows on the right side
+          (,(my/get-buffer-match-condtion my/right-side-window-modes-list my/right-side-window-names-list)
+           (display-buffer-reuse-mode-window
+            my/display-buffer-in-side-window-next-free-slot)
+           (side . right)
+           (window-width . 80)
+           (dedicated . t)
+           (window-parameters . ,my/side-window-parameters))
+          ;; Windows at the bottom
+          (,(my/get-buffer-match-condtion my/bottom-side-window-modes-list my/bottom-side-window-names-list)
+           (my/display-buffer-in-side-window-next-free-slot)
+           (side . bottom)
+           (preserve-size . (nil . t))
+           (window-height . 20)
+           (dedicated . t)
+           (window-parameters . ,my/side-window-parameters))))
+  :bind
+  (("M-o" . other-window-prefix)
+   ("M-t" . other-tab-prefix)
+   ("M-f" . other-frame-prefix)
+   :map my/toggle-map
+   ("w" .  window-toggle-side-windows)
+   ("W" .  my/toggle-side-window)
+   :repeat-map my/window-map
+   ("n" . next-window-any-frame)
+   ("p" . previous-window-any-frame)
+   ("k" . delete-window)
+   ("K" . kill-buffer-and-window)
+   ("+" . enlarge-window)
+   ("-" . shrink-window)
+   ("*" . enlarge-window-horizontally)
+   ("’" . shrink-window-horizontally)
+   ("r" . split-window-right)
+   ("b" . split-window-below)
+   ("v" . split-window-vertically)
+   ("h" . split-window-horizontally)
+   ("m" . delete-other-windows)
+   ("m" . delete-other-windows)
+   ("M" . delete-other-windows-vertically)
+   :exit
+   ("=" . balance-windows)))
 
 ;; Library Footer
 
