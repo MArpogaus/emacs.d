@@ -151,23 +151,6 @@ buffer's text scale."
   :hook
   (text-scale-mode . my/text-scale-adjust-latex-previews))
 
-;; [[https://github.com/roman/golden-ratio.el.git][golden-ratio]]
-;; When working with many windows at the same time, each window has a size that is not convenient for editing.
-
-(use-package golden-ratio
-  :custom
-  (golden-ratio-exclude-modes '(speedbar-mode vundo-mode dired-mode symbols-outline-mode))
-  (golden-ratio-exclude-buffer-regexp '(" ?\\*MINIMAP\\*" " ?\\*Outline\\*"))
-  ;; (golden-ratio-auto-scale t)
-  :config
-  (add-to-list 'golden-ratio-inhibit-functions
-               (lambda ()
-                 (and which-key--buffer
-                      (window-live-p (get-buffer-window which-key--buffer)))))
-  :bind
-  (:map my/toggle-map
-        ("g" . golden-ratio-mode)))
-
 ;; [[https://github.com/dengste/minimap.git][minimap]]
 ;; Sidebar showing a "mini-map" of a buffer.
 
@@ -373,12 +356,6 @@ buffer's text scale."
   :custom
   (wgrep-auto-save-buffer t))
 
-;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
-;; Distraction-free writing for Emacs.
-
-(use-package writeroom-mode
-  :bind (:map my/toggle-map ("z" . writeroom-mode)))
-
 ;; window :build_in:
 
 (use-package window
@@ -472,7 +449,7 @@ If no windows are present on that side, return 0. If no free slot is found, retu
           (dotimes (i max-slots)
             (unless (member i used-slots)
               (throw 'next-slot i)))))))
-  (defun my/display-buffer-in-side-window-next-free-slot (buffer alist)
+  (defun my/display-buffer-in-side-window-next-free-slot (buffer &optional alist)
     "Display BUFFER in a side window, using the next free slot if not provided in ALIST.
 ALIST can contain the side and optionally the slot. If the slot is not given,
 the function finds the next available slot for that side."
@@ -510,7 +487,7 @@ the function finds the next available slot for that side."
   (frame-resize-pixelwise t)    ; Resize frame pixelwise
   (window-combination-resize t)
   (window-sides-vertical t)
-  (window-sides-slots '(2 1 2 4)) ; maximum number of side windows on the left, top, right and bottom
+  (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
   (window-persistent-parameters
    (append window-persistent-parameters
            '((tab-line-format . t)
@@ -576,6 +553,12 @@ the function finds the next available slot for that side."
    ("M" . delete-other-windows-vertically)
    :exit
    ("=" . balance-windows)))
+
+;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
+;; Distraction-free writing for Emacs.
+
+(use-package writeroom-mode
+  :bind (:map my/toggle-map ("z" . writeroom-mode)))
 
 ;; Library Footer
 
