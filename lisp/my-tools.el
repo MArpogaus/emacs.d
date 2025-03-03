@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-20
+;; Created: 2025-03-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -326,6 +326,7 @@
        (* nonl) (any ":：៖") (* blank)))
   (tramp-histfile-override nil)
   (tramp-default-method "ssh")
+  (remote-file-name-inhibit-delete-by-moving-to-trash t)
   :config
   ;; ;; Enable full-featured Dirvish over TRAMP on certain connections
   ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-async;; hronous-remote-processes-1.
