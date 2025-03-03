@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-20
+;; Created: 2025-03-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -36,7 +36,7 @@
 ;; Configure Elpaca
 
 ;; Use elpaca lockfile
-(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+;;(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
 
 ;; Install never version of transient and jsonrpc
 (setq elpaca-ignored-dependencies

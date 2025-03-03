@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-02-20
+;; Created: 2025-03-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -245,39 +245,6 @@
 
 (use-package org-cliplink
   :after org)
-
-;; [[https://github.com/minad/org-modern.git][org-modern]]
-;; This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
-
-
-(use-package org-modern
-  :custom
-  (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
-  (org-modern-star 'fold)
-  (org-modern-label-border 0.3)
-
-  ;; Edit settings
-  (org-auto-align-tags nil)
-  (org-tags-column 0)
-  (org-catch-invisible-edits 'show-and-error)
-  (org-special-ctrl-a/e t)
-  (org-insert-heading-respect-content t)
-
-  ;; Org styling, hide markup etc.
-  (org-hide-emphasis-markers t)
-  (org-pretty-entities t)
-
-  ;; Agenda styling
-  (org-agenda-tags-column 0)
-  (org-agenda-block-separator ?─)
-  (org-agenda-time-grid
-   '((daily today require-timed)
-     (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
-   "◀── now ─────────────────────────────────────────────────")
-  :hook ((org-mode . org-modern-mode)
-         (org-agenda-finalize . org-modern-agenda)))
 
 ;; [[https://github.com/jdtsmith/org-modern-indent.git][org-modern-indent]]
 ;; Modern block styling with org-indent.
