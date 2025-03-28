@@ -133,6 +133,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
    '("^\\*Backtrace\\*$"
      "^COMMIT_EDITMSG$"
      "^\\*Agenda Commands\\*$"
+     "^\\*Async-native-compile-log\\*$"
      "^\\*Compile-Log\\*$"
      "^\\*Multiple Choice Help\\*$"
      "^\\*Org Agenda\\*$"
@@ -144,6 +145,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      "^\\*Warnings\\*$"
      "^\\*diff-hl\\*$"
      "^\\*gptel-system\\*$"
+     "^\\*jinx module compilation\\*$"
      "^\\*Process List\\*$"))
   (auto-side-windows-top-buffer-modes
    '(flymake-diagnostics-buffer-mode
@@ -170,8 +172,8 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
   (auto-side-windows-right-buffer-names
    '("^\\*eldoc.*\\*$"
      "^\\*info\\*$"
-     "^magit\\-diff:.*$"
-     "^magit\\-process:.*$"
+     "^magit-diff:.*$"
+     "^magit-process:.*$"
      "^\\*Metahelp\\*$"))
   (auto-side-windows-right-buffer-modes
    '(Info-mode
@@ -407,8 +409,7 @@ buffer's text scale."
                          (setq b (get-buffer b))
                          (member b buried-popups))))
         (read-buffer "Switch to popup: " nil t pred))))
-    (if (bound-and-true-p buffer)
-        (display-buffer buffer)
+    (if buffer (display-buffer buffer)
       (message "No buried popups.")))
   :custom
   ;; Define popup buffers
@@ -417,7 +418,7 @@ buffer's text scale."
            auto-side-windows-left-buffer-names auto-side-windows-left-buffer-modes
            auto-side-windows-right-buffer-names auto-side-windows-right-buffer-modes
            auto-side-windows-bottom-buffer-names auto-side-windows-bottom-buffer-modes))
-  (popper-display-control nil)
+  (popper-display-control 'user)
   :config
   ;; grouping popups by project
   (with-eval-after-load 'project
