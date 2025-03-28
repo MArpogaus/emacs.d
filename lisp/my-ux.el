@@ -195,6 +195,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
                                                  (dolist (cookie top-side-window-face-remaps-cookies)
                                                    (face-remap-remove-relative cookie))
                                                  (kill-local-variable 'top-side-window-face-remaps-cookies))))))
+  (auto-side-windows-before-toggle-hook auto-side-windows-before-display-hook)
   (window-combination-resize t)
   (window-sides-vertical t)
   (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
