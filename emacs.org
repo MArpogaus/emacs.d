@@ -66,7 +66,6 @@ Here are some notable features:
 * Installation
 
 1. /Prerequisites:/
-*
 - *Nerd Fonts:* The configuration uses Nerd Fonts for icons. You can download and install a Nerd Font patched version of your preferred font from [[https://www.nerdfonts.com/][nerd fonts]].
 - *Command Line Utilities:* Ensure you have the following command line utilities installed:
   - [[https://pandoc.org/][pandoc]] for exporting Org mode files
@@ -224,7 +223,7 @@ The following optimizations have been inspired by:
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
-  #+end_src
+#+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
@@ -1219,7 +1218,7 @@ An Emacs plugin that hides (or masks) the current buffer's mode-line.
   (use-package hide-mode-line
     :hook
     (symbols-outline-mode . hide-mode-line-mode))
-    #+end_src
+#+end_src
 **** hl-line :build_in:
 
 Highlighting of the current line (native mode)
@@ -1376,7 +1375,7 @@ https://protesilaos.com/emacs/modus-themes
       :right
       (((mood-line-segment-process)                 . " ")
        ((mood-line-segment-buffer-status)           . " ")
-       ;; ((mood-line-segment-misc-info)               . " ")))
+       ((mood-line-segment-misc-info)               . " ")
        ((mood-line-segment-major-mode)              . " ")
        ((mood-line-segment-vc)                      . " ")
        ((mood-line-segment-checker)                 . " "))))
@@ -3597,8 +3596,6 @@ Integrated environment for *TeX*
     (TeX-parse-self t)
     ;; Disable query prompts when saving TeX files
     (TeX-save-query nil)
-    ;; Ask for master document
-    (TeX-master nil)
     ;; Enable PDF mode for TeX files
     (TeX-PDF-mode t)
     ;; Don't start server for inverse search (is already running)
