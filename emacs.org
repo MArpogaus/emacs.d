@@ -1643,6 +1643,152 @@ Revert buffers when the underlying file has changed
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
+**** auto-side-window
+#+begin_src emacs-lisp
+  (use-package auto-side-windows
+    :ensure (:host github :repo "MArpogaus/auto-side-windows")
+    :preface
+    (defun my/get-header-line-icon-for-buffer (buffer)
+      (with-current-buffer buffer
+        (unless (boundp 'header-line-icon)
+          (setq-local header-line-icon
+                      (cond
+                       ((buffer-match-p "Warning" buffer) '("  !  " . warning))
+                       ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer) '("  !  " . error))
+                       ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$") buffer) '("    " . success))
+                       ((buffer-match-p "^\\*Org Src.*\\*" buffer) '("     " . mode-line-emphasis))
+                       ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
+                       (t '("  ?  " . mode-line-emphasis)))))
+        header-line-icon))
+    (defun my/install-top-side-window-face-remaps (buffer foreground background)
+      (with-current-buffer buffer
+        (unless (bound-and-true-p top-side-window-face-remaps-cookies)
+          (setq-local top-side-window-face-remaps-cookies
+                      (list
+                       (face-remap-add-relative 'header-line
+                                                `(:box nil :underline nil :overline ,background))
+                       (face-remap-add-relative 'fringe
+                                                `(:background ,background))
+                       (face-remap-add-relative 'mode-line-active
+                                                `(:overline ,background :underline nil :height 0))
+                       (face-remap-add-relative 'mode-line-inactive
+                                                `(:overline ,background :underline nil :height 0))
+                       )))))
+    (defvar my/header-line-format-top
+      '(:eval
+        (let*
+            ((buffer (current-buffer))
+             (prefix-and-face (my/get-header-line-icon-for-buffer buffer))
+             (prefix (car prefix-and-face))
+             (background (face-foreground (cdr prefix-and-face)))
+             (foreground (face-background (cdr prefix-and-face) nil 'default))
+             (prefix-face `((t :inherit bold :background ,background :foreground ,foreground)))
+             (buffer-face `((t :inherit bold :foreground ,background))))
+          (set-window-fringes nil 1 1 t)
+          ;; (set-window-margins nil 1 1)
+          (my/install-top-side-window-face-remaps buffer foreground background)
+          (list
+           (propertize prefix 'face prefix-face 'display '(space-width 0.7))
+           (propertize (format-mode-line " %b ") 'face buffer-face)
+           (propertize " " 'display `(space :align-to right))
+           (propertize " " 'face prefix-face 'display '(space-width 1))))))
+    :custom
+    ;; Top side window configurations
+    (auto-side-windows-top-buffer-names
+     '("^\\*Backtrace\\*$"
+       "^COMMIT_EDITMSG$"
+       "^\\*Agenda Commands\\*$"
+       "^\\*Compile-Log\\*$"
+       "^\\*Multiple Choice Help\\*$"
+       "^\\*Org Agenda\\*$"
+       "^\\*Org Src.*\\*"
+       "^\\*Org-Babel Error Output\\*"
+       "^\\*Quick Help\\*$"
+       "^\\*TeX Help\\*$"
+       "^\\*TeX errors\\*$"
+       "^\\*Warnings\\*$"
+       "^\\*diff-hl\\*$"
+       "^\\*gptel-system\\*$"
+       "^\\*Process List\\*$"))
+    (auto-side-windows-top-buffer-modes
+     '(flymake-diagnostics-buffer-mode
+       locate-mode
+       occur-mode
+       grep-mode
+       xref--xref-buffer-mode))
+
+    ;; Bottom side window configurations
+    (auto-side-windows-bottom-buffer-names
+     '("^\\*.*eshell.*\\*$"
+       "^\\*.*shell.*\\*$"
+       "^\\*.*term.*\\*$"
+       "^\\*.*vterm.*\\*$"))
+    (auto-side-windows-bottom-buffer-modes
+     '(eshell-mode
+       shell-mode
+       term-mode
+       vterm-mode
+       comint-mode
+       debugger-mode))
+
+    ;; Right side window configurations
+    (auto-side-windows-right-buffer-names
+     '("^\\*eldoc.*\\*$"
+       "^\\*info\\*$"
+       "^magit\\-diff:.*$"
+       "^magit\\-process:.*$"
+       "^\\*Metahelp\\*$"))
+    (auto-side-windows-right-buffer-modes
+     '(Info-mode
+       TeX-output-mode
+       pdf-view-mode
+       eldoc-mode
+       help-mode
+       helpful-mode
+       magit-status-mode
+       magit-log-mode
+       magit-diff-mode
+       magit-process-mode
+       shortdoc-mode))
+
+    ;; Window parameters
+    (auto-side-windows-top-window-parameters `((mode-line-format . t)
+                                               (header-line-format . ,my/header-line-format-top)))
+    (auto-side-windows-before-display-hook '((lambda (buffer)
+                                               (with-current-buffer buffer
+                                                 (when (bound-and-true-p top-side-window-face-remaps-cookies)
+                                                   (dolist (cookie top-side-window-face-remaps-cookies)
+                                                     (face-remap-remove-relative cookie))
+                                                   (kill-local-variable 'top-side-window-face-remaps-cookies))))))
+    (window-combination-resize t)
+    (window-sides-vertical t)
+    (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
+    (window-persistent-parameters
+     (append window-persistent-parameters
+             '((tab-line-format . t)
+               (header-line-format . t)
+               (mode-line-format . t))))
+    (transient-display-buffer-action
+     `(display-buffer-in-side-window
+       (side . top)
+       (dedicated . t)
+       (inhibit-same-window . t)
+       (window-parameters . ,auto-side-windows-top-window-parameters)))
+    ;; (org-agenda-window-setup . nil)
+    (org-src-window-setup 'plain)
+    :bind
+    (:map my/toggle-map
+          ("w" .  window-toggle-side-windows)
+          ("W" .  auto-side-windows-toggle-side-window)
+          :map my/window-map
+          ("s" . auto-side-windows-display-buffer-on-side))
+    :config
+    (with-eval-after-load 'magit
+      (setq magit-display-buffer-function #'display-buffer
+            magit-commit-diff-inhibit-same-window t))
+    :hook
+    (elpaca-after-init . auto-side-windows-mode))
+#+end_src
 **** bookmark :build_in:
 #+begin_src emacs-lisp
   (use-package bookmark
@@ -1807,6 +1953,49 @@ Paren mode for highlighting matcing paranthesis
     :hook
     (prog-mode . show-paren-mode))
 #+end_src
+**** [[https://github.com/karthink/popper.git][popper]]
+#+begin_src emacs-lisp
+  (use-package popper
+    :after auto-side-windows
+    :preface
+    (defun my/popper-switch-to-buried-buffer (buffer)
+      "Switch to buried popup BUFFER."
+      (interactive
+       (list
+        (when-let ((buried-popups (progn (popper--find-buried-popups)
+                                         (mapcar #'cdr
+                                                 (alist-get (funcall popper-group-function)
+                                                            popper-buried-popup-alist nil nil 'equal))))
+                   (pred (lambda (b)
+                           (if (consp b) (setq b (car b)))
+                           (setq b (get-buffer b))
+                           (member b buried-popups))))
+          (read-buffer "Switch to popup: " nil t pred))))
+      (if (bound-and-true-p buffer)
+          (display-buffer buffer)
+        (message "No buried popups.")))
+    :custom
+    ;; Define popup buffers
+    (popper-reference-buffers
+     (append auto-side-windows-top-buffer-names auto-side-windows-top-buffer-modes
+             auto-side-windows-left-buffer-names auto-side-windows-left-buffer-modes
+             auto-side-windows-right-buffer-names auto-side-windows-right-buffer-modes
+             auto-side-windows-bottom-buffer-names auto-side-windows-bottom-buffer-modes))
+    (popper-display-control nil)
+    :config
+    ;; grouping popups by project
+    (with-eval-after-load 'project
+      (setq popper-group-function #'popper-group-by-project))
+    :bind
+    (:map my/toggle-map
+          ("p" . popper-toggle)
+          ("P" . popper-toggle-type)
+          :map my/buffer-map
+          ("p" . my/popper-switch-to-buried-buffer))
+    :init
+    (popper-mode)
+    (popper-echo-mode))
+#+end_src
 **** recentf :build_in:
 
 50 Recents files with some exclusion (regex patterns).
@@ -1925,259 +2114,19 @@ Writable grep buffer and apply the changes to files.
 #+end_src
 **** window :build_in:
 #+begin_src emacs-lisp
-  (defun my/get-header-line-icon-for-buffer (buffer)
-    (with-current-buffer buffer
-      (unless (boundp 'header-line-icon)
-        (setq-local header-line-icon
-                    (cond
-                     ((buffer-match-p "Warning" buffer) '("  !  " . warning))
-                     ((buffer-match-p (or "^\\*Backtrace\\*$" "[Ee]rror") buffer) '("  !  " . error))
-                     ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$") buffer) '("    " . success))
-                     ((buffer-match-p "^\\*Org Src.*\\*" buffer) '("     " . mode-line-emphasis))
-                     ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
-                     (t '("  ?  " . mode-line-emphasis)))))
-      header-line-icon))
-  (defun my/install-top-side-window-face-remaps (buffer foreground background)
-    (with-current-buffer buffer
-      (unless (bound-and-true-p top-side-window-face-remaps-cookies)
-        (setq-local top-side-window-face-remaps-cookies
-                    (list
-                     (face-remap-add-relative 'header-line
-                                              `(:box nil :underline nil :overline ,background))
-                     (face-remap-add-relative 'fringe
-                                              `(:background ,background))
-                     (face-remap-add-relative 'mode-line-active
-                                              `(:overline ,background :underline nil :height 0))
-                     (face-remap-add-relative 'mode-line-inactive
-                                              `(:overline ,background :underline nil :height 0))
-                     )))))
-  (defvar my/header-line-format-top
-    '(:eval
-      (let*
-          ((buffer (current-buffer))
-           (prefix-and-face (my/get-header-line-icon-for-buffer buffer))
-           (prefix (car prefix-and-face))
-           (background (face-foreground (cdr prefix-and-face)))
-           (foreground (face-background (cdr prefix-and-face) nil 'default))
-           (prefix-face `((t :inherit bold :background ,background :foreground ,foreground)))
-           (buffer-face `((t :inherit bold :foreground ,background))))
-        (set-window-fringes nil 1 1 t)
-        ;; (set-window-margins nil 1 1)
-        (my/install-top-side-window-face-remaps buffer foreground background)
-        (list
-         (propertize prefix 'face prefix-face 'display '(space-width 0.7))
-         (propertize (format-mode-line " %b ") 'face buffer-face)
-         (propertize " " 'display `(space :align-to right))
-         (propertize " " 'face prefix-face 'display '(space-width 1))))))
   (use-package window
     :ensure nil
     :preface
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
-
-    (defvar my/top-side-window-modes-list
-      '(flymake-diagnostics-buffer-mode
-        locate-mode
-        occur-mode
-        grep-mode
-        xref--xref-buffer-mode)
-      "List of major-modes displayed above.")
-
-    (defvar my/top-side-window-names-list
-      '("^\\*Backtrace\\*$"
-        "^\\*Compile-Log\\*$"
-        "^COMMIT_EDITMSG$"
-        "^\\*Org Src.*\\*"
-        "^\\*Agenda Commands\\*$"
-        "^\\*Org Agenda\\*$"
-        "^\\*Quick Help\\*$"
-        "^\\*Multiple Choice Help\\*$"
-        "^\\*TeX Help\\*$"
-        "^\\*TeX errors\\*$"
-        "^\\*Warnings\\*$"
-        "^\\*diff-hl\\*$"
-        "^\\*Process List\\*$")
-      "List of buffer names displayed above.")
-
-    (defvar my/bottom-side-window-modes-list
-      '(eshell-mode
-        shell-mode
-        term-mode
-        vterm-mode
-        comint-mode
-        debugger-mode)
-      "List of major-modes displayed below.")
-
-    (defvar my/bottom-side-window-names-list
-      '("^\\*.*eshell.*\\*$"
-        "^\\*.*shell.*\\*$"
-        "^\\*.*term.*\\*$"
-        "^\\*.*vterm.*\\*$")
-      "List of buffer names displayed below.")
-
-    (defvar my/right-side-window-modes-list
-      '(Info-mode
-        TeX-output-mode
-        pdf-view-mode
-        eldoc-mode
-        help-mode
-        helpful-mode
-        magit-status-mode
-        magit-log-mode
-        magit-diff-mode
-        magit-process-mode
-        shortdoc-mode)
-      "List of major-modes displayed right.")
-
-    (defvar my/right-side-window-names-list
-      '("^\\*eldoc.*\\*$"
-        "^\\*info\\*$"
-        "^magit-diff:.*$"
-        "^\\*Metahelp\\*$")
-      "List of buffer names displayed right.")
-
-    (defvar my/side-window-parameters
-      '((no-other-window . t)
-        (tab-line-format . none)
-        (mode-line-format . none))
-      "window parameters used for side-windows.")
-
-    (defun my/get-buffer-match-condtion (majormodes &optional buffernames &rest extra-conds)
-      "Get condition to match buffers with given MAJORMODES od BUFFERNAMES."
-      (let ((modes-cond `(or ,@(mapcar (lambda (mode) `(derived-mode . ,mode)) majormodes))))
-        (when buffernames (setq mode-conds `(or (or ,@buffernames) ,modes-cond)))
-        (setq mode-conds (append mode-conds extra-conds)))
-      mode-conds)
-
-    (defun my/get-next-free-slot-on-side (side)
-      "Return the next free window slot number for windows on SIDE.
-  If no windows are present on that side, return 0. If no free slot is found, return nil."
-      (let* ((max-slots (nth (cond ((eq side 'left) 0)
-                                   ((eq side 'top) 1)
-                                   ((eq side 'right) 2)
-                                   ((eq side 'bottom) 3))
-                             window-sides-slots))
-             used-slots next-slot)
-        ;; Collect used slots
-        (dolist (win (window-list))
-          (when (equal (window-parameter win 'window-side) side)
-            (let ((slot (window-parameter win 'window-slot)))
-              (when slot
-                (setq used-slots (cons slot used-slots))))))
-
-        (unless (null used-slots)
-          ;; Find the next free slot
-          (catch 'next-slot
-            (dotimes (i max-slots)
-              (unless (member i used-slots)
-                (throw 'next-slot i)))))))
-
-    (defun my/display-buffer-in-side-window-next-free-slot (buffer alist)
-      "Display BUFFER in a side window, using the next free slot if not provided in ALIST.
-  ALIST can contain the side and optionally the slot. If the slot is not given,
-  the function finds the next available slot for that side."
-      (let* ((side (cdr (assq 'side alist)))
-             (slot (or (cdr (assq 'slot alist)) (my/get-next-free-slot-on-side side)))
-             (alist (append alist `((slot . ,slot)))))
-        ;; (message (format "displaying buffer in slot: %s" slot))
-        (display-buffer-in-side-window buffer alist)))
-    (defun my/toggle-side-window nil
-      "Place the current buffer in the side window at the bottom."
-      (interactive)
-      (let ((window (selected-window))
-            (buf (current-buffer)))
-        (with-selected-window window
-          (cond
-           ((window-parameter window 'window-side)
-            (progn
-              (setq-local was-side-window t)
-              (when (bound-and-true-p top-side-window-face-remaps-cookies)
-                (dolist (cookie top-side-window-face-remaps-cookies)
-                  (face-remap-remove-relative cookie))
-                (kill-local-variable 'top-side-window-face-remaps-cookies))
-              (display-buffer
-               buf '(display-buffer-use-some-window . ((some-window . mru)
-                                                       (category . detached-side-window))))
-              (delete-window window)))
-           ((local-variable-if-set-p 'was-side-window buf)
-            (progn
-              (kill-local-variable 'was-side-window)
-              (switch-to-prev-buffer window 'bury)
-              (display-buffer buf)))
-           (t
-            (error "Not a side window"))))))
-    (defun my/display-buffer-force-right-side nil
-      (interactive)
-      (let ((buf (current-buffer)))
-        (display-buffer buf '(nil . ((category . force-side-right))))))
-    (defun my/display-buffer-force-bottom-side nil
-      (interactive)
-      (let ((buf (current-buffer)))
-        (display-buffer buf '(nil . ((category . force-side-bottom))))))
-    (defun my/display-buffer-force-top-side nil
-      (interactive)
-      (let ((buf (current-buffer)))
-        (display-buffer buf '(nil . ((category . force-side-top))))))
     :custom
     (window-resize-pixelwise t)   ; Resize windows pixelwise
     (frame-resize-pixelwise t)    ; Resize frame pixelwise
-    (window-combination-resize t)
-    (window-sides-vertical t)
-    (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
-    (window-persistent-parameters
-     (append window-persistent-parameters
-             '((tab-line-format . t)
-               (header-line-format . t)
-               (mode-line-format . t))))
-    (transient-display-buffer-action
-     `(display-buffer-in-side-window
-       (side . top)
-       (dedicated . t)
-       (inhibit-same-window . t)
-       (window-parameters . ,my/side-window-parameters)))
-    ;; (org-agenda-window-setup . nil)
-    (org-src-window-setup 'plain)
     :config
     (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
-    (with-eval-after-load 'magit
-      (setq magit-display-buffer-function #'display-buffer
-            magit-commit-diff-inhibit-same-window t))
-    (setq display-buffer-alist
-          `(
-            ;; Windows on top
-            ((and (not (category . force-side-right) (category . force-side-bottom) (category . detached-side-window))
-                  ,(my/get-buffer-match-condtion my/top-side-window-modes-list my/top-side-window-names-list '(category . force-side-top)))
-             (my/display-buffer-in-side-window-next-free-slot)
-             (side . top)
-             (window-height . (lambda (win) (fit-window-to-buffer win 0.5 5)))
-             (dedicated . t)
-             (window-parameters . (,@my/side-window-parameters
-                                   (header-line-format . ,my/header-line-format-top)
-                                   (mode-line-format . t))))
-            ;; Windows on the right side
-            ((and (not (category . force-side-top) (category . force-side-bottom) (category . detached-side-window))
-                  ,(my/get-buffer-match-condtion my/right-side-window-modes-list my/right-side-window-names-list '(category . force-side-right)))
-             (display-buffer-reuse-mode-window
-              my/display-buffer-in-side-window-next-free-slot)
-             (side . right)
-             (window-width . 80)
-             (dedicated . t)
-             (window-parameters . ,my/side-window-parameters))
-            ;; Windows at the bottom
-            ((and (not (category . force-side-top) (category . force-side-right) (category . detached-side-window))
-                  ,(my/get-buffer-match-condtion my/bottom-side-window-modes-list my/bottom-side-window-names-list '(category . force-side-bottom)))
-             (my/display-buffer-in-side-window-next-free-slot)
-             (side . bottom)
-             (preserve-size . (nil . t))
-             (window-height . 20)
-             (dedicated . t)
-             (window-parameters . ,my/side-window-parameters))))
     :bind
     (("M-o" . other-window-prefix)
      ("M-t" . other-tab-prefix)
      ("M-f" . other-frame-prefix)
-     :map my/toggle-map
-     ("w" .  window-toggle-side-windows)
-     ("W" .  my/toggle-side-window)
      :repeat-map my/window-map
      ("n" . next-window-any-frame)
      ("p" . previous-window-any-frame)
@@ -2195,9 +2144,6 @@ Writable grep buffer and apply the changes to files.
      ("m" . delete-other-windows)
      ("M" . delete-other-windows-vertically)
      :exit
-     ("R" . my/display-buffer-force-right-side)
-     ("B" . my/display-buffer-force-bottom-side)
-     ("T" . my/display-buffer-force-top-side)
      ("=" . balance-windows)))
 #+end_src
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
