@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-03
+;; Created: 2025-03-28
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -196,7 +196,7 @@
     :right
     (((mood-line-segment-process)                 . " ")
      ((mood-line-segment-buffer-status)           . " ")
-     ;; ((mood-line-segment-misc-info)               . " ")))
+     ((mood-line-segment-misc-info)               . " ")
      ((mood-line-segment-major-mode)              . " ")
      ((mood-line-segment-vc)                      . " ")
      ((mood-line-segment-checker)                 . " "))))

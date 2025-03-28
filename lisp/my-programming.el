@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-03
+;; Created: 2025-03-28
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -49,8 +49,6 @@
   (TeX-parse-self t)
   ;; Disable query prompts when saving TeX files
   (TeX-save-query nil)
-  ;; Ask for master document
-  (TeX-master nil)
   ;; Enable PDF mode for TeX files
   (TeX-PDF-mode t)
   ;; Don't start server for inverse search (is already running)
