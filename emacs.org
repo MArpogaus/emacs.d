@@ -928,12 +928,11 @@ A simple command that takes a URL from the clipboard and inserts an org-mode lin
 **** [[https://github.com/minad/org-modern.git][org-modern]]
 This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package org-modern
     :custom
     (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
     (org-modern-star 'fold)
-    (org-modern-label-border 0.3)
 
     ;; Edit settings
     (org-auto-align-tags nil)
