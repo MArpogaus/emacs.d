@@ -1924,8 +1924,16 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
     :preface
     (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
     (defun my/outline-mode-hook nil
-      (when (not (eq major-mode 'org-mode))
+      (unless (eq major-mode 'org-mode)
+        (outline-minor-mode-cycle--bind nil (kbd "M-<up>") #'outline-move-subtree-up)
+        (outline-minor-mode-cycle--bind nil (kbd "M-<down>") #'outline-move-subtree-down)
+        (outline-minor-mode-cycle--bind nil (kbd "M-<right>") #'outline-demote)
+        (outline-minor-mode-cycle--bind nil (kbd "M-<left>") #'outline-promote)
+        (setq-local outline-minor-mode-use-buttons 'in-margins)
         (reveal-mode 1)))
+    :custom
+    (outline-minor-mode-cycle t)
+    (outline-minor-mode-highlight t)
     :init
     (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
     :config
