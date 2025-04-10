@@ -1642,7 +1642,7 @@ Revert buffers when the underlying file has changed
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
-**** auto-side-window
+**** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
     :ensure (:host github :repo "MArpogaus/auto-side-windows")
@@ -1770,12 +1770,6 @@ Revert buffers when the underlying file has changed
              '((tab-line-format . t)
                (header-line-format . t)
                (mode-line-format . t))))
-    (transient-display-buffer-action
-     `(display-buffer-in-side-window
-       (side . top)
-       (dedicated . t)
-       (inhibit-same-window . t)
-       (window-parameters . ,auto-side-windows-top-window-parameters)))
     ;; (org-agenda-window-setup . nil)
     (org-src-window-setup 'plain)
     :bind
@@ -1786,8 +1780,15 @@ Revert buffers when the underlying file has changed
           ("s" . auto-side-windows-display-buffer-on-side))
     :config
     (with-eval-after-load 'magit
-      (setq magit-display-buffer-function #'display-buffer
-            magit-commit-diff-inhibit-same-window t))
+      (setopt magit-display-buffer-function #'display-buffer
+              magit-commit-diff-inhibit-same-window t))
+    (with-eval-after-load 'transient
+      (setopt transient-display-buffer-action
+              `(display-buffer-in-side-window
+                (side . top)
+                (dedicated . t)
+                (inhibit-same-window . t)
+                (window-parameters . ,auto-side-windows-top-window-parameters))))
     :hook
     (elpaca-after-init . auto-side-windows-mode))
 #+end_src
