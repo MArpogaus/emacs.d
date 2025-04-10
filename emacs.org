@@ -179,7 +179,7 @@ The following optimizations have been inspired by:
                        (format "%.2f seconds"
                                (float-time
                                 (time-subtract elpaca-after-init-time before-init-time)))
-                       gcs-done)))
+                       gcs-done)) 98)
 
   ;; Resizing the Emacs frame can be a terribly expensive part of changing the
   ;; font. By inhibiting this, we easily halve startup times with fonts that are
@@ -3829,17 +3829,31 @@ Emacs support for direnv which operates buffer-locally.
 #+begin_src emacs-lisp
   (use-package envrc
     :if (executable-find "direnv")
-    :demand t
+    :preface
+    (defun my/find-python-interpreter nil
+      "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
+      (cond
+       ((executable-find "ipython3")
+        (setq-local python-shell-interpreter "ipython3"
+                    python-shell-interpreter-args "--simple-prompt"))
+       ((executable-find "python3")
+        (setq-local python-shell-interpreter "python3")
+        (kill-local-variable 'python-shell-interpreter-args))
+       (t (kill-local-variable 'python-shell-interpreter)
+          (kill-local-variable 'python-shell-interpreter-args)))
+      nil)
     :config
     ;; Fix problem with python promt detection
     ;; https://github.com/purcell/envrc#troubleshooting
-    (with-eval-after-load 'python
-      (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+    ;; (with-eval-after-load 'python
+    ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
     :init
     ;; The global mode should be enabled late in the startup sequence,
     ;; to prevent inference with other other global minor modes.
     ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-    (add-hook 'elpaca-after-init-hook #'envrc-global-mode 98))
+    (add-hook 'elpaca-after-init-hook #'envrc-global-mode 97)
+    :hook
+    (envrc-mode . my/find-python-interpreter))
 #+end_src
 **** [[https://github.com/emacs-ess/ESS.git][ESS]]
 Emacs Speaks Statistics: ESS.
@@ -3879,7 +3893,7 @@ Consistent ESS-like eval interface for various REPLs.
       (setq-local eir-ielm-eval-in-current-buffer t)
       (local-set-key (kbd "C-<return>") 'eir-eval-in-ielm))
     :hook
-    (((python-mode python-ts-mode) . my/setup-eir-python)
+    ((python-base-mode . my/setup-eir-python)
      ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 #+end_src
 **** [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
@@ -3937,25 +3951,11 @@ Py-isort.el integrates isort into Emacs.
 #+begin_src emacs-lisp
   (use-package python
     :ensure nil
-    :preface
-    (defun my/find-python-interpreter-advice (&rest _)
-      "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
-      (cond
-       ((executable-find "ipython3")
-        (setq-local python-shell-interpreter "ipython3"
-                    python-shell-interpreter-args "--simple-prompt --classic"))
-       ((executable-find "python3")
-        (setq-local python-shell-interpreter "python3")
-        (kill-local-variable 'python-shell-interpreter-args))
-       (t (kill-local-variable 'python-shell-interpreter)
-          (kill-local-variable 'python-shell-interpreter-args))))
     :custom
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil)
-    (python-shell-dedicated 'project)
-    :config
-    (advice-add #'python-shell-calculate-command :before #'my/find-python-interpreter-advice))
+    (python-shell-dedicated 'project))
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
