@@ -1570,7 +1570,7 @@ References:
   (use-package window-tool-bar
     :ensure nil
     :custom-face
-    (window-tool-bar-button-disabled ((t :background nil :inherit window-tool-bar-button)))
+    (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
     :bind
     (:map window-tool-bar--button-keymap
           ([mode-line mouse-2] . window-tool-bar--call-button)))
@@ -2395,8 +2395,8 @@ Simple note taking and file naming.
     :ensure nil
     :config
     ;; Make dired-omit-mode hide all "dotfiles"
-    (setq dired-omit-files
-          (concat dired-omit-files "\\|^\\..*$"))
+    (setopt dired-omit-files
+            (concat dired-omit-files "\\|^\\..*$"))
     :hook
     (dired-mode . dired-omit-mode))
 #+end_src
@@ -3073,17 +3073,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :after corfu
     :hook
     (global-corfu-mode . corfu-terminal-mode))
-#+end_src
-**** [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]
-
-#+begin_src emacs-lisp
-  (use-package corfu-candidate-overlay
-    :ensure (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
-    :after corfu
-    :hook
-    ;; enable corfu-candidate-overlay mode globally
-    ;; this relies on having corfu-auto set to nil
-    (global-corfu-mode . corfu-candidate-overlay-mode))
 #+end_src
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
@@ -4063,7 +4052,7 @@ built-in tree-sitter integration for Emacs
 #+end_src
 **** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
 Code-folding using =treesit.el=.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package treesit-fold
     :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
     :custom
@@ -4073,7 +4062,7 @@ Code-folding using =treesit.el=.
     (:map treesit-fold-mode-map
           ("<backtab>" . treesit-fold-toggle))
     :hook
-    (((yaml-ts-mode python-ts-mode) . treesit-fold-indicators-mode)))
+    (((yaml-ts-mode) . treesit-fold-indicators-mode)))
 #+end_src
 **** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 The emacs major mode for editing files in the YAML data serialization format.
