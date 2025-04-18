@@ -1360,26 +1360,27 @@ https://protesilaos.com/emacs/modus-themes
   (use-package mood-line
     :config
     (setq my/modeline-height 30)
+    (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
     :custom
     ;; Use pretty Fira Code-compatible glyphs
     (mood-line-glyph-alist mood-line-glyphs-fira-code)
     (mood-line-format
      (mood-line-defformat
       :left
-      (((my/get-bar-image my/modeline-height 2 nil) . " ")
-       ((mood-line-segment-modal)                   . " ")
-       ((mood-line-segment-anzu)                    . " ")
-       ((mood-line-segment-multiple-cursors)        . " ")
-       )
+      (((my/get-bar-image my/modeline-height 2 nil)                               . " ")
+       ((mood-line-segment-modal)                                                 . " ")
+       ((mood-line-segment-anzu)                                                  . " ")
+       ((mood-line-segment-multiple-cursors)                                      . " ")
+       ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
       :right
-      (((mood-line-segment-process)                 . " ")
-       ((mood-line-segment-buffer-status)           . " ")
-       ((mood-line-segment-misc-info)               . " ")
-       ((mood-line-segment-major-mode)              . " ")
-       ((mood-line-segment-vc)                      . " ")
-       ((mood-line-segment-checker)                 . " "))))
+      (((mood-line-segment-process)                                               . " ")
+       ((mood-line-segment-buffer-status)                                         . " ")
+       ((mood-line-segment-misc-info)                                             . " ")
+       ((mood-line-segment-major-mode)                                            . " ")
+       ((mood-line-segment-vc)                                                    . " ")
+       ((mood-line-segment-checker)                                               . " "))))
     (mood-line-segment-modal-meow-state-alist
-     `((normal ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-variable-name-face)
+     `((normal ,(nerd-icons-mdicon "nf-md-alpha_n_circle") . font-lock-variable-name-face)
        (insert ,(nerd-icons-mdicon "nf-md-alpha_i_circle") . font-lock-string-face)
        (keypad ,(nerd-icons-mdicon "nf-md-alpha_k_circle") . font-lock-keyword-face)
        (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
@@ -1561,6 +1562,16 @@ References:
     :init
     (advice-add 'toggle-frame-fullscreen
                 :after #'my/toggle-display-time-mode))
+#+end_src
+**** window-tool-bar :build_in:
+#+begin_src emacs-lisp
+  (use-package window-tool-bar
+    :ensure nil
+    :custom-face
+    (window-tool-bar-button-disabled ((t :background nil :inherit window-tool-bar-button)))
+    :bind
+    (:map window-tool-bar--button-keymap
+          ([mode-line mouse-2] . window-tool-bar--call-button)))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
