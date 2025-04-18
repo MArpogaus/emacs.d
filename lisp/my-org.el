@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -20,8 +20,8 @@
 
 (use-package org
   :init
-  (setq org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
-        org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
+  (setopt org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
+          org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
   :custom
   (org-ellipsis "…")
   (org-src-fontify-natively t)
@@ -71,10 +71,7 @@
       ,(concat "* TODO %?\n"
                "/Entered on/ %U"))
      ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
-      ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))
-     ("n" "Note" entry  (file "agenda/notes.org")
-      ,(concat "* Note (%a)\n"
-               "/Entered on/ %U\n" "\n" "%?"))))
+      ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 
   ;; org-agenda
   (org-agenda-files

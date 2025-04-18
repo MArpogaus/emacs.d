@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -252,11 +252,12 @@
   ;; Additional Customisations
   (corfu-cycle t)                     ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                      ;; Enable auto completion
-  (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
   (corfu-auto-prefix 2)               ;; Complete with less prefix keys
+  (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
   (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
   (corfu-preview-current nil)         ;; Disable current candidate preview
   (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
+  (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
   :preface
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
@@ -270,23 +271,20 @@
       (corfu-mode 1)))
 
   ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
-  (defun my/corfu-spc-handler ()
+  (defun my/corfu-insert-separator-advice (orig-func &rest args)
+    "Quit completion if there exist no candiates"
     (interactive)
-    (if current-prefix-arg
-        ;;we suppose that we want leave the word like that, so do a space
+    (if (and (cdr corfu--candidates)
+             ;; next char is space, return or nothing
+             (or
+              (not (char-after))
+              (= (char-after) ?\s)
+              (= (char-after) ?\n)))
         (progn
-          (corfu-quit)
-          (insert " "))
-      (if (and (= (char-before) corfu-separator)
-               (or
-                ;; check if space, return or nothing after
-                (not (char-after))
-                (= (char-after) ?\s)
-                (= (char-after) ?\n)))
-          (progn
-            (corfu-insert)
-            (insert " "))
-        (corfu-insert-separator))))
+          (apply orig-func args))
+      (progn
+        (corfu-quit)
+        (insert " "))))
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
@@ -294,6 +292,7 @@
   (require 'corfu-history)
   (require 'corfu-popupinfo)
   (eldoc-add-command #'corfu-insert)
+  (advice-add 'corfu-insert-separator :around #'my/corfu-insert-separator-advice)
   :bind
   (("C-SPC"     . completion-at-point)
    :map corfu-map
@@ -323,17 +322,6 @@
   :after corfu
   :hook
   (global-corfu-mode . corfu-terminal-mode))
-
-;; [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][corfu-candidate-overlay]]
-
-
-(use-package corfu-candidate-overlay
-  :ensure (:type git :repo "https://code.bsdgeek.org/adam/corfu-candidate-overlay" :files (:defaults "*.el"))
-  :after corfu
-  :hook
-  ;; enable corfu-candidate-overlay mode globally
-  ;; this relies on having corfu-auto set to nil
-  (global-corfu-mode . corfu-candidate-overlay-mode))
 
 ;; dabbrev :build_in:
 
@@ -400,12 +388,12 @@ the completing-read prompter."
   :config
   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
   ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
 
-  (setq embark-indicators
-        '(embark-which-key-indicator
-          embark-highlight-indicator
-          embark-isearch-highlight-indicator))
+  (setopt embark-indicators
+          '(embark-which-key-indicator
+            embark-highlight-indicator
+            embark-isearch-highlight-indicator))
 
   (advice-add #'embark-completing-read-prompter
               :around #'embark-hide-which-key-indicator))

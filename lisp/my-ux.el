@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -78,7 +78,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
   :hook
   (elpaca-after-init . global-auto-revert-mode))
 
-;; auto-side-window
+;; [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 
 (use-package auto-side-windows
   :ensure (:host github :repo "MArpogaus/auto-side-windows")
@@ -136,8 +136,8 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      "^\\*Async-native-compile-log\\*$"
      "^\\*Compile-Log\\*$"
      "^\\*Multiple Choice Help\\*$"
-     "^\\*Org Agenda\\*$"
      "^\\*Org Src.*\\*"
+     "^\\*Org Select\\*"
      "^\\*Org-Babel Error Output\\*"
      "^\\*Quick Help\\*$"
      "^\\*TeX Help\\*$"
@@ -156,10 +156,10 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
 
   ;; Bottom side window configurations
   (auto-side-windows-bottom-buffer-names
-   '("^\\*.*eshell.*\\*$"
-     "^\\*.*shell.*\\*$"
-     "^\\*.*term.*\\*$"
-     "^\\*.*vterm.*\\*$"))
+   '("^\\*eshell\\*$"
+     "^\\*shell\\*$"
+     "^\\*term\\*$"
+     "^\\*.*vterm\\*$"))
   (auto-side-windows-bottom-buffer-modes
    '(eshell-mode
      shell-mode
@@ -174,12 +174,15 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      "^\\*info\\*$"
      "^magit-diff:.*$"
      "^magit-process:.*$"
+     "^\\*Org Agenda\\*$"
      "^\\*Metahelp\\*$"))
   (auto-side-windows-right-buffer-modes
    '(Info-mode
      TeX-output-mode
      pdf-view-mode
      eldoc-mode
+     elpaca-info-mode
+     elpaca-log-mode
      help-mode
      helpful-mode
      magit-status-mode
@@ -206,12 +209,6 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
            '((tab-line-format . t)
              (header-line-format . t)
              (mode-line-format . t))))
-  (transient-display-buffer-action
-   `(display-buffer-in-side-window
-     (side . top)
-     (dedicated . t)
-     (inhibit-same-window . t)
-     (window-parameters . ,auto-side-windows-top-window-parameters)))
   ;; (org-agenda-window-setup . nil)
   (org-src-window-setup 'plain)
   :bind
@@ -222,8 +219,15 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
         ("s" . auto-side-windows-display-buffer-on-side))
   :config
   (with-eval-after-load 'magit
-    (setq magit-display-buffer-function #'display-buffer
-          magit-commit-diff-inhibit-same-window t))
+    (setopt magit-display-buffer-function #'display-buffer
+            magit-commit-diff-inhibit-same-window t))
+  (with-eval-after-load 'transient
+    (setopt transient-display-buffer-action
+            `(display-buffer-in-side-window
+              (side . top)
+              (dedicated . t)
+              (inhibit-same-window . t)
+              (window-parameters . ,auto-side-windows-top-window-parameters))))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
 
@@ -357,11 +361,27 @@ buffer's text scale."
 
 (use-package outline
   :ensure nil
+  :autoload outline-minor-mode-cycle--bind
   :preface
   (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
-  (defun my/outline-mode-hook nil
-    (when (not (eq major-mode 'org-mode))
-      (reveal-mode 1)))
+  (define-minor-mode my/outline-minor-mode
+    "Customize `outline-minor-mode' for non-org buffers."
+    :lighter nil
+    (if my/outline-minor-mode
+        (unless (eq major-mode 'org-mode)
+          (outline-minor-mode-cycle--bind nil (kbd "M-<up>") #'outline-move-subtree-up)
+          (outline-minor-mode-cycle--bind nil (kbd "M-<down>") #'outline-move-subtree-down)
+          (outline-minor-mode-cycle--bind nil (kbd "M-<right>") #'outline-demote)
+          (outline-minor-mode-cycle--bind nil (kbd "M-<left>") #'outline-promote)
+          (setq-local outline-minor-mode-use-buttons 'in-margins)
+          (outline-minor-mode 1)
+          (reveal-mode 1))
+      (progn
+        (outline-minor-mode -1)
+        (reveal-mode -1))))
+  :custom
+  (outline-minor-mode-cycle t)
+  (outline-minor-mode-highlight t)
   :init
   (define-key my/leader-map (kbd "TAB") (cons "outline" my/outline-repeat-map))
   :config
@@ -375,8 +395,14 @@ buffer's text scale."
                ("<backtab>"   . outline-cycle-buffer)
                ("a"           . outline-show-all))
   :hook
-  (((text-mode prog-mode conf-mode) . outline-minor-mode)
-   (outline-minor-mode . my/outline-mode-hook)))
+  ((text-mode prog-mode conf-mode) . my/outline-minor-mode))
+
+;; [[https://github.com/jamescherti/outline-indent.el.git][outline-indent]]
+
+(use-package outline-indent
+  :ensure t
+  :hook
+  ((yaml-ts-mode) . outline-indent-minor-mode))
 
 ;; paren :build_in:
 ;; Paren mode for highlighting matcing paranthesis
@@ -587,6 +613,8 @@ buffer's text scale."
 ;; Distraction-free writing for Emacs.
 
 (use-package writeroom-mode
+  :config
+  (setopt writeroom-global-effects (append writeroom-global-effects '(my/minimal-ui-mode)))
   :bind (:map my/toggle-map ("z" . writeroom-mode)))
 
 ;; Library Footer

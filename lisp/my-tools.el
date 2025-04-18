@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,8 +48,8 @@
   :ensure nil
   :config
   ;; Make dired-omit-mode hide all "dotfiles"
-  (setq dired-omit-files
-        (concat dired-omit-files "\\|^\\..*$"))
+  (setopt dired-omit-files
+          (concat dired-omit-files "\\|^\\..*$"))
   :hook
   (dired-mode . dired-omit-mode))
 
@@ -238,6 +238,15 @@
    :map helpful-mode-map
    ([remap revert-buffer] . helpful-update)))
 
+;; [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
+;; Interactive Gptel shell for Emacs.
+
+(use-package inf-gptel
+  :ensure (:host github :repo "tttuuu888/inf-gptel")
+  :bind
+  (:map my/open-map
+        ("G" . inf-gptel)))
+
 ;; ispell :build_in:
 
 (use-package ispell
@@ -330,16 +339,15 @@
   :config
   ;; ;; Enable full-featured Dirvish over TRAMP on certain connections
   ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-async;; hronous-remote-processes-1.
-  (add-to-list 'tramp-connection-properties
-               (list (regexp-quote "/ssh:")
-                     "direct-async-process" t))
-  ;; (connection-local-set-profile-variables
-  ;;  'remote-direct-async-process
-  ;;  '((tramp-direct-async-process . t)))
-  ;; (connection-local-set-profiles
-  ;;  '(:application tramp :protocol "ssh")
-  ;;  'remote-direct-async-process)
-  )
+  ;; (add-to-list 'tramp-connection-properties
+  ;;              (list (regexp-quote "/ssh:")
+  ;;                    "direct-async-process" t))
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+  (connection-local-set-profiles
+   '(:application tramp :protocol "ssh")
+   'remote-direct-async-process))
 
 ;; [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 ;; Emacs libvterm integration.

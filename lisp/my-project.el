@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -58,7 +58,7 @@
   :custom
   ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
   (auto-tab-groups-create-commands
-   '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+   '(((denote--prepare-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
      ((custom-buffer-create custom-buffer-create-other-window) . "customize")
      ((dirvish dirvish-fd) . "dirvish")))
   (auto-tab-groups-close-commands

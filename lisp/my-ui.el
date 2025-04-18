@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -182,26 +182,27 @@
 (use-package mood-line
   :config
   (setq my/modeline-height 30)
+  (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
   :custom
   ;; Use pretty Fira Code-compatible glyphs
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
   (mood-line-format
    (mood-line-defformat
     :left
-    (((my/get-bar-image my/modeline-height 2 nil) . " ")
-     ((mood-line-segment-modal)                   . " ")
-     ((mood-line-segment-anzu)                    . " ")
-     ((mood-line-segment-multiple-cursors)        . " ")
-     )
+    (((my/get-bar-image my/modeline-height 2 nil)                               . " ")
+     ((mood-line-segment-modal)                                                 . " ")
+     ((mood-line-segment-anzu)                                                  . " ")
+     ((mood-line-segment-multiple-cursors)                                      . " ")
+     ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
     :right
-    (((mood-line-segment-process)                 . " ")
-     ((mood-line-segment-buffer-status)           . " ")
-     ((mood-line-segment-misc-info)               . " ")
-     ((mood-line-segment-major-mode)              . " ")
-     ((mood-line-segment-vc)                      . " ")
-     ((mood-line-segment-checker)                 . " "))))
+    (((mood-line-segment-process)                                               . " ")
+     ((mood-line-segment-buffer-status)                                         . " ")
+     ((mood-line-segment-misc-info)                                             . " ")
+     ((mood-line-segment-major-mode)                                            . " ")
+     ((mood-line-segment-vc)                                                    . " ")
+     ((mood-line-segment-checker)                                               . " "))))
   (mood-line-segment-modal-meow-state-alist
-   `((normal ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-variable-name-face)
+   `((normal ,(nerd-icons-mdicon "nf-md-alpha_n_circle") . font-lock-variable-name-face)
      (insert ,(nerd-icons-mdicon "nf-md-alpha_i_circle") . font-lock-string-face)
      (keypad ,(nerd-icons-mdicon "nf-md-alpha_k_circle") . font-lock-keyword-face)
      (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
@@ -304,6 +305,7 @@
   :bind
   (:map my/toggle-map
         ("T" . global-tab-line-mode))
+  :autoload tab-line-tabs-window-buffers
   :preface
   (defun my/tab-line-tab-name-function (buffer &optional _buffers)
     (let ((name (buffer-name buffer)))
@@ -347,15 +349,15 @@
           (kill-window-p (not (my/multi-buffer-window-p)))
           (buffer (my/tab-line-get-buffer tab)))
       (my/tab-line-close-or-bury-buffer buffer)
-      (when kill-window-p 
+      (when kill-window-p
         (message "Closing window")
         (ignore-errors (delete-window window)))))
 
-  ;; (defun my/enable-tab-line-if-multiple-buffers ()
-  ;;   "Enable tab line mode if there are multiple buffers in the current window."
-  ;;   (if (my/multi-buffer-window-p)
-  ;;       (tab-line-mode 1)
-  ;;     (tab-line-mode -1)))
+  (defun my/enable-tab-line-if-multiple-buffers ()
+    "Enable tab line mode if there are multiple buffers in the current window."
+    (if (my/multi-buffer-window-p)
+        (set-window-parameter nil 'tab-line-format nil)
+      (set-window-parameter nil 'tab-line-format 'none)))
   :config
   (setq tab-line-close-button
         (propertize "✕ "
@@ -364,8 +366,8 @@
                     'help-echo "Click to close tab")
         tab-line-separator "")
   :hook
-  ;; (window-configuration-change . my/enable-tab-line-if-multiple-buffers)
-  (elpaca-after-init . global-tab-line-mode))
+  ((buffer-list-update . my/enable-tab-line-if-multiple-buffers)
+   (elpaca-after-init . global-tab-line-mode)))
 
 ;; time :build_in:
 
@@ -382,6 +384,16 @@
   :init
   (advice-add 'toggle-frame-fullscreen
               :after #'my/toggle-display-time-mode))
+
+;; window-tool-bar :build_in:
+
+(use-package window-tool-bar
+  :ensure nil
+  :custom-face
+  (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
+  :bind
+  (:map window-tool-bar--button-keymap
+        ([mode-line mouse-2] . window-tool-bar--call-button)))
 
 ;; Library Footer
 

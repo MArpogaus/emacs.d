@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -272,17 +272,31 @@
 
 (use-package envrc
   :if (executable-find "direnv")
-  :demand t
+  :preface
+  (defun my/find-python-interpreter nil
+    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
+    (cond
+     ((executable-find "ipython3")
+      (setq-local python-shell-interpreter "ipython3"
+                  python-shell-interpreter-args "--simple-prompt"))
+     ((executable-find "python3")
+      (setq-local python-shell-interpreter "python3")
+      (kill-local-variable 'python-shell-interpreter-args))
+     (t (kill-local-variable 'python-shell-interpreter)
+        (kill-local-variable 'python-shell-interpreter-args)))
+    nil)
   :config
   ;; Fix problem with python promt detection
   ;; https://github.com/purcell/envrc#troubleshooting
-  (with-eval-after-load 'python
-    (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+  ;; (with-eval-after-load 'python
+  ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
   :init
   ;; The global mode should be enabled late in the startup sequence,
   ;; to prevent inference with other other global minor modes.
   ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-  (add-hook 'elpaca-after-init-hook #'envrc-global-mode 98))
+  (add-hook 'elpaca-after-init-hook #'envrc-global-mode 97)
+  :hook
+  (envrc-mode . my/find-python-interpreter))
 
 ;; [[https://github.com/emacs-ess/ESS.git][ESS]]
 ;; Emacs Speaks Statistics: ESS.
@@ -322,7 +336,7 @@
     (setq-local eir-ielm-eval-in-current-buffer t)
     (local-set-key (kbd "C-<return>") 'eir-eval-in-ielm))
   :hook
-  (((python-mode python-ts-mode) . my/setup-eir-python)
+  ((python-base-mode . my/setup-eir-python)
    ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
 
 ;; [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
@@ -380,25 +394,11 @@
 
 (use-package python
   :ensure nil
-  :preface
-  (defun my/find-python-interpreter-advice (&rest _)
-    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
-    (cond
-     ((executable-find "ipython3")
-      (setq-local python-shell-interpreter "ipython3"
-                  python-shell-interpreter-args "--simple-prompt --classic"))
-     ((executable-find "python3")
-      (setq-local python-shell-interpreter "python3")
-      (kill-local-variable 'python-shell-interpreter-args))
-     (t (kill-local-variable 'python-shell-interpreter)
-        (kill-local-variable 'python-shell-interpreter-args))))
   :custom
   ;; Let Emacs guess Python indent silently
   (python-indent-guess-indent-offset t)
   (python-indent-guess-indent-offset-verbose nil)
-  (python-shell-dedicated 'project)
-  :config
-  (advice-add #'python-shell-calculate-command :before #'my/find-python-interpreter-advice))
+  (python-shell-dedicated 'project))
 
 ;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.
@@ -433,20 +433,6 @@
   (treesit-auto-install 'prompt)
   :hook
   (elpaca-after-init . global-treesit-auto-mode))
-
-;; [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
-;; Code-folding using =treesit.el=.
-
-(use-package treesit-fold
-  :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-  :custom
-  ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
-  (treesit-fold-indicators-priority -1)
-  :bind
-  (:map treesit-fold-mode-map
-        ("<backtab>" . treesit-fold-toggle))
-  :hook
-  (((yaml-ts-mode python-ts-mode) . treesit-fold-indicators-mode)))
 
 ;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
 ;; The emacs major mode for editing files in the YAML data serialization format.
