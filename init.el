@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -36,12 +36,12 @@
 ;; Configure Elpaca
 
 ;; Use elpaca lockfile
-;;(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
 
-;; Install never version of transient and jsonrpc
+;; Allow automatic upgrade of build-in transient
+;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
 (setq elpaca-ignored-dependencies
-      (seq-remove (lambda (x) (memq x '(transient jsonrpc)))
-                  elpaca-ignored-dependencies))
+      (delq 'transient elpaca-ignored-dependencies))
 
 ;; Enable use-package integration
 (elpaca elpaca-use-package
@@ -263,12 +263,14 @@ Refference: https://emacs.stackexchange.com/a/13432"
     (if my/minimal-ui-mode
         (progn
           (setq tab-bar-show nil)
+          (set-fringe-style 0)
           (tab-bar-mode -1)
           (global-tab-line-mode -1)
           (global-hide-mode-line-mode 1)
           (spacious-padding-mode -1))
       (progn
         (setq tab-bar-show t)
+        (set-fringe-style nil)
         (tab-bar-mode 1)
         (global-tab-line-mode 1)
         (global-hide-mode-line-mode -1)

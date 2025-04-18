@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-03-28
+;; Created: 2025-04-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,24 +48,7 @@
   (with-eval-after-load 'tab-line
     (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
   :bind
-  (:map meow-motion-state-keymap
-        ("<escape>" . meow-cancel-selection)
-        ("," . meow-inner-of-thing)
-        ("." . meow-bounds-of-thing)
-        ("b" . meow-back-word)
-        ("e" . meow-next-word)
-        ("f" . meow-find)
-        ("o" . meow-block)
-        ("q" . meow-quit)
-        ("t" . meow-till)
-        ("v" . meow-visit)
-        ("w" . meow-mark-word)
-        ("x" . meow-line)
-        ("y" . meow-save)
-        ("E" . meow-next-symbol)
-        ("W" . meow-mark-symbol)
-        ("X" . meow-goto-line)
-        :map my/leader-map
+  (:map my/leader-map
         ("?" . meow-cheatsheet)
         :map meow-normal-state-keymap
         ("'" . repeat)
