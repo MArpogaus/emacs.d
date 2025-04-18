@@ -1701,8 +1701,8 @@ Revert buffers when the underlying file has changed
        "^\\*Async-native-compile-log\\*$"
        "^\\*Compile-Log\\*$"
        "^\\*Multiple Choice Help\\*$"
-       "^\\*Org Agenda\\*$"
        "^\\*Org Src.*\\*"
+       "^\\*Org Select\\*"
        "^\\*Org-Babel Error Output\\*"
        "^\\*Quick Help\\*$"
        "^\\*TeX Help\\*$"
@@ -1721,10 +1721,10 @@ Revert buffers when the underlying file has changed
 
     ;; Bottom side window configurations
     (auto-side-windows-bottom-buffer-names
-     '("^\\*.*eshell.*\\*$"
-       "^\\*.*shell.*\\*$"
-       "^\\*.*term.*\\*$"
-       "^\\*.*vterm.*\\*$"))
+     '("^\\*eshell\\*$"
+       "^\\*shell\\*$"
+       "^\\*term\\*$"
+       "^\\*.*vterm\\*$"))
     (auto-side-windows-bottom-buffer-modes
      '(eshell-mode
        shell-mode
@@ -1739,12 +1739,15 @@ Revert buffers when the underlying file has changed
        "^\\*info\\*$"
        "^magit-diff:.*$"
        "^magit-process:.*$"
+       "^\\*Org Agenda\\*$"
        "^\\*Metahelp\\*$"))
     (auto-side-windows-right-buffer-modes
      '(Info-mode
        TeX-output-mode
        pdf-view-mode
        eldoc-mode
+       elpaca-info-mode
+       elpaca-log-mode
        help-mode
        helpful-mode
        magit-status-mode
