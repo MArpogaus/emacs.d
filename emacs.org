@@ -369,7 +369,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
 *** Configure Elpaca
 #+begin_src emacs-lisp
   ;; Use elpaca lockfile
-  ;;(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+  (setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
 
   ;; Allow automatic upgrade of build-in transient
   ;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
