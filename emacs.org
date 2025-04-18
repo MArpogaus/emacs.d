@@ -2572,6 +2572,15 @@ It is a bit slow to load so we do need load it explicitely.
      :map helpful-mode-map
      ([remap revert-buffer] . helpful-update)))
 #+end_src
+**** [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
+Interactive Gptel shell for Emacs.
+#+begin_src emacs-lisp
+  (use-package inf-gptel
+    :ensure (:host github :repo "tttuuu888/inf-gptel")
+    :bind
+    (:map my/open-map
+          ("G" . inf-gptel)))
+#+end_src
 **** ispell :build_in:
 #+begin_src emacs-lisp
   (use-package ispell
