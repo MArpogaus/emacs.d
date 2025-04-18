@@ -3482,7 +3482,7 @@ Tab group based workflow isolation.
     :custom
     ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
     (auto-tab-groups-create-commands
-     '(((denote-create-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
+     '(((denote--prepare-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
        ((custom-buffer-create custom-buffer-create-other-window) . "customize")
        ((dirvish dirvish-fd) . "dirvish")))
     (auto-tab-groups-close-commands
