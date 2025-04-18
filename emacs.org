@@ -699,8 +699,8 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 #+begin_src emacs-lisp
   (use-package org
     :init
-    (setq org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
-          org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
+    (setopt org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
+            org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
     :custom
     (org-ellipsis "…")
     (org-src-fontify-natively t)
@@ -750,10 +750,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
         ,(concat "* TODO %?\n"
                  "/Entered on/ %U"))
        ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
-        ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))
-       ("n" "Note" entry  (file "agenda/notes.org")
-        ,(concat "* Note (%a)\n"
-                 "/Entered on/ %U\n" "\n" "%?"))))
+        ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 
     ;; org-agenda
     (org-agenda-files
@@ -2201,77 +2198,6 @@ Distraction-free writing for Emacs.
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-denote.el")>>
 #+end_src
-**** [[https://github.com/protesilaos/denote.git][denote]]
-Simple note taking and file naming.
-#+begin_src emacs-lisp
-  (use-package denote
-    :custom
-    ;; Configure the directory where your notes will be stored.
-    (denote-directory (expand-file-name "denote/" org-directory))
-    ;; If you want a controlled vocabulary of keywords, specify them here.
-    (denote-known-keywords '("ENERGY" "STATS" "CS" "AI"))
-    ;; If you want Denote to infer keywords from your note titles, set this to t.
-    (denote-infer-keywords t)
-    ;; If you want to sort keywords alphabetically, set this to t.
-    (denote-sort-keywords t)
-    ;; Specify a regular expression to exclude directories from being searched for notes.
-    (denote-excluded-directories-regexp nil)
-    ;; Configure the date format used in note file names.
-    (denote-date-format nil)
-    ;; Disable confirmation prompts when renaming files. Use with caution!
-    (denote-rename-confirmations nil)
-    ;; When displaying backlinks, don't show the surrounding context.
-    (denote-backlinks-show-context nil)
-    ;; Configure the format used for renaming Denote buffers.
-    (denote-rename-buffer-format "[D] %t%b")
-    ;; String to indicate that a buffer has backlinks.
-    (denote-buffer-has-backlinks-string " (<--->)")
-    ;; Define templates for notes
-    (denote-templates
-     '((minutes . "minutes")
-       (plain . nil)))
-    :preface
-    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
-    (defun my/kill-denote-buffers ()
-      "Kill all denote buffers."
-      (interactive)
-      (dolist (buf (buffer-list))
-        (when (or (string-prefix-p "[D]" (buffer-name buf))
-                  (string-prefix-p "*Denote" (buffer-name buf)))
-          (kill-buffer buf))))
-    :init
-    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
-    :bind
-    (:map global-map
-          :map my/denote-map
-          ("n" . denote)
-          ("N" . denote-type)
-          ("r" . denote-rename-file)
-          ("R" . denote-rename-file-using-front-matter)
-          ("i" . denote-link)
-          ("I" . denote-add-links)
-          ("b" . denote-backlinks)
-          ("k" . my/kill-denote-buffers)
-          :map dired-mode-map
-          ("i" . denote-link-dired-marked-notes)
-          ("r" . denote-dired-rename-marked-files)
-          ("k" . denote-dired-rename-marked-files-with-keywords)
-          ("f" . denote-dired-rename-marked-files-using-front-matter))
-    :config
-    (add-hook 'context-menu-functions #'denote-context-menu)
-    :hook
-    ((text-mode . denote-fontify-links-mode-maybe)
-     (dired-mode . denote-dired-mode)
-     (elpaca-after-init . denote-rename-buffer-mode)))
-#+end_src
-**** [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
-#+begin_src emacs-lisp
-  (use-package denote-menu
-    :after denote
-    :bind
-    (:map my/denote-map
-          ("m" . list-denotes)))
-#+end_src
 **** [[https://github.com/pprevos/citar-denote.git][citar-denote]]
 #+begin_src emacs-lisp
   (use-package citar-denote
@@ -2304,6 +2230,107 @@ Simple note taking and file naming.
           ("g" . consult-denote-grep))
     :config
     (consult-denote-mode 1))
+#+end_src
+**** [[https://github.com/protesilaos/denote.git][denote]]
+Simple note taking and file naming.
+#+begin_src emacs-lisp
+  (use-package denote
+    :custom
+    ;; Configure the directory where your notes will be stored.
+    (denote-directory (expand-file-name "denote/" org-directory))
+    ;; If you want a controlled vocabulary of keywords, specify them here.
+    (denote-known-keywords '("ENERGY" "STATS" "CS" "AI"))
+    ;; If you want Denote to infer keywords from your note titles, set this to t.
+    (denote-infer-keywords t)
+    ;; If you want to sort keywords alphabetically, set this to t.
+    (denote-sort-keywords t)
+    ;; Specify a regular expression to exclude directories from being searched for notes.
+    (denote-excluded-directories-regexp nil)
+    ;; Specify a regular expression to exclude keywords from being searched for notes.
+    (denote-excluded-keywords-regexp nil)
+    ;; Pick dates, where relevant, with Org's advanced interface:
+    (denote-date-prompt-use-org-read-date t)
+    ;; Automatically rename Denote buffers using the `denote-rename-buffer-format'.
+    (denote-rename-buffer-mode t)
+    ;; Define templates for notes
+    (denote-templates
+     '((minutes . "minutes")
+       (plain . nil)))
+    :preface
+    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+    (defun my/kill-denote-buffers ()
+      "Kill all denote buffers."
+      (interactive)
+      (dolist (buf (buffer-list))
+        (when (or (string-prefix-p "[D]" (buffer-name buf))
+                  (string-prefix-p "*Denote" (buffer-name buf)))
+          (kill-buffer buf))))
+    :init
+    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
+    :bind
+    (:map my/denote-map
+          ("L" . denote-add-links)
+          ("N" . denote-type)
+          ("R" . denote-rename-file-using-front-matter)
+          ("b" . denote-backlinks)
+          ("d" . denote-dired)
+          ("g" . denote-grep)
+          ("i" . denote-link)
+          ("k" . my/kill-denote-buffers)
+          ("n" . denote)
+          ("r" . denote-rename-file)
+          ("q c" . denote-query-contents-link) ; create link that triggers a grep
+          ("q f" . denote-query-filenames-link) ; create link that triggers a dired
+          :map dired-mode-map
+          ("i" . denote-link-dired-marked-notes)
+          ("r" . denote-dired-rename-marked-files)
+          ("k" . denote-dired-rename-marked-files-with-keywords)
+          ("f" . denote-dired-rename-marked-files-using-front-matter))
+    :config
+    (add-hook 'context-menu-functions #'denote-context-menu)
+    (with-eval-after-load 'org-capture
+      (add-to-list 'org-capture-templates
+                   '("n" "New note (with Denote)" plain
+                     (file denote-last-path)
+                     #'denote-org-capture
+                     :no-save t
+                     :immediate-finish nil
+                     :kill-buffer t
+                     :jump-to-captured t)))
+    :hook
+    ((text-mode . denote-fontify-links-mode-maybe)
+     (dired-mode . denote-dired-mode)
+     (elpaca-after-init . denote-rename-buffer-mode)))
+#+end_src
+**** [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
+#+begin_src emacs-lisp
+  (use-package denote-menu
+    :after denote
+    :bind
+    (:map my/denote-map
+          ("m" . list-denotes)))
+#+end_src
+**** [[https://github.com/protesilaos/denote-sequence][denote-sequence]]
+#+begin_src emacs-lisp
+  (use-package denote-sequence
+    :after denote
+    :demand t
+    :bind
+    ( :map my/denote-map
+      ;; - `denote-sequence-new-parent'
+      ;; - `denote-sequence-new-sibling'
+      ;; - `denote-sequence-new-child'
+      ;; - `denote-sequence-new-child-of-current'
+      ;; - `denote-sequence-new-sibling-of-current'
+      ("s s" . denote-sequence)
+      ("s f" . denote-sequence-find)
+      ("s l" . denote-sequence-link)
+      ("s d" . denote-sequence-dired)
+      ("s r" . denote-sequence-reparent)
+      ("s c" . denote-sequence-convert))
+    :custom
+    ;; The default sequence scheme is `numeric'.
+    (denote-sequence-scheme 'alphanumeric))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
