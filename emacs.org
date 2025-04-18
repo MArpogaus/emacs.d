@@ -1483,6 +1483,7 @@ References:
     :bind
     (:map my/toggle-map
           ("T" . global-tab-line-mode))
+    :autoload tab-line-tabs-window-buffers
     :preface
     (defun my/tab-line-tab-name-function (buffer &optional _buffers)
       (let ((name (buffer-name buffer)))
@@ -1526,15 +1527,15 @@ References:
             (kill-window-p (not (my/multi-buffer-window-p)))
             (buffer (my/tab-line-get-buffer tab)))
         (my/tab-line-close-or-bury-buffer buffer)
-        (when kill-window-p 
+        (when kill-window-p
           (message "Closing window")
           (ignore-errors (delete-window window)))))
 
-    ;; (defun my/enable-tab-line-if-multiple-buffers ()
-    ;;   "Enable tab line mode if there are multiple buffers in the current window."
-    ;;   (if (my/multi-buffer-window-p)
-    ;;       (tab-line-mode 1)
-    ;;     (tab-line-mode -1)))
+    (defun my/enable-tab-line-if-multiple-buffers ()
+      "Enable tab line mode if there are multiple buffers in the current window."
+      (if (my/multi-buffer-window-p)
+          (set-window-parameter nil 'tab-line-format nil)
+        (set-window-parameter nil 'tab-line-format 'none)))
     :config
     (setq tab-line-close-button
           (propertize "✕ "
@@ -1543,8 +1544,8 @@ References:
                       'help-echo "Click to close tab")
           tab-line-separator "")
     :hook
-    ;; (window-configuration-change . my/enable-tab-line-if-multiple-buffers)
-    (elpaca-after-init . global-tab-line-mode))
+    ((buffer-list-update . my/enable-tab-line-if-multiple-buffers)
+     (elpaca-after-init . global-tab-line-mode)))
 #+end_src
 **** time :build_in:
 #+begin_src emacs-lisp
