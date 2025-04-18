@@ -594,12 +594,14 @@ In this section, I define some custom Lisp functions.
       (if my/minimal-ui-mode
           (progn
             (setq tab-bar-show nil)
+            (set-fringe-style 0)
             (tab-bar-mode -1)
             (global-tab-line-mode -1)
             (global-hide-mode-line-mode 1)
             (spacious-padding-mode -1))
         (progn
           (setq tab-bar-show t)
+          (set-fringe-style nil)
           (tab-bar-mode 1)
           (global-tab-line-mode 1)
           (global-hide-mode-line-mode -1)
@@ -2178,6 +2180,8 @@ Writable grep buffer and apply the changes to files.
 Distraction-free writing for Emacs.
 #+begin_src emacs-lisp
   (use-package writeroom-mode
+    :config
+    (setopt writeroom-global-effects (append writeroom-global-effects '(my/minimal-ui-mode)))
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
 **** Library Footer
