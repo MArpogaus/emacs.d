@@ -1926,16 +1926,24 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
 #+begin_src emacs-lisp
   (use-package outline
     :ensure nil
+    :autoload outline-minor-mode-cycle--bind
     :preface
     (defvar my/outline-repeat-map (make-sparse-keymap) "key-map for outline-mode commands")
-    (defun my/outline-mode-hook nil
-      (unless (eq major-mode 'org-mode)
-        (outline-minor-mode-cycle--bind nil (kbd "M-<up>") #'outline-move-subtree-up)
-        (outline-minor-mode-cycle--bind nil (kbd "M-<down>") #'outline-move-subtree-down)
-        (outline-minor-mode-cycle--bind nil (kbd "M-<right>") #'outline-demote)
-        (outline-minor-mode-cycle--bind nil (kbd "M-<left>") #'outline-promote)
-        (setq-local outline-minor-mode-use-buttons 'in-margins)
-        (reveal-mode 1)))
+    (define-minor-mode my/outline-minor-mode
+      "Customize `outline-minor-mode' for non-org buffers."
+      :lighter nil
+      (if my/outline-minor-mode
+          (unless (eq major-mode 'org-mode)
+            (outline-minor-mode-cycle--bind nil (kbd "M-<up>") #'outline-move-subtree-up)
+            (outline-minor-mode-cycle--bind nil (kbd "M-<down>") #'outline-move-subtree-down)
+            (outline-minor-mode-cycle--bind nil (kbd "M-<right>") #'outline-demote)
+            (outline-minor-mode-cycle--bind nil (kbd "M-<left>") #'outline-promote)
+            (setq-local outline-minor-mode-use-buttons 'in-margins)
+            (outline-minor-mode 1)
+            (reveal-mode 1))
+        (progn
+          (outline-minor-mode -1)
+          (reveal-mode -1))))
     :custom
     (outline-minor-mode-cycle t)
     (outline-minor-mode-highlight t)
@@ -1952,8 +1960,14 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
                  ("<backtab>"   . outline-cycle-buffer)
                  ("a"           . outline-show-all))
     :hook
-    (((text-mode prog-mode conf-mode) . outline-minor-mode)
-     (outline-minor-mode . my/outline-mode-hook)))
+    ((text-mode prog-mode conf-mode) . my/outline-minor-mode))
+#+end_src
+**** [[https://github.com/jamescherti/outline-indent.el.git][outline-indent]]
+#+begin_src emacs-lisp
+  (use-package outline-indent
+    :ensure t
+    :hook
+    ((yaml-ts-mode) . outline-indent-minor-mode))
 #+end_src
 **** paren :build_in:
 Paren mode for highlighting matcing paranthesis
