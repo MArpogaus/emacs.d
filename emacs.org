@@ -14,9 +14,11 @@ Here are some notable features:
 
 - *Optimized Startup:* Various techniques are employed to minimize startup time, including deferring package loading with [[https://github.com/jwiegley/use-package][use-package]], optimized garbage collection settings, and disabling non-essential services during initialization.
 
-- *Minimal UI:*  The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen real estate.
-
 - *Elpaca for Package Management:*  [[https://github.com/progfolio/elpaca][Elpaca]] is used for package management, offering a more modern and robust alternative to the built-in package.el.
+
+- *Minimal UI:* The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen efficiency. Additional packages like [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]], [[https://github.com/doomemacs/themes][doom-themes]], [[https://gitlab.com/jessieh/mood-line.git][mood-line]], [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]] and [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]] are used to ensure a distraction free and consistent, yet modern design.
+ 
+- *Optimized UX:* Several build-in packages like =autorevert=, =del-sel=, =elec-pair=, =hide-show-mode=, =outline-mode=, =saveplace= and =savehist= are enabled and configured for optimal user experience. Additionally, third-party packages like [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]] and [[https://github.com/karthink/popper.git][popper]] are used for a more streamlined window layout and management, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
 
