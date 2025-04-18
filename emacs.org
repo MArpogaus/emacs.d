@@ -3138,12 +3138,12 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     :config
     ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
     ;; strategy, if you want to see the documentation from multiple providers.
-    (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
 
-    (setq embark-indicators
-          '(embark-which-key-indicator
-            embark-highlight-indicator
-            embark-isearch-highlight-indicator))
+    (setopt embark-indicators
+            '(embark-which-key-indicator
+              embark-highlight-indicator
+              embark-isearch-highlight-indicator))
 
     (advice-add #'embark-completing-read-prompter
                 :around #'embark-hide-which-key-indicator))
