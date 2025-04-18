@@ -292,7 +292,7 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 *** Install Elpaca
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
-  (defvar elpaca-installer-version 0.10)
+  (defvar elpaca-installer-version 0.11)
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -327,7 +327,7 @@ This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-direct
     (unless (require 'elpaca-autoloads nil t)
       (require 'elpaca)
       (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
+      (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order))
 #+end_src
@@ -369,10 +369,10 @@ The main initialization file, =init.el=, is responsible for defining essential c
   ;; Use elpaca lockfile
   ;;(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
 
-  ;; Install never version of transient and jsonrpc
+  ;; Allow automatic upgrade of build-in transient
+  ;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
   (setq elpaca-ignored-dependencies
-        (seq-remove (lambda (x) (memq x '(transient jsonrpc)))
-                    elpaca-ignored-dependencies))
+        (delq 'transient elpaca-ignored-dependencies))
 
   ;; Enable use-package integration
   (elpaca elpaca-use-package
