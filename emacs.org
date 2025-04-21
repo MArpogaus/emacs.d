@@ -654,7 +654,7 @@ Package specific keymap definitions are kept in preface of the respective packag
      ("C-<backspace>" . my/backward-kill-thing)
      :map my/buffer-map
      ("e" . eval-buffer)
-     ("k" . kill-this-buffer)
+     ("k" . kill-current-buffer)
      ("K" . kill-buffer)
      ("c" . clone-buffer)
      ("r" . revert-buffer)

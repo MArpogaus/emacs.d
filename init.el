@@ -321,7 +321,7 @@ Refference: https://emacs.stackexchange.com/a/13432"
    ("C-<backspace>" . my/backward-kill-thing)
    :map my/buffer-map
    ("e" . eval-buffer)
-   ("k" . kill-this-buffer)
+   ("k" . kill-current-buffer)
    ("K" . kill-buffer)
    ("c" . clone-buffer)
    ("r" . revert-buffer)
