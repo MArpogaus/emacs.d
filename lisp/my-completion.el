@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-18
+;; Created: 2025-04-21
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -275,11 +275,8 @@
     "Quit completion if there exist no candiates"
     (interactive)
     (if (and (cdr corfu--candidates)
-             ;; next char is space, return or nothing
-             (or
-              (not (char-after))
-              (= (char-after) ?\s)
-              (= (char-after) ?\n)))
+             ;; next char is not letter or number
+             (not (string-match-p "[[:alnum:]]" (string (char-after)))))
         (progn
           (apply orig-func args))
       (progn

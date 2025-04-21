@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-18
+;; Created: 2025-04-21
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -48,7 +48,9 @@
   (with-eval-after-load 'tab-line
     (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
   :bind
-  (:map my/leader-map
+  (:map meow-motion-state-keymap
+        ("<escape>" . meow-cancel-selection)
+        :map my/leader-map
         ("?" . meow-cheatsheet)
         :map meow-normal-state-keymap
         ("'" . repeat)

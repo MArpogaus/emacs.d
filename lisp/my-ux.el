@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-18
+;; Created: 2025-04-21
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -41,8 +41,8 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
   (aw-dispatch-always t)
   (aw-minibuffer-flag nil)
   ;; Make Emacs ask where to place a new buffer
-  (display-buffer-base-action '((display-buffer-reuse-window
-                                 display-buffer-in-previous-window
+  (display-buffer-base-action '((display-buffer-in-previous-window
+                                 display-buffer-reuse-mode-window
                                  ace-display-buffer)))
   :autoload ace-display-buffer
   :config
@@ -128,6 +128,9 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
          (propertize " " 'display `(space :align-to right))
          (propertize " " 'face prefix-face 'display '(space-width 1))))))
   :custom
+  ;; Respects display actions when switching buffers
+  (switch-to-buffer-obey-display-actions t)
+
   ;; Top side window configurations
   (auto-side-windows-top-buffer-names
    '("^\\*Backtrace\\*$"
@@ -216,7 +219,9 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
         ("w" .  window-toggle-side-windows)
         ("W" .  auto-side-windows-toggle-side-window)
         :map my/window-map
-        ("s" . auto-side-windows-display-buffer-on-side))
+        ("s" . auto-side-windows-display-buffer-on-side)
+        :map my/buffer-map
+        ("B"  . auto-side-windows-switch-to-buffer))
   :config
   (with-eval-after-load 'magit
     (setopt magit-display-buffer-function #'display-buffer
@@ -416,48 +421,6 @@ buffer's text scale."
   (show-paren-when-point-inside-paren nil)
   :hook
   (prog-mode . show-paren-mode))
-
-;; [[https://github.com/karthink/popper.git][popper]]
-
-(use-package popper
-  :after auto-side-windows
-  :preface
-  (defun my/popper-switch-to-buried-buffer (buffer)
-    "Switch to buried popup BUFFER."
-    (interactive
-     (list
-      (when-let ((buried-popups (progn (popper--find-buried-popups)
-                                       (mapcar #'cdr
-                                               (alist-get (funcall popper-group-function)
-                                                          popper-buried-popup-alist nil nil 'equal))))
-                 (pred (lambda (b)
-                         (if (consp b) (setq b (car b)))
-                         (setq b (get-buffer b))
-                         (member b buried-popups))))
-        (read-buffer "Switch to popup: " nil t pred))))
-    (if buffer (display-buffer buffer)
-      (message "No buried popups.")))
-  :custom
-  ;; Define popup buffers
-  (popper-reference-buffers
-   (append auto-side-windows-top-buffer-names auto-side-windows-top-buffer-modes
-           auto-side-windows-left-buffer-names auto-side-windows-left-buffer-modes
-           auto-side-windows-right-buffer-names auto-side-windows-right-buffer-modes
-           auto-side-windows-bottom-buffer-names auto-side-windows-bottom-buffer-modes))
-  (popper-display-control 'user)
-  :config
-  ;; grouping popups by project
-  (with-eval-after-load 'project
-    (setq popper-group-function #'popper-group-by-project))
-  :bind
-  (:map my/toggle-map
-        ("p" . popper-toggle)
-        ("P" . popper-toggle-type)
-        :map my/buffer-map
-        ("p" . my/popper-switch-to-buried-buffer))
-  :init
-  (popper-mode)
-  (popper-echo-mode))
 
 ;; recentf :build_in:
 
