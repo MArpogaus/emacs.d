@@ -1618,8 +1618,8 @@ Quickly switch windows in Emacs.
     (aw-dispatch-always t)
     (aw-minibuffer-flag nil)
     ;; Make Emacs ask where to place a new buffer
-    (display-buffer-base-action '((display-buffer-reuse-window
-                                   display-buffer-in-previous-window
+    (display-buffer-base-action '((display-buffer-in-previous-window
+                                   display-buffer-reuse-mode-window
                                    ace-display-buffer)))
     :autoload ace-display-buffer
     :config
@@ -1705,6 +1705,9 @@ Revert buffers when the underlying file has changed
            (propertize " " 'display `(space :align-to right))
            (propertize " " 'face prefix-face 'display '(space-width 1))))))
     :custom
+    ;; Respects display actions when switching buffers
+    (switch-to-buffer-obey-display-actions t)
+
     ;; Top side window configurations
     (auto-side-windows-top-buffer-names
      '("^\\*Backtrace\\*$"
@@ -1793,7 +1796,9 @@ Revert buffers when the underlying file has changed
           ("w" .  window-toggle-side-windows)
           ("W" .  auto-side-windows-toggle-side-window)
           :map my/window-map
-          ("s" . auto-side-windows-display-buffer-on-side))
+          ("s" . auto-side-windows-display-buffer-on-side)
+          :map my/buffer-map
+          ("B"  . auto-side-windows-switch-to-buffer))
     :config
     (with-eval-after-load 'magit
       (setopt magit-display-buffer-function #'display-buffer
@@ -1993,48 +1998,6 @@ Paren mode for highlighting matcing paranthesis
     (show-paren-when-point-inside-paren nil)
     :hook
     (prog-mode . show-paren-mode))
-#+end_src
-**** [[https://github.com/karthink/popper.git][popper]]
-#+begin_src emacs-lisp
-  (use-package popper
-    :after auto-side-windows
-    :preface
-    (defun my/popper-switch-to-buried-buffer (buffer)
-      "Switch to buried popup BUFFER."
-      (interactive
-       (list
-        (when-let ((buried-popups (progn (popper--find-buried-popups)
-                                         (mapcar #'cdr
-                                                 (alist-get (funcall popper-group-function)
-                                                            popper-buried-popup-alist nil nil 'equal))))
-                   (pred (lambda (b)
-                           (if (consp b) (setq b (car b)))
-                           (setq b (get-buffer b))
-                           (member b buried-popups))))
-          (read-buffer "Switch to popup: " nil t pred))))
-      (if buffer (display-buffer buffer)
-        (message "No buried popups.")))
-    :custom
-    ;; Define popup buffers
-    (popper-reference-buffers
-     (append auto-side-windows-top-buffer-names auto-side-windows-top-buffer-modes
-             auto-side-windows-left-buffer-names auto-side-windows-left-buffer-modes
-             auto-side-windows-right-buffer-names auto-side-windows-right-buffer-modes
-             auto-side-windows-bottom-buffer-names auto-side-windows-bottom-buffer-modes))
-    (popper-display-control 'user)
-    :config
-    ;; grouping popups by project
-    (with-eval-after-load 'project
-      (setq popper-group-function #'popper-group-by-project))
-    :bind
-    (:map my/toggle-map
-          ("p" . popper-toggle)
-          ("P" . popper-toggle-type)
-          :map my/buffer-map
-          ("p" . my/popper-switch-to-buried-buffer))
-    :init
-    (popper-mode)
-    (popper-echo-mode))
 #+end_src
 **** recentf :build_in:
 
@@ -3026,11 +2989,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
       "Quit completion if there exist no candiates"
       (interactive)
       (if (and (cdr corfu--candidates)
-               ;; next char is space, return or nothing
-               (or
-                (not (char-after))
-                (= (char-after) ?\s)
-                (= (char-after) ?\n)))
+               ;; next char is not letter or number
+               (not (string-match-p "[[:alnum:]]" (string (char-after)))))
           (progn
             (apply orig-func args))
         (progn
@@ -4122,7 +4082,9 @@ Meow is yet another modal editing mode for Emacs.
     (with-eval-after-load 'tab-line
       (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
     :bind
-    (:map my/leader-map
+    (:map meow-motion-state-keymap
+          ("<escape>" . meow-cancel-selection)
+          :map my/leader-map
           ("?" . meow-cheatsheet)
           :map meow-normal-state-keymap
           ("'" . repeat)
