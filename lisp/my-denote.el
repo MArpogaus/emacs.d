@@ -103,7 +103,6 @@
         ("k" . denote-dired-rename-marked-files-with-keywords)
         ("f" . denote-dired-rename-marked-files-using-front-matter))
   :config
-  (add-hook 'context-menu-functions #'denote-context-menu)
   (with-eval-after-load 'org-capture
     (add-to-list 'org-capture-templates
                  '("n" "New note (with Denote)" plain
