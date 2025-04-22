@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-21
+;; Created: 2025-04-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -132,15 +132,17 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
 
   ;; Top side window configurations
   (auto-side-windows-top-buffer-names
-   '("^\\*Backtrace\\*$"
+   '("^ \\*Install vterm\\*$"
      "^COMMIT_EDITMSG$"
      "^\\*Agenda Commands\\*$"
      "^\\*Async-native-compile-log\\*$"
      "^\\*Compile-Log\\*$"
+     "^\\*Messages\\*$"
      "^\\*Multiple Choice Help\\*$"
-     "^\\*Org Src.*\\*"
      "^\\*Org Select\\*"
+     "^\\*Org Src.*\\*"
      "^\\*Org-Babel Error Output\\*"
+     "^\\*Process List\\*$"
      "^\\*Quick Help\\*$"
      "^\\*TeX Help\\*$"
      "^\\*TeX errors\\*$"
@@ -148,12 +150,13 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      "^\\*diff-hl\\*$"
      "^\\*gptel-system\\*$"
      "^\\*jinx module compilation\\*$"
-     "^\\*Process List\\*$"))
+     "^\\*Backtrace\\*$"))
   (auto-side-windows-top-buffer-modes
-   '(flymake-diagnostics-buffer-mode
+   '(compilation-mode
+     flymake-diagnostics-buffer-mode
+     grep-mode
      locate-mode
      occur-mode
-     grep-mode
      xref--xref-buffer-mode))
 
   ;; Bottom side window configurations

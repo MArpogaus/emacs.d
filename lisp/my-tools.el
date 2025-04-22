@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-21
+;; Created: 2025-04-22
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -267,9 +267,10 @@
   :if (executable-find "enchant-2")
   :custom
   (jinx-languages "en_US de_DE")
-  :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
-         ("C-M-$" . jinx-languages)))
+         ("C-M-$" . jinx-languages))
+  :hook
+  (elpaca-after-init . global-jinx-mode))
 
 ;; [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 ;; Emacs support library for PDF files.

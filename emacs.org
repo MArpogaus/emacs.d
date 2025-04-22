@@ -1709,15 +1709,17 @@ Revert buffers when the underlying file has changed
 
     ;; Top side window configurations
     (auto-side-windows-top-buffer-names
-     '("^\\*Backtrace\\*$"
+     '("^ \\*Install vterm\\*$"
        "^COMMIT_EDITMSG$"
        "^\\*Agenda Commands\\*$"
        "^\\*Async-native-compile-log\\*$"
        "^\\*Compile-Log\\*$"
+       "^\\*Messages\\*$"
        "^\\*Multiple Choice Help\\*$"
-       "^\\*Org Src.*\\*"
        "^\\*Org Select\\*"
+       "^\\*Org Src.*\\*"
        "^\\*Org-Babel Error Output\\*"
+       "^\\*Process List\\*$"
        "^\\*Quick Help\\*$"
        "^\\*TeX Help\\*$"
        "^\\*TeX errors\\*$"
@@ -1725,12 +1727,13 @@ Revert buffers when the underlying file has changed
        "^\\*diff-hl\\*$"
        "^\\*gptel-system\\*$"
        "^\\*jinx module compilation\\*$"
-       "^\\*Process List\\*$"))
+       "^\\*Backtrace\\*$"))
     (auto-side-windows-top-buffer-modes
-     '(flymake-diagnostics-buffer-mode
+     '(compilation-mode
+       flymake-diagnostics-buffer-mode
+       grep-mode
        locate-mode
        occur-mode
-       grep-mode
        xref--xref-buffer-mode))
 
     ;; Bottom side window configurations
@@ -2575,9 +2578,10 @@ Enchanted Spell Checker.
     :if (executable-find "enchant-2")
     :custom
     (jinx-languages "en_US de_DE")
-    :hook (emacs-startup . global-jinx-mode)
     :bind (("M-$" . jinx-correct)
-           ("C-M-$" . jinx-languages)))
+           ("C-M-$" . jinx-languages))
+    :hook
+    (elpaca-after-init . global-jinx-mode))
 #+end_src
 **** [[https://github.com/vedang/pdf-tools.git][pdf-tools]]
 Emacs support library for PDF files.
@@ -3627,6 +3631,9 @@ Integrated environment for *TeX*
     (TeX-PDF-mode t)
     ;; Don't start server for inverse search (is already running)
     (TeX-source-correlate-start-server nil)
+    :mode
+    ;; Ensure auctex is preferred over the build in `latex-mode`
+    ("\\.tex\\'" . LaTeX-mode)
     :hook
     ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
     ((LaTeX-mode . LaTeX-preview-setup)
