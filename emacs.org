@@ -1235,7 +1235,7 @@ Highlighting of the current line (native mode)
   (use-package hl-line
     :ensure nil
     :hook
-    ((prog-mode org-mode) . global-hl-line-mode))
+    ((prog-mode org-mode text-mode) . hl-line-mode))
 #+end_src
 **** [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 Highlight TODO keywords.
@@ -1451,17 +1451,20 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (([remap winner-undo] . tab-bar-history-back)
      ([remap winner-undo] . tab-bar-history-forward)
      :map my/toggle-map
-     ("t" . tab-bar-mode)
+     ("t"                 . tab-bar-mode)
+     :map my/leader-map
+     ("<backtab>"         . tab-switcher)
      :repeat-map my/window-map
-     ("u" . tab-bar-history-back)
-     ("i" . tab-bar-history-forward)
+     ("u"                 . tab-bar-history-back)
+     ("i"                 . tab-bar-history-forward)
      :repeat-map my/workspace-map
-     ("p" . tab-previous)
-     ("n" . tab-next)
-     ("P" . tab-bar-move-tab-backward)
-     ("N". tab-bar-move-tab)
+     ("N"                 . tab-bar-move-tab)
+     ("P"                 . tab-bar-move-tab-backward)
+     ("n"                 . tab-next)
+     ("p"                 . tab-previous)
      :exit
-     ("k" . tab-close-group))
+     ("TAB"               . tab-switcher)
+     ("k"                 . tab-close-group))
     :hook
     ((elpaca-after-init . tab-bar-history-mode)
      (elpaca-after-init . tab-bar-mode)))
@@ -1485,7 +1488,7 @@ References:
     (tab-line-close-tab-function #'my/tab-line-close-tab-function)
     (tab-line-exclude-modes '(completion-list-mode
                               imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
-                              dired-mode dirvish-directory-view-mode
+                              dirvish-directory-view-mode dirvish-special-preview-mode
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
     (tab-line-close-button-show 'selected)
@@ -1757,13 +1760,20 @@ Revert buffers when the underlying file has changed
        comint-mode
        debugger-mode))
 
+    ;; Left side window configurations
+    (auto-side-windows-left-buffer-names
+     '("^\\*toc*\\*$"))
+    (auto-side-windows-left-buffer-modes
+     '(reftex-toc-mode))
+
     ;; Right side window configurations
     (auto-side-windows-right-buffer-names
      '("^\\*eldoc.*\\*$"
+       "^\\*Org Agenda\\*$"
+       "^\\*Outline .+\.pdf\\*$"
        "^\\*info\\*$"
        "^magit-diff:.*$"
        "^magit-process:.*$"
-       "^\\*Org Agenda\\*$"
        "^\\*Metahelp\\*$"))
     (auto-side-windows-right-buffer-modes
      '(Info-mode
@@ -1778,6 +1788,7 @@ Revert buffers when the underlying file has changed
        magit-log-mode
        magit-diff-mode
        magit-process-mode
+       pdf-outline-buffer-mode
        shortdoc-mode))
 
     ;; Window parameters
@@ -2626,9 +2637,13 @@ Server start.
 #+begin_src emacs-lisp
   (use-package server
     :ensure nil
-    :config
-    (unless (server-running-p)
-      (server-start)))
+    :autoload server-running-p
+    :preface
+    (defun my/server-start ()
+      (unless (server-running-p)
+        (server-start)))
+    :hook
+    (elpaca-after-init . my/server-start))
 #+end_src
 **** term :build_in:
 Major mode for interacting with a terminal
