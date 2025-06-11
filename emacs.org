@@ -1271,13 +1271,14 @@ Fast, configurable indentation guide-bars for Emacs.
     ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
-Display typographical ligatures in Emacs.
+Display typographical ligatures in Emacs. -> -+
+=Display typographical ligatures in Emacs.-> -+=
 #+begin_src emacs-lisp
   (use-package ligature
     :if (display-graphic-p)
     :config
     ;; set Fira as default font
-    (set-frame-font "FiraCode Nerd Font-10" nil t)
+    (set-frame-font "FiraCode Nerd Font")
     :preface
     (defun my/setup-ligatures ()
       ;; Enable the "www" ligature in every possible major mode
@@ -1350,6 +1351,22 @@ Display typographical ligatures in Emacs.
       (global-ligature-mode))
     :hook
     (elpaca-after-init . my/setup-ligatures))
+#+end_src
+**** mixed-pitch-mode
+#+begin_src emacs-lisp
+  (use-package mixed-pitch
+    :custom-face
+    (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
+    (variable-pitch ((t (:family "Adwaita Sans"))))
+    ;; (header-line ((t (:inherit 'variable-pitch))))
+    ;; (mode-line ((t (:inherit 'variable-pitch))))
+    ;; (tab-bar ((t (:inherit 'variable-pitch))))
+    ;; (tab-line ((t (:inherit 'variable-pitch))))
+    ;; (minibuffer-prompt ((t (:inherit 'variable-pitch))))
+    :config
+    (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces '(corfu-default)))
+    :hook
+    ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
 #+end_src
 **** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
 Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
