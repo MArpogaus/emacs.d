@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -39,13 +39,12 @@
 ;; [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 
 (use-package consult-denote
-  :after denote consult
   :bind
   (:map my/denote-map
         ("f" . consult-denote-find)
         ("g" . consult-denote-grep))
   :config
-  (consult-denote-mode 1))
+  (consult-denote-mode))
 
 ;; [[https://github.com/protesilaos/denote.git][denote]]
 ;; Simple note taking and file naming.
@@ -73,7 +72,6 @@
    '((minutes . "minutes")
      (plain . nil)))
   :preface
-  (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
   (defun my/kill-denote-buffers ()
     "Kill all denote buffers."
     (interactive)
@@ -81,8 +79,6 @@
       (when (or (string-prefix-p "[D]" (buffer-name buf))
                 (string-prefix-p "*Denote" (buffer-name buf)))
         (kill-buffer buf))))
-  :init
-  (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
   :bind
   (:map my/denote-map
         ("L" . denote-add-links)

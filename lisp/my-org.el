@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -213,7 +213,9 @@
   :after org
   :config
   (add-to-list 'org-beamer-environments-extra
-               '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+               '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
+  (add-to-list 'org-beamer-environments-extra
+               '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
 
 (use-package ox-extra
   :ensure nil
@@ -240,17 +242,21 @@
 ;; [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 ;; A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
 
-
 (use-package org-cliplink
   :after org)
 
 ;; [[https://github.com/minad/org-modern.git][org-modern]]
 ;; This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
-
 (use-package org-modern
   :custom
   (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
+  (org-modern-block-name
+   '((t . t)
+     ("src" "" "")
+     ("example" "»" "«")
+     ("quote" "❝" "❞")
+     ("export" "" "")))
   (org-modern-star 'fold)
 
   ;; Edit settings
@@ -467,6 +473,13 @@
      (variable . "revealjs-url=https://revealjs.com")))
   :config
   (add-to-list 'org-export-backends 'pandoc))
+
+;; [[https://github.com/larstvei/ox-gfm.git][ox-gfm]]
+;; Github Flavored Markdown Back-End for Org Export Engine.
+
+(use-package ox-gfm
+  :after ox
+  :demand t)
 
 ;; [[https://github.com/tarsius/orglink.git][orglink]]
 ;; Use Org Mode links in other modes.
