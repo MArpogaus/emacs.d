@@ -1400,12 +1400,17 @@ https://protesilaos.com/emacs/modus-themes
     (mood-line-glyph-alist mood-line-glyphs-fira-code)
     (mood-line-format
      (mood-line-defformat
+      :padding ""
       :left
-      (((my/get-bar-image my/modeline-height 2 nil)                               . " ")
+      (((my/get-bar-image my/modeline-height 3 nil)                               . " ")
        ((mood-line-segment-modal)                                                 . " ")
        ((mood-line-segment-anzu)                                                  . " ")
        ((mood-line-segment-multiple-cursors)                                      . " ")
-       ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
+       ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
+       " "
+       ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+       ;; ((window-tool-bar-string)                                                  . " "))
+       )
       :right
       (((mood-line-segment-process)                                               . " ")
        ((mood-line-segment-buffer-status)                                         . " ")
@@ -1603,12 +1608,64 @@ References:
 **** window-tool-bar :build_in:
 #+begin_src emacs-lisp
   (use-package window-tool-bar
-    :ensure nil
+    :ensure (:host github :repo "MArpogaus/window-tool-bar" :branch "text-icons" :files ("window-tool-bar.el" (:exclude ".git")))
+    :custom
+    (window-tool-bar-unicode-image-map
+     '((new "")
+       (open " ")
+       (diropen " ")
+       (close "󱎘 ")
+       (save " ")
+       (undo "󰕌 ")
+       (redo "󰑎 ")
+       (cut " ")
+       (copy " ")
+       (paste "󰆒 ")
+       (search " ")
+       (help "󰘥 ")
+       (index "󰋽 ")
+       (search-replace "󰛔 ")
+       (exit "󰸞 ")
+       (right-arrow " ")
+       (left-arrow " ")
+       (next-node " ")
+       (prev-node " ")
+       (up-node " ")
+       (home " ")
+       (jump-to "󰑎 ")
+       (refresh "󰑐 ")
+       (delete "󱎘 ")
+       (pdftex " ")
+       (error " ")
+       (viewpdf " ")
+       (bibtex "󱉟 ")
+       (spell "󰓆 ")
+       (hide " ")
+       (magit " ")))
+    (window-tool-bar-style 'unicode-image)
     :custom-face
+    (window-tool-bar-button ((t :background unspecified :box nil)))
     (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
-    :bind
-    (:map window-tool-bar--button-keymap
-          ([mode-line mouse-2] . window-tool-bar--call-button)))
+    (window-tool-bar-button-checked ((t :background unspecified :inherit window-tool-bar-button)))
+    (window-tool-bar-button-hover ((t :inherit mode-line-emphasis)))
+    (window-tool-bar-button-checked-hover ((t :inherit mode-line-emphasis)))
+    :config
+    (setq tool-bar-map (make-sparse-keymap))
+    (tool-bar-add-item-from-menu 'find-file "diropen" nil :label "Open" :vert-only t)
+    ;; (tool-bar-local-item "project" #'project-switch-project nil tool-bar-map :label "Project" :vert-only t)
+    (tool-bar-add-item-from-menu 'kill-this-buffer "close" nil :vert-only t)
+    (tool-bar-add-item-from-menu 'save-buffer "save" nil :label "Save")
+    (define-key-after (default-value 'tool-bar-map) [separator-1] menu-bar-separator)
+    (tool-bar-add-item-from-menu 'undo "undo" nil)
+    (tool-bar-add-item-from-menu 'undo-redo "redo" nil)
+    (define-key-after (default-value 'tool-bar-map) [separator-2] menu-bar-separator)
+    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [cut]) "cut" nil :vert-only t)
+    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [copy]) "copy" nil :vert-only t)
+    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [paste]) "paste" nil :vert-only t)
+    (define-key-after (default-value 'tool-bar-map) [separator-3] menu-bar-separator)
+    (tool-bar-add-item-from-menu 'isearch-forward "search" nil :label "Search" :vert-only t)
+    (tool-bar-local-item "magit" #'magit-status nil tool-bar-map
+                         :label "Magit" :vert-only t :visible '(magit-git-repo-p default-directory)))
 #+end_src
 **** Library Footer
 #+begin_src emacs-lisp
@@ -1729,7 +1786,6 @@ Revert buffers when the underlying file has changed
              (prefix (car prefix-and-face))
              (background (face-foreground (cdr prefix-and-face)))
              (foreground (face-background (cdr prefix-and-face) nil 'default))
-             (prefix-face (list :inherit 'bold :background background :foreground foreground))
              (buffer-face (list :inherit 'bold :foreground background)))
           (set-window-fringes nil 1 1 t)
           (my/install-top-side-window-face-remaps buffer foreground background)
@@ -3695,6 +3751,10 @@ Integrated environment for *TeX*
     (TeX-PDF-mode t)
     ;; Don't start server for inverse search (is already running)
     (TeX-source-correlate-start-server nil)
+    (TeX-bar-LaTeX-buttons
+     '(open-file kill-buffer save-buffer separator undo
+                 separator cut copy paste separator search-forward
+                 separator latex next-error view bibtex spell))
     :mode
     ;; Ensure auctex is preferred over the build in `latex-mode`
     ("\\.tex\\'" . LaTeX-mode)
@@ -3702,6 +3762,7 @@ Integrated environment for *TeX*
     ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
     ((LaTeX-mode . LaTeX-preview-setup)
      (LaTeX-mode . LaTeX-math-mode)
+     (LaTeX-mode . LaTeX-install-toolbar)
      (LaTeX-mode . TeX-source-correlate-mode)
      (LaTeX-mode . turn-on-reftex)))
 #+end_src
