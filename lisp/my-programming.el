@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -53,6 +53,10 @@
   (TeX-PDF-mode t)
   ;; Don't start server for inverse search (is already running)
   (TeX-source-correlate-start-server nil)
+  (TeX-bar-LaTeX-buttons
+   '(open-file kill-buffer save-buffer separator undo
+               separator cut copy paste separator search-forward
+               separator latex next-error view bibtex spell))
   :mode
   ;; Ensure auctex is preferred over the build in `latex-mode`
   ("\\.tex\\'" . LaTeX-mode)
@@ -60,6 +64,7 @@
   ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
   ((LaTeX-mode . LaTeX-preview-setup)
    (LaTeX-mode . LaTeX-math-mode)
+   (LaTeX-mode . LaTeX-install-toolbar)
    (LaTeX-mode . TeX-source-correlate-mode)
    (LaTeX-mode . turn-on-reftex)))
 

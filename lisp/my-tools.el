@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -220,7 +220,27 @@
         ("g". gptel))
   :commands (gptel gptel-send)
   :config
-  (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t))
+  (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
+  ;; OpenRouter offers an OpenAI compatible API
+  (gptel-make-openai "OpenRouter"               ;Any name you want
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key #'gptel-api-key-from-auth-source
+    :models '(anthropic/claude-sonnet-4
+              anthropic/claude-opus-4
+              anthropic/claude-opus-4.1
+              deepseek/deepseek-chat-v3-0324:free
+              openai/gpt-4.1
+              openai/gpt-4.1-mini
+              openai/gpt-4o-mini
+              openai/gpt-oss-120b
+              openai/gpt-4o
+              openai/chatgpt-4o-latest
+              google/gemini-2.5-flash
+              google/gemini-2.5-pro
+              google/gemini-pro-1.5
+              google/gemini-flash-1.5)))
 
 ;; [[https://github.com/Wilfred/helpful.git][helpful]]
 ;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
@@ -308,9 +328,13 @@
 
 (use-package server
   :ensure nil
-  :config
-  (unless (server-running-p)
-    (server-start)))
+  :autoload server-running-p
+  :preface
+  (defun my/server-start ()
+    (unless (server-running-p)
+      (server-start)))
+  :hook
+  (elpaca-after-init . my/server-start))
 
 ;; term :build_in:
 ;; Major mode for interacting with a terminal

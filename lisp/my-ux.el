@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -117,7 +117,6 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
            (prefix (car prefix-and-face))
            (background (face-foreground (cdr prefix-and-face)))
            (foreground (face-background (cdr prefix-and-face) nil 'default))
-           (prefix-face (list :inherit 'bold :background background :foreground foreground))
            (buffer-face (list :inherit 'bold :foreground background)))
         (set-window-fringes nil 1 1 t)
         (my/install-top-side-window-face-remaps buffer foreground background)
@@ -173,13 +172,20 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      comint-mode
      debugger-mode))
 
+  ;; Left side window configurations
+  (auto-side-windows-left-buffer-names
+   '("^\\*toc*\\*$"))
+  (auto-side-windows-left-buffer-modes
+   '(reftex-toc-mode))
+
   ;; Right side window configurations
   (auto-side-windows-right-buffer-names
    '("^\\*eldoc.*\\*$"
+     "^\\*Org Agenda\\*$"
+     "^\\*Outline .+\.pdf\\*$"
      "^\\*info\\*$"
      "^magit-diff:.*$"
      "^magit-process:.*$"
-     "^\\*Org Agenda\\*$"
      "^\\*Metahelp\\*$"))
   (auto-side-windows-right-buffer-modes
    '(Info-mode
@@ -194,6 +200,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
      magit-log-mode
      magit-diff-mode
      magit-process-mode
+     pdf-outline-buffer-mode
      shortdoc-mode))
 
   ;; Window parameters

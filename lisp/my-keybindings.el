@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -47,6 +47,10 @@
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
   (with-eval-after-load 'tab-line
     (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
+  (setopt meow-mode-state-list
+          (append meow-mode-state-list '((comint-mode . insert)
+                                         (eshell-mode . insert)
+                                         (vterm-mode  . insert))))
   :bind
   (:map meow-motion-state-keymap
         ("<escape>" . meow-cancel-selection)

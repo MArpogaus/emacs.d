@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -83,6 +83,7 @@
 
 (use-package magit
   :commands (magit-status magit-log-buffer-file magit-log-all)
+  :autoload magit-git-repo-p
   :preface
   (defun my/project-magit-status ()
     (interactive)

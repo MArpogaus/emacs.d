@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-04-22
+;; Created: 2025-08-06
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -61,7 +61,7 @@
 (use-package hl-line
   :ensure nil
   :hook
-  ((prog-mode org-mode) . global-hl-line-mode))
+  ((prog-mode org-mode text-mode) . hl-line-mode))
 
 ;; [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 ;; Highlight TODO keywords.
@@ -97,13 +97,14 @@
   ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 
 ;; [[https://github.com/mickeynp/ligature.el.git][ligature]]
-;; Display typographical ligatures in Emacs.
+;; Display typographical ligatures in Emacs. -> -+
+;; =Display typographical ligatures in Emacs.-> -+=
 
 (use-package ligature
   :if (display-graphic-p)
   :config
   ;; set Fira as default font
-  (set-frame-font "FiraCode Nerd Font-10" nil t)
+  (set-frame-font "FiraCode Nerd Font")
   :preface
   (defun my/setup-ligatures ()
     ;; Enable the "www" ligature in every possible major mode
@@ -177,6 +178,22 @@
   :hook
   (elpaca-after-init . my/setup-ligatures))
 
+;; mixed-pitch-mode
+
+(use-package mixed-pitch
+  :custom-face
+  (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
+  (variable-pitch ((t (:family "Adwaita Sans"))))
+  ;; (header-line ((t (:inherit 'variable-pitch))))
+  ;; (mode-line ((t (:inherit 'variable-pitch))))
+  ;; (tab-bar ((t (:inherit 'variable-pitch))))
+  ;; (tab-line ((t (:inherit 'variable-pitch))))
+  ;; (minibuffer-prompt ((t (:inherit 'variable-pitch))))
+  :config
+  (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces '(corfu-default)))
+  :hook
+  ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
+
 ;; [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 
 (use-package mood-line
@@ -188,12 +205,17 @@
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
   (mood-line-format
    (mood-line-defformat
+    :padding ""
     :left
-    (((my/get-bar-image my/modeline-height 2 nil)                               . " ")
+    (((my/get-bar-image my/modeline-height 3 nil)                               . " ")
      ((mood-line-segment-modal)                                                 . " ")
      ((mood-line-segment-anzu)                                                  . " ")
      ((mood-line-segment-multiple-cursors)                                      . " ")
-     ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
+     ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
+     " "
+     ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+     ;; ((window-tool-bar-string)                                                  . " "))
+     )
     :right
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
@@ -264,17 +286,20 @@
   (([remap winner-undo] . tab-bar-history-back)
    ([remap winner-undo] . tab-bar-history-forward)
    :map my/toggle-map
-   ("t" . tab-bar-mode)
+   ("t"                 . tab-bar-mode)
+   :map my/leader-map
+   ("<backtab>"         . tab-switcher)
    :repeat-map my/window-map
-   ("u" . tab-bar-history-back)
-   ("i" . tab-bar-history-forward)
+   ("u"                 . tab-bar-history-back)
+   ("i"                 . tab-bar-history-forward)
    :repeat-map my/workspace-map
-   ("p" . tab-previous)
-   ("n" . tab-next)
-   ("P" . tab-bar-move-tab-backward)
-   ("N". tab-bar-move-tab)
+   ("N"                 . tab-bar-move-tab)
+   ("P"                 . tab-bar-move-tab-backward)
+   ("n"                 . tab-next)
+   ("p"                 . tab-previous)
    :exit
-   ("k" . tab-close-group))
+   ("TAB"               . tab-switcher)
+   ("k"                 . tab-close-group))
   :hook
   ((elpaca-after-init . tab-bar-history-mode)
    (elpaca-after-init . tab-bar-mode)))
@@ -298,7 +323,7 @@
   (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
                             imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
-                            dired-mode dirvish-directory-view-mode
+                            dirvish-directory-view-mode dirvish-special-preview-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
   (tab-line-close-button-show 'selected)
@@ -388,12 +413,64 @@
 ;; window-tool-bar :build_in:
 
 (use-package window-tool-bar
-  :ensure nil
+  :ensure (:host github :repo "MArpogaus/window-tool-bar" :branch "text-icons" :files ("window-tool-bar.el" (:exclude ".git")))
+  :custom
+  (window-tool-bar-unicode-image-map
+   '((new "")
+     (open " ")
+     (diropen " ")
+     (close "󱎘 ")
+     (save " ")
+     (undo "󰕌 ")
+     (redo "󰑎 ")
+     (cut " ")
+     (copy " ")
+     (paste "󰆒 ")
+     (search " ")
+     (help "󰘥 ")
+     (index "󰋽 ")
+     (search-replace "󰛔 ")
+     (exit "󰸞 ")
+     (right-arrow " ")
+     (left-arrow " ")
+     (next-node " ")
+     (prev-node " ")
+     (up-node " ")
+     (home " ")
+     (jump-to "󰑎 ")
+     (refresh "󰑐 ")
+     (delete "󱎘 ")
+     (pdftex " ")
+     (error " ")
+     (viewpdf " ")
+     (bibtex "󱉟 ")
+     (spell "󰓆 ")
+     (hide " ")
+     (magit " ")))
+  (window-tool-bar-style 'unicode-image)
   :custom-face
+  (window-tool-bar-button ((t :background unspecified :box nil)))
   (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
-  :bind
-  (:map window-tool-bar--button-keymap
-        ([mode-line mouse-2] . window-tool-bar--call-button)))
+  (window-tool-bar-button-checked ((t :background unspecified :inherit window-tool-bar-button)))
+  (window-tool-bar-button-hover ((t :inherit mode-line-emphasis)))
+  (window-tool-bar-button-checked-hover ((t :inherit mode-line-emphasis)))
+  :config
+  (setq tool-bar-map (make-sparse-keymap))
+  (tool-bar-add-item-from-menu 'find-file "diropen" nil :label "Open" :vert-only t)
+  ;; (tool-bar-local-item "project" #'project-switch-project nil tool-bar-map :label "Project" :vert-only t)
+  (tool-bar-add-item-from-menu 'kill-this-buffer "close" nil :vert-only t)
+  (tool-bar-add-item-from-menu 'save-buffer "save" nil :label "Save")
+  (define-key-after (default-value 'tool-bar-map) [separator-1] menu-bar-separator)
+  (tool-bar-add-item-from-menu 'undo "undo" nil)
+  (tool-bar-add-item-from-menu 'undo-redo "redo" nil)
+  (define-key-after (default-value 'tool-bar-map) [separator-2] menu-bar-separator)
+  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [cut]) "cut" nil :vert-only t)
+  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [copy]) "copy" nil :vert-only t)
+  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [paste]) "paste" nil :vert-only t)
+  (define-key-after (default-value 'tool-bar-map) [separator-3] menu-bar-separator)
+  (tool-bar-add-item-from-menu 'isearch-forward "search" nil :label "Search" :vert-only t)
+  (tool-bar-local-item "magit" #'magit-status nil tool-bar-map
+                       :label "Magit" :vert-only t :visible '(magit-git-repo-p default-directory)))
 
 ;; Library Footer
 
