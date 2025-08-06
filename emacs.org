@@ -4127,6 +4127,10 @@ Meow is yet another modal editing mode for Emacs.
     (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
     (with-eval-after-load 'tab-line
       (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
+    (setopt meow-mode-state-list
+            (append meow-mode-state-list '((comint-mode . insert)
+                                           (eshell-mode . insert)
+                                           (vterm-mode  . insert))))
     :bind
     (:map meow-motion-state-keymap
           ("<escape>" . meow-cancel-selection)
