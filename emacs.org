@@ -3409,6 +3409,7 @@ functions we invoke regularly outside of magit is called.
 #+begin_src emacs-lisp
   (use-package magit
     :commands (magit-status magit-log-buffer-file magit-log-all)
+    :autoload magit-git-repo-p
     :preface
     (defun my/project-magit-status ()
       (interactive)
