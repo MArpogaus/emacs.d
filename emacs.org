@@ -894,7 +894,9 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :after org
     :config
     (add-to-list 'org-beamer-environments-extra
-                 '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+                 '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
+    (add-to-list 'org-beamer-environments-extra
+                 '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
 
   (use-package ox-extra
     :ensure nil
