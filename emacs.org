@@ -625,6 +625,7 @@ Package specific keymap definitions are kept in preface of the respective packag
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
     :config
     ;; leader keymap
     (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
@@ -633,10 +634,11 @@ Package specific keymap definitions are kept in preface of the respective packag
     (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
     (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
 
+    (define-key my/leader-map (kbd "c") (cons "C-c" (simulate-key-press "C-c")))
     (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
     (define-key my/leader-map (kbd "h") (cons "help" help-map))
+    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
     (define-key my/leader-map (kbd "s") (cons "search" search-map))
-    (define-key my/leader-map (kbd "c") (cons "C-c" (simulate-key-press "C-c")))
     (define-key my/leader-map (kbd "x") (cons "C-x" (simulate-key-press "C-x")))
     
     ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
@@ -2238,13 +2240,12 @@ Distraction-free writing for Emacs.
 **** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 #+begin_src emacs-lisp
   (use-package consult-denote
-    :after denote consult
     :bind
     (:map my/denote-map
           ("f" . consult-denote-find)
           ("g" . consult-denote-grep))
     :config
-    (consult-denote-mode 1))
+    (consult-denote-mode))
 #+end_src
 **** [[https://github.com/protesilaos/denote.git][denote]]
 Simple note taking and file naming.
@@ -2272,7 +2273,6 @@ Simple note taking and file naming.
      '((minutes . "minutes")
        (plain . nil)))
     :preface
-    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
     (defun my/kill-denote-buffers ()
       "Kill all denote buffers."
       (interactive)
@@ -2280,8 +2280,6 @@ Simple note taking and file naming.
         (when (or (string-prefix-p "[D]" (buffer-name buf))
                   (string-prefix-p "*Denote" (buffer-name buf)))
           (kill-buffer buf))))
-    :init
-    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
     :bind
     (:map my/denote-map
           ("L" . denote-add-links)
