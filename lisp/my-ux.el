@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-08-07
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -117,6 +117,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
            (prefix (car prefix-and-face))
            (background (face-foreground (cdr prefix-and-face)))
            (foreground (face-background (cdr prefix-and-face) nil 'default))
+           (prefix-face (list :inherit 'bold :background background :foreground foreground))
            (buffer-face (list :inherit 'bold :foreground background)))
         (set-window-fringes nil 1 1 t)
         (my/install-top-side-window-face-remaps buffer foreground background)
