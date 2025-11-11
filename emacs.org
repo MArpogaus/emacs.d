@@ -1463,6 +1463,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :ensure nil
     :custom
     (tab-bar-history-limit 100)
+    (tab-bar-close-button-show nil)
     :preface
     (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     :config
