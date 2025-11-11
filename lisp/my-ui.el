@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -20,8 +20,7 @@
 (use-package auto-dark
   :custom
   (auto-dark-themes '((doom-one) (doom-one-light)))
-  :hook
-  (elpaca-after-init . auto-dark-mode))
+  :hook elpaca-after-init)
 
 ;; display-line-numbers :build_in:
 ;; Enable line numbers for some modes
@@ -61,7 +60,7 @@
 (use-package hl-line
   :ensure nil
   :hook
-  ((prog-mode org-mode text-mode) . hl-line-mode))
+  ((prog-mode org-mode text-mode tabulated-list-mode) . hl-line-mode))
 
 ;; [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 ;; Highlight TODO keywords.
@@ -99,6 +98,7 @@
 ;; [[https://github.com/mickeynp/ligature.el.git][ligature]]
 ;; Display typographical ligatures in Emacs. -> -+
 ;; =Display typographical ligatures in Emacs.-> -+=
+;; www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
 
 (use-package ligature
   :if (display-graphic-p)
@@ -107,11 +107,8 @@
   (set-frame-font "FiraCode Nerd Font")
   :preface
   (defun my/setup-ligatures ()
-    ;; Enable the "www" ligature in every possible major mode
-    (ligature-set-ligatures 't '("www"))
-    ;; Enable traditional ligature support in eww-mode, if the
-    ;; `variable-pitch' face supports it
-    (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
+    ;; Enable traditional ligatures in every possible major mode
+    (ligature-set-ligatures 't '("www" "Fl"  "Tl" "ff" "fi"  "fj"  "fl"  "ft" "ffi" "ffj" "ffl"))
     ;; Enable all Cascadia and Fira Code ligatures in programming modes
     (ligature-set-ligatures
      '(prog-mode org-mode)
@@ -146,8 +143,6 @@
        ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
        ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
        ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-       ;; *> */ *)  ** *** ****
-       ("*" (rx (or ">" "/" ")" (+ "*"))))
        ;; www wwww
        ("w" (rx (+ "w")))
        ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
@@ -168,29 +163,29 @@
        ("_" (rx (+ (or "_" "|"))))
        ;; Fira code: 0xFF 0x12
        ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-       ;; Fira code:
-       "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
        ;; The few not covered by the regexps.
        "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+    ;; Enable star ligatures only for programming modes to fix incompatibility
+    ;; with `org-modern'
+    (ligature-set-ligatures
+     '(prog-mode)
+     ;; *> */ *)  ** *** ****
+     '(("*" (rx (or ">" "/" ")" (+ "*"))))))
     ;; Enables ligature checks globally in all buffers. You can also do it
     ;; per mode with `ligature-mode'.
     (global-ligature-mode))
   :hook
   (elpaca-after-init . my/setup-ligatures))
 
-;; mixed-pitch-mode
+;; [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
 
 (use-package mixed-pitch
   :custom-face
   (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
-  (variable-pitch ((t (:family "Adwaita Sans"))))
-  ;; (header-line ((t (:inherit 'variable-pitch))))
-  ;; (mode-line ((t (:inherit 'variable-pitch))))
-  ;; (tab-bar ((t (:inherit 'variable-pitch))))
-  ;; (tab-line ((t (:inherit 'variable-pitch))))
-  ;; (minibuffer-prompt ((t (:inherit 'variable-pitch))))
-  :config
-  (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces '(corfu-default)))
+  ;; (variable-pitch ((t (:family "Adwaita Sans"))))
+  ;; (variable-pitch ((t (:family "Bookman Old Style"))))
+  (variable-pitch ((t (:family "Iwona"))))
+  ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
   :hook
   ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
 
@@ -198,7 +193,6 @@
 
 (use-package mood-line
   :config
-  (setq my/modeline-height 30)
   (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
   :custom
   ;; Use pretty Fira Code-compatible glyphs
@@ -229,8 +223,7 @@
      (keypad ,(nerd-icons-mdicon "nf-md-alpha_k_circle") . font-lock-keyword-face)
      (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
      (motion ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-constant-face)))
-  :hook
-  (elpaca-after-init . mood-line-mode))
+  :hook elpaca-after-init)
 
 ;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 ;; A Library for Nerd Font icons. Required for modline icons.
@@ -265,8 +258,7 @@
                              :fringe-width 8
                              ))
   (spacious-padding-subtle-mode-line t)
-  :hook
-  (elpaca-after-init . spacious-padding-mode))
+  :hook elpaca-after-init)
 
 ;; tab-bar :build_in:
 
@@ -274,6 +266,7 @@
   :ensure nil
   :custom
   (tab-bar-history-limit 100)
+  (tab-bar-close-button-show nil)
   :preface
   (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   :config

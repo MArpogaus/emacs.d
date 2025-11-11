@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -117,6 +117,8 @@
 
 (use-package denote-menu
   :after denote
+  :custom
+  (denote-menu-initial-regex (rx "." (or "org" "pdf" "svg" "png" "jpg") line-end))
   :bind
   (:map my/denote-map
         ("m" . list-denotes)))

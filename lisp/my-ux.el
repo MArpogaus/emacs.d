@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-07
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -88,12 +88,25 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
       (unless (boundp 'header-line-icon)
         (setq-local header-line-icon
                     (cond
+                     ((buffer-match-p (or "\\*macher:.*\\*"
+                                          "\\*ChatGPT\\*"
+                                          (derived-mode . inf-gpt-mode))
+                                      buffer)
+                      '("    " . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer) '("  !  " . warning))
                      ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer) '("  !  " . error))
-                     ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$") buffer) '("    " . success))
+                     ((buffer-match-p '(or "^COMMIT_EDITMSG$"
+                                           "^\\*diff-hl\\*$"
+                                           (derived-mode . magit-mode))
+                                      buffer) '("    " . success))
                      ((buffer-match-p "^\\*Org Src.*\\*" buffer) '("     " . mode-line-emphasis))
-                     ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
-                     (t '("  ?  " . mode-line-emphasis)))))
+                     ((buffer-match-p '(or (derived-mode . shell-mode)
+                                           (derived-mode . comint-mode)
+                                           (derived-mode . term-mode)
+                                           (derived-mode . vterm-mode)) buffer)
+                      '("   " . default))
+                     ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
+                     (t '("  ?  " . mode-line-inactive)))))
       header-line-icon))
   (defun my/install-top-side-window-face-remaps (buffer foreground background)
     (with-current-buffer buffer
@@ -101,7 +114,7 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
         (setq-local top-side-window-face-remaps-cookies
                     (list
                      (face-remap-add-relative 'header-line
-                                              `(:box nil :underline nil :overline ,background))
+                                              `(:box nil :underline nil :overline ,background :background ,foreground))
                      (face-remap-add-relative 'fringe
                                               `(:background ,background))
                      (face-remap-add-relative 'mode-line-active
@@ -118,13 +131,17 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
            (background (face-foreground (cdr prefix-and-face)))
            (foreground (face-background (cdr prefix-and-face) nil 'default))
            (prefix-face (list :inherit 'bold :background background :foreground foreground))
-           (buffer-face (list :inherit 'bold :foreground background)))
+           (buffer-face (list :inherit 'bold :foreground background))
+           (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
         (set-window-fringes nil 1 1 t)
         (my/install-top-side-window-face-remaps buffer foreground background)
         (list
          (propertize prefix 'face prefix-face 'display '(space-width 0.7))
-         (propertize (format-mode-line " %b ") 'face buffer-face)
+         " "
+         header-line-format
          (propertize " " 'display `(space :align-to right))
+         ;; (buttonize " 󰍷 " nil)
+         ;; (buttonize " 󰅚 " nil)
          (propertize " " 'face prefix-face 'display '(space-width 1))))))
   :custom
   ;; Respects display actions when switching buffers
@@ -207,6 +224,10 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
   ;; Window parameters
   (auto-side-windows-top-window-parameters `((mode-line-format . t)
                                              (header-line-format . ,my/header-line-format-top)))
+  (auto-side-windows-right-window-parameters `((mode-line-format . t)
+                                               (header-line-format . ,my/header-line-format-top)))
+  (auto-side-windows-bottom-window-parameters `((mode-line-format . t)
+                                                (header-line-format . ,my/header-line-format-top)))
   (auto-side-windows-before-display-hook '((lambda (buffer)
                                              (with-current-buffer buffer
                                                (when (bound-and-true-p top-side-window-face-remaps-cookies)
@@ -340,19 +361,6 @@ buffer's text scale."
   (:map my/toggle-map
         ("m" . minimap-mode)))
 
-;; [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
-;; Prevent windows from jumping on minibuffer activation.
-
-(use-package mini-ontop
-  :ensure (:host github :repo "hkjels/mini-ontop.el")
-  :custom
-  (mini-ontop-lines 22)
-  :config
-  (with-eval-after-load 'embark
-    (add-to-list 'mini-ontop-ignore-predicates (lambda nil (eq this-command #'embark-act))))
-  :hook
-  (elpaca-after-init . mini-ontop-mode))
-
 ;; [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
 
 (use-package multiple-cursors
@@ -453,8 +461,7 @@ buffer's text scale."
   :bind
   (:map my/open-map
         ("r" . recentf-open))
-  :hook
-  (elpaca-after-init . recentf-mode))
+  :hook elpaca-after-init)
 
 ;; repeat :build_in:
 ;; Enable repeat maps
@@ -473,8 +480,7 @@ buffer's text scale."
   :config
   (with-eval-after-load 'smerge-mode
     (my/repeatize-keymap 'smerge-basic-map))
-  :hook
-  (elpaca-after-init . repeat-mode))
+  :hook elpaca-after-init)
 
 ;; [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 ;; Rotate the layout of emacs.
