@@ -1241,7 +1241,7 @@ Highlighting of the current line (native mode)
   (use-package hl-line
     :ensure nil
     :hook
-    ((prog-mode org-mode text-mode) . hl-line-mode))
+    ((prog-mode org-mode text-mode tabulated-list-mode) . hl-line-mode))
 #+end_src
 **** [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 Highlight TODO keywords.
