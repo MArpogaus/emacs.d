@@ -1363,14 +1363,10 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
   (use-package mixed-pitch
     :custom-face
     (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
-    (variable-pitch ((t (:family "Adwaita Sans"))))
-    ;; (header-line ((t (:inherit 'variable-pitch))))
-    ;; (mode-line ((t (:inherit 'variable-pitch))))
-    ;; (tab-bar ((t (:inherit 'variable-pitch))))
-    ;; (tab-line ((t (:inherit 'variable-pitch))))
-    ;; (minibuffer-prompt ((t (:inherit 'variable-pitch))))
-    :config
-    (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces '(corfu-default)))
+    ;; (variable-pitch ((t (:family "Adwaita Sans"))))
+    ;; (variable-pitch ((t (:family "Bookman Old Style"))))
+    (variable-pitch ((t (:family "Iwona"))))
+    ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
     :hook
     ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
 #+end_src
