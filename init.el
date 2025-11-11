@@ -180,6 +180,19 @@
   :ensure nil
   :preface
   (setq my/modeline-height 30)
+  (defun my/extract-username-repo ()
+    "Extract the username and repository name from a GitHub repository link at point."
+    (interactive)
+    (save-excursion
+      (org-back-to-heading)
+      (let* ((element (org-element-at-point))
+             (headline (org-element-property :raw-value element))
+             (url (save-match-data
+                    (string-match org-bracket-link-regexp headline)
+                    (match-string 1 headline))))
+        (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
+            (list (match-string 1 url) (match-string 2 url))
+          (error "No GitHub link found at point.")))))
   (defun my/insert-github-repo-description ()
     "Retrieve and insert the short description of a GitHub repository at point."
     (interactive)
