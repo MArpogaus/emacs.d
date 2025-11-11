@@ -1752,12 +1752,25 @@ Revert buffers when the underlying file has changed
         (unless (boundp 'header-line-icon)
           (setq-local header-line-icon
                       (cond
+                       ((buffer-match-p (or "\\*macher:.*\\*"
+                                            "\\*ChatGPT\\*"
+                                            (derived-mode . inf-gpt-mode))
+                                        buffer)
+                        '("    " . mode-line-emphasis))
                        ((buffer-match-p "Warning" buffer) '("  !  " . warning))
                        ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer) '("  !  " . error))
-                       ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$") buffer) '("    " . success))
+                       ((buffer-match-p '(or "^COMMIT_EDITMSG$"
+                                             "^\\*diff-hl\\*$"
+                                             (derived-mode . magit-mode))
+                                        buffer) '("    " . success))
                        ((buffer-match-p "^\\*Org Src.*\\*" buffer) '("     " . mode-line-emphasis))
-                       ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
-                       (t '("  ?  " . mode-line-emphasis)))))
+                       ((buffer-match-p '(or (derived-mode . shell-mode)
+                                             (derived-mode . comint-mode)
+                                             (derived-mode . term-mode)
+                                             (derived-mode . vterm-mode)) buffer)
+                        '("   " . default))
+                       ((buffer-match-p "^\\*Org Agenda\\*$" buffer) '("    " . mode-line-emphasis))
+                       (t '("  ?  " . mode-line-inactive)))))
         header-line-icon))
     (defun my/install-top-side-window-face-remaps (buffer foreground background)
       (with-current-buffer buffer
@@ -1765,7 +1778,7 @@ Revert buffers when the underlying file has changed
           (setq-local top-side-window-face-remaps-cookies
                       (list
                        (face-remap-add-relative 'header-line
-                                                `(:box nil :underline nil :overline ,background))
+                                                `(:box nil :underline nil :overline ,background :background ,foreground))
                        (face-remap-add-relative 'fringe
                                                 `(:background ,background))
                        (face-remap-add-relative 'mode-line-active
@@ -1782,13 +1795,17 @@ Revert buffers when the underlying file has changed
              (background (face-foreground (cdr prefix-and-face)))
              (foreground (face-background (cdr prefix-and-face) nil 'default))
              (prefix-face (list :inherit 'bold :background background :foreground foreground))
-             (buffer-face (list :inherit 'bold :foreground background)))
+             (buffer-face (list :inherit 'bold :foreground background))
+             (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
           (set-window-fringes nil 1 1 t)
           (my/install-top-side-window-face-remaps buffer foreground background)
           (list
            (propertize prefix 'face prefix-face 'display '(space-width 0.7))
-           (propertize (format-mode-line " %b ") 'face buffer-face)
+           " "
+           header-line-format
            (propertize " " 'display `(space :align-to right))
+           ;; (buttonize " 󰍷 " nil)
+           ;; (buttonize " 󰅚 " nil)
            (propertize " " 'face prefix-face 'display '(space-width 1))))))
     :custom
     ;; Respects display actions when switching buffers
@@ -1871,6 +1888,10 @@ Revert buffers when the underlying file has changed
     ;; Window parameters
     (auto-side-windows-top-window-parameters `((mode-line-format . t)
                                                (header-line-format . ,my/header-line-format-top)))
+    (auto-side-windows-right-window-parameters `((mode-line-format . t)
+                                                 (header-line-format . ,my/header-line-format-top)))
+    (auto-side-windows-bottom-window-parameters `((mode-line-format . t)
+                                                  (header-line-format . ,my/header-line-format-top)))
     (auto-side-windows-before-display-hook '((lambda (buffer)
                                                (with-current-buffer buffer
                                                  (when (bound-and-true-p top-side-window-face-remaps-cookies)
