@@ -1,6 +1,6 @@
 #+TITLE: Emacs Literate Configuration
 #+AUTHOR: Marcel Arpogaus
-#+STARTUP: show2levels indent
+#+STARTUP: show3levels indent
 #+auto_tangle: t
 #+PROPERTY: header-args :mkdirp yes :comments org :results none
 #+EXCLUDE_TAGS: noexport
@@ -50,7 +50,7 @@ Here are some notable features:
     - [[#configure-elpaca][Configure Elpaca]]
     - [[#no-littering][no-littering]]
     - [[#better-defaults][Better Defaults]]
-    - [[#custom-lisp-functions][Custom Lisp Functions]]
+    - [[#shared-lisp-functions-and-variables][Shared Lisp Functions and Variables]]
     - [[#keymaps][Keymaps]]
   - [[#configure-packages][Configure Packages]]
     - [[#org][Org]]
@@ -58,6 +58,7 @@ Here are some notable features:
     - [[#ux][UX]]
     - [[#denote][Denote]]
     - [[#tools][Tools]]
+    - [[#ai][AI]]
     - [[#completion][Completion]]
     - [[#version-control][Version Control]]
     - [[#project-management][Project Management]]
@@ -92,6 +93,7 @@ Here are some notable features:
    - After making changes, press =C-c C-v t= to tangle the Org mode file and generate the Emacs Lisp files.
 
 5. /Enjoy!/
+
 * References
 :PROPERTIES:
 :ID:       f3a10440-c05c-4829-83bd-4c57ffcadfca
@@ -111,6 +113,7 @@ This Emacs literate configuration has been inspired by the following projects:
 - [[https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el][minimal-emacs.d/early-init.el at main · jamescherti/minimal-emacs.d · GitHub]]
 - [[https://panadestein.github.io/emacsd][Pandenstein - Emacs literate configuration]]
 - [[https://systemcrafters.net/emacs-from-scratch/the-best-default-settings/][The 6 Emacs Settings Every User Should Consider - System Crafters]]
+
 * Notes
 ** Add git url to pkg headlines
 #+begin_src bash :results none
@@ -143,6 +146,7 @@ This Emacs literate configuration has been inspired by the following projects:
 
   ;;; Code:"
 #+end_src
+
 ** Early Emacs Initialization
 :PROPERTIES:
 :header-args+: :tangle early-init.el
@@ -338,6 +342,7 @@ This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-direct
   (provide 'early-init)
   ;;; early-init.el ends here
 #+end_src
+
 ** Emacs Initialization
 :PROPERTIES:
 :header-args+: :tangle init.el
@@ -506,12 +511,13 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
      ;; Compress kill ring when exiting emacs
      (kill-emacs . unpropertize-kill-ring)))
 #+end_src
-*** Custom Lisp Functions
+*** Shared Lisp Functions and Variables
 In this section, I define some custom Lisp functions.
 #+BEGIN_SRC emacs-lisp
   (use-package emacs
     :ensure nil
     :preface
+    (setq my/modeline-height 30)
     (defun my/insert-github-repo-description ()
       "Retrieve and insert the short description of a GitHub repository at point."
       (interactive)
@@ -663,6 +669,7 @@ Package specific keymap definitions are kept in preface of the respective packag
      :map my/toggle-map
      ("M" . my/minimal-ui-mode)))
 #+end_src
+
 ** Configure Packages
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
@@ -1200,8 +1207,7 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
   (use-package auto-dark
     :custom
     (auto-dark-themes '((doom-one) (doom-one-light)))
-    :hook
-    (elpaca-after-init . auto-dark-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
@@ -1358,7 +1364,7 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
     :hook
     (elpaca-after-init . my/setup-ligatures))
 #+end_src
-**** mixed-pitch-mode
+**** [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
 #+begin_src emacs-lisp
   (use-package mixed-pitch
     :custom-face
@@ -1387,7 +1393,6 @@ https://protesilaos.com/emacs/modus-themes
 #+begin_src emacs-lisp
   (use-package mood-line
     :config
-    (setq my/modeline-height 30)
     (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
     :custom
     ;; Use pretty Fira Code-compatible glyphs
@@ -1418,8 +1423,7 @@ https://protesilaos.com/emacs/modus-themes
        (keypad ,(nerd-icons-mdicon "nf-md-alpha_k_circle") . font-lock-keyword-face)
        (beacon ,(nerd-icons-mdicon "nf-md-alpha_b_circle") . font-lock-type-face)
        (motion ,(nerd-icons-mdicon "nf-md-alpha_m_circle") . font-lock-constant-face)))
-    :hook
-    (elpaca-after-init . mood-line-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
 A Library for Nerd Font icons. Required for modline icons.
@@ -1454,8 +1458,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                                :fringe-width 8
                                ))
     (spacious-padding-subtle-mode-line t)
-    :hook
-    (elpaca-after-init . spacious-padding-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** tab-bar :build_in:
 #+begin_src emacs-lisp
@@ -2027,7 +2030,7 @@ Sidebar showing a "mini-map" of a buffer.
 #+end_src
 **** [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
 Prevent windows from jumping on minibuffer activation.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mini-ontop
     :ensure (:host github :repo "hkjels/mini-ontop.el")
     :custom
@@ -2138,8 +2141,7 @@ Paren mode for highlighting matcing paranthesis
     :bind
     (:map my/open-map
           ("r" . recentf-open))
-    :hook
-    (elpaca-after-init . recentf-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** repeat :build_in:
 Enable repeat maps
@@ -2158,8 +2160,7 @@ Enable repeat maps
     :config
     (with-eval-after-load 'smerge-mode
       (my/repeatize-keymap 'smerge-basic-map))
-    :hook
-    (elpaca-after-init . repeat-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
 Rotate the layout of emacs.
@@ -2287,7 +2288,6 @@ Distraction-free writing for Emacs.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-denote)
 #+end_src
-
 **** Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-denote.el")>>
@@ -2395,6 +2395,8 @@ Simple note taking and file naming.
 #+begin_src emacs-lisp
   (use-package denote-menu
     :after denote
+    :custom
+    (denote-menu-initial-regex (rx "." (or "org" "pdf" "svg" "png" "jpg") line-end))
     :bind
     (:map my/denote-map
           ("m" . list-denotes)))
@@ -2632,39 +2634,6 @@ Distraction-free words correction with flyspell via selected interface.
                 :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
                 ([mouse-1] . flyspell-correct-at-point)))
 #+end_src
-**** [[https://github.com/karthink/gptel.git][gptel]]
-A simple LLM client for Emacs.
-#+begin_src emacs-lisp
-  (use-package gptel
-    :custom
-    (gptel-default-mode 'org-mode)
-    :bind
-    (:map my/open-map
-          ("g". gptel))
-    :commands (gptel gptel-send)
-    :config
-    (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
-    ;; OpenRouter offers an OpenAI compatible API
-    (gptel-make-openai "OpenRouter"               ;Any name you want
-      :host "openrouter.ai"
-      :endpoint "/api/v1/chat/completions"
-      :stream t
-      :key #'gptel-api-key-from-auth-source
-      :models '(anthropic/claude-sonnet-4
-                anthropic/claude-opus-4
-                anthropic/claude-opus-4.1
-                deepseek/deepseek-chat-v3-0324:free
-                openai/gpt-4.1
-                openai/gpt-4.1-mini
-                openai/gpt-4o-mini
-                openai/gpt-oss-120b
-                openai/gpt-4o
-                openai/chatgpt-4o-latest
-                google/gemini-2.5-flash
-                google/gemini-2.5-pro
-                google/gemini-pro-1.5
-                google/gemini-flash-1.5)))
-#+end_src
 **** [[https://github.com/Wilfred/helpful.git][helpful]]
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
 It is a bit slow to load so we do need load it explicitely.
@@ -2680,15 +2649,6 @@ It is a bit slow to load so we do need load it explicitely.
      ("C-h K" . describe-keymap)
      :map helpful-mode-map
      ([remap revert-buffer] . helpful-update)))
-#+end_src
-**** [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
-Interactive Gptel shell for Emacs.
-#+begin_src emacs-lisp
-  (use-package inf-gptel
-    :ensure (:host github :repo "tttuuu888/inf-gptel")
-    :bind
-    (:map my/open-map
-          ("G" . inf-gptel)))
 #+end_src
 **** ispell :build_in:
 #+begin_src emacs-lisp
@@ -2854,6 +2814,87 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 #+begin_src emacs-lisp
   (provide 'my-tools)
   ;;; my-tools.el ends here
+#+end_src
+*** AI
+:PROPERTIES:
+:header-args+: :tangle lisp/my-ai.el
+:END:
+#+begin_src emacs-lisp :tangle init.el
+  (require 'my-ai)
+#+end_src
+**** Conventional Header
+#+begin_src emacs-lisp :noweb yes :comments no
+  <<header(file_name="my-ai.el")>>
+#+end_src
+**** [[https://github.com/karthink/gptel.git][gptel]]
+A simple LLM client for Emacs.
+#+begin_src emacs-lisp
+  (use-package gptel
+    :custom
+    (gptel-default-mode 'org-mode)
+    :bind
+    (:map my/open-map
+          ("g". gptel))
+    :commands (gptel gptel-send)
+    :config
+    (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
+    ;; OpenRouter offers an OpenAI compatible API
+    (gptel-make-openai "OpenRouter"               ;Any name you want
+      :host "openrouter.ai"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :key #'gptel-api-key-from-auth-source
+      :models '(anthropic/claude-sonnet-4
+                anthropic/claude-opus-4
+                anthropic/claude-opus-4.1
+                anthropic/claude-3.5-haiku
+                deepseek/deepseek-chat-v3-0324:free
+                openai/gpt-5
+                openai/gpt-5-mini
+                openai/gpt-4.1
+                openai/gpt-4.1-mini
+                openai/gpt-4o-mini
+                openai/gpt-oss-120b
+                openai/gpt-4o
+                openai/chatgpt-4o-latest
+                google/gemini-2.5-pro
+                google/gemini-2.5-flash
+                google/gemini-2.5-flash-lite
+                google/gemini-2.0-flash-exp:free
+                google/gemini-flash-1.5-8b
+                google/gemini-pro-1.5
+                google/gemini-flash-1.5)))
+#+end_src
+**** [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
+Interactive Gptel shell for Emacs.
+#+begin_src emacs-lisp
+  (use-package inf-gptel
+    :ensure (:host github :repo "tttuuu888/inf-gptel")
+    :bind
+    (:map my/open-map
+          ("G" . inf-gptel)))
+#+end_src
+**** [[https://github.com/kmontag/macher.git][macher]]
+#+begin_src emacs-lisp
+  (use-package macher
+    :ensure (:host github :repo "kmontag/macher")
+    :demand t
+    :after gptel
+    :custom
+    ;; The org UI has structured navigation and nice content folding.
+    (macher-action-buffer-ui 'org)
+    :config
+    ;; Adjust buffer positioning to taste.
+    (with-eval-after-load 'auto-side-windows
+      (add-to-list 'auto-side-windows-top-buffer-names "\\*macher:.*\\*")
+      (add-to-list 'auto-side-windows-right-buffer-names "\\*macher-patch:.*\\*"))
+    :init
+    (macher-install))
+#+end_src
+**** Library Footer
+#+begin_src emacs-lisp
+  (provide 'my-ai)
+  ;;; my-ai.el ends here
 #+end_src
 *** Completion
 :PROPERTIES:
@@ -4074,6 +4115,49 @@ Universal on-the-fly syntax checker for Emacs.
     :hook
     ((prog-mode conf-mode) . flymake-mode))
 #+end_src
+**** [[https://github.com/konrad1977/flyover.git][flyover]]
+#+begin_src emacs-lisp :tangle no
+  (use-package flyover
+    :ensure (:host github :repo "konrad1977/flyover")
+    :hook
+    ((flymake-mode . flyover-mode)) ;; enable flyover when flycheck starts
+
+    :custom
+    ;; Which checkers to use
+    (flyover-checkers '(flymake)) ;; or '(flycheck flymake)
+
+    ;; Which error levels to display
+    (flyover-levels '(error warning info))
+
+    ;; Theme integration and coloring
+    ;; (flyover-use-theme-colors t)
+    ;; (flyover-background-lightness 45)
+    ;; (flyover-percent-darker 40)
+    ;; (flyover-text-tint 'lighter)
+    ;; (flyover-text-tint-percent 50)
+
+    ;; Positioning and wrapping
+    ;; (flyover-line-position-offset 1)
+    ;; (flyover-wrap-messages t)
+    ;; (flyover-max-line-length 80)
+
+    ;; Icons
+    ;; (flyover-info-icon "🛈")
+    ;; (flyover-warning-icon "⚠")
+    ;; (flyover-error-icon "✘")
+    ;; (flyover-icon-left-padding 0.9)
+    ;; (flyover-icon-right-padding 0.9)
+
+    ;; Virtual line style
+    (flyover-virtual-line-type 'curved-line-no-error)
+
+    ;; Visibility and UI behavior
+    ;; (flyover-hide-checker-name t)
+    ;; (flyover-show-at-eol t)
+    ;; (flyover-hide-when-cursor-is-on-same-line t)
+    ;; (flyover-show-virtual-line t)
+    )
+#+end_src
 **** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
 Auto-format source code in many languages with one command.
 #+begin_src emacs-lisp
@@ -4371,6 +4455,7 @@ The mode displays the key bindings following your currently entered incomplete c
   (provide 'my-keybindings)
   ;;; my-keybindings.el ends here
 #+end_src
+
 ** Conventional Library Footer for =init.el=
 #+begin_src emacs-lisp :tangle init.el
   (provide 'init)
