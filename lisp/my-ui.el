@@ -22,6 +22,14 @@
   (auto-dark-themes '((doom-one) (doom-one-light)))
   :hook elpaca-after-init)
 
+;; [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
+;; Emacs headerline indication of where you are in a large project.
+
+(use-package breadcrumb
+  :demand t
+  :custom
+  (breadcrumb-imenu-crumb-separator "  "))
+
 ;; display-line-numbers :build_in:
 ;; Enable line numbers for some modes
 
@@ -207,7 +215,8 @@
      ((mood-line-segment-multiple-cursors)                                      . " ")
      ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
      " "
-     ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+     ;; ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+     ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " ")
      ;; ((window-tool-bar-string)                                                  . " "))
      )
     :right
@@ -402,68 +411,6 @@
   :init
   (advice-add 'toggle-frame-fullscreen
               :after #'my/toggle-display-time-mode))
-
-;; window-tool-bar :build_in:
-
-(use-package window-tool-bar
-  :ensure (:host github :repo "MArpogaus/window-tool-bar" :branch "text-icons" :files ("window-tool-bar.el" (:exclude ".git")))
-  :custom
-  (window-tool-bar-unicode-image-map
-   '((new "")
-     (open " ")
-     (diropen " ")
-     (close "󱎘 ")
-     (save " ")
-     (undo "󰕌 ")
-     (redo "󰑎 ")
-     (cut " ")
-     (copy " ")
-     (paste "󰆒 ")
-     (search " ")
-     (help "󰘥 ")
-     (index "󰋽 ")
-     (search-replace "󰛔 ")
-     (exit "󰸞 ")
-     (right-arrow " ")
-     (left-arrow " ")
-     (next-node " ")
-     (prev-node " ")
-     (up-node " ")
-     (home " ")
-     (jump-to "󰑎 ")
-     (refresh "󰑐 ")
-     (delete "󱎘 ")
-     (pdftex " ")
-     (error " ")
-     (viewpdf " ")
-     (bibtex "󱉟 ")
-     (spell "󰓆 ")
-     (hide " ")
-     (magit " ")))
-  (window-tool-bar-style 'unicode-image)
-  :custom-face
-  (window-tool-bar-button ((t :background unspecified :box nil)))
-  (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
-  (window-tool-bar-button-checked ((t :background unspecified :inherit window-tool-bar-button)))
-  (window-tool-bar-button-hover ((t :inherit mode-line-emphasis)))
-  (window-tool-bar-button-checked-hover ((t :inherit mode-line-emphasis)))
-  :config
-  (setq tool-bar-map (make-sparse-keymap))
-  (tool-bar-add-item-from-menu 'find-file "diropen" nil :label "Open" :vert-only t)
-  ;; (tool-bar-local-item "project" #'project-switch-project nil tool-bar-map :label "Project" :vert-only t)
-  (tool-bar-add-item-from-menu 'kill-this-buffer "close" nil :vert-only t)
-  (tool-bar-add-item-from-menu 'save-buffer "save" nil :label "Save")
-  (define-key-after (default-value 'tool-bar-map) [separator-1] menu-bar-separator)
-  (tool-bar-add-item-from-menu 'undo "undo" nil)
-  (tool-bar-add-item-from-menu 'undo-redo "redo" nil)
-  (define-key-after (default-value 'tool-bar-map) [separator-2] menu-bar-separator)
-  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [cut]) "cut" nil :vert-only t)
-  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [copy]) "copy" nil :vert-only t)
-  (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [paste]) "paste" nil :vert-only t)
-  (define-key-after (default-value 'tool-bar-map) [separator-3] menu-bar-separator)
-  (tool-bar-add-item-from-menu 'isearch-forward "search" nil :label "Search" :vert-only t)
-  (tool-bar-local-item "magit" #'magit-status nil tool-bar-map
-                       :label "Magit" :vert-only t :visible '(magit-git-repo-p default-directory)))
 
 ;; Library Footer
 
