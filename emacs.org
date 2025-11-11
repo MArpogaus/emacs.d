@@ -1222,6 +1222,14 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
     (auto-dark-themes '((doom-one) (doom-one-light)))
     :hook elpaca-after-init)
 #+end_src
+**** [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
+Emacs headerline indication of where you are in a large project.
+#+begin_src emacs-lisp
+  (use-package breadcrumb
+    :demand t
+    :custom
+    (breadcrumb-imenu-crumb-separator "  "))
+#+end_src
 **** display-line-numbers :build_in:
 Enable line numbers for some modes
 #+begin_src emacs-lisp
@@ -1420,7 +1428,8 @@ https://protesilaos.com/emacs/modus-themes
        ((mood-line-segment-multiple-cursors)                                      . " ")
        ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
        " "
-       ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+       ;; ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
+       ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " ")
        ;; ((window-tool-bar-string)                                                  . " "))
        )
       :right
@@ -1617,7 +1626,7 @@ References:
                 :after #'my/toggle-display-time-mode))
 #+end_src
 **** window-tool-bar :build_in:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package window-tool-bar
     :ensure (:host github :repo "MArpogaus/window-tool-bar" :branch "text-icons" :files ("window-tool-bar.el" (:exclude ".git")))
     :custom
