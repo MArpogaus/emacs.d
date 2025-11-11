@@ -1279,6 +1279,7 @@ Fast, configurable indentation guide-bars for Emacs.
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
 Display typographical ligatures in Emacs. -> -+
 =Display typographical ligatures in Emacs.-> -+=
+www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
 #+begin_src emacs-lisp
   (use-package ligature
     :if (display-graphic-p)
@@ -1287,11 +1288,8 @@ Display typographical ligatures in Emacs. -> -+
     (set-frame-font "FiraCode Nerd Font")
     :preface
     (defun my/setup-ligatures ()
-      ;; Enable the "www" ligature in every possible major mode
-      (ligature-set-ligatures 't '("www"))
-      ;; Enable traditional ligature support in eww-mode, if the
-      ;; `variable-pitch' face supports it
-      (ligature-set-ligatures '(eww-mode org-mode) '("ff" "fi" "ffi"))
+      ;; Enable traditional ligatures in every possible major mode
+      (ligature-set-ligatures 't '("www" "Fl"  "Tl" "ff" "fi"  "fj"  "fl"  "ft" "ffi" "ffj" "ffl"))
       ;; Enable all Cascadia and Fira Code ligatures in programming modes
       (ligature-set-ligatures
        '(prog-mode org-mode)
@@ -1326,8 +1324,6 @@ Display typographical ligatures in Emacs. -> -+
          ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
          ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
          ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-         ;; *> */ *)  ** *** ****
-         ("*" (rx (or ">" "/" ")" (+ "*"))))
          ;; www wwww
          ("w" (rx (+ "w")))
          ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
@@ -1348,10 +1344,14 @@ Display typographical ligatures in Emacs. -> -+
          ("_" (rx (+ (or "_" "|"))))
          ;; Fira code: 0xFF 0x12
          ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-         ;; Fira code:
-         "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
          ;; The few not covered by the regexps.
          "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+      ;; Enable star ligatures only for programming modes to fix incompatibility
+      ;; with `org-modern'
+      (ligature-set-ligatures
+       '(prog-mode)
+       ;; *> */ *)  ** *** ****
+       '(("*" (rx (or ">" "/" ")" (+ "*"))))))
       ;; Enables ligature checks globally in all buffers. You can also do it
       ;; per mode with `ligature-mode'.
       (global-ligature-mode))
