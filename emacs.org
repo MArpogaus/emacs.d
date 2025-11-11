@@ -2182,6 +2182,20 @@ Enable repeat maps
     :config
     (with-eval-after-load 'smerge-mode
       (my/repeatize-keymap 'smerge-basic-map))
+    (with-eval-after-load 'which-key
+      (setopt repeat-echo-function #'ignore)
+      ;; Spawn or hide a which-key popup
+      (advice-add 'repeat-post-hook :after
+                  (defun repeat-help--which-key-popup ()
+                    (if-let ((cmd (or this-command real-this-command))
+                             (keymap (or repeat-map
+                                         (repeat--command-property 'repeat-map))))
+                        (run-at-time
+                         0 nil
+                         (lambda ()
+                           (which-key--create-buffer-and-show
+                            nil (symbol-value keymap))))
+                      (which-key--hide-popup)))))
     :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
