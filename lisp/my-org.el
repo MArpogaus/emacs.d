@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -249,6 +249,21 @@
 ;; This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
 
 (use-package org-modern
+  :custom-face
+  ;; set basic title font
+  (org-level-8 ((t (:weight bold :inherit variable-pitch))))
+  ;; Low levels are unimportant => no scaling
+  (org-level-7 ((t (:inherit org-level-8))))
+  (org-level-6 ((t (:inherit org-level-8))))
+  (org-level-5 ((t (:inherit org-level-8))))
+  (org-level-4 ((t (:inherit org-level-8))))
+  ;; Top ones get scaled the same as in LaTeX (\large, \Large, \LARGE)
+  (org-level-3 ((t (:inherit org-level-8 :height 1.2)))) ;\large))
+  (org-level-2 ((t (:inherit org-level-8 :height 1.44)))) ;\Large))
+  (org-level-1 ((t (:inherit org-level-8 :height 1.728)))) ;\LARGE))
+  ;; Document Title, (\huge)
+  (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
+
   :custom
   (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
   (org-modern-block-name
@@ -257,7 +272,7 @@
      ("example" "»" "«")
      ("quote" "❝" "❞")
      ("export" "" "")))
-  (org-modern-star 'fold)
+  ;; (org-modern-star 'fold)
 
   ;; Edit settings
   (org-auto-align-tags nil)

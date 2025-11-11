@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -209,39 +209,6 @@
               :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
               ([mouse-1] . flyspell-correct-at-point)))
 
-;; [[https://github.com/karthink/gptel.git][gptel]]
-;; A simple LLM client for Emacs.
-
-(use-package gptel
-  :custom
-  (gptel-default-mode 'org-mode)
-  :bind
-  (:map my/open-map
-        ("g". gptel))
-  :commands (gptel gptel-send)
-  :config
-  (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
-  ;; OpenRouter offers an OpenAI compatible API
-  (gptel-make-openai "OpenRouter"               ;Any name you want
-    :host "openrouter.ai"
-    :endpoint "/api/v1/chat/completions"
-    :stream t
-    :key #'gptel-api-key-from-auth-source
-    :models '(anthropic/claude-sonnet-4
-              anthropic/claude-opus-4
-              anthropic/claude-opus-4.1
-              deepseek/deepseek-chat-v3-0324:free
-              openai/gpt-4.1
-              openai/gpt-4.1-mini
-              openai/gpt-4o-mini
-              openai/gpt-oss-120b
-              openai/gpt-4o
-              openai/chatgpt-4o-latest
-              google/gemini-2.5-flash
-              google/gemini-2.5-pro
-              google/gemini-pro-1.5
-              google/gemini-flash-1.5)))
-
 ;; [[https://github.com/Wilfred/helpful.git][helpful]]
 ;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
 ;; It is a bit slow to load so we do need load it explicitely.
@@ -257,15 +224,6 @@
    ("C-h K" . describe-keymap)
    :map helpful-mode-map
    ([remap revert-buffer] . helpful-update)))
-
-;; [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
-;; Interactive Gptel shell for Emacs.
-
-(use-package inf-gptel
-  :ensure (:host github :repo "tttuuu888/inf-gptel")
-  :bind
-  (:map my/open-map
-        ("G" . inf-gptel)))
 
 ;; ispell :build_in:
 

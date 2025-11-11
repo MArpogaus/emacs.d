@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-08-06
+;; Created: 2025-11-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -167,59 +167,19 @@
   (set-language-environment "English")                 ; Set up multilingual environment
   :hook
   ;; Enable word wrapping
-  (((prog-mode conf-mode text-mode) . visual-line-mode)
+  (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
    ;; Enable automatic linebreaks before `fill-column' is eceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
    ;; Compress kill ring when exiting emacs
    (kill-emacs . unpropertize-kill-ring)))
 
-;; Custom Lisp Functions
+;; Shared Lisp Functions and Variables
 ;; In this section, I define some custom Lisp functions.
 
 (use-package emacs
   :ensure nil
   :preface
-  (defun my/backward-kill-thing ()
-    "Delete sexp, symbol, word or whitespace backward depending on the context at point."
-    (interactive)
-    (let ((bounds (seq-some #'bounds-of-thing-at-point '(sexp symbol word))))
-      (cond
-       ;; If there are bounds and point is within them, kill the region
-       ((and bounds (< (car bounds) (point)))
-        (kill-region (car bounds) (point)))
-
-       ;; If there's whitespace before point, delete it
-       ((thing-at-point-looking-at "\\([ \n]+\\)")
-        (if (< (match-beginning 1) (point))
-            (kill-region (match-beginning 1) (point))
-          (kill-backward-chars 1)))
-
-       ;; If none of the above, delete one character backward
-       (t
-        (kill-backward-chars 1)))))
-
-  (defun simulate-key-press (key)
-    "Pretend that KEY was pressed.
-KEY must be given in `kbd' notation.
-Refference: https://emacs.stackexchange.com/a/13432"
-    `(lambda () (interactive)
-       (setq prefix-arg current-prefix-arg)
-       (setq unread-command-events (listify-key-sequence (read-kbd-macro ,key)))))
-
-  (defun my/extract-username-repo ()
-    "Extract the username and repository name from a GitHub repository link at point."
-    (interactive)
-    (save-excursion
-      (org-back-to-heading)
-      (let* ((element (org-element-at-point))
-             (headline (org-element-property :raw-value element))
-             (url (save-match-data
-                    (string-match org-bracket-link-regexp headline)
-                    (match-string 1 headline))))
-        (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
-            (list (match-string 1 url) (match-string 2 url))
-          (error "No GitHub link found at point.")))))
-
+  (setq my/modeline-height 30)
   (defun my/insert-github-repo-description ()
     "Retrieve and insert the short description of a GitHub repository at point."
     (interactive)
@@ -293,6 +253,30 @@ Refference: https://emacs.stackexchange.com/a/13432"
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
   (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+  ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
+  (defun prot/keyboard-quit-dwim ()
+    "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+    (interactive)
+    (cond
+     ((region-active-p)
+      (keyboard-quit))
+     ((derived-mode-p 'completion-list-mode)
+      (delete-completion-window))
+     ((> (minibuffer-depth) 0)
+      (abort-recursive-edit))
+     (t
+      (keyboard-quit))))
   :config
   ;; leader keymap
   (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
@@ -301,12 +285,10 @@ Refference: https://emacs.stackexchange.com/a/13432"
   (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
   (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
 
-  (define-key my/leader-map (kbd "c") (cons "C-c" (simulate-key-press "C-c")))
   (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
   (define-key my/leader-map (kbd "h") (cons "help" help-map))
   (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
   (define-key my/leader-map (kbd "s") (cons "search" search-map))
-  (define-key my/leader-map (kbd "x") (cons "C-x" (simulate-key-press "C-x")))
   
   ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
   (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
@@ -320,7 +302,9 @@ Refference: https://emacs.stackexchange.com/a/13432"
   :bind
   ;;ESC Cancels All
   (("<escape>" . keyboard-escape-quit)
-   ("C-<backspace>" . my/backward-kill-thing)
+   ([remap keyboard-quit] . prot/keyboard-quit-dwim)
+   :map my/leader-map
+   ("q" . save-buffers-kill-emacs)
    :map my/buffer-map
    ("e" . eval-buffer)
    ("k" . kill-current-buffer)
@@ -387,6 +371,13 @@ Refference: https://emacs.stackexchange.com/a/13432"
 ;; :END:
 
 (require 'my-tools)
+
+;; AI
+;; :PROPERTIES:
+;; :header-args+: :tangle lisp/my-ai.el
+;; :END:
+
+(require 'my-ai)
 
 ;; Completion
 ;; :PROPERTIES:
