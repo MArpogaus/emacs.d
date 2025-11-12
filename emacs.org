@@ -1424,27 +1424,15 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
 **** [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
 #+begin_src emacs-lisp
   (use-package mixed-pitch
+    :custom
+    (mixed-pitch-variable-pitch-cursor nil)
     :custom-face
-    (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
-    ;; (variable-pitch ((t (:family "Adwaita Sans"))))
+    (variable-pitch ((t (:family "Adwaita Sans"))))
+    ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
     ;; (variable-pitch ((t (:family "Bookman Old Style"))))
-    (variable-pitch ((t (:family "Iwona"))))
     ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
     :hook
     ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
-#+end_src
-**** [[https://git.sr.ht/~protesilaos/modus-themes][modus-themes]]
-Accessible themes for GNU Emacs, conforming with the highest standard for colour contrast between background and foreground values (WCAG AAA)
-https://protesilaos.com/emacs/modus-themes
-#+begin_src emacs-lisp :tangle no
-  (use-package modus-themes
-    :bind
-    (:map my/toggle-map
-          ("t" . modus-themes-toggle))
-    :custom
-    ;; Add all your customizations prior to loading the themes
-    (modus-themes-italic-constructs t)
-    (modus-themes-bold-constructs nil))
 #+end_src
 **** [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 #+begin_src emacs-lisp
