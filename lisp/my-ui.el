@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-11
+;; Created: 2025-11-12
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -188,11 +188,12 @@
 ;; [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
 
 (use-package mixed-pitch
+  :custom
+  (mixed-pitch-variable-pitch-cursor nil)
   :custom-face
-  (fixed-pitch ((t (:family "FiraCode Nerd Font"))))
-  ;; (variable-pitch ((t (:family "Adwaita Sans"))))
+  (variable-pitch ((t (:family "Adwaita Sans"))))
+  ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
   ;; (variable-pitch ((t (:family "Bookman Old Style"))))
-  (variable-pitch ((t (:family "Iwona"))))
   ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
   :hook
   ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
