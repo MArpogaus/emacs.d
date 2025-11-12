@@ -1649,68 +1649,6 @@ References:
     (advice-add 'toggle-frame-fullscreen
                 :after #'my/toggle-display-time-mode))
 #+end_src
-**** window-tool-bar :build_in:
-#+begin_src emacs-lisp :tangle no
-  (use-package window-tool-bar
-    :ensure (:host github :repo "MArpogaus/window-tool-bar" :branch "text-icons" :files ("window-tool-bar.el" (:exclude ".git")))
-    :custom
-    (window-tool-bar-unicode-image-map
-     '((new "")
-       (open " ")
-       (diropen " ")
-       (close "󱎘 ")
-       (save " ")
-       (undo "󰕌 ")
-       (redo "󰑎 ")
-       (cut " ")
-       (copy " ")
-       (paste "󰆒 ")
-       (search " ")
-       (help "󰘥 ")
-       (index "󰋽 ")
-       (search-replace "󰛔 ")
-       (exit "󰸞 ")
-       (right-arrow " ")
-       (left-arrow " ")
-       (next-node " ")
-       (prev-node " ")
-       (up-node " ")
-       (home " ")
-       (jump-to "󰑎 ")
-       (refresh "󰑐 ")
-       (delete "󱎘 ")
-       (pdftex " ")
-       (error " ")
-       (viewpdf " ")
-       (bibtex "󱉟 ")
-       (spell "󰓆 ")
-       (hide " ")
-       (magit " ")))
-    (window-tool-bar-style 'unicode-image)
-    :custom-face
-    (window-tool-bar-button ((t :background unspecified :box nil)))
-    (window-tool-bar-button-disabled ((t :background unspecified :inherit window-tool-bar-button)))
-    (window-tool-bar-button-checked ((t :background unspecified :inherit window-tool-bar-button)))
-    (window-tool-bar-button-hover ((t :inherit mode-line-emphasis)))
-    (window-tool-bar-button-checked-hover ((t :inherit mode-line-emphasis)))
-    :config
-    (setq tool-bar-map (make-sparse-keymap))
-    (tool-bar-add-item-from-menu 'find-file "diropen" nil :label "Open" :vert-only t)
-    ;; (tool-bar-local-item "project" #'project-switch-project nil tool-bar-map :label "Project" :vert-only t)
-    (tool-bar-add-item-from-menu 'kill-this-buffer "close" nil :vert-only t)
-    (tool-bar-add-item-from-menu 'save-buffer "save" nil :label "Save")
-    (define-key-after (default-value 'tool-bar-map) [separator-1] menu-bar-separator)
-    (tool-bar-add-item-from-menu 'undo "undo" nil)
-    (tool-bar-add-item-from-menu 'undo-redo "redo" nil)
-    (define-key-after (default-value 'tool-bar-map) [separator-2] menu-bar-separator)
-    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [cut]) "cut" nil :vert-only t)
-    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [copy]) "copy" nil :vert-only t)
-    (tool-bar-add-item-from-menu (lookup-key menu-bar-edit-menu [paste]) "paste" nil :vert-only t)
-    (define-key-after (default-value 'tool-bar-map) [separator-3] menu-bar-separator)
-    (tool-bar-add-item-from-menu 'isearch-forward "search" nil :label "Search" :vert-only t)
-    (tool-bar-local-item "magit" #'magit-status nil tool-bar-map
-                         :label "Magit" :vert-only t :visible '(magit-git-repo-p default-directory)))
-#+end_src
 **** Library Footer
 #+begin_src emacs-lisp
   (provide 'my-ui)
@@ -4174,49 +4112,6 @@ Universal on-the-fly syntax checker for Emacs.
     (flymake-fringe-indicator-position 'right-fringe)
     :hook
     ((prog-mode conf-mode) . flymake-mode))
-#+end_src
-**** [[https://github.com/konrad1977/flyover.git][flyover]]
-#+begin_src emacs-lisp :tangle no
-  (use-package flyover
-    :ensure (:host github :repo "konrad1977/flyover")
-    :hook
-    ((flymake-mode . flyover-mode)) ;; enable flyover when flycheck starts
-
-    :custom
-    ;; Which checkers to use
-    (flyover-checkers '(flymake)) ;; or '(flycheck flymake)
-
-    ;; Which error levels to display
-    (flyover-levels '(error warning info))
-
-    ;; Theme integration and coloring
-    ;; (flyover-use-theme-colors t)
-    ;; (flyover-background-lightness 45)
-    ;; (flyover-percent-darker 40)
-    ;; (flyover-text-tint 'lighter)
-    ;; (flyover-text-tint-percent 50)
-
-    ;; Positioning and wrapping
-    ;; (flyover-line-position-offset 1)
-    ;; (flyover-wrap-messages t)
-    ;; (flyover-max-line-length 80)
-
-    ;; Icons
-    ;; (flyover-info-icon "🛈")
-    ;; (flyover-warning-icon "⚠")
-    ;; (flyover-error-icon "✘")
-    ;; (flyover-icon-left-padding 0.9)
-    ;; (flyover-icon-right-padding 0.9)
-
-    ;; Virtual line style
-    (flyover-virtual-line-type 'curved-line-no-error)
-
-    ;; Visibility and UI behavior
-    ;; (flyover-hide-checker-name t)
-    ;; (flyover-show-at-eol t)
-    ;; (flyover-hide-when-cursor-is-on-same-line t)
-    ;; (flyover-show-virtual-line t)
-    )
 #+end_src
 **** [[https://github.com/lassik/emacs-format-all-the-code.git][format-all]]
 Auto-format source code in many languages with one command.
