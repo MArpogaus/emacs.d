@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-14
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -386,6 +386,12 @@
     (if (my/multi-buffer-window-p)
         (set-window-parameter nil 'tab-line-format nil)
       (set-window-parameter nil 'tab-line-format 'none)))
+
+  (defun my/update-tab-line-state ()
+    "Update visibility of tab-line on all active windows"
+    (dolist (window (window-list))
+      (with-selected-window window
+        (my/enable-tab-line-if-multiple-buffers))))
   :config
   (setq tab-line-close-button
         (propertize "✕ "
@@ -394,8 +400,9 @@
                     'help-echo "Click to close tab")
         tab-line-separator "")
   :hook
-  ((buffer-list-update . my/enable-tab-line-if-multiple-buffers)
-   (elpaca-after-init . global-tab-line-mode)))
+  ((buffer-list-update  . my/enable-tab-line-if-multiple-buffers)
+   (window-state-change . my/update-tab-line-state)
+   (elpaca-after-init   . global-tab-line-mode)))
 
 ;; time :build_in:
 
