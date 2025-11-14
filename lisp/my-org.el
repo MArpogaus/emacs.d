@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-14
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -251,7 +251,7 @@
 (use-package org-modern
   :custom-face
   ;; set basic title font
-  (org-level-8 ((t (:weight bold :inherit variable-pitch))))
+  (org-level-8 ((t (:weight bold :inherit variable-pitch)))) ;; :box (:line-width (1 . 5) :color ,(face-background 'default))))))
   ;; Low levels are unimportant => no scaling
   (org-level-7 ((t (:inherit org-level-8))))
   (org-level-6 ((t (:inherit org-level-8))))
@@ -263,9 +263,15 @@
   (org-level-1 ((t (:inherit org-level-8 :height 1.728)))) ;\LARGE))
   ;; Document Title, (\huge)
   (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
-
+  ;; Esure org modern labels use fixed pitch font
+  (org-modern-label ((t (:height 1.0 :inherit fixed-pitch))))
+  (org-modern-todo ((t (:inherit (org-todo org-level-8 org-modern-label)))))
+  (org-modern-priority ((t (:inherit (org-priority org-level-8 org-modern-label)))))
+  (org-modern-tag ((t (:inherit (secondary-selection org-level-8 org-modern-label)))))
+  ;; Fix indention issues when variable pich fonts are used
+  (org-hide ((t (:inherit fixed-pitch))))
   :custom
-  (org-modern-fold-stars '(("▶" . "▼") ("▹" . "▿") ("▸" . "▾")))
+  (org-modern-fold-stars '(("⯈" . "⯆") ("▹" . "▿") ("▸" . "▾")))
   (org-modern-block-name
    '((t . t)
      ("src" "" "")
@@ -275,40 +281,40 @@
   ;; (org-modern-star 'fold)
 
   (org-modern-keyword
-    '((t . t)
-      ("title" . "𝙏")
-      ("subtitle" . "𝙩")
-      ("author" . "𝘼")
-      ("date" . "𝘿")
-      ("email" . "")
-      ("property" . "")
-      ("options" . "")
-      ("columns" . "")
-      ("language" . "")
-      ("filetags" . "󱋷")
-      ("identifier" . "󰰅")
-      ("auto_tangle" . "")
-      ("exclude_tags" . "󰤐")
-      ("startup" . "⏻")
-      ("macro" . "𝓜")
-      ("bibliography" . "")
-      ("print_bibliography" . "󰌱")
-      ("cite_export" . "󱚃")
-      ("latex_class" . "🄻")
-      ("latex_class_options" . "🄻󰒓")
-      ("latex_header" . "🅻")
-      ("latex_header_extra" . "🅻⁺")
-      ("latex" . "🅛")
-      ("beamer_theme" . "🄱")
-      ("beamer_color_theme" . "🄱󰏘")
-      ("beamer_font_theme" . "🄱𝐀")
-      ("beamer_header" . "🅱")
-      ("beamer" . "🅑")
-      ("attr_latex" . "🄛")
-      ("attr_html" . "🄗")
-      ("attr_org" . "⒪")
-      ("caption" . "☰")
-      ("results" . "󱞩")))
+   '((t . t)
+     ("title" . "𝙏")
+     ("subtitle" . "𝙩")
+     ("author" . "𝘼")
+     ("date" . "𝘿")
+     ("email" . "")
+     ("property" . "")
+     ("options" . "")
+     ("columns" . "")
+     ("language" . "")
+     ("filetags" . "󱋷")
+     ("identifier" . "󰰅")
+     ("auto_tangle" . "")
+     ("exclude_tags" . "󰤐")
+     ("startup" . "⏻")
+     ("macro" . "𝓜")
+     ("bibliography" . "")
+     ("print_bibliography" . "󰌱")
+     ("cite_export" . "󱚃")
+     ("latex_class" . "🄻")
+     ("latex_class_options" . "🄻󰒓")
+     ("latex_header" . "🅻")
+     ("latex_header_extra" . "🅻⁺")
+     ("latex" . "🅛")
+     ("beamer_theme" . "🄱")
+     ("beamer_color_theme" . "🄱󰏘")
+     ("beamer_font_theme" . "🄱𝐀")
+     ("beamer_header" . "🅱")
+     ("beamer" . "🅑")
+     ("attr_latex" . "🄛")
+     ("attr_html" . "🄗")
+     ("attr_org" . "⒪")
+     ("caption" . "☰")
+     ("results" . "󱞩")))
 
   ;; Edit settings
   (org-auto-align-tags nil)
