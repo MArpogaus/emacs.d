@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-14
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -178,7 +178,7 @@
   :custom
   (which-key-idle-delay 0.1)
   (which-key-compute-remaps t)
-  (which-key-prefix-prefix "󰜄 ")
+  (which-key-prefix-prefix "+")
   (which-key-separator "  ")
   :config
   (which-key-setup-minibuffer)
