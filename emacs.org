@@ -1622,6 +1622,12 @@ References:
       (if (my/multi-buffer-window-p)
           (set-window-parameter nil 'tab-line-format nil)
         (set-window-parameter nil 'tab-line-format 'none)))
+
+    (defun my/update-tab-line-state ()
+      "Update visibility of tab-line on all active windows"
+      (dolist (window (window-list))
+        (with-selected-window window
+          (my/enable-tab-line-if-multiple-buffers))))
     :config
     (setq tab-line-close-button
           (propertize "✕ "
@@ -1630,8 +1636,9 @@ References:
                       'help-echo "Click to close tab")
           tab-line-separator "")
     :hook
-    ((buffer-list-update . my/enable-tab-line-if-multiple-buffers)
-     (elpaca-after-init . global-tab-line-mode)))
+    ((buffer-list-update  . my/enable-tab-line-if-multiple-buffers)
+     (window-state-change . my/update-tab-line-state)
+     (elpaca-after-init   . global-tab-line-mode)))
 #+end_src
 **** time :build_in:
 #+begin_src emacs-lisp
