@@ -655,7 +655,7 @@ Package specific keymap definitions are kept in preface of the respective packag
     (("<escape>" . keyboard-escape-quit)
      ([remap keyboard-quit] . prot/keyboard-quit-dwim)
      :map my/leader-map
-     ("q" . save-buffers-kill-emacs)
+     ("q" . save-buffers-kill-terminal)
      :map my/buffer-map
      ("e" . eval-buffer)
      ("k" . kill-current-buffer)
