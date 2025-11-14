@@ -4398,7 +4398,7 @@ The mode displays the key bindings following your currently entered incomplete c
     :custom
     (which-key-idle-delay 0.1)
     (which-key-compute-remaps t)
-    (which-key-prefix-prefix "󰜄 ")
+    (which-key-prefix-prefix "+")
     (which-key-separator "  ")
     :config
     (which-key-setup-minibuffer)
