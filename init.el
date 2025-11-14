@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-14
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -317,7 +317,7 @@ The DWIM behaviour of this command is as follows:
   (("<escape>" . keyboard-escape-quit)
    ([remap keyboard-quit] . prot/keyboard-quit-dwim)
    :map my/leader-map
-   ("q" . save-buffers-kill-emacs)
+   ("q" . save-buffers-kill-terminal)
    :map my/buffer-map
    ("e" . eval-buffer)
    ("k" . kill-current-buffer)
