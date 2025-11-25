@@ -4042,6 +4042,7 @@ Childframe doc for eglot and anything that uses eldoc.
     :after eglot
     :bind
     (:map my/lsp-map
+          ("M" . eldoc-box-mouse-mode)
           ("D" . eldoc-box-hover-at-point-mode))
     :config
     (with-eval-after-load 'pixel-scroll
