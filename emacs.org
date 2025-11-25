@@ -3982,7 +3982,8 @@ A client for Language Server Protocol servers.
     :custom
     ;; Filter list of all possible completions with Orderless
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-    (completion-category-defaults nil)
+    (completion-category-overrides '((eglot (styles orderless))
+                                     (eglot-capf (styles orderless))))
     (eglot-send-changes-idle-time 0.1)
     :preface
     (defun my/eglot-capf ()
