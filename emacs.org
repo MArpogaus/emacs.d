@@ -129,12 +129,12 @@ This Emacs literate configuration has been inspired by the following projects:
 ** Common Header for Emacs Libraries
 [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Headers.html][Library Headers (GNU Emacs Lisp Reference Manual)]]
 #+NAME: header
-#+begin_src shell :var file_name="init.el" :results output
-  echo ";;; $file_name --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-  ;; Copyright (C) 2023-$(date +%Y) Marcel Arpogaus
+#+begin_src emacs-lisp :var file_name="init.el" :results value :noweb-ref yes
+  (format ";;; %s --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
+  ;; Copyright (C) 2023-%s %s
 
-  ;; Author: Marcel Arpogaus
-  ;; Created: $(date -I)
+  ;; Author: %s
+  ;; Created: %s
   ;; Keywords: configuration
   ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -144,7 +144,10 @@ This Emacs literate configuration has been inspired by the following projects:
 
   ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
-  ;;; Code:"
+  ;;; Code:" file_name
+             (format-time-string "%Y")
+             user-full-name user-full-name
+             (format-time-string "%Y-%m-%d"))
 #+end_src
 
 ** Early Emacs Initialization
