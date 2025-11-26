@@ -3244,27 +3244,26 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
   (use-package embark
-    :after which-key
+    :after which-key vertico
     :bind
-    (("C-." . embark-act)         ;; pick some com fortable binding
+    (("C-." . my/embark-act-maybe-all) ;; pick some com fortable binding
      ("C-:" . embark-dwim)        ;; good alternative: M-.
      ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
      :map vertico-map
-     ("C-SPC" . embark-select))   ;; good alternative: M-.
-
+     ("C-SPC" . my/embark-select-vertico)
+     ("<return>" . my/embark-act-or-vertico-enter))
     :custom
     ;; Optionally replace the key help with a completing-read interface
     (prefix-help-command #'embark-prefix-help-command)
-
     :preface
     ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
     ;; Users desiring a more compact display can use which-key instead with the following configuration:
     ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
-    (defun embark-which-key-indicator ()
+    (defun my/embark-which-key-indicator ()
       "An embark indicator that displays keymaps using which-key.
-    The which-key help message will show the type and value of the
-    current target followed by an ellipsis if there are further
-    targets."
+      The which-key help message will show the type and value of the
+      current target followed by an ellipsis if there are further
+      targets."
       (lambda (&optional keymap targets prefix)
         (if (null keymap)
             (which-key--hide-popup-ignore-command)
@@ -3282,27 +3281,46 @@ Embark makes it easy to choose a command to run based on what is near point, bot
              keymap)
            nil nil t (lambda (binding)
                        (not (string-suffix-p "-argument" (cdr binding))))))))
-
-    (defun embark-hide-which-key-indicator (fn &rest args)
-      "Hide the which-key indicator immediately when using
-  the completing-read prompter."
+    (defun my/embark-hide-which-key-indicator (fn &rest args)
+      "Hide the which-key indicator immediately when using the completing-read prompter."
       (which-key--hide-popup-ignore-command)
       (let ((embark-indicators
-             (remq #'embark-which-key-indicator embark-indicators)))
+             (remq #'my/embark-which-key-indicator embark-indicators)))
         (apply fn args)))
-
+    (defun my/embark-act-all-noconfirm ()
+      "`embark-act' but never ask for confirmation."
+      (interactive)
+      (let (embark-confirm-act-all)
+        (embark-act-all)))
+    (defun my/embark-act-maybe-all ()
+      "Call `my/embark-act-all-noconfirm' if candidates are selected, else fallback to `embark-act'."
+      (interactive)
+      (if (bound-and-true-p embark--selection)
+          (call-interactively #'my/embark-act-all-noconfirm)
+        (call-interactively #'embark-act)))
+    (defun my/embark-act-or-vertico-enter ()
+      "Call `my/embark-act-all-noconfirm' if candidates are selected, else fallback to `vertico-directory-enter'."
+      (interactive)
+      (if (bound-and-true-p embark--selection)
+          (call-interactively #'my/embark-act-all-noconfirm)
+        (call-interactively #'vertico-directory-enter)))
+    (defun my/embark-select-vertico ()
+      "Call `embark-select' on current candidate in vertico buffer, then move on to the next candidate."
+      (interactive)
+      (call-interactively #'embark-select)
+      (vertico-next 1))
     :config
     ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
     ;; strategy, if you want to see the documentation from multiple providers.
     ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
 
     (setopt embark-indicators
-            '(embark-which-key-indicator
+            '(my/embark-which-key-indicator
               embark-highlight-indicator
               embark-isearch-highlight-indicator))
 
     (advice-add #'embark-completing-read-prompter
-                :around #'embark-hide-which-key-indicator))
+                :around #'my/embark-hide-which-key-indicator))
 #+end_src
 **** [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 Consult users will also want the embark-consult package.
