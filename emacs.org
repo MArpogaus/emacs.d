@@ -1825,6 +1825,7 @@ Revert buffers when the underlying file has changed
     (switch-to-buffer-obey-display-actions t)
 
     ;; Top side window configurations
+    (auto-side-windows-top-alist '((window-height . 15)))
     (auto-side-windows-top-buffer-names
      '("^ \\*Install vterm\\*$"
        "^COMMIT_EDITMSG$"
@@ -1855,10 +1856,10 @@ Revert buffers when the underlying file has changed
 
     ;; Bottom side window configurations
     (auto-side-windows-bottom-buffer-names
-     '("^\\*eshell\\*$"
-       "^\\*shell\\*$"
-       "^\\*term\\*$"
-       "^\\*.*vterm\\*$"))
+     '("^\\*eshell\\*"
+       "^\\*shell\\*"
+       "^\\*term\\*"
+       "^\\*.*vterm\\*"))
     (auto-side-windows-bottom-buffer-modes
      '(eshell-mode
        shell-mode
@@ -1922,7 +1923,6 @@ Revert buffers when the underlying file has changed
              '((tab-line-format . t)
                (header-line-format . t)
                (mode-line-format . t))))
-    ;; (org-agenda-window-setup . nil)
     (org-src-window-setup 'plain)
     :bind
     (:map my/toggle-map
