@@ -38,47 +38,41 @@
   ;; Better isearch movement
   (isearch-repeat-on-direction-change t)
   :config
-  (define-key my/standard-keys-keymap (kbd "C-y") standard-keys-C-x-dynamic-prefix)
-  (define-key my/standard-keys-keymap (kbd "C-d") standard-keys-C-c-dynamic-prefix)
+  (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
+  (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
   :bind
   (:map my/standard-keys-keymap
-        ("C-o"   . find-file)
-        ("C-S-o" . revert-buffer)
-        ;; ("C-w"   . kill-current-buffer)
-        ("C-q"   . save-buffers-kill-terminal)
-        ("C-x"   . standard-keys-cut-region-or-line)
-        ("C-c"   . standard-keys-copy-region-or-line)
-        ("C-v"   . yank)
-        ("C-z"   . undo-only)
-        ("C-S-z" . undo-redo)
-        ("C-f"   . isearch-forward)
-        ("C-S-f" . isearch-backward)
-        ("C-r"   . query-replace)
-        ("C-S-r" . query-replace-regexp)
-        ("C-s"   . save-buffer)
-        ("C-p"   . print-buffer)
-        ("C-a"   . mark-whole-buffer)
-        ("C-+"   . text-scale-increase)
-        ("C--"   . text-scale-decrease)
-        ("C-="   . text-scale-adjust)
-        ("C-;"   . comment-line)
-        ("C-S-<return>" . standard-keys-newline-and-indent-before-point)
-        ("C-b"      . switch-to-buffer)
-        ("<home>"   . standard-keys-move-beginning-of-line-or-indentation)
+        ("C-o"        . find-file)
+        ;; ("C-w"     . kill-current-buffer)
+        ("C-q"        . save-buffers-kill-terminal)
+        ("C-x"        . standard-keys-cut-region-or-line)
+        ("C-c"        . standard-keys-copy-region-or-line)
+        ("C-v"        . yank)
+        ("C-z"        . undo-only)
+        ("C-S-z"      . undo-redo)
+        ("C-f"        . isearch-forward)
+        ("C-S-f"      . query-replace)
+        ("C-M-S-f"    . query-replace-regexp)
+        ("C-s"        . save-buffer)
+        ("C-a"        . mark-whole-buffer)
+        ("C-+"        . text-scale-increase)
+        ("C--"        . text-scale-decrease)
+        ("C-="        . text-scale-adjust)
+        ("C-#"        . comment-line)
+        ("C-b"        . switch-to-buffer)
+        ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
         :map context-menu-mode-map
         ;; Bind Context Menu to `Apps' button
         ;; (requires context-menu-mode enabled)
-        ("<apps>" . context-menu-open)
-
+        ("<apps>"     . context-menu-open)
         ;; Make isearch easy to use
         :map isearch-mode-map
-        ("<up>"   . isearch-repeat-backward)
-        ("<down>" . isearch-repeat-forward)
-        ("<remap> <yank>" . isearch-yank-kill)
-
+        ("<up>"       . isearch-repeat-backward)
+        ("<down>"     . isearch-repeat-forward)
+        ([remap yank] . isearch-yank-kill)
         ;; Use RET as y (yes) action in y-or-n prompts
         :map y-or-n-p-map
-        ("<return>" . y-or-n-p-insert-y)))
+        ("<return>"   . y-or-n-p-insert-y)))
 
 ;; [[https://github.com/meow-edit/meow.git][meow]]
 ;; Meow is yet another modal editing mode for Emacs.
