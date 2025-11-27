@@ -954,9 +954,9 @@ This package implements a modern style for your Org buffers using font locking a
     (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
     ;; Esure org modern labels use fixed pitch font
     (org-modern-label ((t (:height 1.0 :inherit fixed-pitch))))
-    (org-modern-todo ((t (:inherit (org-todo org-level-8 org-modern-label)))))
-    (org-modern-priority ((t (:inherit (org-priority org-level-8 org-modern-label)))))
-    (org-modern-tag ((t (:inherit (secondary-selection org-level-8 org-modern-label)))))
+    (org-modern-todo ((t (:inherit (org-modern-label org-todo org-level-8)))))
+    (org-modern-priority ((t (:inherit (org-priority org-modern-label org-level-8)))))
+    (org-modern-tag ((t (:inherit (secondary-selection org-modern-label org-level-8)))))
     ;; Fix indention issues when variable pich fonts are used
     (org-hide ((t (:inherit fixed-pitch))))
     :custom
@@ -1435,6 +1435,13 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
   (use-package mixed-pitch
     :custom
     (mixed-pitch-variable-pitch-cursor nil)
+    :config
+    (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces
+                                                '(corfu-default
+                                                  corfu-current
+                                                  org-hide
+                                                  org-inline-src-block
+                                                  org-modern-label)))
     :custom-face
     (variable-pitch ((t (:family "Adwaita Sans"))))
     ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
