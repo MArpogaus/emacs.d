@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-27
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -252,12 +252,14 @@
   ;; Additional Customisations
   (corfu-cycle t)                     ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                      ;; Enable auto completion
+  (corfu-auto-trigger ".([{+-*/=,$")  ;; Custom trigger characters
   (corfu-auto-prefix 2)               ;; Complete with less prefix keys
   (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
   (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
   (corfu-preview-current nil)         ;; Disable current candidate preview
   (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
   (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
+  (corfu-popupinfo-delay '(1.0 . 0.0));; Initial and subsequent delay for info popup in seconds
   :preface
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
@@ -335,27 +337,26 @@
 ;; Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 
 (use-package embark
-  :after which-key
+  :after which-key vertico
   :bind
-  (("C-." . embark-act)         ;; pick some com fortable binding
+  (("C-." . my/embark-act-maybe-all) ;; pick some com fortable binding
    ("C-:" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
    :map vertico-map
-   ("C-SPC" . embark-select))   ;; good alternative: M-.
-
+   ("C-SPC" . my/embark-select-vertico)
+   ("<return>" . my/embark-act-or-vertico-enter))
   :custom
   ;; Optionally replace the key help with a completing-read interface
   (prefix-help-command #'embark-prefix-help-command)
-
   :preface
   ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
   ;; Users desiring a more compact display can use which-key instead with the following configuration:
   ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
-  (defun embark-which-key-indicator ()
+  (defun my/embark-which-key-indicator ()
     "An embark indicator that displays keymaps using which-key.
-  The which-key help message will show the type and value of the
-  current target followed by an ellipsis if there are further
-  targets."
+    The which-key help message will show the type and value of the
+    current target followed by an ellipsis if there are further
+    targets."
     (lambda (&optional keymap targets prefix)
       (if (null keymap)
           (which-key--hide-popup-ignore-command)
@@ -373,27 +374,46 @@
            keymap)
          nil nil t (lambda (binding)
                      (not (string-suffix-p "-argument" (cdr binding))))))))
-
-  (defun embark-hide-which-key-indicator (fn &rest args)
-    "Hide the which-key indicator immediately when using
-the completing-read prompter."
+  (defun my/embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
     (which-key--hide-popup-ignore-command)
     (let ((embark-indicators
-           (remq #'embark-which-key-indicator embark-indicators)))
+           (remq #'my/embark-which-key-indicator embark-indicators)))
       (apply fn args)))
-
+  (defun my/embark-act-all-noconfirm ()
+    "`embark-act' but never ask for confirmation."
+    (interactive)
+    (let (embark-confirm-act-all)
+      (embark-act-all)))
+  (defun my/embark-act-maybe-all ()
+    "Call `my/embark-act-all-noconfirm' if candidates are selected, else fallback to `embark-act'."
+    (interactive)
+    (if (bound-and-true-p embark--selection)
+        (call-interactively #'my/embark-act-all-noconfirm)
+      (call-interactively #'embark-act)))
+  (defun my/embark-act-or-vertico-enter ()
+    "Call `my/embark-act-all-noconfirm' if candidates are selected, else fallback to `vertico-directory-enter'."
+    (interactive)
+    (if (bound-and-true-p embark--selection)
+        (call-interactively #'my/embark-act-all-noconfirm)
+      (call-interactively #'vertico-directory-enter)))
+  (defun my/embark-select-vertico ()
+    "Call `embark-select' on current candidate in vertico buffer, then move on to the next candidate."
+    (interactive)
+    (call-interactively #'embark-select)
+    (vertico-next 1))
   :config
   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
   ;; strategy, if you want to see the documentation from multiple providers.
   ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
 
   (setopt embark-indicators
-          '(embark-which-key-indicator
+          '(my/embark-which-key-indicator
             embark-highlight-indicator
             embark-isearch-highlight-indicator))
 
   (advice-add #'embark-completing-read-prompter
-              :around #'embark-hide-which-key-indicator))
+              :around #'my/embark-hide-which-key-indicator))
 
 ;; [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 ;; Consult users will also want the embark-consult package.
@@ -455,7 +475,6 @@ the completing-read prompter."
 ;; [[https://github.com/minad/tempel.git][tempel]]
 ;; Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
 
-;; Configure Tempel
 (use-package tempel
   :custom
   ;; Require trigger prefix before template name when completing.
@@ -484,12 +503,14 @@ the completing-read prompter."
   :hook
   ((conf-mode . my/tempel-setup-capf)
    (prog-mode . my/tempel-setup-capf)
-   (text-mode . my/tempel-setup-capf))
-  ;; Optionally make the Tempel templates available to Abbrev,
-  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
-  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
-  ;; (global-tempel-abbrev-mode)
-  )
+   (text-mode . my/tempel-setup-capf)))
+
+;; [[https://github.com/fejfighter/eglot-tempel.git][eglot-tempel]]
+
+(use-package eglot-tempel
+  :demand t
+  :after tempel
+  :config (eglot-tempel-mode))
 
 ;; [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
 ;; Collection of tempel templates.

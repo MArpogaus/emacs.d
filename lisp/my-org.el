@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-14
+;; Created: 2025-11-27
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -265,9 +265,9 @@
   (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
   ;; Esure org modern labels use fixed pitch font
   (org-modern-label ((t (:height 1.0 :inherit fixed-pitch))))
-  (org-modern-todo ((t (:inherit (org-todo org-level-8 org-modern-label)))))
-  (org-modern-priority ((t (:inherit (org-priority org-level-8 org-modern-label)))))
-  (org-modern-tag ((t (:inherit (secondary-selection org-level-8 org-modern-label)))))
+  (org-modern-todo ((t (:inherit (org-modern-label org-todo org-level-8)))))
+  (org-modern-priority ((t (:inherit (org-priority org-modern-label org-level-8)))))
+  (org-modern-tag ((t (:inherit (secondary-selection org-modern-label org-level-8)))))
   ;; Fix indention issues when variable pich fonts are used
   (org-hide ((t (:inherit fixed-pitch))))
   :custom
