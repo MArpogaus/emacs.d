@@ -4029,6 +4029,7 @@ A client for Language Server Protocol servers.
           ("k" . eglot-shutdown)
           ("o" . eglot-code-action-organize-imports)
           ("q" . eglot-code-action-quickfix)
+          ("a" . eglot-code-actions)
           ("r" . eglot-rename))
     :config
     ;; Continuously update the candidates using cape cache buster
