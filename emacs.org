@@ -2805,7 +2805,7 @@ Emacs libvterm integration.
              (vterm-buffer (get-buffer vterm-buffer-name)))
         (if (and vterm-buffer (not current-prefix-arg))
             (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
-          (vterm))))
+          (call-interactively #'vterm))))
     ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
     (defun my/vterm--get-shell-adv (vterm-shell)
       "Quote VTERM-SHELL if it's a remote shell."
