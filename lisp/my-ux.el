@@ -14,44 +14,6 @@
 
 ;;; Code:
 
-;; [[https://github.com/abo-abo/ace-window.git][ace-window]]
-;; Quickly switch windows in Emacs.
-
-(use-package ace-window
-  :preface
-  ;; https://karthinks.com/software/emacs-window-management-almanac/#a-window-prefix-command-for-ace-window
-  (defun my/ace-window-prefix ()
-    "Use `ace-window' to display the buffer of the next command.
-The next buffer is the buffer displayed by the next command invoked
-immediately after this command (ignoring reading from the minibuffer).
-Creates a new window before displaying the buffer.
-When `switch-to-buffer-obey-display-actions' is non-nil,
-`switch-to-buffer' commands are also supported."
-    (interactive)
-    (display-buffer-override-next-command
-     (lambda (buffer _)
-       (let (window type)
-         (setq
-          window (aw-select (propertize " ACE" 'face 'mode-line-highlight))
-          type 'reuse)
-         (cons window type)))
-     nil "[ace-window]")
-    (message "Use `ace-window' to display next command buffer..."))
-  :custom
-  (aw-dispatch-always t)
-  (aw-minibuffer-flag nil)
-  ;; Make Emacs ask where to place a new buffer
-  (display-buffer-base-action '((display-buffer-in-previous-window
-                                 display-buffer-reuse-mode-window
-                                 ace-display-buffer)))
-  :autoload ace-display-buffer
-  :config
-  ;; Ignore the inibuffer
-  (add-to-list 'aw-ignored-buffers 'minibuffer-mode)
-  :bind
-  (("M-O" . ace-window)
-   ("M-o" . my/ace-window-prefix)))
-
 ;; [[https://github.com/emacscollective/auto-compile.git][auto-compile]]
 ;; Automatically compile outdated Emacs Lisp libraries.
 
@@ -146,10 +108,16 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
          ;; (buttonize " 󰅚 " nil)
          (propertize " " 'face prefix-face 'display '(space-width 1))))))
   :custom
+  ;; Of non of our rules apply try the following strategies to dispaly new buffers
+  (display-buffer-base-action '((display-buffer-in-previous-window
+                                 display-buffer-reuse-mode-window
+                                 display-buffer-use-some-window
+                                 display-buffer-pop-up-window)))
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 
   ;; Top side window configurations
+  (auto-side-windows-top-alist '((window-height . 15)))
   (auto-side-windows-top-buffer-names
    '("^ \\*Install vterm\\*$"
      "^COMMIT_EDITMSG$"
@@ -180,10 +148,10 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
 
   ;; Bottom side window configurations
   (auto-side-windows-bottom-buffer-names
-   '("^\\*eshell\\*$"
-     "^\\*shell\\*$"
-     "^\\*term\\*$"
-     "^\\*.*vterm\\*$"))
+   '("^\\*eshell\\*"
+     "^\\*shell\\*"
+     "^\\*term\\*"
+     "^\\*.*vterm\\*"))
   (auto-side-windows-bottom-buffer-modes
    '(eshell-mode
      shell-mode
@@ -247,7 +215,6 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
            '((tab-line-format . t)
              (header-line-format . t)
              (mode-line-format . t))))
-  ;; (org-agenda-window-setup . nil)
   (org-src-window-setup 'plain)
   :bind
   (:map my/toggle-map

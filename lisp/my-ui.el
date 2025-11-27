@@ -112,7 +112,8 @@
   :if (display-graphic-p)
   :config
   ;; set Fira as default font
-  (set-frame-font "FiraCode Nerd Font")
+  (add-to-list 'default-frame-alist
+           '(font . "FiraCode Nerd Font"))
   :preface
   (defun my/setup-ligatures ()
     ;; Enable traditional ligatures in every possible major mode
@@ -199,7 +200,7 @@
                                                 org-modern-label)))
   :custom-face
   (variable-pitch ((t (:family "Adwaita Sans"))))
-  ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
+  ;; (variable-pitch ((t (:family "Iwona"))))
   ;; (variable-pitch ((t (:family "Bookman Old Style"))))
   ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
   :hook

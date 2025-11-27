@@ -1445,7 +1445,7 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
                                                   org-modern-label)))
     :custom-face
     (variable-pitch ((t (:family "Adwaita Sans"))))
-    ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
+    ;; (variable-pitch ((t (:family "Iwona"))))
     ;; (variable-pitch ((t (:family "Bookman Old Style"))))
     ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
     :hook
