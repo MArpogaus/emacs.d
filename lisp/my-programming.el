@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-12
+;; Created: 2025-11-27
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -210,7 +210,8 @@
   :custom
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  (completion-category-defaults nil)
+  (completion-category-overrides '((eglot (styles orderless))
+                                   (eglot-capf (styles orderless))))
   (eglot-send-changes-idle-time 0.1)
   :preface
   (defun my/eglot-capf ()
@@ -230,6 +231,7 @@
         ("k" . eglot-shutdown)
         ("o" . eglot-code-action-organize-imports)
         ("q" . eglot-code-action-quickfix)
+        ("a" . eglot-code-actions)
         ("r" . eglot-rename))
   :config
   ;; Continuously update the candidates using cape cache buster
@@ -269,6 +271,7 @@
   :after eglot
   :bind
   (:map my/lsp-map
+        ("M" . eldoc-box-mouse-mode)
         ("D" . eldoc-box-hover-at-point-mode))
   :config
   (with-eval-after-load 'pixel-scroll

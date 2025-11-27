@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2025 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-14
+;; Created: 2025-11-27
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -190,6 +190,13 @@
 (use-package mixed-pitch
   :custom
   (mixed-pitch-variable-pitch-cursor nil)
+  :config
+  (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces
+                                              '(corfu-default
+                                                corfu-current
+                                                org-hide
+                                                org-inline-src-block
+                                                org-modern-label)))
   :custom-face
   (variable-pitch ((t (:family "Adwaita Sans"))))
   ;; (variable-pitch ((t (:family "Iwona" :height 2.5))))
