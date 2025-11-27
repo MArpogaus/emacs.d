@@ -1357,7 +1357,8 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
     :if (display-graphic-p)
     :config
     ;; set Fira as default font
-    (set-frame-font "FiraCode Nerd Font")
+    (add-to-list 'default-frame-alist
+             '(font . "FiraCode Nerd Font"))
     :preface
     (defun my/setup-ligatures ()
       ;; Enable traditional ligatures in every possible major mode
