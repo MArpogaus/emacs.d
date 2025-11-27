@@ -267,7 +267,8 @@ When `switch-to-buffer-obey-display-actions' is non-nil,
               (side . top)
               (dedicated . t)
               (inhibit-same-window . t)
-              (window-parameters . ,auto-side-windows-top-window-parameters))))
+              (window-parameters . ,auto-side-windows-top-window-parameters))
+            transient-mode-line-format nil))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
 
