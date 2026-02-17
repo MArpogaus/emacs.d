@@ -78,7 +78,7 @@
   (defun my/hl-todo-register-flymake-report-fn ()
     (add-hook #'flymake-diagnostic-functions #'hl-todo-flymake))
   :hook
-  (((prog-mode conf-mode LaTeX-mode) . hl-todo-mode)
+  (((prog-mode conf-mode LaTeX-mode yaml-ts-mode) . hl-todo-mode)
    (flymake-mode . my/hl-todo-register-flymake-report-fn)))
 
 ;; [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
