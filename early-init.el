@@ -1,8 +1,8 @@
 ;;; early-init.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -83,9 +83,21 @@
 (setq command-line-x-option-alist nil)
 
 ;; Minimal UI
+;; Disable menu, tool and scroll bars.
+
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+
+;; Set default frame size and font
+;; :PROPERTIES:
+;; :ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
+;; :END:
+
+(setq default-frame-alist
+      (append '((width . 100) (height . 25)
+                (font . "FiraCode Nerd Font"))
+              default-frame-alist))
 
 ;; Configure Byte Compile
 
@@ -193,6 +205,11 @@
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
+
+;; Hide initial frame until all packages are loaded
+
+(push '(visibility . nil) initial-frame-alist)
+(add-hook 'elpaca-after-init-hook #'make-frame-visible 100)
 
 ;; Conventional Library Footer
 
