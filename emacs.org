@@ -40,9 +40,12 @@ Here are some notable features:
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#conventional-library-header][Conventional Library Header]]
     - [[#optimize-startup-time][Optimize Startup Time]]
+    - [[#minimal-ui][Minimal UI]]
+    - [[#set-default-frame-size-and-font][Set default frame size and font]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
     - [[#install-elpaca][Install Elpaca]]
+    - [[#hide-initial-frame-until-all-packages-are-loaded][Hide initial frame until all packages are loaded]]
     - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#conventional-header][Conventional Header]]
@@ -227,11 +230,24 @@ The following optimizations have been inspired by:
 
   ;; Remove irreleant command line options for faster startup
   (setq command-line-x-option-alist nil)
-
-  ;; Minimal UI
+#+end_src
+*** Minimal UI
+Disable menu, tool and scroll bars.
+#+begin_src emacs-lisp
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
+#+end_src
+
+*** Set default frame size and font
+:PROPERTIES:
+:ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
+:END:
+#+begin_src emacs-lisp
+  (setq default-frame-alist
+        (append '((width . 100) (height . 25)
+                  (font . "FiraCode Nerd Font"))
+                default-frame-alist))
 #+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
@@ -339,6 +355,11 @@ This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-direct
       (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order))
+#+end_src
+*** Hide initial frame until all packages are loaded
+#+begin_src emacs-lisp
+  (push '(visibility . nil) initial-frame-alist)
+  (add-hook 'elpaca-after-init-hook #'make-frame-visible 100)
 #+end_src
 *** Conventional Library Footer
 #+begin_src emacs-lisp
@@ -496,9 +517,6 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
     (defun unpropertize-kill-ring ()
       (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-    :init
-    (modify-all-frames-parameters '((width . 200)
-                                    (height . 50)))
     :config
     ;; We tell emacs to use UTF-8 encoding as much as possible.
     (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
@@ -1352,13 +1370,11 @@ Fast, configurable indentation guide-bars for Emacs.
 Display typographical ligatures in Emacs. -> -+
 =Display typographical ligatures in Emacs.-> -+=
 www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
+
+*Note:* Fira Code is loaded [[id:5eb92f35-9f4c-436f-864f-c270dc2f1f29][here.]]
 #+begin_src emacs-lisp
   (use-package ligature
     :if (display-graphic-p)
-    :config
-    ;; set Fira as default font
-    (add-to-list 'default-frame-alist
-             '(font . "FiraCode Nerd Font"))
     :preface
     (defun my/setup-ligatures ()
       ;; Enable traditional ligatures in every possible major mode

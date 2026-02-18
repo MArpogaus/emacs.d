@@ -108,12 +108,10 @@
 ;; =Display typographical ligatures in Emacs.-> -+=
 ;; www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
 
+;; *Note:* Fira Code is loaded [[id:5eb92f35-9f4c-436f-864f-c270dc2f1f29][here.]]
+
 (use-package ligature
   :if (display-graphic-p)
-  :config
-  ;; set Fira as default font
-  (add-to-list 'default-frame-alist
-           '(font . "FiraCode Nerd Font"))
   :preface
   (defun my/setup-ligatures ()
     ;; Enable traditional ligatures in every possible major mode

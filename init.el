@@ -1,8 +1,8 @@
 ;;; init.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-02-18
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -155,9 +155,6 @@
   ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
   (defun unpropertize-kill-ring ()
     (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
-  :init
-  (modify-all-frames-parameters '((width . 200)
-                                  (height . 50)))
   :config
   ;; We tell emacs to use UTF-8 encoding as much as possible.
   (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
