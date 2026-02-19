@@ -39,13 +39,13 @@ Here are some notable features:
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#conventional-library-header][Conventional Library Header]]
-    - [[#optimize-startup-time][Optimize Startup Time]]
-    - [[#minimal-ui][Minimal UI]]
-    - [[#set-default-frame-size-and-font][Set default frame size and font]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
-    - [[#install-elpaca][Install Elpaca]]
     - [[#hide-initial-frame-until-all-packages-are-loaded][Hide initial frame until all packages are loaded]]
+    - [[#install-elpaca][Install Elpaca]]
+    - [[#minimal-ui][Minimal UI]]
+    - [[#optimize-startup-time][Optimize Startup Time]]
+    - [[#set-default-frame-size-and-font][Set default frame size and font]]
     - [[#conventional-library-footer][Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
     - [[#conventional-header][Conventional Header]]
@@ -163,92 +163,6 @@ It should only consist of code that is independent of any package.
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
-*** Optimize Startup Time
-
-The following optimizations have been inspired by:
-
-- https://gist.github.com/axyz/76871b404df376271b521212fba8a621
-- https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
-- https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el
-- https://github.com/mnewt/dotemacs/blob/master/early-init.el
-- https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
-
-#+begin_src emacs-lisp
-  ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
-  (setq gc-cons-threshold most-positive-fixnum
-        gc-cons-percentage 0.6)
-
-  ;; Let's lower our GC thresholds back down to a sane level.
-  (add-hook 'elpaca-after-init-hook
-            (lambda ()
-              ;; restore after startup
-              (setq gc-cons-threshold (* 16 1024 1024))) 99)
-
-  ;; Profile emacs startup
-  (add-hook 'elpaca-after-init-hook
-            (lambda ()
-              (message "🚀 Emacs loaded in %s with %d garbage collections."
-                       (format "%.2f seconds"
-                               (float-time
-                                (time-subtract elpaca-after-init-time before-init-time)))
-                       gcs-done)) 98)
-
-  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
-  ;; font. By inhibiting this, we easily halve startup times with fonts that are
-  ;; larger than the system default.
-  (setq frame-inhibit-implied-resize t)
-
-  ;; Ignore X resources; its settings would be redundant with the other settings
-  ;; in this file and can conflict with later config (particularly where the
-  ;; cursor color is concerned).
-  (advice-add #'x-apply-session-resources :override #'ignore)
-
-  ;; remove "for information about gnu emacs..." message at startup
-  (advice-add #'display-startup-echo-area-message :override #'ignore)
-
-  ;; suppress the vanilla startup screen completely. we've disabled it with
-  ;; `inhibit-startup-screen', but it would still initialize anyway.
-  (advice-add #'display-startup-screen :override #'ignore)
-
-  ;; never show the hello file
-  (defalias #'view-hello-file #'ignore)
-
-  ;; Disable warnings from the legacy advice API. They aren't useful.
-  (setq ad-redefinition-action 'accept)
-
-  ;; Ignore warnings about "existing variables being aliased".
-  (setq warning-suppress-types '((defvaralias) (lexical-binding)))
-
-  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
-  ;; loaded by Emacs will run through this list to check for a proper handler for
-  ;; the file, but during startup, it won’t need any of them.
-  (defvar file-name-handler-alist-old file-name-handler-alist)
-  (setq file-name-handler-alist nil)
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (setq file-name-handler-alist file-name-handler-alist-old)))
-
-  ;; Remove irreleant command line options for faster startup
-  (setq command-line-x-option-alist nil)
-#+end_src
-*** Minimal UI
-Disable menu, tool and scroll bars.
-#+begin_src emacs-lisp
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-#+end_src
-
-*** Set default frame size and font
-:PROPERTIES:
-:ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
-:END:
-#+begin_src emacs-lisp
-  (setq default-frame-alist
-        (append '((width . 100) (height . 25)
-                  (font . "FiraCode Nerd Font"))
-                default-frame-alist))
-#+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
@@ -314,6 +228,12 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   ;; receiving input, which should help a little with scrolling performance.
   (setq redisplay-skip-fontification-on-input t)
 #+end_src
+*** Hide initial frame until all packages are loaded
+#+begin_src emacs-lisp
+  (add-to-list 'initial-frame-alist '(visibility . init-file-debug))
+  (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+  (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
+#+end_src
 *** Install Elpaca
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
@@ -356,10 +276,87 @@ This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-direct
   (add-hook 'after-init-hook #'elpaca-process-queues)
   (elpaca `(,@elpaca-order))
 #+end_src
-*** Hide initial frame until all packages are loaded
+*** Minimal UI
+Disable menu, tool and scroll bars.
 #+begin_src emacs-lisp
-  (push '(visibility . nil) initial-frame-alist)
-  (add-hook 'elpaca-after-init-hook #'make-frame-visible 100)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+*** Optimize Startup Time
+
+The following optimizations have been inspired by:
+
+- https://gist.github.com/axyz/76871b404df376271b521212fba8a621
+- https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
+- https://github.com/jamescherti/minimal-emacs.d/blob/main/early-init.el
+- https://github.com/mnewt/dotemacs/blob/master/early-init.el
+- https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
+
+#+begin_src emacs-lisp
+  ;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+  (setq gc-cons-threshold most-positive-fixnum
+        gc-cons-percentage 0.6)
+
+  ;; Let's lower our GC thresholds back down to a sane level.
+  (add-hook 'elpaca-after-init-hook
+            (lambda ()
+              ;; restore after startup
+              (setq gc-cons-threshold (* 16 1024 1024))) 97)
+
+  ;; Profile emacs startup
+  (add-hook 'elpaca-after-init-hook
+            (lambda ()
+              (message "🚀 Emacs loaded in %.2f seconds with %d garbage collections."
+                       (float-time (time-subtract elpaca-after-init-time before-init-time))
+                       gcs-done)) 99)
+
+  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
+  ;; font. By inhibiting this, we easily halve startup times with fonts that are
+  ;; larger than the system default.
+  (setq frame-inhibit-implied-resize t)
+
+  ;; Ignore X resources; its settings would be redundant with the other settings
+  ;; in this file and can conflict with later config (particularly where the
+  ;; cursor color is concerned).
+  (advice-add #'x-apply-session-resources :override #'ignore)
+
+  ;; remove "for information about gnu emacs..." message at startup
+  (advice-add #'display-startup-echo-area-message :override #'ignore)
+
+  ;; suppress the vanilla startup screen completely. we've disabled it with
+  ;; `inhibit-startup-screen', but it would still initialize anyway.
+  (advice-add #'display-startup-screen :override #'ignore)
+
+  ;; never show the hello file
+  (defalias #'view-hello-file #'ignore)
+
+  ;; Disable warnings from the legacy advice API. They aren't useful.
+  (setq ad-redefinition-action 'accept)
+
+  ;; Ignore warnings about "existing variables being aliased".
+  (setq warning-suppress-types '((defvaralias) (lexical-binding)))
+
+  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
+  ;; loaded by Emacs will run through this list to check for a proper handler for
+  ;; the file, but during startup, it won’t need any of them.
+  (defvar file-name-handler-alist-old file-name-handler-alist)
+  (setq file-name-handler-alist nil)
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (setq file-name-handler-alist file-name-handler-alist-old)))
+
+  ;; Remove irreleant command line options for faster startup
+  (setq command-line-x-option-alist nil)
+#+end_src
+*** Set default frame size and font
+:PROPERTIES:
+:ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
+:END:
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(width . 100))
+  (add-to-list 'default-frame-alist '(height . 25))
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
 #+end_src
 *** Conventional Library Footer
 #+begin_src emacs-lisp
