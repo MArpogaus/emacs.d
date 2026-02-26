@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-02-17
+;; Created: 2026-02-26
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -37,9 +37,14 @@
    "-l --almost-all --human-readable --group-directories-first --no-group")
   (dired-find-subdir t) ; Reuse dired buffers if the directory is a sub directory
   (dired-isearch-filenames t) ; limit search to filenames
+  ;; Don't drown me in dired buffers
+  (dired-kill-when-opening-new-dired-buffer t)
   ;; Enable mouse drag-and-drop support
   (dired-mouse-drag-files t)                   ; added in Emacs 29
   (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
+  :config
+  ;; HACK: Disable weird click behavior
+  (define-key dired-mode-map (kbd "<follow-link>") nil t)
   :bind
   (:map my/open-map
         ("d" . dired)))
@@ -86,18 +91,13 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
-  :preface
-  (defun my/dirvish-side-hide-buffer (&rest app)
-    "make dirvish-side buffer `uninteresting' for buffer related commands"
-    (apply app)
-    (with-selected-window (dirvish-side--session-visible-p)
-      (rename-buffer (concat " " (buffer-name)))))
   :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
   :config
   (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
-  (advice-add #'dirvish-side--new :around #'my/dirvish-side-hide-buffer)
+  ;; Prevent dirvish from closing its buffers after a file has been opened
+  (advice-add 'dirvish--find-entry :override (lambda (find-fn entry) (funcall find-fn entry)))
   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
   (("C-c f" . dirvish-fd)
    :map my/open-map
@@ -107,26 +107,27 @@
    :map dirvish-mode-map ; Dirvish inherits `dired-mode-map'
    ("<mouse-1>" . dirvish-subtree-toggle-or-open)
    ("<mouse-2>" . dired-mouse-find-file-other-window)
-   ("F" . dirvish-toggle-fullscreen)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-f" . dirvish-history-go-forward)
-   ("M-j" . dirvish-fd-jump)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-s" . dirvish-setup-menu)
-   ("M-t" . dirvish-layout-toggle)
-   ("N"   . dirvish-narrow)
-   ("<tab>" . dirvish-subtree-toggle)
-   ("^"   . dirvish-history-last)
-   ("a"   . dirvish-quick-access)
-   ("b"   . dirvish-goto-bookmark)
-   ("f"   . dirvish-file-info-menu)
-   ("h"   . dirvish-history-jump) ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
-   ("v"   . dirvish-vc-menu)      ; remapped `dired-view-file'
-   ("y"   . dirvish-yank-menu)
-   ("z" . dirvish-show-history)))
+   ("<mouse-3>" . dired-mouse-find-file)
+   ("F"         . dirvish-toggle-fullscreen)
+   ("M-b"       . dirvish-history-go-backward)
+   ("M-e"       . dirvish-emerge-menu)
+   ("M-f"       . dirvish-history-go-forward)
+   ("M-j"       . dirvish-fd-jump)
+   ("M-l"       . dirvish-ls-switches-menu)
+   ("M-m"       . dirvish-mark-menu)
+   ("M-s"       . dirvish-setup-menu)
+   ("M-t"       . dirvish-layout-toggle)
+   ("N"         . dirvish-narrow)
+   ("<tab>"     . dirvish-subtree-toggle)
+   ("^"         . dirvish-history-last)
+   ("a"         . dirvish-quick-access)
+   ("b"         . dirvish-goto-bookmark)
+   ("f"         . dirvish-file-info-menu)
+   ("h"         . dirvish-history-jump) ; remapped `describe-mode'
+   ("s"         . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
+   ("v"         . dirvish-vc-menu)      ; remapped `dired-view-file'
+   ("y"         . dirvish-yank-menu)
+   ("z"         . dirvish-show-history)))
 
 ;; ediff :build_in:
 ;; The ediff package is utilized to handle file differences in emacs.
