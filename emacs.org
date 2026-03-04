@@ -1741,11 +1741,9 @@ Revert buffers when the underlying file has changed
         (unless (boundp 'header-line-icon)
           (setq-local header-line-icon
                       (cond
-                       ((buffer-match-p (or "\\*macher:.*\\*"
-                                            "\\*ChatGPT\\*"
-                                            (derived-mode . inf-gpt-mode))
+                       ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (bound-and-true-p gptel-mode)))
                                         buffer)
-                        '("    " . mode-line-emphasis))
+                        '("   " . mode-line-emphasis))
                        ((buffer-match-p "Warning" buffer)
                         '("  !  " . warning))
                        ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer)
@@ -1860,11 +1858,10 @@ Revert buffers when the underlying file has changed
 
     ;; Right side window configurations
     (auto-side-windows-right-buffer-names
-     '("^\\*eldoc.*\\*$"
-       "^\\*Org Agenda\\*$"
+     '("^\\*Org Agenda\\*$"
        "^\\*Outline .+\.pdf\\*$"
+       "^\\*eldoc.*\\*$"
        "^\\*info\\*$"
-       "\\*ChatGPT\\*"
        "^magit-diff:.*$"
        "^magit-process:.*$"
        "^\\*Metahelp\\*$"))
@@ -1881,7 +1878,6 @@ Revert buffers when the underlying file has changed
        magit-log-mode
        magit-diff-mode
        magit-process-mode
-       gptel-mode
        pdf-outline-buffer-mode
        shortdoc-mode))
 
@@ -1922,12 +1918,13 @@ Revert buffers when the underlying file has changed
               magit-commit-diff-inhibit-same-window t))
     (with-eval-after-load 'transient
       (setopt transient-display-buffer-action
-              `(display-buffer-in-side-window
-                (side . top)
-                (dedicated . t)
-                (inhibit-same-window . t)
-                (window-parameters . ,auto-side-windows-top-window-parameters))
+              `(auto-side-windows--display-buffer
+                (category . force-side-top))
               transient-mode-line-format nil))
+    (with-eval-after-load 'gptel
+      (setopt gptel-display-buffer-action
+              '(auto-side-windows--display-buffer
+                (category . force-side-right))))
     :hook
     (elpaca-after-init . auto-side-windows-mode))
 #+end_src
