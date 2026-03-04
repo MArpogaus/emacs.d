@@ -2912,6 +2912,15 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ai.el")>>
 #+end_src
+**** agante-shell
+#+begin_src emacs-lisp
+  (use-package agent-shell
+    :ensure-system-package
+    ;; Add agent installation configs here
+    ((npm . "sudo dnf install -y npm")
+     (claude . "curl -fsSL https://claude.ai/install.sh | bash")
+     (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+#+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
 A simple LLM client for Emacs.
 #+begin_src emacs-lisp
