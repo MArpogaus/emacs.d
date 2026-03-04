@@ -236,7 +236,8 @@
   (with-eval-after-load 'gptel
     (setopt gptel-display-buffer-action
             '(auto-side-windows--display-buffer
-              (category . force-side-right))))
+              (category . force-side-right)
+              (body-function . select-window))))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
 
