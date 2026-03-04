@@ -1720,11 +1720,14 @@ Revert buffers when the underlying file has changed
   (use-package autorevert
     :ensure nil
     :custom
+    (auto-revert-verbose t)
     ;; Revert Dired and other buffers
     (global-auto-revert-non-file-buffers t)
     ;; Avoid polling for changes and rathe get notified by the system
     (auto-revert-use-notify t)
     (auto-revert-avoid-polling t)
+    ;; Only prompts for confirmation when buffer is unsaved.
+    (revert-without-query (list "."))
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
