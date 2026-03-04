@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-02-17
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -278,7 +278,7 @@
     (interactive)
     (if (and (cdr corfu--candidates)
              ;; next char is not letter or number
-             (not (string-match-p "[[:alnum:]]" (string (char-after)))))
+             (not (string-match-p "[[:alnum:]]" (string (or (char-after) ?\n)))))
         (progn
           (apply orig-func args))
       (progn

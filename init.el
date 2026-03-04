@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-02-18
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -299,7 +299,7 @@ The DWIM behaviour of this command is as follows:
   (define-key my/leader-map (kbd "h") (cons "help" help-map))
   (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
   (define-key my/leader-map (kbd "s") (cons "search" search-map))
-  
+
   ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
   (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
 
