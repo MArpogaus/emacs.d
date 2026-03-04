@@ -3268,7 +3268,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
       (interactive)
       (if (and (cdr corfu--candidates)
                ;; next char is not letter or number
-               (not (string-match-p "[[:alnum:]]" (string (char-after)))))
+               (not (string-match-p "[[:alnum:]]" (string (or (char-after) ?\n)))))
           (progn
             (apply orig-func args))
         (progn
