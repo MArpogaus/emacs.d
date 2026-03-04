@@ -2365,6 +2365,33 @@ Simple note taking and file naming.
         (when (or (string-prefix-p "[D]" (buffer-name buf))
                   (string-prefix-p "*Denote" (buffer-name buf)))
           (kill-buffer buf))))
+    (defun my/denote-save-buffer (&optional title keywords file-type directory date template signature identifier)
+      "Save the current buffer as a Denote note or just save if already denoted.
+  Prompts for metadata only if the file is not already a Denote file."
+      (interactive)
+      (unless (and buffer-file-name (denote-file-has-denoted-filename-p buffer-file-name))
+        ;; If not denoted, get data (prompts user if called interactively)
+        (pcase-let* ((`(,title ,keywords ,file-type ,directory ,date ,identifier ,template ,signature)
+                      (if (called-interactively-p 'any)
+                          (denote--creation-get-note-data-from-prompts)
+                        (list title keywords file-type directory date identifier template signature))))
+          ;; Proceed with Denote creation logic
+          (let* ((data (denote--creation-prepare-note-data 
+                        title keywords file-type directory date identifier template signature))
+                 (extension (denote--file-extension (nth 2 data)))
+                 (path (denote-format-file-name (nth 3 data) (nth 5 data) (nth 1 data) (nth 0 data) extension (nth 7 data)))
+                 (header (denote--format-front-matter (nth 0 data) (nth 4 data) (nth 1 data) (nth 5 data) (nth 7 data) (nth 2 data))))
+            (save-excursion
+              (save-restriction
+                (widen)
+                (goto-char (point-min))
+                (insert header)
+                (when (and (nth 6 data) (not (string-empty-p (format "%s" (nth 6 data))))))
+                (insert (cond ((stringp (nth 6 data)) (nth 6 data))
+                              ((functionp (nth 6 data)) (funcall (nth 6 data)))
+                              (t "")))))
+            (set-visited-file-name path))))
+      (save-buffer))
     :bind
     (:map my/denote-map
           ("L" . denote-add-links)
@@ -2375,6 +2402,7 @@ Simple note taking and file naming.
           ("g" . denote-grep)
           ("i" . denote-link)
           ("k" . my/kill-denote-buffers)
+          ("s" . my/denote-save-buffer)
           ("n" . denote)
           ("r" . denote-rename-file)
           ("q c" . denote-query-contents-link) ; create link that triggers a grep
@@ -2421,12 +2449,12 @@ Simple note taking and file naming.
       ;; - `denote-sequence-new-child'
       ;; - `denote-sequence-new-child-of-current'
       ;; - `denote-sequence-new-sibling-of-current'
-      ("s s" . denote-sequence)
-      ("s f" . denote-sequence-find)
-      ("s l" . denote-sequence-link)
-      ("s d" . denote-sequence-dired)
-      ("s r" . denote-sequence-reparent)
-      ("s c" . denote-sequence-convert))
+      ("S s" . denote-sequence)
+      ("S f" . denote-sequence-find)
+      ("S l" . denote-sequence-link)
+      ("S d" . denote-sequence-dired)
+      ("S r" . denote-sequence-reparent)
+      ("S c" . denote-sequence-convert))
     :custom
     ;; The default sequence scheme is `numeric'.
     (denote-sequence-scheme 'alphanumeric))
@@ -2883,12 +2911,28 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 A simple LLM client for Emacs.
 #+begin_src emacs-lisp
   (use-package gptel
-    :custom
-    (gptel-default-mode 'org-mode)
+
+    :preface
+    (defun my/gptel-save-to-denote ()
+      "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
+      (interactive)
+      (let ((denote-use-title (buffer-name))
+            (denote-use-keywords '("gptel" "ai"))
+            (denote-use-directory (expand-file-name "gptel/" denote-directory)))
+        (call-interactively #'my/denote-save-buffer)))
+    (defun my/gptel-auto-save-to-denote-h (&rest _)
+      "Hook to automatically save gptel buffers to Denote.
+  Triggered after the first response is received in a new buffer."
+      (my/gptel-save-to-denote)
+      (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
+    :commands (gptel gptel-send)
     :bind
     (:map my/open-map
           ("g". gptel))
-    :commands (gptel gptel-send)
+    :hook
+    (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
+    :custom
+    (gptel-default-mode 'org-mode)
     :config
     (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
     ;; OpenRouter offers an OpenAI compatible API
