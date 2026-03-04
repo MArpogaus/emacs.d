@@ -2949,33 +2949,43 @@ A simple LLM client for Emacs.
     (gptel-default-mode 'org-mode)
     :config
     (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
-    ;; OpenRouter offers an OpenAI compatible API
-    (gptel-make-openai "OpenRouter"               ;Any name you want
-      :host "openrouter.ai"
-      :endpoint "/api/v1/chat/completions"
-      :stream t
-      :key #'gptel-api-key-from-auth-source
-      :models '(anthropic/claude-sonnet-4
-                anthropic/claude-opus-4
-                anthropic/claude-opus-4.1
-                anthropic/claude-3.5-haiku
-                deepseek/deepseek-chat-v3-0324:free
-                openai/gpt-5
-                openai/gpt-5-mini
-                openai/gpt-4.1
-                openai/gpt-4.1-mini
-                openai/gpt-4o-mini
-                openai/gpt-oss-120b
-                openai/gpt-4o
-                openai/chatgpt-4o-latest
-                google/gemini-2.5-pro
-                google/gemini-2.5-flash
-                google/gemini-2.5-flash-lite
-                google/gemini-2.0-flash-exp:free
-                google/gemini-flash-1.5-8b
-                google/gemini-pro-1.5
-                google/gemini-flash-1.5)))
+    (setq gptel-model 'google/gemini-3-flash-preview ;; default model to select
+          gptel-backend (gptel-make-openai "OpenRouter"
+                          :host "openrouter.ai"
+                          :endpoint "/api/v1/chat/completions"
+                          :stream t
+                          :key #'gptel-api-key-from-auth-source
+                          :models '(anthropic/claude-haiku-4.5
+                                    anthropic/claude-opus-4.6
+                                    anthropic/claude-sonnet-4-6
+                                    deepseek/deepseek-chat-v3.1
+                                    deepseek/deepseek-v3.2
+                                    deepseek/deepseek-v3.2-speciale
+                                    google/gemini-2.5-flash
+                                    google/gemini-2.5-flash-lite
+                                    google/gemini-2.5-pro
+                                    google/gemini-3-flash-preview
+                                    google/gemini-3.1-pro-preview
+                                    google/gemini-flash-1.5
+                                    google/gemini-pro-1.5
+                                    minimax/minimax-m2.5
+                                    openai/chatgpt-4o-latest
+                                    openai/gpt-4.1
+                                    openai/gpt-4.1-mini
+                                    openai/gpt-4o
+                                    openai/gpt-4o-mini
+                                    openai/gpt-5
+                                    openai/gpt-5-mini
+                                    openai/gpt-oss-120b))))
 #+end_src
+**** [[https://github.com/karthink/gptel-agent.git][gptel-agent]]
+Agent mode for gptel.
+#+begin_src emacs-lisp
+  (use-package gptel-agent
+    :demand t
+    :after gptel
+    ;; Read files from agents directories
+    :config (gptel-agent-update))
 #+end_src
 **** [[https://github.com/kmontag/macher.git][macher]]
 #+begin_src emacs-lisp
