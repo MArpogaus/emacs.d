@@ -10,14 +10,14 @@
 This Emacs configuration prioritizes speed and a distraction-free writing and coding experience, drawing inspiration from projects like [[https://github.com/doomemacs/doomemacs][DOOM Emacs]], [[https://github.com/SystemCrafters/crafted-emacs][crafted-emacs]], and [[#references][others]]. It leverages a literate programming approach using Org mode, enabling clear documentation and easy configuration management.
 Here are some notable features:
 
-- *Literate Configuration:* The entire configuration is written in Org mode, making it self-documenting and easy to navigate. This file, =emacs.org=, is the single source of truth for all settings. The Org mode source code blocks are tangled to generate the actual Emacs Lisp files loaded by Emacs, for enhanced usability and easier debugging, as suggested by [[https://protesilaos.com/emacs/dotemacs][Protesilaos]]. 
+- *Literate Configuration:* The entire configuration is written in Org mode, making it self-documenting and easy to navigate. This file, =emacs.org=, is the single source of truth for all settings. The Org mode source code blocks are tangled to generate the actual Emacs Lisp files loaded by Emacs, for enhanced usability and easier debugging, as suggested by [[https://protesilaos.com/emacs/dotemacs][Protesilaos]].
 
 - *Optimized Startup:* Various techniques are employed to minimize startup time, including deferring package loading with [[https://github.com/jwiegley/use-package][use-package]], optimized garbage collection settings, and disabling non-essential services during initialization.
 
 - *Elpaca for Package Management:* [[https://github.com/progfolio/elpaca][Elpaca]] is used for package management, offering a more modern and robust alternative to the built-in package.el.
 
 - *Minimal UI:* The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen efficiency. Additional packages like [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]], [[https://github.com/doomemacs/themes][doom-themes]], [[https://gitlab.com/jessieh/mood-line.git][mood-line]], [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]] and [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]] are used to ensure a distraction free and consistent, yet modern design.
- 
+
 - *Optimized UX:* Several build-in packages like =autorevert=, =del-sel=, =elec-pair=, =hide-show-mode=, =outline-mode=, =saveplace= and =savehist= are enabled and configured for optimal user experience. Additionally, third-party packages like [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]] and [[https://github.com/karthink/popper.git][popper]] are used for a more streamlined window layout and management, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
@@ -28,7 +28,7 @@ Here are some notable features:
 
 - *Org Mode Power User Setup:* A comprehensive Org mode setup is provided, including features for task management, note-taking, literate programming, presentations, and more.  [[https://github.com/minad/org-modern][Org-modern]] provides a visually appealing modern theme, while [[https://github.com/awth13/org-appear][Org-appear]] enhances the visibility of hidden elements.  [[https://github.com/emacsorphanage/ox-pandoc][Ox-pandoc]] enables exporting Org documents using Pandoc, and [[https://github.com/org-noter/org-noter][Org-noter]] provides document annotation capabilities.
 
-- *Modal Editing with Meow:* [[https://github.com/meow-edit/meow][Meow]] introduces modal editing to Emacs, similar to Vim, for efficient text manipulation and navigation. The modal experience is further enhanced by [[https://github.com/justbur/emacs-which-key][which-key]], providing a helpful popup of available keybindings. 
+- *Modal Editing with Meow:* [[https://github.com/meow-edit/meow][Meow]] introduces modal editing to Emacs, similar to Vim, for efficient text manipulation and navigation. The modal experience is further enhanced by [[https://github.com/justbur/emacs-which-key][which-key]], providing a helpful popup of available keybindings.
 
 * Table of Contents :TOC_3_gh:noexport:
 - [[#installation][Installation]]
@@ -103,7 +103,7 @@ Here are some notable features:
 :END:
 This Emacs literate configuration has been inspired by the following projects:
 
-- [[https://idiomdrottning.org/bad-emacs-defaults][Bad Emacs defaults]] 
+- [[https://idiomdrottning.org/bad-emacs-defaults][Bad Emacs defaults]]
 - [[https://gist.github.com/axyz/76871b404df376271b521212fba8a621][.emacs.d · GitHub]]
 - [[https://github.com/gilbertw1/emacs-literate-starter/blob/master/emacs.org][emacs-literate-starter/emacs.org at master · gilbertw1/emacs-literate-starter...]]
 - [[https://github.com/doomemacs/doomemacs][GitHub - doomemacs/doomemacs: An Emacs framework for the stubborn martian hacker]]
@@ -658,7 +658,7 @@ Package specific keymap definitions are kept in preface of the respective packag
     (define-key my/leader-map (kbd "h") (cons "help" help-map))
     (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
     (define-key my/leader-map (kbd "s") (cons "search" search-map))
-    
+
     ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
     (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
 
@@ -856,7 +856,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     ;; Save the corresponding buffers
     (defun my/gtd-save-org-buffers ()
       "Save `org-agenda-files' buffers without user confirmation.
-              See also `org-save-all-org-buffers'"
+       See also `org-save-all-org-buffers'"
       (interactive)
       (message "Saving org-agenda-files buffers...")
       (save-some-buffers t (lambda ()
@@ -2376,7 +2376,7 @@ Simple note taking and file naming.
                           (denote--creation-get-note-data-from-prompts)
                         (list title keywords file-type directory date identifier template signature))))
           ;; Proceed with Denote creation logic
-          (let* ((data (denote--creation-prepare-note-data 
+          (let* ((data (denote--creation-prepare-note-data
                         title keywords file-type directory date identifier template signature))
                  (extension (denote--file-extension (nth 2 data)))
                  (path (denote-format-file-name (nth 3 data) (nth 5 data) (nth 1 data) (nth 0 data) extension (nth 7 data)))
@@ -3993,7 +3993,7 @@ Structured Editing and Navigation in Emacs.
   (use-package combobulate
     :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
-    ;; Disable combobulate key prefix 
+    ;; Disable combobulate key prefix
     (combobulate-key-prefix nil)
     :config
     (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
