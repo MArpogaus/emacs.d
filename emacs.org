@@ -2789,6 +2789,8 @@ Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
     (tramp-histfile-override nil)
     (tramp-use-scp-direct-remote-copying t)
     (tramp-verbose 0)
+    (tramp-chunksize 2000)
+    (tramp-ssh-controlmaster-options nil)
     :preface
     ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
     (defun my/memoize-remote (key cache orig-fn &rest args)
@@ -2801,7 +2803,7 @@ Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
               (set cache (cons (cons key current) (symbol-value cache)))
               current))
         (apply orig-fn args)))
-    
+
     ;; Memoize magit top level
     (defvar my/magit-toplevel-cache nil)
     (defun my/memoize-magit-toplevel (orig &optional directory)
@@ -2824,15 +2826,15 @@ Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
      'remote-direct-async-process
      '((tramp-direct-async-process . t)))
     (connection-local-set-profiles
-     '(:application tramp :protocol "scp")
+     '(:application tramp :protocol "ssh")
      'remote-direct-async-process)
     (connection-local-set-profiles
-     '(:application tramp :protocol "ssh")
+     '(:application tramp :protocol "scp")
      'remote-direct-async-process)
     (connection-local-set-profiles
      '(:application tramp :protocol "sshx")
      'remote-direct-async-process)
-    
+
     (with-eval-after-load 'magit
       (setq magit-tramp-pipe-stty-settings 'pty)
       (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)
@@ -4108,6 +4110,9 @@ A client for Language Server Protocol servers.
           ("a" . eglot-code-actions)
           ("r" . eglot-rename))
     :config
+    ;; https://github.com/doomemacs/doomemacs/blob/a90c06dc6b104afbe0c93f0107df5c42b8137b5e/modules/tools/lsp/%2Beglot.el#L36
+    (plist-put eglot-events-buffer-config :size 0)
+
     ;; Continuously update the candidates using cape cache buster
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
     (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
