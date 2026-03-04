@@ -2967,14 +2967,6 @@ A simple LLM client for Emacs.
                 google/gemini-pro-1.5
                 google/gemini-flash-1.5)))
 #+end_src
-**** [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
-Interactive Gptel shell for Emacs.
-#+begin_src emacs-lisp
-  (use-package inf-gptel
-    :ensure (:host github :repo "tttuuu888/inf-gptel")
-    :bind
-    (:map my/open-map
-          ("G" . inf-gptel)))
 #+end_src
 **** [[https://github.com/kmontag/macher.git][macher]]
 #+begin_src emacs-lisp
