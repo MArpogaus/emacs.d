@@ -1,8 +1,8 @@
 ;;; my-ux.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -32,11 +32,14 @@
 (use-package autorevert
   :ensure nil
   :custom
+  (auto-revert-verbose t)
   ;; Revert Dired and other buffers
   (global-auto-revert-non-file-buffers t)
   ;; Avoid polling for changes and rathe get notified by the system
   (auto-revert-use-notify t)
   (auto-revert-avoid-polling t)
+  ;; Only prompts for confirmation when buffer is unsaved.
+  (revert-without-query (list "."))
   :hook
   (elpaca-after-init . global-auto-revert-mode))
 
@@ -50,11 +53,9 @@
       (unless (boundp 'header-line-icon)
         (setq-local header-line-icon
                     (cond
-                     ((buffer-match-p (or "\\*macher:.*\\*"
-                                          "\\*ChatGPT\\*"
-                                          (derived-mode . inf-gpt-mode))
+                     ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (bound-and-true-p gptel-mode)))
                                       buffer)
-                      '("    " . mode-line-emphasis))
+                      '("   " . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer)
                       '("  !  " . warning))
                      ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer)
@@ -162,17 +163,17 @@
 
   ;; Left side window configurations
   (auto-side-windows-left-buffer-names
-   '("^\\*toc*\\*$"))
+   '("^\\*toc*\\*$"
+     "*SIDE ::"))
   (auto-side-windows-left-buffer-modes
    '(reftex-toc-mode))
 
   ;; Right side window configurations
   (auto-side-windows-right-buffer-names
-   '("^\\*eldoc.*\\*$"
-     "^\\*Org Agenda\\*$"
+   '("^\\*Org Agenda\\*$"
      "^\\*Outline .+\.pdf\\*$"
+     "^\\*eldoc.*\\*$"
      "^\\*info\\*$"
-     "\\*ChatGPT\\*"
      "^magit-diff:.*$"
      "^magit-process:.*$"
      "^\\*Metahelp\\*$"))
@@ -189,7 +190,6 @@
      magit-log-mode
      magit-diff-mode
      magit-process-mode
-     gptel-mode
      pdf-outline-buffer-mode
      shortdoc-mode))
 
@@ -230,12 +230,13 @@
             magit-commit-diff-inhibit-same-window t))
   (with-eval-after-load 'transient
     (setopt transient-display-buffer-action
-            `(display-buffer-in-side-window
-              (side . top)
-              (dedicated . t)
-              (inhibit-same-window . t)
-              (window-parameters . ,auto-side-windows-top-window-parameters))
+            `(auto-side-windows--display-buffer
+              (category . force-side-top))
             transient-mode-line-format nil))
+  (with-eval-after-load 'gptel
+    (setopt gptel-display-buffer-action
+            '(auto-side-windows--display-buffer
+              (category . force-side-right))))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
 

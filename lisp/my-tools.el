@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-02-26
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -328,6 +328,8 @@
   (tramp-histfile-override nil)
   (tramp-use-scp-direct-remote-copying t)
   (tramp-verbose 0)
+  (tramp-chunksize 2000)
+  (tramp-ssh-controlmaster-options nil)
   :preface
   ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (defun my/memoize-remote (key cache orig-fn &rest args)
@@ -340,7 +342,7 @@
             (set cache (cons (cons key current) (symbol-value cache)))
             current))
       (apply orig-fn args)))
-  
+
   ;; Memoize magit top level
   (defvar my/magit-toplevel-cache nil)
   (defun my/memoize-magit-toplevel (orig &optional directory)
@@ -363,15 +365,15 @@
    'remote-direct-async-process
    '((tramp-direct-async-process . t)))
   (connection-local-set-profiles
-   '(:application tramp :protocol "scp")
+   '(:application tramp :protocol "ssh")
    'remote-direct-async-process)
   (connection-local-set-profiles
-   '(:application tramp :protocol "ssh")
+   '(:application tramp :protocol "scp")
    'remote-direct-async-process)
   (connection-local-set-profiles
    '(:application tramp :protocol "sshx")
    'remote-direct-async-process)
-  
+
   (with-eval-after-load 'magit
     (setq magit-tramp-pipe-stty-settings 'pty)
     (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)

@@ -1,8 +1,8 @@
 ;;; my-denote.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -79,6 +79,33 @@
       (when (or (string-prefix-p "[D]" (buffer-name buf))
                 (string-prefix-p "*Denote" (buffer-name buf)))
         (kill-buffer buf))))
+  (defun my/denote-save-buffer (&optional title keywords file-type directory date template signature identifier)
+    "Save the current buffer as a Denote note or just save if already denoted.
+Prompts for metadata only if the file is not already a Denote file."
+    (interactive)
+    (unless (and buffer-file-name (denote-file-has-denoted-filename-p buffer-file-name))
+      ;; If not denoted, get data (prompts user if called interactively)
+      (pcase-let* ((`(,title ,keywords ,file-type ,directory ,date ,identifier ,template ,signature)
+                    (if (called-interactively-p 'any)
+                        (denote--creation-get-note-data-from-prompts)
+                      (list title keywords file-type directory date identifier template signature))))
+        ;; Proceed with Denote creation logic
+        (let* ((data (denote--creation-prepare-note-data
+                      title keywords file-type directory date identifier template signature))
+               (extension (denote--file-extension (nth 2 data)))
+               (path (denote-format-file-name (nth 3 data) (nth 5 data) (nth 1 data) (nth 0 data) extension (nth 7 data)))
+               (header (denote--format-front-matter (nth 0 data) (nth 4 data) (nth 1 data) (nth 5 data) (nth 7 data) (nth 2 data))))
+          (save-excursion
+            (save-restriction
+              (widen)
+              (goto-char (point-min))
+              (insert header)
+              (when (and (nth 6 data) (not (string-empty-p (format "%s" (nth 6 data))))))
+              (insert (cond ((stringp (nth 6 data)) (nth 6 data))
+                            ((functionp (nth 6 data)) (funcall (nth 6 data)))
+                            (t "")))))
+          (set-visited-file-name path))))
+    (save-buffer))
   :bind
   (:map my/denote-map
         ("L" . denote-add-links)
@@ -89,6 +116,7 @@
         ("g" . denote-grep)
         ("i" . denote-link)
         ("k" . my/kill-denote-buffers)
+        ("s" . my/denote-save-buffer)
         ("n" . denote)
         ("r" . denote-rename-file)
         ("q c" . denote-query-contents-link) ; create link that triggers a grep
@@ -135,12 +163,12 @@
     ;; - `denote-sequence-new-child'
     ;; - `denote-sequence-new-child-of-current'
     ;; - `denote-sequence-new-sibling-of-current'
-    ("s s" . denote-sequence)
-    ("s f" . denote-sequence-find)
-    ("s l" . denote-sequence-link)
-    ("s d" . denote-sequence-dired)
-    ("s r" . denote-sequence-reparent)
-    ("s c" . denote-sequence-convert))
+    ("S s" . denote-sequence)
+    ("S f" . denote-sequence-find)
+    ("S l" . denote-sequence-link)
+    ("S d" . denote-sequence-dired)
+    ("S r" . denote-sequence-reparent)
+    ("S c" . denote-sequence-convert))
   :custom
   ;; The default sequence scheme is `numeric'.
   (denote-sequence-scheme 'alphanumeric))

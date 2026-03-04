@@ -1,8 +1,8 @@
 ;;; my-org.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -152,7 +152,7 @@
   ;; Save the corresponding buffers
   (defun my/gtd-save-org-buffers ()
     "Save `org-agenda-files' buffers without user confirmation.
-            See also `org-save-all-org-buffers'"
+     See also `org-save-all-org-buffers'"
     (interactive)
     (message "Saving org-agenda-files buffers...")
     (save-some-buffers t (lambda ()

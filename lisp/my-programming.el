@@ -1,8 +1,8 @@
 ;;; my-programming.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -106,7 +106,7 @@
 (use-package combobulate
   :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
   :custom
-  ;; Disable combobulate key prefix 
+  ;; Disable combobulate key prefix
   (combobulate-key-prefix nil)
   :config
   (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
@@ -234,6 +234,9 @@
         ("a" . eglot-code-actions)
         ("r" . eglot-rename))
   :config
+  ;; https://github.com/doomemacs/doomemacs/blob/a90c06dc6b104afbe0c93f0107df5c42b8137b5e/modules/tools/lsp/%2Beglot.el#L36
+  (plist-put eglot-events-buffer-config :size 0)
+
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event

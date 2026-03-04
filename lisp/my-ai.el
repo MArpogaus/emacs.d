@@ -1,8 +1,8 @@
 ;;; my-ai.el --- Emacs configuration file  -*- no-byte-compile: t; no-native-compile: t; lexical-binding: t; -*-
-;; Copyright (C) 2023-2025 Marcel Arpogaus
+;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2025-11-27
+;; Created: 2026-03-04
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,53 +14,80 @@
 
 ;;; Code:
 
+;; agante-shell
+
+(use-package agent-shell
+  :ensure-system-package
+  ;; Add agent installation configs here
+  ((npm . "sudo dnf install -y npm")
+   (claude . "curl -fsSL https://claude.ai/install.sh | bash")
+   (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+
 ;; [[https://github.com/karthink/gptel.git][gptel]]
 ;; A simple LLM client for Emacs.
 
 (use-package gptel
-  :custom
-  (gptel-default-mode 'org-mode)
+
+  :preface
+  (defun my/gptel-save-to-denote ()
+    "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
+    (interactive)
+    (let ((denote-use-title (buffer-name))
+          (denote-use-keywords '("gptel" "ai"))
+          (denote-use-directory (expand-file-name "gptel/" denote-directory)))
+      (call-interactively #'my/denote-save-buffer)))
+  (defun my/gptel-auto-save-to-denote-h (&rest _)
+    "Hook to automatically save gptel buffers to Denote.
+Triggered after the first response is received in a new buffer."
+    (my/gptel-save-to-denote)
+    (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
+  :commands (gptel gptel-send)
   :bind
   (:map my/open-map
         ("g". gptel))
-  :commands (gptel gptel-send)
+  :hook
+  (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
+  :custom
+  (gptel-default-mode 'org-mode)
   :config
   (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
-  ;; OpenRouter offers an OpenAI compatible API
-  (gptel-make-openai "OpenRouter"               ;Any name you want
-    :host "openrouter.ai"
-    :endpoint "/api/v1/chat/completions"
-    :stream t
-    :key #'gptel-api-key-from-auth-source
-    :models '(anthropic/claude-sonnet-4
-              anthropic/claude-opus-4
-              anthropic/claude-opus-4.1
-              anthropic/claude-3.5-haiku
-              deepseek/deepseek-chat-v3-0324:free
-              openai/gpt-5
-              openai/gpt-5-mini
-              openai/gpt-4.1
-              openai/gpt-4.1-mini
-              openai/gpt-4o-mini
-              openai/gpt-oss-120b
-              openai/gpt-4o
-              openai/chatgpt-4o-latest
-              google/gemini-2.5-pro
-              google/gemini-2.5-flash
-              google/gemini-2.5-flash-lite
-              google/gemini-2.0-flash-exp:free
-              google/gemini-flash-1.5-8b
-              google/gemini-pro-1.5
-              google/gemini-flash-1.5)))
+  (setq gptel-model 'google/gemini-3-flash-preview ;; default model to select
+        gptel-backend (gptel-make-openai "OpenRouter"
+                        :host "openrouter.ai"
+                        :endpoint "/api/v1/chat/completions"
+                        :stream t
+                        :key #'gptel-api-key-from-auth-source
+                        :models '(anthropic/claude-haiku-4.5
+                                  anthropic/claude-opus-4.6
+                                  anthropic/claude-sonnet-4-6
+                                  deepseek/deepseek-chat-v3.1
+                                  deepseek/deepseek-v3.2
+                                  deepseek/deepseek-v3.2-speciale
+                                  google/gemini-2.5-flash
+                                  google/gemini-2.5-flash-lite
+                                  google/gemini-2.5-pro
+                                  google/gemini-3-flash-preview
+                                  google/gemini-3.1-pro-preview
+                                  google/gemini-flash-1.5
+                                  google/gemini-pro-1.5
+                                  minimax/minimax-m2.5
+                                  openai/chatgpt-4o-latest
+                                  openai/gpt-4.1
+                                  openai/gpt-4.1-mini
+                                  openai/gpt-4o
+                                  openai/gpt-4o-mini
+                                  openai/gpt-5
+                                  openai/gpt-5-mini
+                                  openai/gpt-oss-120b))))
 
-;; [[https://github.com/tttuuu888/inf-gptel.git][inf-gptel]]
-;; Interactive Gptel shell for Emacs.
+;; [[https://github.com/karthink/gptel-agent.git][gptel-agent]]
+;; Agent mode for gptel.
 
-(use-package inf-gptel
-  :ensure (:host github :repo "tttuuu888/inf-gptel")
-  :bind
-  (:map my/open-map
-        ("G" . inf-gptel)))
+(use-package gptel-agent
+  :demand t
+  :after gptel
+  ;; Read files from agents directories
+  :config (gptel-agent-update))
 
 ;; [[https://github.com/kmontag/macher.git][macher]]
 
