@@ -616,12 +616,13 @@ Package specific keymap definitions are kept in preface of the respective packag
     :ensure nil
     :preface
     (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
+    (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
     (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-    (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
-    (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
     (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+    (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+    (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
     ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
     (defun prot/keyboard-quit-dwim ()
       "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -648,16 +649,16 @@ Package specific keymap definitions are kept in preface of the respective packag
         (keyboard-quit))))
     :config
     ;; leader keymap
+    (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
     (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
     (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
-    (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
-    (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
-    (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-
     (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
     (define-key my/leader-map (kbd "h") (cons "help" help-map))
     (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
+    (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
     (define-key my/leader-map (kbd "s") (cons "search" search-map))
+    (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+    (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
 
     ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
     (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
@@ -2922,7 +2923,6 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 A simple LLM client for Emacs.
 #+begin_src emacs-lisp
   (use-package gptel
-
     :preface
     (defun my/gptel-save-to-denote ()
       "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
@@ -2938,8 +2938,10 @@ A simple LLM client for Emacs.
       (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
     :commands (gptel gptel-send)
     :bind
-    (:map my/open-map
-          ("g". gptel))
+    (:map my/ai-map
+          ("a". gptel)
+          ("c". gptel-add)
+          ("m". gptel-menu))
     :hook
     (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
     :custom
@@ -2981,6 +2983,9 @@ Agent mode for gptel.
   (use-package gptel-agent
     :demand t
     :after gptel
+    :bind
+    (:map my/ai-map
+          ("A". gptel-agent))
     ;; Read files from agents directories
     :config (gptel-agent-update))
 #+end_src

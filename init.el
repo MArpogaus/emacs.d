@@ -257,12 +257,13 @@
   :ensure nil
   :preface
   (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
+  (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
   (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
-  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
   (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
   ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
   (defun prot/keyboard-quit-dwim ()
     "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -289,16 +290,16 @@ The DWIM behaviour of this command is as follows:
       (keyboard-quit))))
   :config
   ;; leader keymap
+  (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
   (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
   (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
-  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
-  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
-  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-
   (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
   (define-key my/leader-map (kbd "h") (cons "help" help-map))
   (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
+  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
   (define-key my/leader-map (kbd "s") (cons "search" search-map))
+  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
 
   ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
   (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)

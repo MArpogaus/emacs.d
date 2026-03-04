@@ -27,7 +27,6 @@
 ;; A simple LLM client for Emacs.
 
 (use-package gptel
-
   :preface
   (defun my/gptel-save-to-denote ()
     "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
@@ -43,8 +42,10 @@ Triggered after the first response is received in a new buffer."
     (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
   :commands (gptel gptel-send)
   :bind
-  (:map my/open-map
-        ("g". gptel))
+  (:map my/ai-map
+        ("a". gptel)
+        ("c". gptel-add)
+        ("m". gptel-menu))
   :hook
   (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
   :custom
@@ -86,6 +87,9 @@ Triggered after the first response is received in a new buffer."
 (use-package gptel-agent
   :demand t
   :after gptel
+  :bind
+  (:map my/ai-map
+        ("A". gptel-agent))
   ;; Read files from agents directories
   :config (gptel-agent-update))
 
