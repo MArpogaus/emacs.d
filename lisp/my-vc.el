@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-04
+;; Created: 2026-03-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -66,7 +66,6 @@
    (vc-dir-mode  . diff-hl-dir-mode)
    (dired-mode   . diff-hl-dired-mode)
    (diff-hl-mode . diff-hl-flydiff-mode)
-   (magit-pre-refresh . diff-hl-magit-pre-refresh)
    (magit-post-refresh . diff-hl-magit-post-refresh)))
 
 ;; [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]

@@ -55,23 +55,23 @@
                     (cond
                      ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (bound-and-true-p gptel-mode)))
                                       buffer)
-                      '("   " . mode-line-emphasis))
+                      '(" AI " . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer)
-                      '("  !  " . warning))
+                      '(" ! " . warning))
                      ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer)
-                      '("  !  " . error))
+                      '(" ! " . error))
                      ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$" (derived-mode . magit-mode)) buffer)
-                      '("    " . success))
+                      '(" VC " . success))
                      ((buffer-match-p "^\\*Org Src.*\\*" buffer)
-                      '("     " . mode-line-emphasis))
+                      '(" SRC " . mode-line-emphasis))
                      ((buffer-match-p '(or (derived-mode . shell-mode)
                                            (derived-mode . comint-mode)
                                            (derived-mode . term-mode)
                                            (derived-mode . vterm-mode)) buffer)
                       '("   " . default))
                      ((buffer-match-p "^\\*Org Agenda\\*$" buffer)
-                      '("    " . mode-line-emphasis))
-                     (t '("  ?  " . mode-line-inactive)))))
+                      '(" AGENDA " . mode-line-emphasis))
+                     (t '(" ? " . mode-line-inactive)))))
       header-line-icon))
   (defun my/install-top-side-window-face-remaps (buffer foreground background)
     (with-current-buffer buffer
@@ -120,15 +120,14 @@
   ;; Top side window configurations
   (auto-side-windows-top-alist '((window-height . 15)))
   (auto-side-windows-top-buffer-names
-   '("^ \\*Install vterm\\*$"
-     "^COMMIT_EDITMSG$"
+   '("^COMMIT_EDITMSG$"
      "^\\*Agenda Commands\\*$"
      "^\\*Async-native-compile-log\\*$"
+     "^\\*Backtrace\\*$"
      "^\\*Compile-Log\\*$"
      "^\\*Messages\\*$"
      "^\\*Multiple Choice Help\\*$"
      "^\\*Org Select\\*"
-     "^\\*Org Src.*\\*"
      "^\\*Org-Babel Error Output\\*"
      "^\\*Process List\\*$"
      "^\\*Quick Help\\*$"
@@ -138,7 +137,7 @@
      "^\\*diff-hl\\*$"
      "^\\*gptel-system\\*$"
      "^\\*jinx module compilation\\*$"
-     "^\\*Backtrace\\*$"))
+     "^ \\*Install vterm\\*$"))
   (auto-side-windows-top-buffer-modes
    '(compilation-mode
      flymake-diagnostics-buffer-mode
@@ -174,6 +173,7 @@
      "^\\*Outline .+\.pdf\\*$"
      "^\\*eldoc.*\\*$"
      "^\\*info\\*$"
+     "^\\*Org Src.*\\*"
      "^magit-diff:.*$"
      "^magit-process:.*$"
      "^\\*Metahelp\\*$"))

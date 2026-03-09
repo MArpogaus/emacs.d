@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-04
+;; Created: 2026-03-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -19,7 +19,9 @@
 
 (use-package auto-dark
   :custom
-  (auto-dark-themes '((doom-one) (doom-one-light)))
+  ;; (auto-dark-themes '((doom-one) (doom-one-light)))
+  ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
+  (auto-dark-themes '((modus-vivendi) (modus-operandi)))
   :hook elpaca-after-init)
 
 ;; [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -46,6 +48,8 @@
 ;; [[https://github.com/doomemacs/themes][doom-themes]]
 
 (use-package doom-themes
+  :custom
+  (doom-ayu-light-brighter-comments t)
   :preface
   (defun my/patch-doom-themes (&rest args)
     (ignore args)
