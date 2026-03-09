@@ -3771,7 +3771,6 @@ Emacs package for highlighting uncommitted changes.
      (vc-dir-mode  . diff-hl-dir-mode)
      (dired-mode   . diff-hl-dired-mode)
      (diff-hl-mode . diff-hl-flydiff-mode)
-     (magit-pre-refresh . diff-hl-magit-pre-refresh)
      (magit-post-refresh . diff-hl-magit-post-refresh)))
 #+end_src
 **** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
