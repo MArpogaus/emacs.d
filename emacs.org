@@ -1280,7 +1280,9 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
-    (auto-dark-themes '((doom-one) (doom-one-light)))
+    ;; (auto-dark-themes '((doom-one) (doom-one-light)))
+    ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
+    (auto-dark-themes '((modus-vivendi) (modus-operandi)))
     :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -1307,6 +1309,8 @@ Enable line numbers for some modes
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
   (use-package doom-themes
+    :custom
+    (doom-ayu-light-brighter-comments t)
     :preface
     (defun my/patch-doom-themes (&rest args)
       (ignore args)
