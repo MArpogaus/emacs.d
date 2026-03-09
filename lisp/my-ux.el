@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-04
+;; Created: 2026-03-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -231,12 +231,12 @@
   (with-eval-after-load 'transient
     (setopt transient-display-buffer-action
             `(auto-side-windows--display-buffer
-              (category . force-side-top))
+              (side . top))
             transient-mode-line-format nil))
   (with-eval-after-load 'gptel
     (setopt gptel-display-buffer-action
             '(auto-side-windows--display-buffer
-              (category . force-side-right)
+              (side . right)
               (body-function . select-window))))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
