@@ -2928,10 +2928,16 @@ A simple LLM client for Emacs.
     (defun my/gptel-save-to-denote ()
       "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
       (interactive)
-      (let ((denote-use-title (buffer-name))
-            (denote-use-keywords '("gptel" "ai"))
-            (denote-use-directory (expand-file-name "gptel/" denote-directory)))
-        (call-interactively #'my/denote-save-buffer)))
+      (with-current-buffer (current-buffer)
+        (let ((previous-dir default-directory)
+              (denote-use-title (buffer-name))
+              (denote-use-keywords '("gptel" "ai"))
+              (denote-use-directory (expand-file-name "gptel/" denote-directory)))
+          (call-interactively #'my/denote-save-buffer)
+          (setq-local default-directory previous-dir)
+          (add-file-local-variable 'default-directory previous-dir t)
+          (add-file-local-variable 'auto-side-windows-side 'right t)
+          (add-file-local-variable 'eval '(gptel-mode) t))))
     (defun my/gptel-auto-save-to-denote-h (&rest _)
       "Hook to automatically save gptel buffers to Denote.
   Triggered after the first response is received in a new buffer."
