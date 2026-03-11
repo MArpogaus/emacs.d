@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-09
+;; Created: 2026-03-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -99,6 +99,7 @@
            (buffer-face (list :inherit 'bold))
            (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
         (set-window-fringes nil 1 1 t)
+        (set-window-margins nil 1 1)
         (my/install-top-side-window-face-remaps buffer foreground background)
         (list
          (propertize prefix 'face prefix-face 'display '(space-width 0.7))
@@ -107,6 +108,7 @@
          (propertize " " 'display `(space :align-to right))
          ;; (buttonize " 󰍷 " nil)
          ;; (buttonize " 󰅚 " nil)
+         " "
          (propertize " " 'face prefix-face 'display '(space-width 1))))))
   :custom
   ;; Of non of our rules apply try the following strategies to dispaly new buffers
