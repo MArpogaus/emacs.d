@@ -3140,13 +3140,13 @@ A simple LLM client for Emacs.
 Agent mode for gptel.
 #+begin_src emacs-lisp
   (use-package gptel-agent
-    :demand t
-    :after gptel
     :bind
     (:map my/ai-map
           ("A". gptel-agent))
     ;; Read files from agents directories
-    :config (gptel-agent-update))
+    :preface
+    (with-eval-after-load 'gptel
+      (gptel-agent-update)))
 #+end_src
 **** [[https://github.com/kmontag/macher.git][macher]]
 #+begin_src emacs-lisp
