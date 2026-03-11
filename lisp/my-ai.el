@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-09
+;; Created: 2026-03-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -209,13 +209,13 @@ Triggered after the first response is received in a new buffer."
 ;; Agent mode for gptel.
 
 (use-package gptel-agent
-  :demand t
-  :after gptel
   :bind
   (:map my/ai-map
         ("A". gptel-agent))
   ;; Read files from agents directories
-  :config (gptel-agent-update))
+  :preface
+  (with-eval-after-load 'gptel
+    (gptel-agent-update)))
 
 ;; [[https://github.com/kmontag/macher.git][macher]]
 

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-09
+;; Created: 2026-03-11
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -282,39 +282,67 @@
 
   (org-modern-keyword
    '((t . t)
-     ("title" . "𝙏")
-     ("subtitle" . "𝙩")
-     ("author" . "𝘼")
-     ("date" . "𝘿")
-     ("email" . "")
-     ("property" . "")
-     ("options" . "")
-     ("columns" . "")
-     ("language" . "")
-     ("filetags" . "󱋷")
-     ("identifier" . "󰰅")
-     ("auto_tangle" . "")
-     ("exclude_tags" . "󰤐")
-     ("startup" . "⏻")
-     ("macro" . "𝓜")
-     ("bibliography" . "")
-     ("print_bibliography" . "󰌱")
-     ("cite_export" . "󱚃")
-     ("latex_class" . "🄻")
-     ("latex_class_options" . "🄻󰒓")
-     ("latex_header" . "🅻")
-     ("latex_header_extra" . "🅻⁺")
-     ("latex" . "🅛")
-     ("beamer_theme" . "🄱")
-     ("beamer_color_theme" . "🄱󰏘")
-     ("beamer_font_theme" . "🄱𝐀")
-     ("beamer_header" . "🅱")
-     ("beamer" . "🅑")
-     ("attr_latex" . "🄛")
-     ("attr_html" . "🄗")
-     ("attr_org" . "⒪")
-     ("caption" . "☰")
-     ("results" . "󱞩")))
+      ;; Metadata
+      ("title" . "𝙏")
+      ("subtitle" . "𝙩")
+      ("author" . "𝘼")
+      ("email" . "@")
+      ("date" . "𝘿")
+      ("description" . "󰋽")
+      ("keywords" . "󱋷")
+
+      ;; Configuration & Settings
+      ("options" . "")
+      ("property" . "")
+      ("columns" . "")
+      ("language" . "")
+      ("filetags" . "󱋷")
+      ("tags" . "󰓹")
+      ("setupfile" . "󰒓")
+      ("include" . "󰌹")
+      ("bind" . "󰌷")
+      ("startup" . "⏻")
+      ("identifier" . "󰰅")
+      ("exclude_tags" . "󰤐")
+      ("auto_tangle" . "")
+
+      ;; Macros & Bibliography
+      ("macro" . "𝑴")
+      ("bibliography" . "")
+      ("print_bibliography" . "󰌱")
+      ("cite_export" . "󱚃")
+
+      ;; LaTeX (using superscript modifiers for clean differentiation)
+      ("latex" . "𝑳")
+      ("latex_class" . "𝑳ᶜ")
+      ("latex_class_options" . "𝑳ᵒ")
+      ("latex_header" . "𝑳ʰ")
+      ("latex_header_extra" . "𝑳⁺")
+      ("latex_compiler" . "𝑳")
+
+      ;; Beamer (projector icon + superscripts)
+      ("beamer" . "𝑩")
+      ("beamer_header" . "𝑩ʰ")
+      ("beamer_theme" . "𝑩ᵗ")
+      ("beamer_color_theme" . "𝑩ᶜ")
+      ("beamer_font_theme" . "𝑩ᶠ")
+
+      ;; HTML
+      ("html_head" . "𝑯ʰ")
+      ("html_head_extra" . "𝑯⁺")
+
+      ;; Attributes (circled letters for consistency)
+      ("attr_html" . "𝑯ᵃ")
+      ("attr_latex" . "𝑳ᵃ")
+      ("attr_beamer" . "𝑩ᵃ")
+
+      ;; Elements & Code Blocks
+      ("name" . "𝙉")
+      ("header-args" . "")
+      ("caption" . "☰")
+      ("results" . "󱞩")
+      ("call" . "󰆍")
+      ("toc" . "")))
 
   ;; Edit settings
   (org-auto-align-tags nil)
