@@ -121,7 +121,7 @@ This Emacs literate configuration has been inspired by the following projects:
 ** Add git url to pkg headlines
 #+begin_src bash :results none
   for p in $(grep -P '^\*\*\*\* ([a-z\-])*$' emacs.org | cut -d ' ' -f 2); do
-      url=$(git -C ~/.emacs.d/elpaca/repos/$p* remote get-url origin)
+      url=$(git -C ~/.emacs.d/elpaca/sources/$p* remote get-url origin)
       if [ $? -eq 0 ]; then
           sed "s|\*\*\*\* $p|**** [[$url][$p]]|" -i emacs.org
       fi;
