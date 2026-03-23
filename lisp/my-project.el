@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,41 +13,6 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
-
-;; project :build_in:
-
-(use-package project
-  :ensure nil
-  :autoload project-prefix-map
-  :bind
-  (:map my/leader-map
-        ("SPC" . project-list-buffers))
-  :custom
-  (project-vc-extra-root-markers '(".project"))
-  (project-switch-commands '((project-find-file "Find file")
-                             (project-find-regexp "Find regexp")
-                             (project-find-dir "Find directory")
-                             ;; (project-vc-dir "VC-Dir")
-                             ;; (project-eshell "Eshell")
-                             ))
-  :init
-  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
-
-;; [[https://github.com/karthink/project-x.git][project-x]]
-;; Enhancements to Emacs' built in project library.
-
-(use-package project-x
-  :ensure (:host github :repo "karthink/project-x")
-  :after project
-  :bind (:map project-prefix-map
-              ("S" . project-x-window-state-save)
-              ("l" . project-x-window-state-load))
-  :commands project-x-try-local project-x--window-state-write
-  :init
-  (add-to-list 'project-switch-commands
-               '(?j "Restore windows" project-x-windows) t)
-  (add-hook 'project-find-functions 'project-x-try-local 90)
-  (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; [[https://github.com/MArpogaus/auto-tab-groups.git][auto-tab-groups]]
 ;; Tab group based workflow isolation.
@@ -94,6 +59,41 @@
   :hook
   ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
   (tab-bar-mode . auto-tab-groups-eyecandy-mode))
+
+;; project :build_in:
+
+(use-package project
+  :ensure nil
+  :autoload project-prefix-map
+  :bind
+  (:map my/leader-map
+        ("SPC" . project-list-buffers))
+  :custom
+  (project-vc-extra-root-markers '(".project"))
+  (project-switch-commands '((project-find-file "Find file")
+                             (project-find-regexp "Find regexp")
+                             (project-find-dir "Find directory")
+                             ;; (project-vc-dir "VC-Dir")
+                             ;; (project-eshell "Eshell")
+                             ))
+  :init
+  (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
+
+;; [[https://github.com/karthink/project-x.git][project-x]]
+;; Enhancements to Emacs' built in project library.
+
+(use-package project-x
+  :ensure (:host github :repo "karthink/project-x")
+  :after project
+  :bind (:map project-prefix-map
+              ("S" . project-x-window-state-save)
+              ("l" . project-x-window-state-load))
+  :commands project-x-try-local project-x--window-state-write
+  :init
+  (add-to-list 'project-switch-commands
+               '(?j "Restore windows" project-x-windows) t)
+  (add-hook 'project-find-functions 'project-x-try-local 90)
+  (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:
 
@@ -189,7 +189,7 @@
   (:map my/toggle-map
         ("s" . sr-speedbar-toggle)))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-project)
 ;;; my-project.el ends here

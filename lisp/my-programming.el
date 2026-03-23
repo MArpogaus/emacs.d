@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -99,29 +99,6 @@
         ("C-S-<return>" . my/code-cells-eval))
   :hook
   (python-base-mode . code-cells-mode-maybe))
-
-;; [[https://github.com/mickeynp/combobulate.git][combobulate]]
-;; Structured Editing and Navigation in Emacs.
-
-(use-package combobulate
-  :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
-  :custom
-  ;; Disable combobulate key prefix
-  (combobulate-key-prefix nil)
-  :config
-  (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
-  :bind
-  (:map combobulate-key-map
-        ("S-<left>"  . combobulate-navigate-previous)
-        ("S-<right>" . combobulate-navigate-next)
-        ("S-<down>"  . combobulate-navigate-down)
-        ("S-<up>"    . combobulate-navigate-up)
-        ("M-<left>"  . combobulate-navigate-logical-previous)
-        ("M-<right>" . combobulate-navigate-logical-next)
-        ("M-<down>"  . combobulate-drag-down)
-        ("M-<up>"    . combobulate-drag-up))
-  :hook
-  ((prog-mode yaml-ts-mode) . combobulate-mode))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -456,7 +433,7 @@
   (:map yaml-mode-map ("\C-m" . newline-and-indent))
   :mode ("\\.ya?ml\\'" . yaml-ts-mode))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-programming)
 ;;; my-programming.el ends here

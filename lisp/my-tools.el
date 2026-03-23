@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -151,21 +151,6 @@
   :hook
   ((ediff-before-setup . my/store-pre-ediff-winconfig)
    (ediff-quit . my/restore-pre-ediff-winconfig)))
-
-;; [[https://github.com/skeeto/elfeed.git][elfeed]]
-;; An Emacs web feeds client.
-
-(use-package elfeed
-  :bind
-  (:map my/open-map
-        ("f" . elfeed))
-  :config
-  (setq elfeed-feeds
-        (split-string (shell-command-to-string
-                       (concat "for d in ~/.emacs.d/elpaca/repos/*; do"
-                               "  git -C $d remote get-url origin;"
-                               "done | grep -P '(github)' "
-                               "     | sed 's:\\.git:/releases.atom:'")))))
 
 ;; [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 ;; Make Emacs use the $PATH set up by the user's shell.
@@ -432,7 +417,7 @@
   (when (display-graphic-p)
     (setq vundo-glyph-alist vundo-unicode-symbols)))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-tools)
 ;;; my-tools.el ends here

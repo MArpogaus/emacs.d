@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -118,7 +118,7 @@
   :after magit
   :init (magit-todos-mode))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-vc)
 ;;; my-vc.el ends here

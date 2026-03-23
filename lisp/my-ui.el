@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -430,7 +430,7 @@
   (advice-add 'toggle-frame-fullscreen
               :after #'my/toggle-display-time-mode))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-ui)
 ;;; my-ui.el ends here

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -156,8 +156,24 @@
             (setq gc-cons-threshold (* 16 1024 1024))) 97)
 
 ;; Profile emacs startup
+(defun my/count-modes-and-commands ()
+  "Count major modes, minor modes, and commands available in the current Emacs session."
+  (let ((major-modes 0)
+        (minor-modes 0)
+        (commands 0))
+    (mapatoms
+     (lambda (s)
+       (when (commandp s)
+         (setq commands (1+ commands))
+         (when (string-match-p ".+-mode$" (symbol-name s))
+           (if (boundp s)
+               (setq minor-modes (1+ minor-modes))
+             (setq major-modes (1+ major-modes)))))))
+    (message "📊 Emacs loaded with %d major modes, %d minor modes, %d commands and %d features."
+             major-modes minor-modes commands (length features))))
 (add-hook 'elpaca-after-init-hook
           (lambda ()
+            (my/count-modes-and-commands)
             (message "🚀 Emacs loaded in %.2f seconds with %d garbage collections."
                      (float-time (time-subtract elpaca-after-init-time before-init-time))
                      gcs-done)) 99)
@@ -209,7 +225,7 @@
 (add-to-list 'default-frame-alist '(height . 25))
 (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
 
-;; Conventional Library Footer
+;; ZZ Conventional Library Footer
 
 (provide 'early-init)
 ;;; early-init.el ends here

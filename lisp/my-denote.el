@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -173,7 +173,7 @@ Prompts for metadata only if the file is not already a Denote file."
   ;; The default sequence scheme is `numeric'.
   (denote-sequence-scheme 'alphanumeric))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-denote)
 ;;; my-denote.el ends here
