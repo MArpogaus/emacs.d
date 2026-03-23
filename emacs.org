@@ -38,7 +38,7 @@ Here are some notable features:
 - [[#configuration][Configuration]]
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
-    - [[#conventional-library-header][Conventional Library Header]]
+    - [[#01-conventional-library-header][01 Conventional Library Header]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
     - [[#hide-initial-frame-until-all-packages-are-loaded][Hide initial frame until all packages are loaded]]
@@ -46,15 +46,15 @@ Here are some notable features:
     - [[#minimal-ui][Minimal UI]]
     - [[#optimize-startup-time][Optimize Startup Time]]
     - [[#set-default-frame-size-and-font][Set default frame size and font]]
-    - [[#conventional-library-footer][Conventional Library Footer]]
+    - [[#zz-conventional-library-footer][ZZ Conventional Library Footer]]
   - [[#emacs-initialization][Emacs Initialization]]
-    - [[#conventional-header][Conventional Header]]
-    - [[#configure-use-package][Configure use-package]]
-    - [[#configure-elpaca][Configure Elpaca]]
-    - [[#no-littering][no-littering]]
+    - [[#01-conventional-header][01 Conventional Header]]
     - [[#better-defaults][Better Defaults]]
-    - [[#shared-lisp-functions-and-variables][Shared Lisp Functions and Variables]]
+    - [[#configure-elpaca][Configure Elpaca]]
+    - [[#configure-use-package][Configure use-package]]
     - [[#keymaps][Keymaps]]
+    - [[#no-littering][no-littering]]
+    - [[#shared-lisp-functions-and-variables][Shared Lisp Functions and Variables]]
   - [[#configure-packages][Configure Packages]]
     - [[#org][Org]]
     - [[#ui][UI]]
@@ -159,7 +159,7 @@ This Emacs literate configuration has been inspired by the following projects:
 :END:
 This file serves as the initial configuration file for Emacs and aims to establish fundamental settings before Emacs generates the initial frame.
 It should only consist of code that is independent of any package.
-*** Conventional Library Header
+*** 01 Conventional Library Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
@@ -374,7 +374,7 @@ The following optimizations have been inspired by:
   (add-to-list 'default-frame-alist '(height . 25))
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
 #+end_src
-*** Conventional Library Footer
+*** ZZ Conventional Library Footer
 #+begin_src emacs-lisp
   (provide 'early-init)
   ;;; early-init.el ends here
@@ -385,60 +385,9 @@ The following optimizations have been inspired by:
 :header-args+: :tangle init.el
 :END:
 The main initialization file, =init.el=, is responsible for defining essential configurations and variables used in submodules.
-*** Conventional Header
+*** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="init.el")>>
-#+end_src
-*** Configure use-package
-#+begin_src emacs-lisp
-  ;; Enable lazy loading per default
-  (setq use-package-always-defer t
-        use-package-always-ensure t)
-
-  ;; make use-package more verbose when ´‘--debug-init´ is passed
-  ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
-  (when init-file-debug
-    (setq use-package-verbose t
-          use-package-expand-minimally nil
-          use-package-compute-statistics t
-          jka-compr-verbose t
-          warning-minimum-level :warning
-          byte-compile-warnings t
-          byte-compile-verbose t
-          native-comp-warning-on-missing-source t
-          debug-on-error t))
-#+end_src
-*** Configure Elpaca
-#+begin_src emacs-lisp
-  ;; Use elpaca lockfile
-  (setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
-
-  ;; Allow automatic upgrade of build-in transient
-  ;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
-  (setq elpaca-ignored-dependencies
-        (delq 'transient elpaca-ignored-dependencies))
-
-  ;; Enable use-package integration
-  (elpaca elpaca-use-package
-    ;; Enable use-package :ensure support for Elpaca.
-    (elpaca-use-package-mode))
-#+end_src
-*** no-littering
-Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
-#+begin_src emacs-lisp
-  (use-package no-littering
-    :demand t
-    :init
-    (setq emacs-config-directory user-emacs-directory
-          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-          custom-file (expand-file-name "custom.el" user-emacs-directory)
-          ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-          user-emacs-directory (expand-file-name "~/.cache/emacs/"))
-    :config
-    ;; store backup and auto-save files in =no-littering-var-directory=
-    (no-littering-theme-backups)
-    ;; Load customization File
-    (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 #+end_src
 *** Better Defaults
 #+begin_src emacs-lisp
@@ -545,6 +494,155 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
      ;; Compress kill ring when exiting emacs
      (kill-emacs . unpropertize-kill-ring)))
 #+end_src
+*** Configure Elpaca
+#+begin_src emacs-lisp
+  ;; Use elpaca lockfile
+  (setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+
+  ;; Allow automatic upgrade of build-in transient
+  ;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
+  (setq elpaca-ignored-dependencies
+        (delq 'transient elpaca-ignored-dependencies))
+
+  ;; Enable use-package integration
+  (elpaca elpaca-use-package
+    ;; Enable use-package :ensure support for Elpaca.
+    (elpaca-use-package-mode))
+#+end_src
+*** Configure use-package
+#+begin_src emacs-lisp
+  ;; Enable lazy loading per default
+  (setq use-package-always-defer t
+        use-package-always-ensure t)
+
+  ;; make use-package more verbose when ´‘--debug-init´ is passed
+  ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
+  (when init-file-debug
+    (setq use-package-verbose t
+          use-package-expand-minimally nil
+          use-package-compute-statistics t
+          jka-compr-verbose t
+          warning-minimum-level :warning
+          byte-compile-warnings t
+          byte-compile-verbose t
+          native-comp-warning-on-missing-source t
+          debug-on-error t))
+#+end_src
+*** Keymaps
+
+We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
+Package specific keymap definitions are kept in preface of the respective package declaration.
+
+#+begin_src emacs-lisp
+  ;; setup keymaps
+  (use-package emacs
+    :ensure nil
+    :preface
+    (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
+    (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
+    (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+    (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+    (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+    (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+    ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
+    (defun prot/keyboard-quit-dwim ()
+      "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+  The generic `keyboard-quit' does not do the expected thing when
+  the minibuffer is open.  Whereas we want it to close the
+  minibuffer, even without explicitly focusing it.
+
+  The DWIM behaviour of this command is as follows:
+
+  - When the region is active, disable it.
+  - When a minibuffer is open, but not focused, close the minibuffer.
+  - When the Completions buffer is selected, close it.
+  - In every other case use the regular `keyboard-quit'."
+      (interactive)
+      (cond
+       ((region-active-p)
+        (keyboard-quit))
+       ((derived-mode-p 'completion-list-mode)
+        (delete-completion-window))
+       ((> (minibuffer-depth) 0)
+        (abort-recursive-edit))
+       (t
+        (keyboard-quit))))
+    :config
+    ;; leader keymap
+    (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
+    (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+    (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
+    (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
+    (define-key my/leader-map (kbd "h") (cons "help" help-map))
+    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
+    (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
+    (define-key my/leader-map (kbd "s") (cons "search" search-map))
+    (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+    (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+
+    ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+    (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
+
+    ;; remove keybind for suspend-frame
+    (global-unset-key (kbd "C-z"))
+
+    ;; Don't kill windows when clicking on the mode line
+    (global-unset-key [mode-line mouse-2])
+    (global-unset-key [mode-line mouse-3])
+    :bind
+    ;;ESC Cancels All
+    (("<escape>" . keyboard-escape-quit)
+     ([remap keyboard-quit] . prot/keyboard-quit-dwim)
+     ("S-<down-mouse-1>" . mouse-save-then-kill)
+     :map my/leader-map
+     ("q" . save-buffers-kill-terminal)
+     :map my/buffer-map
+     ("e" . eval-buffer)
+     ("k" . kill-current-buffer)
+     ("K" . kill-buffer)
+     ("c" . clone-buffer)
+     ("r" . revert-buffer)
+     ("e" . eval-buffer)
+     ("s" . save-buffer)
+     :map my/file-map
+     ("f" . find-file)
+     ("F" . find-file-other-window)
+     ("d" . find-dired)
+     ("c" . copy-file)
+     ("f" . find-file)
+     ("d" . delete-file)
+     ("r" . rename-file)
+     ("w" . write-file)
+     :map my/open-map
+     ("F" . make-frame)
+     ("i" . ielm)
+     ("e" . eshell)
+     ("t" . term)
+     ("s" . scratch-buffer)
+     :map my/toggle-map
+     ("M" . my/minimal-ui-mode)))
+#+end_src
+
+*** no-littering
+Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
+#+begin_src emacs-lisp
+  (use-package no-littering
+    :demand t
+    :init
+    (setq emacs-config-directory user-emacs-directory
+          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+          custom-file (expand-file-name "custom.el" user-emacs-directory)
+          ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+          user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+    :config
+    ;; store backup and auto-save files in =no-littering-var-directory=
+    (no-littering-theme-backups)
+    ;; Load customization File
+    (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
+#+end_src
 *** Shared Lisp Functions and Variables
 In this section, I define some custom Lisp functions.
 #+BEGIN_SRC emacs-lisp
@@ -621,103 +719,6 @@ In this section, I define some custom Lisp functions.
           (global-hide-mode-line-mode -1)
           (spacious-padding-mode 1)))))
 #+end_src
-*** Keymaps
-
-We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
-Package specific keymap definitions are kept in preface of the respective package declaration.
-
-#+begin_src emacs-lisp
-  ;; setup keymaps
-  (use-package emacs
-    :ensure nil
-    :preface
-    (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
-    (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
-    (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-    (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
-    (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-    (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-    (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
-    (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-    ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
-    (defun prot/keyboard-quit-dwim ()
-      "Do-What-I-Mean behaviour for a general `keyboard-quit'.
-
-  The generic `keyboard-quit' does not do the expected thing when
-  the minibuffer is open.  Whereas we want it to close the
-  minibuffer, even without explicitly focusing it.
-
-  The DWIM behaviour of this command is as follows:
-
-  - When the region is active, disable it.
-  - When a minibuffer is open, but not focused, close the minibuffer.
-  - When the Completions buffer is selected, close it.
-  - In every other case use the regular `keyboard-quit'."
-      (interactive)
-      (cond
-       ((region-active-p)
-        (keyboard-quit))
-       ((derived-mode-p 'completion-list-mode)
-        (delete-completion-window))
-       ((> (minibuffer-depth) 0)
-        (abort-recursive-edit))
-       (t
-        (keyboard-quit))))
-    :config
-    ;; leader keymap
-    (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
-    (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
-    (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
-    (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
-    (define-key my/leader-map (kbd "h") (cons "help" help-map))
-    (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
-    (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
-    (define-key my/leader-map (kbd "s") (cons "search" search-map))
-    (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
-    (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-
-    ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
-    (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
-
-    ;; remove keybind for suspend-frame
-    (global-unset-key (kbd "C-z"))
-
-    ;; Don't kill windows when clicking on the mode line
-    (global-unset-key [mode-line mouse-2])
-    (global-unset-key [mode-line mouse-3])
-    :bind
-    ;;ESC Cancels All
-    (("<escape>" . keyboard-escape-quit)
-     ([remap keyboard-quit] . prot/keyboard-quit-dwim)
-     :map my/leader-map
-     ("q" . save-buffers-kill-terminal)
-     :map my/buffer-map
-     ("e" . eval-buffer)
-     ("k" . kill-current-buffer)
-     ("K" . kill-buffer)
-     ("c" . clone-buffer)
-     ("r" . revert-buffer)
-     ("e" . eval-buffer)
-     ("s" . save-buffer)
-     :map my/file-map
-     ("f" . find-file)
-     ("F" . find-file-other-window)
-     ("d" . find-dired)
-     ("c" . copy-file)
-     ("f" . find-file)
-     ("d" . delete-file)
-     ("r" . rename-file)
-     ("w" . write-file)
-     :map my/open-map
-     ("F" . make-frame)
-     ("i" . ielm)
-     ("e" . eshell)
-     ("t" . term)
-     ("s" . scratch-buffer)
-     :map my/toggle-map
-     ("M" . my/minimal-ui-mode)))
-#+end_src
-
 ** Configure Packages
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
@@ -731,7 +732,7 @@ To load the we have to add this directory to the =load-path=.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-org)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-org.el")>>
 #+end_src
@@ -1383,7 +1384,7 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
     :hook
     (org-mode . toc-org-enable))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-org)
   ;;; my-org.el ends here
@@ -1395,7 +1396,7 @@ Toc-org is an Emacs utility to have an up-to-date table of contents in the org f
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-ui)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ui.el")>>
 #+end_src
@@ -1815,7 +1816,7 @@ References:
     (advice-add 'toggle-frame-fullscreen
                 :after #'my/toggle-display-time-mode))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-ui)
   ;;; my-ui.el ends here
@@ -1827,7 +1828,7 @@ References:
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-ux)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ux.el")>>
 #+end_src
@@ -1870,7 +1871,8 @@ Revert buffers when the underlying file has changed
         (unless (boundp 'header-line-icon)
           (setq-local header-line-icon
                       (cond
-                       ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (bound-and-true-p gptel-mode)))
+                       ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (or (bound-and-true-p gptel-mode)
+                                                                                         (bound-and-true-p agent-shell-ui-mode))))
                                         buffer)
                         '(" AI " . mode-line-emphasis))
                        ((buffer-match-p "Warning" buffer)
@@ -1932,7 +1934,9 @@ Revert buffers when the underlying file has changed
     (display-buffer-base-action '((display-buffer-in-previous-window
                                    display-buffer-reuse-mode-window
                                    display-buffer-use-some-window
-                                   display-buffer-pop-up-window)))
+                                   display-buffer-pop-up-window)
+                                  ;;. ((inhibit-same-window . t))
+                                  ))
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
@@ -2057,6 +2061,12 @@ Revert buffers when the underlying file has changed
               '(auto-side-windows--display-buffer
                 (side . right)
                 (body-function . select-window))))
+    (with-eval-after-load 'agent-shell
+      (setopt agent-shell-display-action
+              '((auto-side-windows--display-buffer)
+                .
+                ((side . right)
+                 (body-function . select-window)))))
     :hook
     (elpaca-after-init . auto-side-windows-mode))
 #+end_src
@@ -2416,7 +2426,7 @@ Distraction-free writing for Emacs.
     (setopt writeroom-global-effects (append writeroom-global-effects '(my/minimal-ui-mode)))
     :bind (:map my/toggle-map ("z" . writeroom-mode)))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-ux)
   ;;; my-ux.el ends here
@@ -2428,7 +2438,7 @@ Distraction-free writing for Emacs.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-denote)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-denote.el")>>
 #+end_src
@@ -2591,7 +2601,7 @@ Simple note taking and file naming.
     ;; The default sequence scheme is `numeric'.
     (denote-sequence-scheme 'alphanumeric))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-denote)
   ;;; my-denote.el ends here
@@ -2603,7 +2613,7 @@ Simple note taking and file naming.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-tools)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-tools.el")>>
 #+end_src
@@ -2747,7 +2757,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
 #+end_src
 **** [[https://github.com/skeeto/elfeed.git][elfeed]]
 An Emacs web feeds client.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package elfeed
     :bind
     (:map my/open-map
@@ -3025,7 +3035,7 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
     (when (display-graphic-p)
       (setq vundo-glyph-alist vundo-unicode-symbols)))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-tools)
   ;;; my-tools.el ends here
@@ -3037,13 +3047,19 @@ Vundo (visual undo) displays the undo history as a tree and lets you move in the
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-ai)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-ai.el")>>
 #+end_src
-**** agante-shell
+**** [[https://github.com/xenodium/agent-shell.git][agent-shell]]
+A native Emacs buffer to interact with LLM agents powered by ACP.
 #+begin_src emacs-lisp
   (use-package agent-shell
+    :custom
+    (agent-shell-header-style 'text)
+    :bind
+    (:map my/ai-map
+          ("s" . agent-shell))
     :ensure-system-package
     ;; Add agent installation configs here
     ((npm . "sudo dnf install -y npm")
@@ -3261,7 +3277,7 @@ Agent mode for gptel.
     :init
     (macher-install))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-ai)
   ;;; my-ai.el ends here
@@ -3273,7 +3289,7 @@ Agent mode for gptel.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-completion)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-completion.el")>>
 #+end_src
@@ -3316,6 +3332,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
+    (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
     (citar-bibliography org-cite-global-bibliography)
     (citar-at-point-function 'embark-act)
     (citar-notes-paths (list (concat denote-directory "bib_notes/")))
@@ -3596,6 +3613,13 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :custom
     (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
+**** [[https://github.com/fejfighter/eglot-tempel.git][eglot-tempel]]
+#+begin_src emacs-lisp
+  (use-package eglot-tempel
+    :demand t
+    :after eglot
+    :config (eglot-tempel-mode))
+#+end_src
 **** [[https://github.com/oantolin/embark.git][embark]]
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
@@ -3768,13 +3792,6 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
      (prog-mode . my/tempel-setup-capf)
      (text-mode . my/tempel-setup-capf)))
 #+end_src
-**** [[https://github.com/fejfighter/eglot-tempel.git][eglot-tempel]]
-#+begin_src emacs-lisp
-  (use-package eglot-tempel
-    :demand t
-    :after tempel
-    :config (eglot-tempel-mode))
-#+end_src
 **** [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
 Collection of tempel templates.
 The package is young and doesn't have comprehensive coverage.
@@ -3833,7 +3850,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ((minibuffer-setup . cursor-intangible-mode)
      (elpaca-after-init . vertico-mode)))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-completion)
   ;;; my-completion.el ends here
@@ -3845,7 +3862,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-vc)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-vc.el")>>
 #+end_src
@@ -3953,7 +3970,7 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
     :after magit
     :init (magit-todos-mode))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-vc)
   ;;; my-vc.el ends here
@@ -3965,44 +3982,9 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-project)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-project.el")>>
-#+end_src
-**** project :build_in:
-#+begin_src emacs-lisp
-  (use-package project
-    :ensure nil
-    :autoload project-prefix-map
-    :bind
-    (:map my/leader-map
-          ("SPC" . project-list-buffers))
-    :custom
-    (project-vc-extra-root-markers '(".project"))
-    (project-switch-commands '((project-find-file "Find file")
-                               (project-find-regexp "Find regexp")
-                               (project-find-dir "Find directory")
-                               ;; (project-vc-dir "VC-Dir")
-                               ;; (project-eshell "Eshell")
-                               ))
-    :init
-    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
-#+end_src
-**** [[https://github.com/karthink/project-x.git][project-x]]
-Enhancements to Emacs' built in project library.
-#+begin_src emacs-lisp
-  (use-package project-x
-    :ensure (:host github :repo "karthink/project-x")
-    :after project
-    :bind (:map project-prefix-map
-                ("S" . project-x-window-state-save)
-                ("l" . project-x-window-state-load))
-    :commands project-x-try-local project-x--window-state-write
-    :init
-    (add-to-list 'project-switch-commands
-                 '(?j "Restore windows" project-x-windows) t)
-    (add-hook 'project-find-functions 'project-x-try-local 90)
-    (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** [[https://github.com/MArpogaus/auto-tab-groups.git][auto-tab-groups]]
 Tab group based workflow isolation.
@@ -4049,6 +4031,41 @@ Tab group based workflow isolation.
     :hook
     ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
     (tab-bar-mode . auto-tab-groups-eyecandy-mode))
+#+end_src
+**** project :build_in:
+#+begin_src emacs-lisp
+  (use-package project
+    :ensure nil
+    :autoload project-prefix-map
+    :bind
+    (:map my/leader-map
+          ("SPC" . project-list-buffers))
+    :custom
+    (project-vc-extra-root-markers '(".project"))
+    (project-switch-commands '((project-find-file "Find file")
+                               (project-find-regexp "Find regexp")
+                               (project-find-dir "Find directory")
+                               ;; (project-vc-dir "VC-Dir")
+                               ;; (project-eshell "Eshell")
+                               ))
+    :init
+    (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
+#+end_src
+**** [[https://github.com/karthink/project-x.git][project-x]]
+Enhancements to Emacs' built in project library.
+#+begin_src emacs-lisp
+  (use-package project-x
+    :ensure (:host github :repo "karthink/project-x")
+    :after project
+    :bind (:map project-prefix-map
+                ("S" . project-x-window-state-save)
+                ("l" . project-x-window-state-load))
+    :commands project-x-try-local project-x--window-state-write
+    :init
+    (add-to-list 'project-switch-commands
+                 '(?j "Restore windows" project-x-windows) t)
+    (add-hook 'project-find-functions 'project-x-try-local 90)
+    (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** speedbar :build_in:
 #+begin_src emacs-lisp
@@ -4144,7 +4161,7 @@ Same frame speedbar.
     (:map my/toggle-map
           ("s" . sr-speedbar-toggle)))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-project)
   ;;; my-project.el ends here
@@ -4156,7 +4173,7 @@ Same frame speedbar.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-programming)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-programming.el")>>
 #+end_src
@@ -4248,7 +4265,7 @@ Emacs utilities for code split into cells, including Jupyter notebooks.
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package combobulate
     :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
@@ -4616,7 +4633,7 @@ The emacs major mode for editing files in the YAML data serialization format.
     (:map yaml-mode-map ("\C-m" . newline-and-indent))
     :mode ("\\.ya?ml\\'" . yaml-ts-mode))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-programming)
   ;;; my-programming.el ends here
@@ -4628,69 +4645,9 @@ The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp :tangle init.el
   (require 'my-keybindings)
 #+end_src
-**** Conventional Header
+**** 01 Conventional Header
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="my-keybindings.el")>>
-#+end_src
-**** [[https://github.com/DevelopmentCool2449/standard-keys-mode.git][standard-keys-mode]]
-Emulate standard keybindings from modern editors.
-#+begin_src emacs-lisp
-  (use-package standard-keys-mode
-    :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
-    ;; Enable standard-keys-mode after initializing the Emacs session.
-    :hook elpaca-after-init
-    :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
-    :preface
-    (defvar-keymap my/standard-keys-keymap
-      :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")
-    :custom
-    ;; select keymap theme to use
-    (standard-keys-map-style 'my/standard-keys-keymap)
-
-    ;; Make the C-x and C-c bindings are properly overriden (this is optional)
-    (standard-keys-override-new-C-x-and-C-c-commands nil)
-
-    ;; Enable hungry deletion in programming modes
-    (backward-delete-char-untabify-method 'all)
-
-    ;; Better isearch movement
-    (isearch-repeat-on-direction-change t)
-    :config
-    (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
-    (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
-    :bind
-    (:map my/standard-keys-keymap
-          ("C-o"        . find-file)
-          ;; ("C-w"     . kill-current-buffer)
-          ("C-q"        . save-buffers-kill-terminal)
-          ("C-x"        . standard-keys-cut-region-or-line)
-          ("C-c"        . standard-keys-copy-region-or-line)
-          ("C-v"        . yank)
-          ("C-z"        . undo-only)
-          ("C-S-z"      . undo-redo)
-          ("C-f"        . isearch-forward)
-          ("C-S-f"      . query-replace)
-          ("C-M-S-f"    . query-replace-regexp)
-          ("C-s"        . save-buffer)
-          ("C-a"        . mark-whole-buffer)
-          ("C-+"        . text-scale-increase)
-          ("C--"        . text-scale-decrease)
-          ("C-="        . text-scale-adjust)
-          ("C-#"        . comment-line)
-          ("C-b"        . switch-to-buffer)
-          ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
-          :map context-menu-mode-map
-          ;; Bind Context Menu to `Apps' button
-          ;; (requires context-menu-mode enabled)
-          ("<apps>"     . context-menu-open)
-          ;; Make isearch easy to use
-          :map isearch-mode-map
-          ("<up>"       . isearch-repeat-backward)
-          ("<down>"     . isearch-repeat-forward)
-          ([remap yank] . isearch-yank-kill)
-          ;; Use RET as y (yes) action in y-or-n prompts
-          :map y-or-n-p-map
-          ("<return>"   . y-or-n-p-insert-y)))
 #+end_src
 **** [[https://github.com/meow-edit/meow.git][meow]]
 Meow is yet another modal editing mode for Emacs.
@@ -4783,6 +4740,66 @@ Meow is yet another modal editing mode for Emacs.
     ((git-timemachine-mode . meow-motion-mode)
      (elpaca-after-init . meow-global-mode)))
 #+end_src
+**** [[https://github.com/DevelopmentCool2449/standard-keys-mode.git][standard-keys-mode]]
+Emulate standard keybindings from modern editors.
+#+begin_src emacs-lisp
+  (use-package standard-keys-mode
+    :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
+    ;; Enable standard-keys-mode after initializing the Emacs session.
+    :hook elpaca-after-init
+    :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
+    :preface
+    (defvar-keymap my/standard-keys-keymap
+      :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")
+    :custom
+    ;; select keymap theme to use
+    (standard-keys-map-style 'my/standard-keys-keymap)
+
+    ;; Make the C-x and C-c bindings are properly overriden (this is optional)
+    (standard-keys-override-new-C-x-and-C-c-commands nil)
+
+    ;; Enable hungry deletion in programming modes
+    (backward-delete-char-untabify-method 'all)
+
+    ;; Better isearch movement
+    (isearch-repeat-on-direction-change t)
+    :config
+    (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
+    (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
+    :bind
+    (:map my/standard-keys-keymap
+          ("C-o"        . find-file)
+          ;; ("C-w"     . kill-current-buffer)
+          ("C-q"        . save-buffers-kill-terminal)
+          ("C-x"        . standard-keys-cut-region-or-line)
+          ("C-c"        . standard-keys-copy-region-or-line)
+          ("C-v"        . yank)
+          ("C-z"        . undo-only)
+          ("C-S-z"      . undo-redo)
+          ("C-f"        . isearch-forward)
+          ("C-S-f"      . query-replace)
+          ("C-M-S-f"    . query-replace-regexp)
+          ("C-s"        . save-buffer)
+          ("C-a"        . mark-whole-buffer)
+          ("C-+"        . text-scale-increase)
+          ("C--"        . text-scale-decrease)
+          ("C-="        . text-scale-adjust)
+          ("C-#"        . comment-line)
+          ("C-b"        . switch-to-buffer)
+          ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
+          :map context-menu-mode-map
+          ;; Bind Context Menu to `Apps' button
+          ;; (requires context-menu-mode enabled)
+          ("<apps>"     . context-menu-open)
+          ;; Make isearch easy to use
+          :map isearch-mode-map
+          ("<up>"       . isearch-repeat-backward)
+          ("<down>"     . isearch-repeat-forward)
+          ([remap yank] . isearch-yank-kill)
+          ;; Use RET as y (yes) action in y-or-n prompts
+          :map y-or-n-p-map
+          ("<return>"   . y-or-n-p-insert-y)))
+#+end_src
 **** [[https://github.com/justbur/emacs-which-key.git][which-key]]
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 #+begin_src emacs-lisp
@@ -4797,7 +4814,7 @@ The mode displays the key bindings following your currently entered incomplete c
     :hook
     (meow-mode . which-key-mode))
 #+end_src
-**** Library Footer
+**** ZZ Library Footer
 #+begin_src emacs-lisp
   (provide 'my-keybindings)
   ;;; my-keybindings.el ends here
