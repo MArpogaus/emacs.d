@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -53,7 +53,8 @@
       (unless (boundp 'header-line-icon)
         (setq-local header-line-icon
                     (cond
-                     ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (bound-and-true-p gptel-mode)))
+                     ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (or (bound-and-true-p gptel-mode)
+                                                                                       (bound-and-true-p agent-shell-ui-mode))))
                                       buffer)
                       '(" AI " . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer)
@@ -115,7 +116,9 @@
   (display-buffer-base-action '((display-buffer-in-previous-window
                                  display-buffer-reuse-mode-window
                                  display-buffer-use-some-window
-                                 display-buffer-pop-up-window)))
+                                 display-buffer-pop-up-window)
+                                ;;. ((inhibit-same-window . t))
+                                ))
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 
@@ -240,6 +243,12 @@
             '(auto-side-windows--display-buffer
               (side . right)
               (body-function . select-window))))
+  (with-eval-after-load 'agent-shell
+    (setopt agent-shell-display-action
+            '((auto-side-windows--display-buffer)
+              .
+              ((side . right)
+               (body-function . select-window)))))
   :hook
   (elpaca-after-init . auto-side-windows-mode))
 
@@ -586,7 +595,7 @@ buffer's text scale."
   (setopt writeroom-global-effects (append writeroom-global-effects '(my/minimal-ui-mode)))
   :bind (:map my/toggle-map ("z" . writeroom-mode)))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-ux)
 ;;; my-ux.el ends here

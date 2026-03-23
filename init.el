@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,57 +13,6 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
-
-;; Configure use-package
-
-;; Enable lazy loading per default
-(setq use-package-always-defer t
-      use-package-always-ensure t)
-
-;; make use-package more verbose when ´‘--debug-init´ is passed
-;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
-(when init-file-debug
-  (setq use-package-verbose t
-        use-package-expand-minimally nil
-        use-package-compute-statistics t
-        jka-compr-verbose t
-        warning-minimum-level :warning
-        byte-compile-warnings t
-        byte-compile-verbose t
-        native-comp-warning-on-missing-source t
-        debug-on-error t))
-
-;; Configure Elpaca
-
-;; Use elpaca lockfile
-(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
-
-;; Allow automatic upgrade of build-in transient
-;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
-(setq elpaca-ignored-dependencies
-      (delq 'transient elpaca-ignored-dependencies))
-
-;; Enable use-package integration
-(elpaca elpaca-use-package
-  ;; Enable use-package :ensure support for Elpaca.
-  (elpaca-use-package-mode))
-
-;; no-littering
-;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
-
-(use-package no-littering
-  :demand t
-  :init
-  (setq emacs-config-directory user-emacs-directory
-        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-        custom-file (expand-file-name "custom.el" user-emacs-directory)
-        ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-        user-emacs-directory (expand-file-name "~/.cache/emacs/"))
-  :config
-  ;; store backup and auto-save files in =no-littering-var-directory=
-  (no-littering-theme-backups)
-  ;; Load customization File
-  (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 
 ;; Better Defaults
 
@@ -170,6 +119,154 @@
    ;; Compress kill ring when exiting emacs
    (kill-emacs . unpropertize-kill-ring)))
 
+;; Configure Elpaca
+
+;; Use elpaca lockfile
+(setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
+
+;; Allow automatic upgrade of build-in transient
+;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
+(setq elpaca-ignored-dependencies
+      (delq 'transient elpaca-ignored-dependencies))
+
+;; Enable use-package integration
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
+
+;; Configure use-package
+
+;; Enable lazy loading per default
+(setq use-package-always-defer t
+      use-package-always-ensure t)
+
+;; make use-package more verbose when ´‘--debug-init´ is passed
+;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
+(when init-file-debug
+  (setq use-package-verbose t
+        use-package-expand-minimally nil
+        use-package-compute-statistics t
+        jka-compr-verbose t
+        warning-minimum-level :warning
+        byte-compile-warnings t
+        byte-compile-verbose t
+        native-comp-warning-on-missing-source t
+        debug-on-error t))
+
+;; Keymaps
+
+;; We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
+;; Package specific keymap definitions are kept in preface of the respective package declaration.
+
+
+;; setup keymaps
+(use-package emacs
+  :ensure nil
+  :preface
+  (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
+  (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
+  (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
+  (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
+  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
+  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
+  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
+  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+  ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
+  (defun prot/keyboard-quit-dwim ()
+    "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+    (interactive)
+    (cond
+     ((region-active-p)
+      (keyboard-quit))
+     ((derived-mode-p 'completion-list-mode)
+      (delete-completion-window))
+     ((> (minibuffer-depth) 0)
+      (abort-recursive-edit))
+     (t
+      (keyboard-quit))))
+  :config
+  ;; leader keymap
+  (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
+  (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+  (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
+  (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
+  (define-key my/leader-map (kbd "h") (cons "help" help-map))
+  (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
+  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
+  (define-key my/leader-map (kbd "s") (cons "search" search-map))
+  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
+  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+
+  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
+  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
+
+  ;; remove keybind for suspend-frame
+  (global-unset-key (kbd "C-z"))
+
+  ;; Don't kill windows when clicking on the mode line
+  (global-unset-key [mode-line mouse-2])
+  (global-unset-key [mode-line mouse-3])
+  :bind
+  ;;ESC Cancels All
+  (("<escape>" . keyboard-escape-quit)
+   ([remap keyboard-quit] . prot/keyboard-quit-dwim)
+   ("S-<down-mouse-1>" . mouse-save-then-kill)
+   :map my/leader-map
+   ("q" . save-buffers-kill-terminal)
+   :map my/buffer-map
+   ("e" . eval-buffer)
+   ("k" . kill-current-buffer)
+   ("K" . kill-buffer)
+   ("c" . clone-buffer)
+   ("r" . revert-buffer)
+   ("e" . eval-buffer)
+   ("s" . save-buffer)
+   :map my/file-map
+   ("f" . find-file)
+   ("F" . find-file-other-window)
+   ("d" . find-dired)
+   ("c" . copy-file)
+   ("f" . find-file)
+   ("d" . delete-file)
+   ("r" . rename-file)
+   ("w" . write-file)
+   :map my/open-map
+   ("F" . make-frame)
+   ("i" . ielm)
+   ("e" . eshell)
+   ("t" . term)
+   ("s" . scratch-buffer)
+   :map my/toggle-map
+   ("M" . my/minimal-ui-mode)))
+
+;; no-littering
+;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
+
+(use-package no-littering
+  :demand t
+  :init
+  (setq emacs-config-directory user-emacs-directory
+        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+        custom-file (expand-file-name "custom.el" user-emacs-directory)
+        ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+        user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+  :config
+  ;; store backup and auto-save files in =no-littering-var-directory=
+  (no-littering-theme-backups)
+  ;; Load customization File
+  (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
+
 ;; Shared Lisp Functions and Variables
 ;; In this section, I define some custom Lisp functions.
 
@@ -245,102 +342,6 @@
         (global-tab-line-mode 1)
         (global-hide-mode-line-mode -1)
         (spacious-padding-mode 1)))))
-
-;; Keymaps
-
-;; We define some keymaps here used by other package declarations and fill the leader keymap with the most important bindings for basic commands.
-;; Package specific keymap definitions are kept in preface of the respective package declaration.
-
-
-;; setup keymaps
-(use-package emacs
-  :ensure nil
-  :preface
-  (defvar my/leader-map (make-sparse-keymap) "key-map for leader key")
-  (defvar my/ai-map (make-sparse-keymap) "key-map for ai key")
-  (defvar my/buffer-map (make-sparse-keymap) "key-map for buffer commands")
-  (defvar my/denote-map (make-sparse-keymap) "key-map for denote commands")
-  (defvar my/file-map (make-sparse-keymap) "key-map for file commands")
-  (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
-  (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
-  (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-  ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
-  (defun prot/keyboard-quit-dwim ()
-    "Do-What-I-Mean behaviour for a general `keyboard-quit'.
-
-The generic `keyboard-quit' does not do the expected thing when
-the minibuffer is open.  Whereas we want it to close the
-minibuffer, even without explicitly focusing it.
-
-The DWIM behaviour of this command is as follows:
-
-- When the region is active, disable it.
-- When a minibuffer is open, but not focused, close the minibuffer.
-- When the Completions buffer is selected, close it.
-- In every other case use the regular `keyboard-quit'."
-    (interactive)
-    (cond
-     ((region-active-p)
-      (keyboard-quit))
-     ((derived-mode-p 'completion-list-mode)
-      (delete-completion-window))
-     ((> (minibuffer-depth) 0)
-      (abort-recursive-edit))
-     (t
-      (keyboard-quit))))
-  :config
-  ;; leader keymap
-  (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
-  (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
-  (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
-  (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
-  (define-key my/leader-map (kbd "h") (cons "help" help-map))
-  (define-key my/leader-map (kbd "n") (cons "denote" my/denote-map))
-  (define-key my/leader-map (kbd "o") (cons "open" my/open-map))
-  (define-key my/leader-map (kbd "s") (cons "search" search-map))
-  (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
-  (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
-
-  ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
-  (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
-
-  ;; remove keybind for suspend-frame
-  (global-unset-key (kbd "C-z"))
-
-  ;; Don't kill windows when clicking on the mode line
-  (global-unset-key [mode-line mouse-2])
-  (global-unset-key [mode-line mouse-3])
-  :bind
-  ;;ESC Cancels All
-  (("<escape>" . keyboard-escape-quit)
-   ([remap keyboard-quit] . prot/keyboard-quit-dwim)
-   :map my/leader-map
-   ("q" . save-buffers-kill-terminal)
-   :map my/buffer-map
-   ("e" . eval-buffer)
-   ("k" . kill-current-buffer)
-   ("K" . kill-buffer)
-   ("c" . clone-buffer)
-   ("r" . revert-buffer)
-   ("e" . eval-buffer)
-   ("s" . save-buffer)
-   :map my/file-map
-   ("f" . find-file)
-   ("F" . find-file-other-window)
-   ("d" . find-dired)
-   ("c" . copy-file)
-   ("f" . find-file)
-   ("d" . delete-file)
-   ("r" . rename-file)
-   ("w" . write-file)
-   :map my/open-map
-   ("F" . make-frame)
-   ("i" . ielm)
-   ("e" . eshell)
-   ("t" . term)
-   ("s" . scratch-buffer)
-   :map my/toggle-map
-   ("M" . my/minimal-ui-mode)))
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.

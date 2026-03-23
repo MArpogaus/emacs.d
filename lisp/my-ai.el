@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -14,9 +14,15 @@
 
 ;;; Code:
 
-;; agante-shell
+;; [[https://github.com/xenodium/agent-shell.git][agent-shell]]
+;; A native Emacs buffer to interact with LLM agents powered by ACP.
 
 (use-package agent-shell
+  :custom
+  (agent-shell-header-style 'text)
+  :bind
+  (:map my/ai-map
+        ("s" . agent-shell))
   :ensure-system-package
   ;; Add agent installation configs here
   ((npm . "sudo dnf install -y npm")
@@ -234,7 +240,7 @@ Triggered after the first response is received in a new buffer."
   :init
   (macher-install))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-ai)
 ;;; my-ai.el ends here

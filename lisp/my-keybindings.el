@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,66 +13,6 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
-
-;; [[https://github.com/DevelopmentCool2449/standard-keys-mode.git][standard-keys-mode]]
-;; Emulate standard keybindings from modern editors.
-
-(use-package standard-keys-mode
-  :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
-  ;; Enable standard-keys-mode after initializing the Emacs session.
-  :hook elpaca-after-init
-  :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
-  :preface
-  (defvar-keymap my/standard-keys-keymap
-    :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")
-  :custom
-  ;; select keymap theme to use
-  (standard-keys-map-style 'my/standard-keys-keymap)
-
-  ;; Make the C-x and C-c bindings are properly overriden (this is optional)
-  (standard-keys-override-new-C-x-and-C-c-commands nil)
-
-  ;; Enable hungry deletion in programming modes
-  (backward-delete-char-untabify-method 'all)
-
-  ;; Better isearch movement
-  (isearch-repeat-on-direction-change t)
-  :config
-  (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
-  (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
-  :bind
-  (:map my/standard-keys-keymap
-        ("C-o"        . find-file)
-        ;; ("C-w"     . kill-current-buffer)
-        ("C-q"        . save-buffers-kill-terminal)
-        ("C-x"        . standard-keys-cut-region-or-line)
-        ("C-c"        . standard-keys-copy-region-or-line)
-        ("C-v"        . yank)
-        ("C-z"        . undo-only)
-        ("C-S-z"      . undo-redo)
-        ("C-f"        . isearch-forward)
-        ("C-S-f"      . query-replace)
-        ("C-M-S-f"    . query-replace-regexp)
-        ("C-s"        . save-buffer)
-        ("C-a"        . mark-whole-buffer)
-        ("C-+"        . text-scale-increase)
-        ("C--"        . text-scale-decrease)
-        ("C-="        . text-scale-adjust)
-        ("C-#"        . comment-line)
-        ("C-b"        . switch-to-buffer)
-        ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
-        :map context-menu-mode-map
-        ;; Bind Context Menu to `Apps' button
-        ;; (requires context-menu-mode enabled)
-        ("<apps>"     . context-menu-open)
-        ;; Make isearch easy to use
-        :map isearch-mode-map
-        ("<up>"       . isearch-repeat-backward)
-        ("<down>"     . isearch-repeat-forward)
-        ([remap yank] . isearch-yank-kill)
-        ;; Use RET as y (yes) action in y-or-n prompts
-        :map y-or-n-p-map
-        ("<return>"   . y-or-n-p-insert-y)))
 
 ;; [[https://github.com/meow-edit/meow.git][meow]]
 ;; Meow is yet another modal editing mode for Emacs.
@@ -165,6 +105,66 @@
   ((git-timemachine-mode . meow-motion-mode)
    (elpaca-after-init . meow-global-mode)))
 
+;; [[https://github.com/DevelopmentCool2449/standard-keys-mode.git][standard-keys-mode]]
+;; Emulate standard keybindings from modern editors.
+
+(use-package standard-keys-mode
+  :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
+  ;; Enable standard-keys-mode after initializing the Emacs session.
+  :hook elpaca-after-init
+  :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
+  :preface
+  (defvar-keymap my/standard-keys-keymap
+    :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")
+  :custom
+  ;; select keymap theme to use
+  (standard-keys-map-style 'my/standard-keys-keymap)
+
+  ;; Make the C-x and C-c bindings are properly overriden (this is optional)
+  (standard-keys-override-new-C-x-and-C-c-commands nil)
+
+  ;; Enable hungry deletion in programming modes
+  (backward-delete-char-untabify-method 'all)
+
+  ;; Better isearch movement
+  (isearch-repeat-on-direction-change t)
+  :config
+  (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
+  (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
+  :bind
+  (:map my/standard-keys-keymap
+        ("C-o"        . find-file)
+        ;; ("C-w"     . kill-current-buffer)
+        ("C-q"        . save-buffers-kill-terminal)
+        ("C-x"        . standard-keys-cut-region-or-line)
+        ("C-c"        . standard-keys-copy-region-or-line)
+        ("C-v"        . yank)
+        ("C-z"        . undo-only)
+        ("C-S-z"      . undo-redo)
+        ("C-f"        . isearch-forward)
+        ("C-S-f"      . query-replace)
+        ("C-M-S-f"    . query-replace-regexp)
+        ("C-s"        . save-buffer)
+        ("C-a"        . mark-whole-buffer)
+        ("C-+"        . text-scale-increase)
+        ("C--"        . text-scale-decrease)
+        ("C-="        . text-scale-adjust)
+        ("C-#"        . comment-line)
+        ("C-b"        . switch-to-buffer)
+        ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
+        :map context-menu-mode-map
+        ;; Bind Context Menu to `Apps' button
+        ;; (requires context-menu-mode enabled)
+        ("<apps>"     . context-menu-open)
+        ;; Make isearch easy to use
+        :map isearch-mode-map
+        ("<up>"       . isearch-repeat-backward)
+        ("<down>"     . isearch-repeat-forward)
+        ([remap yank] . isearch-yank-kill)
+        ;; Use RET as y (yes) action in y-or-n prompts
+        :map y-or-n-p-map
+        ("<return>"   . y-or-n-p-insert-y)))
+
 ;; [[https://github.com/justbur/emacs-which-key.git][which-key]]
 ;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
 
@@ -179,7 +179,7 @@
   :hook
   (meow-mode . which-key-mode))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-keybindings)
 ;;; my-keybindings.el ends here

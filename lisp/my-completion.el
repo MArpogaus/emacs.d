@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-11
+;; Created: 2026-03-23
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -53,6 +53,7 @@
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
   (org-cite-activate-processor 'citar)
+  (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
   (citar-bibliography org-cite-global-bibliography)
   (citar-at-point-function 'embark-act)
   (citar-notes-paths (list (concat denote-directory "bib_notes/")))
@@ -333,6 +334,13 @@
   :custom
   (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
+;; [[https://github.com/fejfighter/eglot-tempel.git][eglot-tempel]]
+
+(use-package eglot-tempel
+  :demand t
+  :after eglot
+  :config (eglot-tempel-mode))
+
 ;; [[https://github.com/oantolin/embark.git][embark]]
 ;; Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 
@@ -505,13 +513,6 @@
    (prog-mode . my/tempel-setup-capf)
    (text-mode . my/tempel-setup-capf)))
 
-;; [[https://github.com/fejfighter/eglot-tempel.git][eglot-tempel]]
-
-(use-package eglot-tempel
-  :demand t
-  :after tempel
-  :config (eglot-tempel-mode))
-
 ;; [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
 ;; Collection of tempel templates.
 ;; The package is young and doesn't have comprehensive coverage.
@@ -570,7 +571,7 @@
   ((minibuffer-setup . cursor-intangible-mode)
    (elpaca-after-init . vertico-mode)))
 
-;; Library Footer
+;; ZZ Library Footer
 
 (provide 'my-completion)
 ;;; my-completion.el ends here
