@@ -98,7 +98,7 @@ org-mode
  "** Acknowledgments" n n "..."
  )
 
-(python-shields
+(gh-shields
  "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/v/" (p (project-name (project-current)) project) ".svg?style=" (p "flat-square" style) "]]" n
  "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/pyversions/" project ".svg?style=" style "]]" q
  )
