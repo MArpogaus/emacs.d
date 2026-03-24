@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-23
+;; Created: 2026-03-24
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -132,59 +132,56 @@
 ;; [[https://github.com/minad/consult.git][consult]]
 ;; Additional featureful completion commands.
 
-;; Example configuration for Consult
 (use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
-  :bind (([remap Info-search] . consult-info)
-         ([remap recentf-open] . consult-recent-file)
+  ;; Replace bindings. Lazily loaded by `use-package'.
+  :bind (;; Remap default commands with consult equivalents
+         ([remap Info-search]                   . consult-info)
          ([remap bookmark-jump]                 . consult-bookmark)
          ([remap goto-line]                     . consult-goto-line)
          ([remap imenu]                         . consult-imenu)
-         ([remap locate]                        . consult-locate)
          ([remap load-theme]                    . consult-theme)
+         ([remap locate]                        . consult-locate)
          ([remap man]                           . consult-man)
-         ([remap recentf-open-files]            . consult-recent-file)
-         ([remap switch-to-buffer]              . consult-buffer)
-         ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
-         ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
-         ([remap yank-pop]                      . consult-yank-pop)
          ([remap project-list-buffers]          . consult-project-buffer)
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         :map my/buffer-map
-         ("b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("w" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ("f" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ([remap project-switch-to-buffer]      . consult-project-buffer)
+         ([remap recentf-open-files]            . consult-recent-file)
+         ([remap recentf-open]                  . consult-recent-file)
+         ([remap repeat-complex-command]        . consult-complex-command)
+         ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
+         ([remap switch-to-buffer-other-tab]    . consult-buffer-other-tab)
+         ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
+         ([remap switch-to-buffer]              . consult-buffer)
+         ([remap yank-pop]                      . consult-yank-pop)
          :map goto-map
          ;; M-g bindings in `goto-map'
-         ("e" . consult-compile-error)
-         ("f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ("g" . consult-goto-line)             ;; orig. goto-line
-         ("o" . consult-outline)               ;; Alternative: consult-org-heading
-         ("m" . consult-mark)
-         ("k" . consult-global-mark)
-         ("i" . consult-imenu)
-         ("I" . consult-imenu-multi)
+         ("e"                                   . consult-compile-error)
+         ("f"                                   . consult-flymake)             ;; Alternative: consult-flycheck
+         ("o"                                   . consult-outline)             ;; Alternative: consult-org-heading
+         ("m"                                   . consult-mark)
+         ("k"                                   . consult-global-mark)
+         ("i"                                   . consult-imenu)
+         ("I"                                   . consult-imenu-multi)
          :map search-map
-         ("d" . consult-find)
-         ("D" . consult-locate)
-         ("g" . consult-grep)
-         ("G" . consult-git-grep)
-         ("r" . consult-ripgrep)
-         ("l" . consult-line)
-         ("L" . consult-line-multi)
-         ("k" . consult-keep-lines)
-         ("u" . consult-focus-lines)
+         ("d"                                   . consult-find)
+         ("D"                                   . consult-locate)
+         ("g"                                   . consult-grep)
+         ("G"                                   . consult-git-grep)
+         ("r"                                   . consult-ripgrep)
+         ("l"                                   . consult-line)
+         ("L"                                   . consult-line-multi)
+         ("k"                                   . consult-keep-lines)
+         ("u"                                   . consult-focus-lines)
          ;; Isearch integration
-         ("e" . consult-isearch-history)
+         ("e"                                   . consult-isearch-history)
          :map isearch-mode-map
-         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ("M-e"                                 . consult-isearch-history)     ;; orig. isearch-edit-string
+         ("M-s e"                               . consult-isearch-history)     ;; orig. isearch-edit-string
+         ("M-s l"                               . consult-line)                ;; needed by consult-line to detect isearch
+         ("M-s L"                               . consult-line-multi)          ;; needed by consult-line to detect isearch
          ;; Minibuffer history
          :map minibuffer-local-map
-         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+         ("M-s"                                 . consult-history)             ;; orig. next-matching-history-element
+         ("M-r"                                 . consult-history))            ;; orig. previous-matching-history-element
 
   :custom
   ;; Optionally configure the register formatting. This improves the register
@@ -200,7 +197,6 @@
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
   (consult-narrow-key "<") ;; "C-+"
-
   :config
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
@@ -222,10 +218,10 @@
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
 
-  ;; Configure a different project root function.
-  (with-eval-after-load 'projectile
-    (autoload 'projectile-project-root "projectile")
-    (setq consult-project-function (lambda (_) (projectile-project-root)))))
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+  )
 
 ;; [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
 ;; Searching and jumping to TODO keywords using consult.
