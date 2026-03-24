@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-23
+;; Created: 2026-03-24
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -219,36 +219,41 @@ The DWIM behaviour of this command is as follows:
   (global-unset-key [mode-line mouse-3])
   :bind
   ;;ESC Cancels All
-  (("<escape>" . keyboard-escape-quit)
+  (("<escape>"            . keyboard-escape-quit)
    ([remap keyboard-quit] . prot/keyboard-quit-dwim)
-   ("S-<down-mouse-1>" . mouse-save-then-kill)
+   ("S-<down-mouse-1>"    . mouse-save-then-kill)
    :map my/leader-map
-   ("q" . save-buffers-kill-terminal)
+   ("q"                   . save-buffers-kill-terminal)
    :map my/buffer-map
-   ("e" . eval-buffer)
-   ("k" . kill-current-buffer)
-   ("K" . kill-buffer)
-   ("c" . clone-buffer)
-   ("r" . revert-buffer)
-   ("e" . eval-buffer)
-   ("s" . save-buffer)
+   ("K"                   . kill-buffer)
+   ("b"                   . switch-to-buffer)
+   ("c"                   . clone-buffer)
+   ("e"                   . eval-buffer)
+   ("f"                   . switch-to-buffer-other-frame)
+   ("k"                   . kill-current-buffer)
+   ("r"                   . revert-buffer)
+   ("s"                   . save-buffer)
+   ("t"                   . switch-to-buffer-other-tab)
+   ("w"                   . switch-to-buffer-other-window)
    :map my/file-map
-   ("f" . find-file)
-   ("F" . find-file-other-window)
-   ("d" . find-dired)
-   ("c" . copy-file)
-   ("f" . find-file)
-   ("d" . delete-file)
-   ("r" . rename-file)
-   ("w" . write-file)
+   ("F"                   . find-file-other-window)
+   ("c"                   . copy-file)
+   ("d"                   . delete-file)
+   ("d"                   . find-dired)
+   ("f"                   . find-file)
+   ("f"                   . find-file)
+   ("r"                   . rename-file)
+   ("w"                   . write-file)
+   :map goto-map
+   ("g"                   . goto-line)
    :map my/open-map
-   ("F" . make-frame)
-   ("i" . ielm)
-   ("e" . eshell)
-   ("t" . term)
-   ("s" . scratch-buffer)
+   ("F"                   . make-frame)
+   ("e"                   . eshell)
+   ("i"                   . ielm)
+   ("s"                   . scratch-buffer)
+   ("t"                   . term)
    :map my/toggle-map
-   ("M" . my/minimal-ui-mode)))
+   ("M"                   . my/minimal-ui-mode)))
 
 ;; no-littering
 ;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
