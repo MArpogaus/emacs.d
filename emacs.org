@@ -4770,6 +4770,8 @@ Emulate standard keybindings from modern editors.
     :config
     (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
     (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
+    (define-key my/leader-map (kbd "x") standard-keys-C-x-dynamic-prefix)
+    (define-key my/leader-map (kbd "c") standard-keys-C-c-dynamic-prefix)
     :bind
     (:map my/standard-keys-keymap
           ("C-o"        . find-file)
