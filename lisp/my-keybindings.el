@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-23
+;; Created: 2026-04-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -131,6 +131,8 @@
   :config
   (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
   (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
+  (define-key my/leader-map (kbd "x") standard-keys-C-x-dynamic-prefix)
+  (define-key my/leader-map (kbd "c") standard-keys-C-c-dynamic-prefix)
   :bind
   (:map my/standard-keys-keymap
         ("C-o"        . find-file)

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-23
+;; Created: 2026-04-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -362,7 +362,9 @@ buffer's text scale."
    ("p" . mc/mark-previous-like-this)
    :exit
    ("a" . mc/mark-all-like-this)
-   ("m" . mc/edit-lines)))
+   ("m" . mc/edit-lines))
+  :config
+  (advice-add 'mouse-set-point :after (lambda (&rest _) (mc/disable-multiple-cursors-mode))))
 
 ;; outline :build_in:
 ;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
