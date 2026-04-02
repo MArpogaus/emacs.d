@@ -2200,7 +2200,9 @@ Prevent windows from jumping on minibuffer activation.
      ("p" . mc/mark-previous-like-this)
      :exit
      ("a" . mc/mark-all-like-this)
-     ("m" . mc/edit-lines)))
+     ("m" . mc/edit-lines))
+    :config
+    (advice-add 'mouse-set-point :after (lambda (&rest _) (mc/disable-multiple-cursors-mode))))
 #+end_src
 **** outline :build_in:
 Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
