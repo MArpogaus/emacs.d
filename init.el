@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-24
+;; Created: 2026-04-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -28,8 +28,7 @@
   (inhibit-startup-screen t)                           ; Disable start-up screen
   (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
 
-  ;; Recovery
-  ;; If Emacs or the computer crashes, you can recover the files you were editing at the time of the crash from their auto-save files. To do this, start Emacs again and type the command ~M-x recover-session~. Here, we parameterize how files are saved in the background.
+  ;; Recover files when emacs crashes
   (auto-save-default t)                                ; Auto-save every buffer that visits a file
   (auto-save-timeout 10)                               ; Number of seconds between auto-save
   (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
@@ -38,17 +37,20 @@
   (backup-by-copying t)                                ; Backs up by moving the actual file
 
   ;; Dialogs
-  ;; use simple text prompts
   (use-dialog-box nil)                                 ; Don't pop up UI dialogs when prompting
   (use-file-dialog nil)                                ; Don't use UI dialogs for file search
   (use-short-answers t)                                ; Replace yes/no prompts with y/n
   (confirm-nonexistent-file-or-buffer nil)             ; Ok to visit non existent files
 
+  ;; Regions
+  (delete-active-region 'kill)                         ; Make single-char deletion commands kill an active region
+  (use-empty-active-region t)                          ; Whether "region-aware" commands should act on empty regions .
+
   ;; Mouse
-  ;; Mouse behavior can be finely controlled using mouse-avoidance-mode.
   (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
   (mouse-yank-at-point t)                              ; Yank at point rather than pointer
-  (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode.
+  (save-interprogram-paste-before-kill t)              ; save existing clipboard text into kill ring before replacing it
+  (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode .
 
   ;; Smoother scrolling
   (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
@@ -60,7 +62,6 @@
   (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
 
   ;; Cursor
-  ;; We set the appearance of the cursor: horizontal line, 2 pixels thick, no blinking
   (cursor-type '(hbar . 2))                            ; Underline-shaped cursor
   (cursor-intangible-mode t)                           ; Enforce cursor intangibility
   (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
@@ -72,32 +73,31 @@
   (truncate-string-ellipsis "…")                       ; Nicer ellipsis
 
   ;; Default mode
-  ;; Default & initial mode is text.
   (initial-major-mode 'fundamental-mode)               ; Initial mode is text
   (default-major-mode 'fundamental-mode)               ; Default mode is text
 
   ;; Tabulations
-  ;; No tabulation, ever.
   (indent-tabs-mode nil)                               ; Stop using tabs to indent
 
   ;; Performance
-  ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
-  (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk.
-  (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings.
+  ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init                                 . el
+  (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk   .
+  (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings .
   (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
 
-
   ;; Miscellaneous
-  (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
-  (fringes-outside-margins t)                          ; DOOM: add some space between fringe it and buffer.
-  (windmove-mode nil)                                  ; Diasble windmove mode
   (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
+  (compilation-scroll-output 'first-error)             ; Stop scrolling at the first error
   (custom-buffer-done-kill t)                          ; Kill custom buffer when done
+  (fringes-outside-margins t)                          ; DOOM: add some space between fringe and buffer .
+  (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
+  (shell-command-prompt-show-cwd t)                    ; Show current path when executing shell commands
+  (windmove-mode nil)                                  ; Diasble windmove mode
 
   ;; Enable window dividers
   (window-divider-default-bottom-width 2)
-  (window-divider-default-right-width 2)
   (window-divider-default-places t)
+  (window-divider-default-right-width 2)
   (window-divider-mode t)
   :preface
   ;; History
@@ -114,8 +114,10 @@
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
-   ;; Enable automatic linebreaks before `fill-column' is eceeded
+   ;; Enable automatic line breaks before `fill-column' is exceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
+   ;; cleanup unnecessary white spaces before saving a buffer
+   (before-save . whitespace-cleanup)
    ;; Compress kill ring when exiting emacs
    (kill-emacs . unpropertize-kill-ring)))
 

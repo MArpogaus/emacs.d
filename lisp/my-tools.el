@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-03-23
+;; Created: 2026-04-02
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -41,7 +41,6 @@
   (dired-kill-when-opening-new-dired-buffer t)
   ;; Enable mouse drag-and-drop support
   (dired-mouse-drag-files t)                   ; added in Emacs 29
-  (mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
   :config
   ;; HACK: Disable weird click behavior
   (define-key dired-mode-map (kbd "<follow-link>") nil t)
