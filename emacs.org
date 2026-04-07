@@ -3709,9 +3709,7 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 Consult users will also want the embark-consult package.
 #+begin_src emacs-lisp
   (use-package embark-consult
-    :after embark
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode))
+    :after embark)
 #+end_src
 **** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 #+begin_src emacs-lisp
