@@ -2388,7 +2388,6 @@ Automatically update file timestamps when file is saved
 Writable grep buffer and apply the changes to files.
 #+begin_src emacs-lisp
   (use-package wgrep
-    :after grep
     :demand t
     :custom
     (wgrep-auto-save-buffer t))
