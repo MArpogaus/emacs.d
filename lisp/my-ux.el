@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-02
+;; Created: 2026-04-07
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -550,7 +550,6 @@ buffer's text scale."
 ;; Writable grep buffer and apply the changes to files.
 
 (use-package wgrep
-  :after grep
   :demand t
   :custom
   (wgrep-auto-save-buffer t))

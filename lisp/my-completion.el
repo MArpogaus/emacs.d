@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-02
+;; Created: 2026-04-07
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -423,9 +423,7 @@
 ;; Consult users will also want the embark-consult package.
 
 (use-package embark-consult
-  :after embark
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  :after embark)
 
 ;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
 
