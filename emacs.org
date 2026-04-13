@@ -4669,6 +4669,11 @@ Meow is yet another modal editing mode for Emacs.
             (append meow-mode-state-list '((comint-mode . insert)
                                            (eshell-mode . insert)
                                            (vterm-mode  . insert))))
+    ;; HACK: meow disables `delete-active-region' for some reasons i dont konw
+    ;;       about. we restore its value immediately after that hoping to not get
+    ;;       any major issues.
+    (advice-add #'meow--enable-shims :after
+                (lambda nil (setq delete-active-region meow--backup-var-delete-activate-region)))
     :bind
     (:map meow-motion-state-keymap
           ("<escape>" . meow-cancel-selection)
