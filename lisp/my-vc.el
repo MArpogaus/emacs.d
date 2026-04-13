@@ -109,7 +109,10 @@
         ("v"  . magit-status)
         ("r"  . magit-rebase)
         :map project-prefix-map
-        ("v"  . my/project-magit-status)))
+        ("v"  . my/project-magit-status))
+  :hook
+  ;; Automatic Refreshing of Magit Buffers
+  (after-save . magit-after-save-refresh-status))
 
 ;; [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 ;; Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
