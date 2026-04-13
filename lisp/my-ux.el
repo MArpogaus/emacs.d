@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-07
+;; Created: 2026-04-13
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -500,17 +500,19 @@ buffer's text scale."
   (kill-ring-max 500)
   (history-length 500)
   (savehist-additional-variables
-   '(kill-ring
+   '(bookmark-history
      command-history
-     set-variable-value-history
      custom-variable-history
-     query-replace-history
-     read-expression-history
-     minibuffer-history
-     read-char-history
      face-name-history
-     bookmark-history
-     file-name-history))
+     file-name-history
+     kill-ring
+     minibuffer-history
+     query-replace-history
+     read-char-history
+     read-expression-history
+     regexp-search-ring
+     search-ring
+     set-variable-value-history))
   ;; No duplicates in history
   (history-delete-duplicates t)
   :config
@@ -532,8 +534,12 @@ buffer's text scale."
 
 (use-package saveplace
   :ensure nil
+  :preface
+  (defun my/saveplace-recenter (&rest _)
+    (when buffer-file-name (ignore-errors (recenter))))
   :hook
-  (elpaca-after-init . save-place-mode))
+  ((elpaca-after-init . save-place-mode)
+   (save-place-after-find-file . my/saveplace-recenter)))
 
 ;; time-stamp :build_in:
 ;; Automatically update file timestamps when file is saved

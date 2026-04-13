@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-02
+;; Created: 2026-04-13
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -56,6 +56,9 @@
     (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
   :init
   (advice-add 'load-theme :after #'my/patch-doom-themes))
+(use-package ember-theme
+  :ensure (:host github :repo "ember-theme/emacs")
+  :after doom-themes)
 
 ;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
 ;; An Emacs plugin that hides (or masks) the current buffer's mode-line.

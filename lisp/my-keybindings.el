@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-02
+;; Created: 2026-04-13
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -33,6 +33,11 @@
           (append meow-mode-state-list '((comint-mode . insert)
                                          (eshell-mode . insert)
                                          (vterm-mode  . insert))))
+  ;; HACK: meow disables `delete-active-region' for some reasons i dont konw
+  ;;       about. we restore its value immediately after that hoping to not get
+  ;;       any major issues.
+  (advice-add #'meow--enable-shims :after
+              (lambda nil (setq delete-active-region meow--backup-var-delete-activate-region)))
   :bind
   (:map meow-motion-state-keymap
         ("<escape>" . meow-cancel-selection)
@@ -125,9 +130,6 @@
 
   ;; Enable hungry deletion in programming modes
   (backward-delete-char-untabify-method 'all)
-
-  ;; Better isearch movement
-  (isearch-repeat-on-direction-change t)
   :config
   (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
   (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)

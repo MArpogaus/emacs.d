@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-02
+;; Created: 2026-04-13
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -21,105 +21,106 @@
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-  (inhibit-splash-screen t)                            ; disable startup screens and messages
-  (inhibit-startup-buffer-menu t)                      ; Disable display of buffer list when more than 2 files are loaded
-  (inhibit-startup-echo-area-message t)                ; Disable initial echo message
-  (inhibit-startup-message t)                          ; Disable startup message
-  (inhibit-startup-screen t)                           ; Disable start-up screen
-  (initial-scratch-message "")                         ; Empty the initial *scratch* buffer
+  (inhibit-splash-screen t)                          ; disable startup screens and messages
+  (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
+  (inhibit-startup-echo-area-message t)              ; Disable initial echo message
+  (inhibit-startup-message t)                        ; Disable startup message
+  (inhibit-startup-screen t)                         ; Disable start-up screen
+  (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
 
   ;; Recover files when emacs crashes
-  (auto-save-default t)                                ; Auto-save every buffer that visits a file
-  (auto-save-timeout 10)                               ; Number of seconds between auto-save
-  (auto-save-interval 200)                             ; Number of keystrokes between auto-saves
+  (auto-save-default t)                              ; Auto-save every buffer that visits a file
+  (auto-save-timeout 10)                             ; Number of seconds between auto-save
+  (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
 
   ;; Backups
-  (backup-by-copying t)                                ; Backs up by moving the actual file
+  (backup-by-copying t)                              ; Backs up by moving the actual file
 
   ;; Dialogs
-  (use-dialog-box nil)                                 ; Don't pop up UI dialogs when prompting
-  (use-file-dialog nil)                                ; Don't use UI dialogs for file search
-  (use-short-answers t)                                ; Replace yes/no prompts with y/n
-  (confirm-nonexistent-file-or-buffer nil)             ; Ok to visit non existent files
+  (use-dialog-box nil)                               ; Don't pop up UI dialogs when prompting
+  (use-file-dialog nil)                              ; Don't use UI dialogs for file search
+  (use-short-answers t)                              ; Replace yes/no prompts with y/n
+  (confirm-nonexistent-file-or-buffer nil)           ; Ok to visit non existent files
 
   ;; Regions
-  (delete-active-region 'kill)                         ; Make single-char deletion commands kill an active region
-  (use-empty-active-region t)                          ; Whether "region-aware" commands should act on empty regions .
+  (delete-active-region 'kill)                       ; Make single-char deletion commands kill an active region
+  (use-empty-active-region t)                        ; Whether "region-aware" commands should act on empty regions .
 
   ;; Mouse
-  (context-menu-mode (display-graphic-p))              ; Enable context menu on right click
-  (mouse-yank-at-point t)                              ; Yank at point rather than pointer
-  (save-interprogram-paste-before-kill t)              ; save existing clipboard text into kill ring before replacing it
-  (xterm-mouse-mode (not (display-graphic-p)))         ; Mouse active in tty mode .
+  (context-menu-mode (display-graphic-p))            ; Enable context menu on right click
+  (mouse-yank-at-point t)                            ; Yank at point rather than pointer
+  (save-interprogram-paste-before-kill t)            ; save existing clipboard text into kill ring before replacing it
+  (kill-do-not-save-duplicates t)                    ; No duplicates in the kill ring
+  (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
   ;; Smoother scrolling
-  (scroll-margin 0)                                    ; Reduce margin triggering automatic scrolling
-  (scroll-conservatively 101)                          ; Avoid recentering when scrolling far
-  (scroll-preserve-screen-position t)                  ; Don't move point when scrolling
-  (fast-but-imprecise-scrolling t)                     ; More performant rapid scrolling over unfontified regions
-  (pixel-scroll-precision-interpolate-mice nil)        ; Disable interpolation (causes wired jumps)
-  (pixel-scroll-precision-mode (display-graphic-p))    ; Enable pixel-wise scrolling
-  (pixel-scroll-precision-use-momentum t)              ; Enable momentum for scrolling lagre buffers
+  (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+  (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
+  (scroll-preserve-screen-position t)                ; Don't move point when scrolling
+  (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
+  (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
+  (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
+  (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
 
   ;; Cursor
-  (cursor-type '(hbar . 2))                            ; Underline-shaped cursor
-  (cursor-intangible-mode t)                           ; Enforce cursor intangibility
-  (x-stretch-cursor nil)                               ; Don't stretch cursor to the glyph width
-  (blink-cursor-mode nil)                              ; Still cursor
+  (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
+  (cursor-intangible-mode t)                         ; Enforce cursor intangibility
+  (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
+  (blink-cursor-mode nil)                            ; Still cursor
 
   ;; Typography
-  (fill-column 80)                                     ; Default line width
-  (sentence-end-double-space nil)                      ; Use a single space after dots
-  (truncate-string-ellipsis "…")                       ; Nicer ellipsis
+  (fill-column 80)                                   ; Default line width
+  (sentence-end-double-space nil)                    ; Use a single space after dots
+  (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
   ;; Default mode
-  (initial-major-mode 'fundamental-mode)               ; Initial mode is text
-  (default-major-mode 'fundamental-mode)               ; Default mode is text
+  (initial-major-mode 'fundamental-mode)             ; Initial mode is text
+  (default-major-mode 'fundamental-mode)             ; Default mode is text
 
   ;; Tabulations
-  (indent-tabs-mode nil)                               ; Stop using tabs to indent
+  (indent-tabs-mode nil)                             ; Stop using tabs to indent
+
+  ;; Search
+  (isearch-repeat-on-direction-change t)             ; Better isearch movement
+  (isearch-lazy-count t)                             ; Enable search match counting
+  (lazy-count-prefix-format nil)                     ; Display Count at the end
+  (lazy-count-suffix-format " [%s/%s]")              ; of the search prompt
 
   ;; Performance
   ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init                                 . el
-  (read-process-output-max (* 1024 1024))              ; Increase how much is read from processes in a single chunk   .
-  (select-active-regions 'only)                        ; Emacs hangs when large selections contain mixed line endings .
-  (vc-handled-backends '(Git SVN))                     ; Remove unused VC backend
+  (read-process-output-max (* 4 1024 1024))          ; Increase how much is read from processes in a single chunk   .
+  (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings .
+  (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
 
   ;; Miscellaneous
-  (comment-auto-fill-only-comments t)                  ; Use auto fill mode only in comments
-  (compilation-scroll-output 'first-error)             ; Stop scrolling at the first error
-  (custom-buffer-done-kill t)                          ; Kill custom buffer when done
-  (fringes-outside-margins t)                          ; DOOM: add some space between fringe and buffer .
-  (native-comp-async-report-warnings-errors 'silent)   ; disable native compiler warnings
-  (shell-command-prompt-show-cwd t)                    ; Show current path when executing shell commands
-  (windmove-mode nil)                                  ; Diasble windmove mode
+  (comment-auto-fill-only-comments t)                ; Use auto fill mode only in comments
+  (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
+  (custom-buffer-done-kill t)                        ; Kill custom buffer when done
+  (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer .
+  (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
+  (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
+  (windmove-mode nil)                                ; Disable windmove mode
+  (set-mark-command-repeat-pop t)                    ; Enable repeat for mark commands
 
   ;; Enable window dividers
   (window-divider-default-bottom-width 2)
   (window-divider-default-places t)
   (window-divider-default-right-width 2)
   (window-divider-mode t)
-  :preface
-  ;; History
-  ;; Remove text properties for kill ring entries (see https://emacs.stackexchange.com/questions/4187). This saves a lot of time when loading it.
-  (defun unpropertize-kill-ring ()
-    (setq kill-ring (mapcar 'substring-no-properties kill-ring)))
   :config
   ;; We tell emacs to use UTF-8 encoding as much as possible.
-  (set-default-coding-systems 'utf-8)                  ; Default to utf-8 encoding
-  (prefer-coding-system       'utf-8)                  ; Add utf-8 at the front for automatic detection.
-  (set-terminal-coding-system 'utf-8)                  ; Set coding system of terminal output
-  (set-keyboard-coding-system 'utf-8)                  ; Set coding system for keyboard input on TERMINAL
-  (set-language-environment "English")                 ; Set up multilingual environment
+  (set-default-coding-systems 'utf-8)  ; Default to utf-8 encoding
+  (prefer-coding-system       'utf-8)  ; Add utf-8 at the front for automatic detection.
+  (set-terminal-coding-system 'utf-8)  ; Set coding system of terminal output
+  (set-keyboard-coding-system 'utf-8)  ; Set coding system for keyboard input on TERMINAL
+  (set-language-environment "English") ; Set up multilingual environment
   :hook
   ;; Enable word wrapping
   (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
    ;; Enable automatic line breaks before `fill-column' is exceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
    ;; cleanup unnecessary white spaces before saving a buffer
-   (before-save . whitespace-cleanup)
-   ;; Compress kill ring when exiting emacs
-   (kill-emacs . unpropertize-kill-ring)))
+   (before-save . whitespace-cleanup)))
 
 ;; Configure Elpaca
 
