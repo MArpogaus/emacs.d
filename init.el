@@ -74,7 +74,6 @@
 
   ;; Default mode
   (initial-major-mode 'fundamental-mode)             ; Initial mode is text
-  (default-major-mode 'fundamental-mode)             ; Default mode is text
 
   ;; Tabulations
   (indent-tabs-mode nil)                             ; Stop using tabs to indent
