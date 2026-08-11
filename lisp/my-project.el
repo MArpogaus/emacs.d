@@ -91,7 +91,7 @@
   :commands project-x-try-local project-x--window-state-write
   :init
   (add-to-list 'project-switch-commands
-               '(?j "Restore windows" project-x-windows) t)
+               '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 

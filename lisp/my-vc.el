@@ -92,7 +92,7 @@
   :init
   (with-eval-after-load 'project
     (add-to-list 'project-switch-commands
-                 '(?v "Version Control" my/project-magit-status) t))
+                 '(my/project-magit-status "Version Control" ?v) t))
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
