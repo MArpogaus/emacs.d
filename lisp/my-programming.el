@@ -386,7 +386,7 @@
 (use-package sphinx-doc
   :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
   :hook
-  (python-mode . sphinx-doc-mode))
+  (python-base-mode . sphinx-doc-mode))
 
 ;; [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
 ;; Display symbols (functions, variables, etc) in a side window.
