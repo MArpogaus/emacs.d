@@ -238,6 +238,7 @@
   :ensure nil
   :custom
   (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+  (eldoc-echo-area-use-multiline-p nil)
   :bind
   (:map my/lsp-map
         ("d" . eldoc-doc-buffer))
