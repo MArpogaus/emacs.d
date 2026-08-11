@@ -3269,7 +3269,7 @@ Agent mode for gptel.
       (gptel-agent-update)))
 #+end_src
 **** [[https://github.com/kmontag/macher.git][macher]]
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package macher
     :ensure (:host github :repo "kmontag/macher")
     :demand t
