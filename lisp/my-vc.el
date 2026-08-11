@@ -97,7 +97,6 @@
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
         ("P"  . magit-push-current)
-        ("b"  . magit-branch)
         ("b"  . magit-branch-or-checkout)
         ("c"  . magit-commit)
         ("d"  . magit-diff-unstaged)
