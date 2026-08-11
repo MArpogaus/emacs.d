@@ -185,11 +185,12 @@
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
   :init
   (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
-  :custom
   ;; Filter list of all possible completions with Orderless
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  (completion-category-overrides '((eglot (styles orderless))
-                                   (eglot-capf (styles orderless))))
+  ;; NOTE: `add-to-list', not `:custom' -- orderless sets this variable too.
+  (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
+  (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
+  :custom
   (eglot-send-changes-idle-time 0.1)
   :preface
   (defun my/eglot-capf ()
