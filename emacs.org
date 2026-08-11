@@ -516,6 +516,10 @@ The main initialization file, =init.el=, is responsible for defining essential c
   (elpaca elpaca-use-package
     ;; Enable use-package :ensure support for Elpaca.
     (elpaca-use-package-mode))
+
+  ;; Force update compat
+  ;; https://github.com/progfolio/elpaca/issues/538
+  (use-package compat :ensure (:wait t))
 #+end_src
 *** Configure use-package
 #+begin_src emacs-lisp
