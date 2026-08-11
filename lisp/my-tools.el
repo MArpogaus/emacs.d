@@ -137,7 +137,7 @@
 (use-package ediff
   :ensure nil
   :preface
-  (defvar my-ediff-original-windows nil)
+  (defvar my/ediff-original-windows nil)
   (defun my/store-pre-ediff-winconfig ()
     "This function stores the current window configuration before opening ediff."
     (setq my/ediff-original-windows (current-window-configuration)))
