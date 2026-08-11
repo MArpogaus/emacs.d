@@ -214,8 +214,6 @@
 ;; [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 
 (use-package mood-line
-  :config
-  (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
   :custom
   ;; Use pretty Fira Code-compatible glyphs
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
@@ -225,14 +223,9 @@
     :left
     (((my/get-bar-image my/modeline-height 3 nil)                               . " ")
      ((mood-line-segment-modal)                                                 . " ")
-     ((mood-line-segment-anzu)                                                  . " ")
      ((mood-line-segment-multiple-cursors)                                      . " ")
-     ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
      " "
-     ;; ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
-     ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " ")
-     ;; ((window-tool-bar-string)                                                  . " "))
-     )
+     ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " "))
     :right
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
