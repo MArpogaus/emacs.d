@@ -287,7 +287,7 @@
 (use-package term
   :ensure nil
   :commands term
-  :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
+  :if (file-exists-p "/bin/zsh") ; we only use it if shell exists
   :custom
   (shell-file-name "/bin/zsh")
   (explicit-shell-file-name "/bin/zsh"))
