@@ -240,11 +240,10 @@ The DWIM behaviour of this command is as follows:
    ("t"                   . switch-to-buffer-other-tab)
    ("w"                   . switch-to-buffer-other-window)
    :map my/file-map
+   ("D"                   . delete-file)
    ("F"                   . find-file-other-window)
    ("c"                   . copy-file)
-   ("d"                   . delete-file)
    ("d"                   . find-dired)
-   ("f"                   . find-file)
    ("f"                   . find-file)
    ("r"                   . rename-file)
    ("w"                   . write-file)
