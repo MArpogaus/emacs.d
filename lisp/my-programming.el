@@ -242,7 +242,6 @@
   (:map my/lsp-map
         ("d" . eldoc-doc-buffer))
   :config
-  (eldoc-add-command-completions "paredit-")
   (with-eval-after-load 'combobulate
     (eldoc-add-command-completions "combobulate-")))
 
