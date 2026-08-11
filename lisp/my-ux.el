@@ -297,7 +297,7 @@
     "Adjust the size of latex preview fragments when changing the
 buffer's text scale."
     (pcase major-mode
-      ((or 'latex-mode (guard 'org-auctex-mode))
+      ((or 'latex-mode (guard (bound-and-true-p org-auctex-mode)))
        (dolist (ov (overlays-in (point-min) (point-max)))
          (if (eq (overlay-get ov 'category)
                  'preview-overlay)
