@@ -389,8 +389,8 @@ context.  When called with an argument, unconditionally call
   (org-agenda-time-grid
    '((daily today require-timed)
      (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"))
+  (org-agenda-current-time-string
    "◀── now ─────────────────────────────────────────────────")
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda)))
