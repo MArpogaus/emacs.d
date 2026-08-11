@@ -259,36 +259,23 @@
     (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
     (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 
-;; [[https://github.com/purcell/envrc.git][envrc]]
-;; Emacs support for direnv which operates buffer-locally.
+;; [[https://codeberg.org/pastor/ben.el][ben]]
+;; Asynchronous fork of envrc: https://github.com/purcell/envrc
 
-(use-package envrc
-  :if (executable-find "direnv")
-  :preface
-  (defun my/find-python-interpreter nil
-    "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
-    (cond
-     ((executable-find "ipython3")
-      (setq-local python-shell-interpreter "ipython3"
-                  python-shell-interpreter-args "--simple-prompt"))
-     ((executable-find "python3")
-      (setq-local python-shell-interpreter "python3")
-      (kill-local-variable 'python-shell-interpreter-args))
-     (t (kill-local-variable 'python-shell-interpreter)
-        (kill-local-variable 'python-shell-interpreter-args)))
-    nil)
-  :config
-  ;; Fix problem with python promt detection
-  ;; https://github.com/purcell/envrc#troubleshooting
-  ;; (with-eval-after-load 'python
-  ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+(use-package ben
+  :ensure (:host codeberg :repo "pastor/ben.el")
+  :bind
+  (:map my/leader-map
+        ("E" . ben-command-map))
+  :custom
+  (ben-indicator '((:eval (ben--status))))
+  (ben-on-indicator '(:propertize "󰯸" face ben-mode-line-on-face))
+  (ben-denied-indicator '(:propertize "󰯹" face ben-mode-line-denied-face))
+  (ben-error-indicator '(:propertize "󰯹" face ben-mode-line-error-face))
+  (ben-none-indicator nil); '(:propertize "󰯹" face mode-line))
+  (ben-status-frames '("" "" "" "" "" ""))
   :init
-  ;; The global mode should be enabled late in the startup sequence,
-  ;; to prevent inference with other other global minor modes.
-  ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-  (add-hook 'elpaca-after-init-hook #'envrc-global-mode 97)
-  :hook
-  (envrc-mode . my/find-python-interpreter))
+  (add-hook 'elpaca-after-init-hook #'ben-global-mode 97))
 
 ;; [[https://github.com/emacs-ess/ESS.git][ESS]]
 ;; Emacs Speaks Statistics: ESS.
