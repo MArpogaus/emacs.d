@@ -587,7 +587,6 @@ buffer's text scale."
    ("v" . split-window-vertically)
    ("h" . split-window-horizontally)
    ("m" . delete-other-windows)
-   ("m" . delete-other-windows)
    ("M" . delete-other-windows-vertically)
    :exit
    ("=" . balance-windows)))
