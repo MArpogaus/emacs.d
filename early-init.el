@@ -81,7 +81,7 @@
 
 ;; Hide initial frame until all packages are loaded
 
-(add-to-list 'initial-frame-alist '(visibility . init-file-debug))
+(add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
 
