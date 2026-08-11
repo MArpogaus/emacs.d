@@ -4557,18 +4557,6 @@ Insert NumPy style docstrings in Python functions.
   (use-package numpydoc
     :after python)
 #+end_src
-**** [[https://github.com/Wilfred/pyimport.git][pyimport]]
-Manage Python imports from Emacs!.
-#+begin_src emacs-lisp
-  (use-package pyimport
-    :after conda)
-#+end_src
-**** [[https://github.com/paetzke/py-isort.el.git][py-isort]]
-Py-isort.el integrates isort into Emacs.
-#+begin_src emacs-lisp
-  (use-package py-isort
-    :after conda)
-#+end_src
 **** python :build_in:
 #+begin_src emacs-lisp
   (use-package python
