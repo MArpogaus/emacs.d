@@ -223,23 +223,6 @@ Triggered after the first response is received in a new buffer."
   (with-eval-after-load 'gptel
     (gptel-agent-update)))
 
-;; [[https://github.com/kmontag/macher.git][macher]]
-
-(use-package macher
-  :ensure (:host github :repo "kmontag/macher")
-  :demand t
-  :after gptel
-  :custom
-  ;; The org UI has structured navigation and nice content folding.
-  (macher-action-buffer-ui 'org)
-  :config
-  ;; Adjust buffer positioning to taste.
-  (with-eval-after-load 'auto-side-windows
-    (add-to-list 'auto-side-windows-top-buffer-names "\\*macher:.*\\*")
-    (add-to-list 'auto-side-windows-right-buffer-names "\\*macher-patch:.*\\*"))
-  :init
-  (macher-install))
-
 ;; ZZ Library Footer
 
 (provide 'my-ai)
