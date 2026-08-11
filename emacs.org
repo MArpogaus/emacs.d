@@ -4558,6 +4558,10 @@ Insert NumPy style docstrings in Python functions.
     :after python)
 #+end_src
 **** python :build_in:
+Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
+environment.  =executable-find= is evaluated per buffer, so it picks up a
+project-local IPython installed by =uv= or exported by =ben=, and the result is
+stored as an absolute path so the REPL keeps using that interpreter.
 #+begin_src emacs-lisp
   (use-package python
     :ensure nil
@@ -4565,7 +4569,23 @@ Insert NumPy style docstrings in Python functions.
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil)
-    (python-shell-dedicated 'project))
+    (python-shell-dedicated 'project)
+    :preface
+    (defun my/python-set-interpreter ()
+      "Use IPython as `python-shell-interpreter' when one is on `exec-path'."
+      (when (derived-mode-p 'python-base-mode)
+        (if-let* ((ipython (or (executable-find "ipython")
+                               (executable-find "ipython3"))))
+            (setq-local python-shell-interpreter ipython
+                        python-shell-interpreter-args "-i --simple-prompt --no-color-info")
+          (kill-local-variable 'python-shell-interpreter)
+          (kill-local-variable 'python-shell-interpreter-args))))
+    :config
+    ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
+    ;; only becomes project-local at the latter point.  `ben' skips its hook in
+    ;; buffers without an `.envrc', hence both.
+    (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
+    (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
