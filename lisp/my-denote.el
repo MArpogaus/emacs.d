@@ -65,8 +65,6 @@
   (denote-excluded-keywords-regexp nil)
   ;; Pick dates, where relevant, with Org's advanced interface:
   (denote-date-prompt-use-org-read-date t)
-  ;; Automatically rename Denote buffers using the `denote-rename-buffer-format'.
-  (denote-rename-buffer-mode t)
   ;; Define templates for notes
   (denote-templates
    '((minutes . "minutes")
