@@ -23,7 +23,6 @@
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
   (inhibit-splash-screen t)                          ; disable startup screens and messages
   (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
-  (inhibit-startup-echo-area-message t)              ; Disable initial echo message
   (inhibit-startup-message t)                        ; Disable startup message
   (inhibit-startup-screen t)                         ; Disable start-up screen
   (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
