@@ -335,13 +335,6 @@ buffer's text scale."
   (minimap-minimum-width 25)
   (minimap-width-fraction 0)
   (minimap-major-modes '(prog-mode conf-mode))
-  :config
-  (with-eval-after-load 'golden-ratio
-    (add-to-list 'golden-ratio-inhibit-functions
-                 (lambda ()
-                   (and minimap-buffer-name
-                        (window-live-p (get-buffer-window minimap-buffer-name)))))
-    (add-to-list 'golden-ratio-exclude-buffer-names `(,minimap-buffer-name)))
   :bind
   (:map my/toggle-map
         ("m" . minimap-mode)))
