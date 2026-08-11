@@ -574,7 +574,7 @@ buffer's text scale."
    ("+" . enlarge-window)
    ("-" . shrink-window)
    ("*" . enlarge-window-horizontally)
-   ("’" . shrink-window-horizontally)
+   ("_" . shrink-window-horizontally)
    ("r" . split-window-right)
    ("b" . split-window-below)
    ("v" . split-window-vertically)
