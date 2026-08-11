@@ -370,18 +370,6 @@
 (use-package numpydoc
   :after python)
 
-;; [[https://github.com/Wilfred/pyimport.git][pyimport]]
-;; Manage Python imports from Emacs!.
-
-(use-package pyimport
-  :after conda)
-
-;; [[https://github.com/paetzke/py-isort.el.git][py-isort]]
-;; Py-isort.el integrates isort into Emacs.
-
-(use-package py-isort
-  :after conda)
-
 ;; python :build_in:
 
 (use-package python
