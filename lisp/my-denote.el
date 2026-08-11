@@ -100,7 +100,6 @@ Prompts for metadata only if the file is not already a Denote file."
               (widen)
               (goto-char (point-min))
               (insert header)
-              (when (and (nth 6 data) (not (string-empty-p (format "%s" (nth 6 data))))))
               (insert (cond ((stringp (nth 6 data)) (nth 6 data))
                             ((functionp (nth 6 data)) (funcall (nth 6 data)))
                             (t "")))))
