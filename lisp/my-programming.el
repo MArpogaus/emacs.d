@@ -152,13 +152,14 @@
 
   ;; Projectile users
   ;; (setq dape-cwd-fn 'projectile-project-root)
+
+  ;; Save buffers on startup, useful for interpreted languages
+  (add-hook 'dape-on-start-hooks (lambda () (save-some-buffers t t)))
   :hook
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
   ;; Set breakpints via fringe or margin mouse clicks
-  ((prog-mode . dape-breakpoint-global-mode)
-   ;; Save buffers on startup, useful for interpreted languages
-   (dape-on-start-hooks . (lambda () (save-some-buffers t t)))))
+  (prog-mode . dape-breakpoint-global-mode))
 
 ;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
 ;; An emacs mode for handling Dockerfiles.
