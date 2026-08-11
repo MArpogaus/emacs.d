@@ -185,11 +185,6 @@
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
   :init
   (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
-  ;; Filter list of all possible completions with Orderless
-  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  ;; NOTE: `add-to-list', not `:custom' -- orderless sets this variable too.
-  (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
-  (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
   :custom
   (eglot-send-changes-idle-time 0.1)
   :preface
@@ -213,6 +208,10 @@
         ("a" . eglot-code-actions)
         ("r" . eglot-rename))
   :config
+  ;; Filter list of all possible completions with Orderless
+  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
+  (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
+  (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
   ;; https://github.com/doomemacs/doomemacs/blob/a90c06dc6b104afbe0c93f0107df5c42b8137b5e/modules/tools/lsp/%2Beglot.el#L36
   (plist-put eglot-events-buffer-config :size 0)
 
