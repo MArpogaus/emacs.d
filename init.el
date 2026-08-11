@@ -171,6 +171,10 @@
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+  ;; These two are bound into from a different module than the one that
+  ;; configures them, so they have to exist before any module loads.
+  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
   (defun prot/keyboard-quit-dwim ()
     "Do-What-I-Mean behaviour for a general `keyboard-quit'.
