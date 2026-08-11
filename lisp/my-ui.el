@@ -297,7 +297,7 @@
   (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
   :bind
   (([remap winner-undo] . tab-bar-history-back)
-   ([remap winner-undo] . tab-bar-history-forward)
+   ([remap winner-redo] . tab-bar-history-forward)
    :map my/toggle-map
    ("t"                 . tab-bar-mode)
    :map my/leader-map
