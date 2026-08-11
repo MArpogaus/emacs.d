@@ -2561,7 +2561,6 @@ Simple note taking and file naming.
           ("R" . denote-rename-file-using-front-matter)
           ("b" . denote-backlinks)
           ("d" . denote-dired)
-          ("g" . denote-grep)
           ("i" . denote-link)
           ("k" . my/kill-denote-buffers)
           ("s" . my/denote-save-buffer)

@@ -112,7 +112,6 @@ Prompts for metadata only if the file is not already a Denote file."
         ("R" . denote-rename-file-using-front-matter)
         ("b" . denote-backlinks)
         ("d" . denote-dired)
-        ("g" . denote-grep)
         ("i" . denote-link)
         ("k" . my/kill-denote-buffers)
         ("s" . my/denote-save-buffer)
