@@ -134,6 +134,10 @@
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
+;; Force update compat
+;; https://github.com/progfolio/elpaca/issues/538
+(use-package compat :ensure (:wait t))
+
 ;; Configure use-package
 
 ;; Enable lazy loading per default
