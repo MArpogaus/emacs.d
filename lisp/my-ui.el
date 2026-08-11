@@ -294,7 +294,6 @@
   ;; Prevent accidental tab switches when scrolling the buffer
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
-  :config
   (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
   :bind
   (([remap winner-undo] . tab-bar-history-back)
