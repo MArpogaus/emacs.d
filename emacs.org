@@ -1285,7 +1285,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (org-fold-show-children))
     :bind
     (:map org-mode-map
-          ("C-c p"         . org-present)
+          ("C-c P"         . org-present)
           :map org-present-mode-keymap
           ("q"         . org-present-quit)
           ("C-<left>"  . org-present-prev)
