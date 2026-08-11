@@ -3958,7 +3958,7 @@ functions we invoke regularly outside of magit is called.
     :init
     (with-eval-after-load 'project
       (add-to-list 'project-switch-commands
-                   '(?v "Version Control" my/project-magit-status) t))
+                   '(my/project-magit-status "Version Control" ?v) t))
     :bind
     (:map my/version-control-map
           ("F"  . magit-fetch-all)
@@ -4079,7 +4079,7 @@ Enhancements to Emacs' built in project library.
     :commands project-x-try-local project-x--window-state-write
     :init
     (add-to-list 'project-switch-commands
-                 '(?j "Restore windows" project-x-windows) t)
+                 '(project-x-window-state-load "Restore windows" ?j) t)
     (add-hook 'project-find-functions 'project-x-try-local 90)
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
