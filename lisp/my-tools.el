@@ -175,15 +175,17 @@
   ;; messages for every word when checking the entire buffer
   (flyspell-issue-message-flag nil)
   :preface
-  (defun my/restart-flyspell-mode ()
+  (defun my/restart-flyspell-mode (&rest _)
     (when flyspell-mode
       (flyspell-mode-off)
       (flyspell-mode-on)
       (flyspell-buffer)))
+  :config
+  ;; `ispell-change-dictionary' is a command, not a hook
+  (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
   :hook
   (((text-mode org-mode LaTeX-mode) . flyspell-mode)
-   ((prog-mode conf-mode) . flyspell-prog-mode)
-   (ispell-change-dictionary . restart-flyspell-mode)))
+   ((prog-mode conf-mode) . flyspell-prog-mode)))
 
 ;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
 ;; Distraction-free words correction with flyspell via selected interface.
