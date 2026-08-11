@@ -1731,7 +1731,7 @@ References:
     (tab-line-tab-name-function #'my/tab-line-tab-name-function)
     (tab-line-close-tab-function #'my/tab-line-close-tab-function)
     (tab-line-exclude-modes '(completion-list-mode
-                              imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                              ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
                               dirvish-directory-view-mode dirvish-special-preview-mode
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
