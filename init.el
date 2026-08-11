@@ -261,11 +261,12 @@ The DWIM behaviour of this command is as follows:
 (use-package no-littering
   :demand t
   :init
-  (setq emacs-config-directory user-emacs-directory
-        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-        custom-file (expand-file-name "custom.el" user-emacs-directory)
-        ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-        user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+  ;; `emacs-config-directory' is captured in early-init.el.
+  (setq
+   ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+   custom-file (expand-file-name "custom.el" user-emacs-directory)
+   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+   user-emacs-directory (expand-file-name "~/.cache/emacs/"))
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups)
@@ -352,7 +353,7 @@ The DWIM behaviour of this command is as follows:
 ;; We save the following package declaration into separate files in the =modules= directory.
 ;; To load the we have to add this directory to the =load-path=.
 
-(add-to-list 'load-path "~/.emacs.d/lisp/")
+(add-to-list 'load-path (expand-file-name "lisp/" emacs-config-directory))
 
 ;; Org
 ;; :PROPERTIES:

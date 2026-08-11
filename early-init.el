@@ -14,6 +14,13 @@
 
 ;;; Code:
 
+;; Configuration Directory
+;; =no-littering= repoints =user-emacs-directory= at =~/.cache/emacs/= later on, so we capture the directory this configuration actually lives in while it is still correct.
+;; It has to happen here rather than in =init.el=, because =no-littering= is an =elpaca= package: its =:init= block only runs once the package queue is processed, which is *after* =init.el= has finished loading and needs this value to locate the =lisp/= modules.
+
+(defvar emacs-config-directory user-emacs-directory
+  "Directory this configuration lives in, unaffected by `no-littering'.")
+
 ;; Configure Byte Compile
 
 ;; In noninteractive sessions, prioritize non-byte-compiled source files to

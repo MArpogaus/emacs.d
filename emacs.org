@@ -164,6 +164,13 @@ It should only consist of code that is independent of any package.
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
+*** Configuration Directory
+=no-littering= repoints =user-emacs-directory= at =~/.cache/emacs/= later on, so we capture the directory this configuration actually lives in while it is still correct.
+It has to happen here rather than in =init.el=, because =no-littering= is an =elpaca= package: its =:init= block only runs once the package queue is processed, which is *after* =init.el= has finished loading and needs this value to locate the =lisp/= modules.
+#+begin_src emacs-lisp
+  (defvar emacs-config-directory user-emacs-directory
+    "Directory this configuration lives in, unaffected by `no-littering'.")
+#+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
@@ -638,11 +645,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
   (use-package no-littering
     :demand t
     :init
-    (setq emacs-config-directory user-emacs-directory
-          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-          custom-file (expand-file-name "custom.el" user-emacs-directory)
-          ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-          user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+    ;; `emacs-config-directory' is captured in early-init.el.
+    (setq
+     ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+     custom-file (expand-file-name "custom.el" user-emacs-directory)
+     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+     user-emacs-directory (expand-file-name "~/.cache/emacs/"))
     :config
     ;; store backup and auto-save files in =no-littering-var-directory=
     (no-littering-theme-backups)
@@ -729,7 +737,7 @@ In this section, I define some custom Lisp functions.
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
 #+begin_src emacs-lisp :tangle init.el
-  (add-to-list 'load-path "~/.emacs.d/lisp/")
+  (add-to-list 'load-path (expand-file-name "lisp/" emacs-config-directory))
 #+end_src
 *** Org
 :PROPERTIES:
