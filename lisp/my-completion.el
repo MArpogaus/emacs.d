@@ -557,10 +557,9 @@
   :config
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
   (require 'vertico-directory)
-  :bind
-  ;; Improve directory navigation
-  (:map vertico-map
-        ("<return>" . vertico-directory-enter))
+  ;; NOTE: `<return>' in `vertico-map' is bound by embark to
+  ;; `my/embark-act-or-vertico-enter', which falls back to
+  ;; `vertico-directory-enter'.
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (elpaca-after-init . vertico-mode)))
