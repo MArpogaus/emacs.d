@@ -307,9 +307,9 @@
    (elpaca-after-init . corfu-echo-mode)
    (elpaca-after-init . corfu-history-mode)
    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
-   (eshell-mode-hook . (lambda ()
-                         (setq-local corfu-auto nil)
-                         (corfu-mode)))
+   (eshell-mode . (lambda ()
+                    (setq-local corfu-auto nil)
+                    (corfu-mode)))
    ;; Enable minibuffer completion
    (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
 
