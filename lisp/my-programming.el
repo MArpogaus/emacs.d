@@ -414,13 +414,12 @@
   :hook
   (elpaca-after-init . global-treesit-auto-mode))
 
-;; [[https://github.com/yoshiki/yaml-mode.git][yaml]]
+;; yaml-ts-mode :build_in:
 ;; The emacs major mode for editing files in the YAML data serialization format.
 
-(use-package yaml-mode
-  :bind
-  (:map yaml-mode-map ("\C-m" . newline-and-indent))
-  :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+(use-package yaml-ts-mode
+  :ensure nil
+  :mode "\\.ya?ml\\'")
 
 ;; ZZ Library Footer
 

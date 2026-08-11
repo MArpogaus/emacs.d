@@ -4615,13 +4615,12 @@ Code-folding using =treesit.el=.
     :hook
     (((yaml-ts-mode) . treesit-fold-indicators-mode)))
 #+end_src
-**** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
+**** yaml-ts-mode :build_in:
 The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp
-  (use-package yaml-mode
-    :bind
-    (:map yaml-mode-map ("\C-m" . newline-and-indent))
-    :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+  (use-package yaml-ts-mode
+    :ensure nil
+    :mode "\\.ya?ml\\'")
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
