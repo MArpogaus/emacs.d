@@ -290,8 +290,6 @@
   :custom
   (tab-bar-history-limit 100)
   (tab-bar-close-button-show nil)
-  :preface
-  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   :config
   ;; Prevent accidental tab switches when scrolling the buffer
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)

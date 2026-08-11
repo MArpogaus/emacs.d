@@ -564,8 +564,6 @@ buffer's text scale."
 
 (use-package window
   :ensure nil
-  :preface
-  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
   :custom
   (window-resize-pixelwise t)   ; Resize windows pixelwise
   (frame-resize-pixelwise t)    ; Resize frame pixelwise
