@@ -102,3 +102,20 @@ org-mode
  "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/v/" (p (project-name (project-current)) project) ".svg?style=" (p "flat-square" style) "]]" n
  "[[https://pypi.org/project/" project "][https://img.shields.io/pypi/pyversions/" project ".svg?style=" style "]]" q
  )
+
+(modern-latex
+"#+LANGUAGE: en" n
+"#+OPTIONS: toc:nil num:nil title:nil" n
+"#+LATEX_CLASS: article" n
+"#+LATEX_CLASS_OPTIONS: [12pt,oneside,dvipsnames]" n
+"#+LATEX_HEADER: \\usepackage{geometry}" n
+"#+LATEX_HEADER: \\geometry{a4paper,margin=2cm}" n
+"#+LATEX_HEADER: \\usepackage{helvet}" n
+"#+LATEX_HEADER: \\renewcommand{\\familydefault}{\\sfdefault}" n
+"#+LATEX_HEADER: \\usepackage{parskip}" n
+"#+LATEX_HEADER: \\usepackage[dvipsnames]{xcolor}" n
+"#+LATEX_HEADER: \\usepackage{sectsty}" n
+"#+LATEX_HEADER: \\allsectionsfont{\\color{RoyalBlue}\\sffamily\\mdseries}" n
+"#+LATEX_HEADER: \\usepackage{hyperref}" n
+"#+LATEX_HEADER: \\hypersetup{colorlinks=true, linkcolor=Maroon, urlcolor=Maroon, citecolor=Maroon}"
+)
