@@ -4793,10 +4793,12 @@ Emulate standard keybindings from modern editors.
           :map y-or-n-p-map
           ("<return>"   . y-or-n-p-insert-y)))
 #+end_src
-**** [[https://github.com/justbur/emacs-which-key.git][which-key]]
+**** which-key :build_in:
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+Built into Emacs since 30.1, so no package is needed.
 #+begin_src emacs-lisp
   (use-package which-key
+    :ensure nil
     :custom
     (which-key-idle-delay 0.1)
     (which-key-compute-remaps t)
