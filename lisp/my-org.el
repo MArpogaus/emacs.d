@@ -546,7 +546,7 @@ context.  When called with an argument, unconditionally call
     (org-fold-show-children))
   :bind
   (:map org-mode-map
-        ("C-c p"         . org-present)
+        ("C-c P"         . org-present)
         :map org-present-mode-keymap
         ("q"         . org-present-quit)
         ("C-<left>"  . org-present-prev)
