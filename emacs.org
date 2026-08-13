@@ -5198,6 +5198,10 @@ error or on =ESC=.
           ;; will arrive to do it.
           (progn
             (my/pycell--md-show start end)
+            ;; Redisplay pushes a point that the block just made
+            ;; invisible out of it, and upwards; put it below instead.
+            (when (<= (1- start) (point) end)
+              (goto-char end))
             (when my/pycell--queue (my/pycell--run-next)))
         (if-let* ((proc (python-shell-get-process)))
             (my/pycell--send proc start end)
