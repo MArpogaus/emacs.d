@@ -437,4 +437,5 @@ $RECYCLE.BIN/
 eln-cache
 straight/*
 elpaca/*
+/.agent-shell/
 custom.el
