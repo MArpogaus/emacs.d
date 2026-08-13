@@ -4452,8 +4452,8 @@ line must stay visible: an invisible run that begins at a line start
 makes =scroll-down= fail with a beginning-of-buffer error.  Links keep
 the keymap that shr gave them, so a click follows the URL.
 =$…$= and =$$…$$= fragments become LaTeX images through org's formula
-machinery, cached under =~/.cache/pycell-math= — a directory that the
-LaTeX distrobox reaches, unlike =/tmp=.  Evaluate a markdown cell to
+machinery, cached under =~/.cache/pycell-math= — a directory a LaTeX in
+a container reaches, unlike =/tmp=.  Evaluate a markdown cell to
 render it again.  =RET= or =mouse-2= opens the cell in a =markdown-mode=
 buffer; =C-c C-c= commits the edit, =C-c C-k= discards it.
 =mouse-1= reveals the plain source.  Without a =markdown-command=
@@ -4828,8 +4828,9 @@ error or on =ESC=.
     (defun my/pycell--md-latex-image (frag)
       "Return a preview image for the LaTeX fragment FRAG, or nil.
     Org's formula machinery renders it.  The cache lives under ~/.cache,
-    keyed by content and theme color, in a directory that a LaTeX inside
-    a container can reach — unlike /tmp."
+    keyed by content and theme color.  Org runs LaTeX in that directory
+    as well: a LaTeX in a container reaches the home directory, but not
+    the host's /tmp."
       (when (and (require 'org nil t) (fboundp 'org-create-formula-image))
         (let* ((fg (face-attribute 'default :foreground))
                (ext (or (plist-get
@@ -5020,8 +5021,8 @@ error or on =ESC=.
           (insert md)
           (markdown-mode)
           (my/pycell-md-edit-mode)
-          ;; The keys come from the keymap, so the hint stays true under
-          ;; `standard-keys-mode', which moves the C-c prefix to C-p.
+          ;; The keys come from the keymap, so the hint stays true when
+          ;; the bindings or the prefix change.
           (setq header-line-format
                 (substitute-command-keys
                  " Markdown cell — \\[my/pycell-md-commit] applies, \
@@ -5304,9 +5305,10 @@ error or on =ESC=.
       (setf (alist-get 'my/pycell-mode code-cells-eval-region-commands)
             #'my/pycell-eval-region))
 
+    ;; Personal window placement, not part of the feature.
     (with-eval-after-load 'auto-side-windows
-      (add-to-list 'auto-side-windows-right-buffer-names "^\\*pycell: .*\\*$")
-      (add-to-list 'auto-side-windows-right-buffer-names "^\\*pycell md: .*\\*$")))
+      (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
+        (add-to-list 'auto-side-windows-right-buffer-names name))))
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
