@@ -1922,6 +1922,27 @@ Revert buffers when the underlying file has changed
                        (face-remap-add-relative 'mode-line-inactive
                                                 `(:overline ,foreground :underline nil :height 0))
                        )))))
+    (defun my/side-window-button (label help command)
+      "Return LABEL as a header-line button running COMMAND on mouse-1."
+      (propertize label 'mouse-face 'highlight 'help-echo help
+                  'local-map (let ((map (make-sparse-keymap)))
+                               (define-key map [header-line mouse-1] command)
+                               map)))
+    (defun my/side-window-minimize (event)
+      "Delete the clicked side window; its buffers stay alive."
+      (interactive "e")
+      (delete-window (posn-window (event-start event))))
+    (defun my/side-window-kill (event)
+      "Delete the clicked side window and kill the buffers it displayed."
+      (interactive "e")
+      (let* ((win (posn-window (event-start event)))
+             (bufs (delete-dups (cons (window-buffer win)
+                                      (mapcar #'car (window-prev-buffers win))))))
+        (delete-window win)
+        (dolist (buf bufs)
+          ;; Keep buffers that are still visible somewhere else.
+          (unless (get-buffer-window buf t)
+            (kill-buffer buf)))))
     (defvar my/header-line-format-top
       '(:eval
         (let*
@@ -1932,7 +1953,13 @@ Revert buffers when the underlying file has changed
              (background (face-background (cdr prefix-and-face) nil 'default))
              (prefix-face (list :inherit 'bold :background background :foreground foreground :inverse-video t))
              (buffer-face (list :inherit 'bold))
-             (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
+             (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face)))
+             (buttons (concat
+                       (my/side-window-button "─" "Hide this side window"
+                                              #'my/side-window-minimize)
+                       " "
+                       (my/side-window-button "✕" "Close this side window and kill its buffers"
+                                              #'my/side-window-kill))))
           (set-window-fringes nil 1 1 t)
           (set-window-margins nil 1 1)
           (my/install-top-side-window-face-remaps buffer foreground background)
@@ -1940,11 +1967,22 @@ Revert buffers when the underlying file has changed
            (propertize prefix 'face prefix-face 'display '(space-width 0.7))
            " "
            header-line-format
-           (propertize " " 'display `(space :align-to right))
-           ;; (buttonize " 󰍷 " nil)
-           ;; (buttonize " 󰅚 " nil)
+           ;; Pixel-exact: measure the buttons with the face they render
+           ;; in — a bare string would be measured in the default font,
+           ;; `string-width' merely counts columns.  In the display spec,
+           ;; `right' and `-' belong to the spec language (hence outside
+           ;; the unquote), and (N) denotes N pixels.
+           ;; Measuring the buttons without their trailing space shifts
+           ;; the tail one space into the right margin, flush with the
+           ;; window edge.
+           (propertize " " 'display
+                       `(space :align-to
+                               (- right (,(string-pixel-width
+                                           (propertize buttons
+                                                       'face 'header-line))))))
+           buttons
            " "
-           (propertize " " 'face prefix-face 'display '(space-width 1))))))
+           (propertize " " 'face prefix-face 'display '(space :width (1)))))))
     :custom
     ;; Of non of our rules apply try the following strategies to dispaly new buffers
     (display-buffer-base-action '((display-buffer-in-previous-window
