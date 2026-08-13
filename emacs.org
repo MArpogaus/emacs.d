@@ -2346,12 +2346,12 @@ Enable repeat maps
     :ensure nil
     :preface
     ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
-    (defun my/repeatize-keymap (keymap)
-      "Add `repeat-mode' support to a KEYMAP."
+    (defun my/repeatize-keymap (keymap &optional unset)
+      "Add `repeat-mode' support to a KEYMAP. If UNSET is true remove repeat property"
       (map-keymap
        (lambda (_key cmd)
          (when (symbolp cmd)
-           (put cmd 'repeat-map keymap)))
+           (put cmd 'repeat-map (unless unset keymap))))
        (symbol-value keymap)))
     :config
     (with-eval-after-load 'smerge-mode
@@ -4290,11 +4290,13 @@ Emacs utilities for code split into cells, including Jupyter notebooks.
 Two binding layers, mimicking JupyterLab: modified keys for /edit mode/
 (the =<return>= family, =C-<up>/<down>= navigation, =M-S-<up>/<down>= to
 move cells), and =my/code-cells-repeat-map= as /command mode/ — entered
-through any of its commands or via =SPC j=, single keys (=n p e r a b o O
-0 R=) then chain until a foreign key exits.  No prefix bindings, and no
-plain speed keys, which meow's normal state would shadow.  Rarely used
-commands (split, merge, markdown cells) are =M-x= only.  Cell results are
-rendered inline by =my/pycell= below.
+through any of its commands or via =SPC j=, single keys (=n p j k e r a b
+c i o O 0 R=) then chain until a foreign key exits.  =C-c C-c= interrupts
+the running cell, as in the REPL (with =standard-keys-mode= that is
+=C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
+No other prefix bindings, and no plain speed keys, which meow's normal
+state would shadow.  Rarely used commands (split, merge, markdown cells)
+are =M-x= only.  Cell results are rendered inline by =my/pycell= below.
 #+begin_src emacs-lisp
   (use-package code-cells
     :preface
@@ -4353,6 +4355,14 @@ rendered inline by =my/pycell= below.
       (insert "# "))
     :init
     (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
+    :config
+    ;; code-cells' own C-c % prefix map declares `:repeat t', claiming the
+    ;; repeat-map property of the very commands bound in our repeat map when
+    ;; the package loads.  Drop that prefix and re-assert our map, so the
+    ;; repeat chain and `SPC j' stay one and the same.
+    (keymap-unset code-cells-mode-map "C-c %" t)
+    (my/repeatize-keymap 'code-cells--prefix-map t)
+    (my/repeatize-keymap 'my/code-cells-repeat-map)
     :bind
     (:map code-cells-mode-map
           ;; evaluation
@@ -4372,15 +4382,24 @@ rendered inline by =my/pycell= below.
           ("M-S-<left>"   . outline-promote)
           ("C-S-<tab>"    . outline-cycle-buffer)
           ("C-<backtab>"  . outline-cycle-buffer)
+          ;; interrupt, under the C-c prefix like in the REPL; reachable as
+          ;; C-p C-c through standard-keys' dynamic prefix, and as plain
+          ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
+          ("C-c C-c"      . my/pycell-interrupt)
           ;; "command mode" à la JupyterLab: any entry key activates the
           ;; repeat map, single keys then chain until a foreign key exits.
-          :repeat-map my/code-cells-repeat-map
+          ;; The same map hangs off the leader as `SPC j'.
+          :map my/code-cells-repeat-map
           ("n" . code-cells-forward-cell)
           ("p" . code-cells-backward-cell)
+          ("j" . code-cells-forward-cell)
+          ("k" . code-cells-backward-cell)
           ("e" . code-cells-eval)
           ("r" . code-cells-eval-and-step)
           ("a" . my/code-cells-insert-above)
           ("b" . my/code-cells-insert-below)
+          ("c" . my/pycell-copy-output)
+          ("i" . my/pycell-interrupt)
           ("o" . my/pycell-toggle-output)
           ("O" . my/pycell-remove-overlays)
           ("0" . my/pycell-restart)
