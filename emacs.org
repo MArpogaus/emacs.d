@@ -4426,10 +4426,18 @@ scrolling jump.  The buffer's text itself is untouched — properties are
 never saved, so files, eglot and undo are unaffected.  Display properties
 do not nest, however, so the header (its right-aligning stretch space)
 and bodies containing images stay in the overlay's after-string; figure
-results consequently still jump when scrolled past from below — the image
-height cap keeps that bounded.
-Evaluation never blocks Emacs, but one cell at a time: sending while
-another cell is still running is refused.  In the cells repeat map, =O=
+results consequently still jump when scrolled past from below.  The image
+height cap keeps that bounded, and at most /one/ figure is drawn inline —
+further ones (and everything past =my/pycell-max-lines=) live in the =↗=
+popup buffer.
+Output streams into the overlay live, as it arrives in the REPL, and the
+header carries a spinner and stopwatch while the cell runs; the runtime
+remains afterwards.  A cell without output keeps a bare header saying /no
+output/, so it is recognizable as evaluated.  =⧉= copies a result to the
+kill ring, and with =my/pycell-quiet-repl= set, output is removed from
+the REPL once the cell finished — the REPL keeps only its prompts.  Evaluation never blocks
+Emacs, but one cell at a time: sending while another cell is still
+running is refused.  In the cells repeat map, =O=
 clears all results, =0= additionally restarts the interpreter, and =R= —
 also directly on =C-M-<return>= — is Jupyter's /restart kernel and run
 all cells/: it re-evaluates every cell in order, stopping at the first
@@ -4458,6 +4466,13 @@ python section below); a plain =python3= shell yields text only.
     Large overlay strings make redisplay and scrolling sluggish, hence the cap.
     Use `my/pycell-pop-output' to see the whole result."
       :type 'natnum)
+
+    (defcustom my/pycell-quiet-repl nil
+      "When non-nil, remove a cell's output from the REPL once it finished.
+    The REPL then keeps only its prompts; results live below their cells
+    alone.  While a cell runs its output still passes through the REPL —
+    comint-mime must render it there before it can be mirrored."
+      :type 'boolean)
 
     (defun my/pycell--clean (text)
       "Strip prompts, Out[n] markers and surrounding whitespace from TEXT.
@@ -4506,26 +4521,62 @@ python section below); a plain =python3= shell yields text only.
                             (define-key map [mouse-1] command)
                             map)))
 
-    (defun my/pycell--header (folded lines)
-      "Return the header bar of a FOLDED or unfolded result of LINES lines."
-      (let ((icons (concat (my/pycell--button "⧉" "Show this result in its own buffer"
-                                              #'my/pycell-pop-output)
-                           "  "
-                           (my/pycell--button "✕" "Discard this result"
-                                              #'my/pycell-discard-output)
-                           " ")))
+    (defun my/pycell--body-lines (lines)
+      "Return the leading LINES to draw inline.
+    At most `my/pycell-max-lines', and nothing beyond the first line
+    carrying an image: several inline figures would grow the block — and
+    the jump when scrolling past it — without bound."
+      (let (shown stop)
+        (while (and lines (not stop) (< (length shown) my/pycell-max-lines))
+          (let ((l (pop lines)))
+            (push l shown)
+            (when (text-property-not-all 0 (length l) 'display nil l)
+              (setq stop t))))
+        (nreverse shown)))
+
+    (defun my/pycell--header (folded total shown runtime running)
+      "Return the result header bar.
+    TOTAL and SHOWN count the result's lines and the inline-drawn subset,
+    RUNTIME is the evaluation time in seconds so far and RUNNING non-nil
+    while the cell is still evaluating."
+      (let* ((icons (concat (when (> total 0)
+                              (concat (my/pycell--button
+                                       "⧉" "Copy this result"
+                                       #'my/pycell-copy-output)
+                                      "  "
+                                      (my/pycell--button
+                                       "↗" "Show this result in its own buffer"
+                                       #'my/pycell-pop-output)
+                                      "  "))
+                            (my/pycell--button "✕" "Discard this result"
+                                               #'my/pycell-discard-output)
+                            " "))
+             ;; The stopwatch drives the spinner: one frame per tick.
+             (state (cond (running (string ?\s (aref "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+                                                     (mod (truncate (or runtime 0) 0.2)
+                                                          10))))
+                          ((> total 1)
+                           (my/pycell--button (if folded " ▸" " ▾")
+                                              "Fold or unfold this result"
+                                              #'my/pycell-toggle-output))
+                          ((zerop total) " ✓")
+                          (t " ")))
+             (label (cond ((> total 0)
+                           (format "%d line%s%s" total (if (= total 1) "" "s")
+                                   (if (< shown total)
+                                       (format ", showing %d" shown) "")))
+                          ((not running) "no output")))
+             (time (when runtime (format "%.1fs" runtime))))
         (my/pycell--faced
-         (concat (my/pycell--button (if folded " ▸" " ▾") "Fold or unfold this result"
-                                    #'my/pycell-toggle-output)
-                 (format " %d line%s%s" lines (if (= lines 1) "" "s")
-                         (if (or folded (<= lines my/pycell-max-lines)) ""
-                           (format ", showing %d" my/pycell-max-lines)))
-                 ;; Stretch space, so the icons end up at the window's right edge.
-                 ;; Two columns of slack: the last one can be reserved for the
-                 ;; continuation glyph, and arrows may render wider than
-                 ;; `string-width' claims — either one wraps the line.
+         (concat state " "
+                 (mapconcat #'identity (delq nil (list label time)) " · ")
+                 ;; Pixel-exact right alignment: glyph widths differ from what
+                 ;; `string-width' counts; (N) in the spec means N pixels.
                  (propertize " " 'display
-                             `(space :align-to (- right ,(+ 2 (string-width icons)))))
+                             `(space :align-to
+                                     (- right (,(string-pixel-width
+                                                 (propertize icons 'face
+                                                             'my/pycell-header))))))
                  icons)
          'my/pycell-header)))
 
@@ -4539,14 +4590,15 @@ python section below); a plain =python3= shell yields text only.
     the header's :align-to space would be ignored.  The one-line header
     therefore always stays in the after-string, and so does a body that
     contains an image."
-      (pcase-let ((`(,folded ,text) (overlay-get ov 'my/pycell))
+      (pcase-let ((`(,folded ,text ,runtime ,running) (overlay-get ov 'my/pycell))
                   (end (overlay-end ov)))
-        (let* ((lines (split-string text "\n"))
-               (header (my/pycell--header folded (length lines)))
-               (body (unless folded
-                       (my/pycell--faced
-                        (string-join (seq-take lines my/pycell-max-lines) "\n")
-                        'my/pycell-output)))
+        (let* ((lines (unless (string-empty-p text) (split-string text "\n")))
+               (shown (my/pycell--body-lines lines))
+               (header (my/pycell--header folded (length lines) (length shown)
+                                          runtime running))
+               (body (when (and shown (not folded))
+                       (my/pycell--faced (string-join shown "\n")
+                                         'my/pycell-output)))
                (image (and body (text-property-not-all
                                  0 (length body) 'display nil body))))
           (overlay-put ov 'after-string
@@ -4584,28 +4636,30 @@ python section below); a plain =python3= shell yields text only.
       :doc "Keymap active inside a cell that shows a result."
       "TAB" '(menu-item "" my/pycell-toggle-output :filter my/pycell--tab-filter))
 
-    (defun my/pycell--show (beg end text)
-      "Show TEXT as the result of the cell between BEG and END."
+    (defun my/pycell--show (beg end text &optional runtime running)
+      "Show TEXT as the result of the cell between BEG and END.
+    RUNTIME is the evaluation time in seconds so far, RUNNING non-nil while
+    the cell is still evaluating.  An empty TEXT still gets a header line,
+    labelled \"no output\", so evaluated cells are recognizable as such."
       (my/pycell-remove-overlays beg end)
-      (unless (string-empty-p text)
-        ;; The newline ending the cell carries the result (see
-        ;; `my/pycell--update'); give the buffer's last cell one.
-        (when (and (= end (point-max)) (not (eq (char-before end) ?\n)))
-          (save-excursion (goto-char end) (insert "\n")))
-        ;; End the overlay before that newline: this anchoring keeps the
-        ;; result out of view when a window starts at the next cell's
-        ;; boundary line.
-        (let* ((tip (if (and (eq (char-before end) ?\n) (> (1- end) beg))
-                        (1- end)
-                      end))
-               (ov (make-overlay beg tip nil t)))
-          (overlay-put ov 'my/pycell (list nil text))
-          (overlay-put ov 'evaporate t)
-          (overlay-put ov 'keymap my/pycell-overlay-map)
-          (overlay-put ov 'modification-hooks
-                       (list (lambda (o &rest _) (my/pycell--delete o))))
-          (my/pycell--update ov)
-          ov)))
+      ;; The newline ending the cell carries the result (see
+      ;; `my/pycell--update'); give the buffer's last cell one.
+      (when (and (= end (point-max)) (not (eq (char-before end) ?\n)))
+        (save-excursion (goto-char end) (insert "\n")))
+      ;; End the overlay before that newline: this anchoring keeps the
+      ;; result out of view when a window starts at the next cell's
+      ;; boundary line.
+      (let* ((tip (if (and (eq (char-before end) ?\n) (> (1- end) beg))
+                      (1- end)
+                    end))
+             (ov (make-overlay beg tip nil t)))
+        (overlay-put ov 'my/pycell (list nil text runtime running))
+        (overlay-put ov 'evaporate t)
+        (overlay-put ov 'keymap my/pycell-overlay-map)
+        (overlay-put ov 'modification-hooks
+                     (list (lambda (o &rest _) (my/pycell--delete o))))
+        (my/pycell--update ov)
+        ov))
 
     (defun my/pycell--overlay (event)
       "Return the result overlay clicked in EVENT, or the one of the cell at point."
@@ -4631,6 +4685,14 @@ python section below); a plain =python3= shell yields text only.
       (interactive (list last-input-event))
       (my/pycell--delete (my/pycell--overlay event)))
 
+    (defun my/pycell-copy-output (&optional event)
+      "Copy the result of the cell at point, or the one clicked in EVENT.
+    Text properties are kept, so images survive yanking — as they do when
+    copying from the popup buffer."
+      (interactive (list last-input-event))
+      (kill-new (cadr (overlay-get (my/pycell--overlay event) 'my/pycell)))
+      (message "my/pycell: result copied"))
+
     (defun my/pycell-pop-output (&optional event)
       "Show the result of the cell at point, or the one clicked in EVENT, in a buffer.
     Each cell gets its own buffer, so results can be viewed side by side."
@@ -4651,15 +4713,42 @@ python section below); a plain =python3= shell yields text only.
       "Start positions of the cells `my/pycell-restart-and-run-all' still has to run.")
 
     (defvar-local my/pycell--target nil
-      "State of the cell running in this Python shell: (FROM BEG END TAIL).
+      "State of the cell running in this Python shell: (FROM BEG END TAIL START).
     FROM marks where its output starts here, BEG and END delimit the cell in
-    its own buffer, TAIL accumulates the last output chunks.")
+    its own buffer, TAIL accumulates the last output chunks and START is the
+    `float-time' the cell was sent.")
+
+    (defvar my/pycell--ticker nil
+      "Timer driving the stopwatch of the running cell.")
+
+    (defun my/pycell--live-show ()
+      "Refresh the running cell's overlay with the output received so far.
+    Call in the Python shell buffer."
+      (pcase-let ((`(,from ,beg ,fin ,_ ,start) my/pycell--target))
+        ;; Strip a trailing, still incomplete escape sequence: comint-mime
+        ;; renders it only once it is complete.
+        (let ((text (my/pycell--clean
+                     (replace-regexp-in-string
+                      "\e\\][^\e]*\\'" "" (buffer-substring from (point-max))))))
+          (when (buffer-live-p (marker-buffer beg))
+            (with-current-buffer (marker-buffer beg)
+              (my/pycell--show beg fin text (- (float-time) start) t))))))
+
+    (defun my/pycell--tick (buf)
+      "Update the running cell's stopwatch; self-cancels when BUF is done."
+      (if (not (and (buffer-live-p buf)
+                    (buffer-local-value 'my/pycell--target buf)))
+          (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
+        (with-current-buffer buf
+          (my/pycell--live-show))))
 
     (defun my/pycell--filter (output)
-      "Mirror the running cell's OUTPUT below it, once the prompt is back.
-    Runs in the Python shell, from `comint-output-filter-functions'."
+      "Detect the running cell's completion and show its final result.
+    Runs in the Python shell, from `comint-output-filter-functions'.  The
+    intermediate output needs no handling here: the stopwatch ticker
+    mirrors it into the overlay every fraction of a second anyway."
       (when my/pycell--target
-        (pcase-let ((`(,from ,beg ,fin ,tail) my/pycell--target))
+        (pcase-let ((`(,from ,beg ,fin ,tail ,start) my/pycell--target))
           ;; A chunk boundary can split the prompt, so match the recent tail.
           (setq tail (concat tail (ansi-color-filter-apply output)))
           (setf (nth 3 my/pycell--target)
@@ -4667,13 +4756,16 @@ python section below); a plain =python3= shell yields text only.
           (when (python-shell-comint-end-of-output-p tail)
             (setq my/pycell--target nil)
             (remove-hook 'comint-output-filter-functions #'my/pycell--filter t)
-            (let ((text (my/pycell--clean
-                         (buffer-substring from (if comint-last-prompt
-                                                    (car comint-last-prompt)
-                                                  (point-max))))))
+            (let* ((bound (if comint-last-prompt
+                              (car comint-last-prompt)
+                            (point-max)))
+                   (text (my/pycell--clean (buffer-substring from bound))))
+              (when my/pycell-quiet-repl
+                (let ((inhibit-read-only t))
+                  (delete-region from bound)))
               (when (buffer-live-p (marker-buffer beg))
                 (with-current-buffer (marker-buffer beg)
-                  (my/pycell--show beg fin text)))
+                  (my/pycell--show beg fin text (- (float-time) start))))
               ;; Keep `my/pycell-restart-and-run-all' going, or stop on error.
               (when my/pycell--queue
                 (if (string-match-p "Traceback (most recent call last)" text)
@@ -4692,11 +4784,14 @@ python section below); a plain =python3= shell yields text only.
           (when my/pycell--target
             (user-error "The Python shell is still busy with another cell"))
           (setq my/pycell--target
-                (list (copy-marker (process-mark proc)) beg fin ""))
+                (list (copy-marker (process-mark proc)) beg fin "" (float-time)))
           ;; comint-mime renders from the same hook: append, so that by the time
           ;; we copy the region it already carries images instead of OSC escapes.
           (add-hook 'comint-output-filter-functions #'my/pycell--filter t t))
-        (my/pycell--show beg fin "[*]")
+        (my/pycell--show beg fin "" 0.0 t)
+        (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
+        (setq my/pycell--ticker
+              (run-with-timer 0.2 0.2 #'my/pycell--tick (process-buffer proc)))
         ;; `python-shell-send-region' pads the code so that traceback line
         ;; numbers match the buffer.
         (python-shell-send-region start end)))
@@ -4706,6 +4801,7 @@ python section below); a plain =python3= shell yields text only.
       (interactive)
       (my/pycell-remove-overlays)
       (setq my/pycell--queue nil)
+      (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
       (if (python-shell-get-process)
           (python-shell-restart)
         (run-python)))
