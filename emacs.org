@@ -4449,11 +4449,19 @@ remains afterwards.  A cell without output keeps a bare header saying /no
 output/, so it is recognizable as evaluated.  =⧉= copies a result to the
 kill ring, =⤓= — offered when the result contains an image — saves that
 image to a file (the type is taken from the image descriptor, which
-`create-image' derived from the data's magic bytes), and with
-=my/pycell-quiet-repl= set, output is removed from the REPL once the
-cell finished — the REPL keeps only its prompts.  Evaluation never blocks
-Emacs, but one cell at a time: sending while another cell is still
-running is refused.  In the cells repeat map, =O=
+`create-image' derived from the data's magic bytes).
+
+The moving parts are deliberately few: per shell, one buffer-local
+=my/pycell--run= holds the running cell's entire state, a filter on
+=comint-output-filter-functions= watches for the closing prompt, and a
+0.2s ticker mirrors output, stopwatch and interpreter health.  Every way
+a cell can end — prompt, dead process, killed shell buffer, shell
+restart (the latter two via =my/pycell--abort= on the shell's kill and
+major-mode hooks) — funnels through the single exit =my/pycell--end=.
+Evaluation never blocks Emacs, but one cell at a time: sending while
+another cell is still running is refused; without an interpreter, one is
+started and the cell follows on its first prompt.  In the cells repeat
+map, =O=
 clears all results, =0= additionally restarts the interpreter, and =R= —
 also directly on =C-M-<return>= — is Jupyter's /restart kernel and run
 all cells/: it re-evaluates every cell in order, stopping at the first
@@ -4482,13 +4490,6 @@ python section below); a plain =python3= shell yields text only.
     Large overlay strings make redisplay and scrolling sluggish, hence the cap.
     Use `my/pycell-pop-output' to see the whole result."
       :type 'natnum)
-
-    (defcustom my/pycell-quiet-repl nil
-      "When non-nil, remove a cell's output from the REPL once it finished.
-    The REPL then keeps only its prompts; results live below their cells
-    alone.  While a cell runs its output still passes through the REPL —
-    comint-mime must render it there before it can be mirrored."
-      :type 'boolean)
 
     (defun my/pycell--clean (text)
       "Strip prompts, Out[n] markers and surrounding whitespace from TEXT.
@@ -4778,162 +4779,151 @@ python section below); a plain =python3= shell yields text only.
     (defvar my/pycell--queue nil
       "Start positions of the cells `my/pycell-restart-and-run-all' still has to run.")
 
-    (defvar-local my/pycell--target nil
-      "State of the cell running in this Python shell: (FROM BEG END TAIL START).
-    FROM marks where its output starts here, BEG and END delimit the cell in
-    its own buffer, TAIL accumulates the last output chunks and START is the
-    `float-time' the cell was sent.")
+    (defvar-local my/pycell--run nil
+      "State of the cell running in this Python shell, or nil.
+    A list (FROM BEG END TAIL START TIMER): FROM marks where the cell's
+    output starts here, BEG and END delimit the cell in its own buffer,
+    TAIL accumulates recent output for the prompt detection, START is the
+    `float-time' the cell was sent and TIMER its ticker.")
 
-    (defvar-local my/pycell--ticker nil
-      "Timer driving the stopwatch of this shell's running cell.
-    Buffer-local, so several (project-dedicated) shells do not interfere.")
+    (defvar-local my/pycell--cold-cell nil
+      "Cell (BEG . END markers) waiting for this shell's first prompt.")
 
-    (defun my/pycell--quiet-erase (buf from bound)
-      "Erase a finished cell's output between FROM and BOUND in shell BUF."
-      (when (buffer-live-p buf)
-        (with-current-buffer buf
-          (let ((inhibit-read-only t))
-            (delete-region from bound))
-          (set-marker from nil)
-          (set-marker bound nil))))
+    (defun my/pycell--output-so-far (from)
+      "Return the running cell's output inserted after FROM, cleaned.
+    A trailing, still incomplete escape sequence is dropped: comint-mime
+    renders it only once it is complete."
+      (my/pycell--clean
+       (replace-regexp-in-string
+        "\e\\][^\e]*\\'" "" (buffer-substring from (point-max)))))
 
-    (defun my/pycell--died ()
-      "Finalize the running cell as aborted — its prompt will never return.
-    Appends a death notice, with the exit status when available, to the
-    output received so far.  Call in the Python shell buffer with
-    `my/pycell--target' set."
-      (pcase-let ((`(,from ,beg ,fin ,_ ,start) my/pycell--target)
-                  (proc (get-buffer-process (current-buffer))))
-        (setq my/pycell--target nil
-              my/pycell--queue nil)
-        (remove-hook 'comint-output-filter-functions #'my/pycell--filter t)
-        (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
+    (defun my/pycell--end (text &optional died)
+      "End the running cell, showing TEXT as its final result.
+    The one exit for every way a cell ends; DIED marks abnormal ends.
+    Call in the Python shell buffer."
+      (pcase-let ((`(,_ ,beg ,fin ,_ ,start ,timer) my/pycell--run))
+        (setq my/pycell--run nil)
+        (cancel-timer timer)
+        (when died (setq my/pycell--queue nil))
         (when (buffer-live-p (marker-buffer beg))
-          (let* ((out (my/pycell--clean
-                       (replace-regexp-in-string
-                        "\e\\][^\e]*\\'" "" (buffer-substring from (point-max)))))
-                 (msg (propertize
-                       (format "Process unexpectedly died%s"
-                               (if proc
-                                   (format " (%s %s)" (process-status proc)
-                                           (process-exit-status proc))
-                                 ""))
-                       'face 'error))
-                 (text (if (string-empty-p out) msg (concat out "\n" msg))))
-            (with-current-buffer (marker-buffer beg)
-              (my/pycell--show beg fin text (- (float-time) start) 'died))))))
+          (with-current-buffer (marker-buffer beg)
+            (my/pycell--show beg fin text (- (float-time) start)
+                             (and died 'died))))
+        ;; Keep `my/pycell-restart-and-run-all' going, or stop on error.
+        (when my/pycell--queue
+          (if (string-match-p "Traceback (most recent call last)" text)
+              (progn (setq my/pycell--queue nil)
+                     (message "my/pycell: stopped at error"))
+            (my/pycell--run-next)))))
 
-    (defun my/pycell--shell-reset ()
-      "Finalize the running cell when its shell goes away under it.
-    On `kill-buffer-hook' and `change-major-mode-hook' in the Python
-    shell: the ticker alone cannot handle either case — a killed buffer's
-    local state is unreachable, and `python-shell-restart' reinitializes
-    the mode, wiping the local state before the next tick sees the dead
-    process."
-      (when my/pycell--target (my/pycell--died)))
+    (defun my/pycell--abort ()
+      "End the running cell abnormally — its prompt will never return.
+    Appends a death notice, with the exit status when available, to the
+    output received so far.  Covers a dead interpreter (found by the
+    ticker), a killed shell buffer and a shell restart, which
+    reinitializes the major mode — hence also on `kill-buffer-hook' and
+    `change-major-mode-hook' in the Python shell."
+      (when my/pycell--run
+        (let* ((proc (get-buffer-process (current-buffer)))
+               (out (my/pycell--output-so-far (car my/pycell--run)))
+               (msg (propertize
+                     (format "Process unexpectedly died%s"
+                             (if proc
+                                 (format " (%s %s)" (process-status proc)
+                                         (process-exit-status proc))
+                               ""))
+                     'face 'error)))
+          (my/pycell--end (if (string-empty-p out) msg (concat out "\n" msg))
+                          t))))
 
     (defun my/pycell--tick (buf timer)
       "Mirror the running cell's output and stopwatch into its overlay.
     Runs in TIMER every 0.2s for the Python shell BUF; self-cancels when
-    nothing is running there anymore, and finalizes the cell as aborted
-    when the interpreter died mid-cell."
+    nothing is running there anymore."
       (if (not (and (buffer-live-p buf)
-                    (buffer-local-value 'my/pycell--target buf)))
+                    (buffer-local-value 'my/pycell--run buf)))
           (cancel-timer timer)
         (with-current-buffer buf
           (if (not (process-live-p (get-buffer-process buf)))
-              (progn (my/pycell--died) (cancel-timer timer))
-            (pcase-let ((`(,from ,beg ,fin ,_ ,start) my/pycell--target))
-              ;; Strip a trailing, still incomplete escape sequence:
-              ;; comint-mime renders it only once it is complete.
-              (let ((text (my/pycell--clean
-                           (replace-regexp-in-string
-                            "\e\\][^\e]*\\'" ""
-                            (buffer-substring from (point-max))))))
+              (my/pycell--abort)
+            (pcase-let ((`(,from ,beg ,fin ,_ ,start ,_) my/pycell--run))
+              (let ((text (my/pycell--output-so-far from)))
                 (when (buffer-live-p (marker-buffer beg))
                   (with-current-buffer (marker-buffer beg)
                     (my/pycell--show beg fin text (- (float-time) start)
                                      t)))))))))
 
     (defun my/pycell--filter (output)
-      "Detect the running cell's completion and show its final result.
-    Runs in the Python shell, from `comint-output-filter-functions'.  The
-    intermediate output needs no handling here: the stopwatch ticker
-    mirrors it into the overlay every fraction of a second anyway."
-      (when my/pycell--target
-        (pcase-let ((`(,from ,beg ,fin ,tail ,start) my/pycell--target))
-          ;; A chunk boundary can split the prompt, so match the recent tail.
-          (setq tail (concat tail (ansi-color-filter-apply output)))
-          (setf (nth 3 my/pycell--target)
+      "Watch OUTPUT for the running cell's closing prompt, then end the cell.
+    Stays on `comint-output-filter-functions' once installed and idles
+    while no cell runs; the live mirroring is the ticker's job."
+      (when my/pycell--run
+        ;; A chunk boundary can split the prompt, so match against a capped
+        ;; tail; `ansi-color-filter-apply' drops the escape sequences.
+        (let ((tail (concat (nth 3 my/pycell--run)
+                            (ansi-color-filter-apply output))))
+          (setf (nth 3 my/pycell--run)
                 (substring tail (max 0 (- (length tail) 256))))
           (when (python-shell-comint-end-of-output-p tail)
-            (setq my/pycell--target nil)
-            (remove-hook 'comint-output-filter-functions #'my/pycell--filter t)
-            (let* ((bound (if comint-last-prompt
-                              (car comint-last-prompt)
-                            (point-max)))
-                   (text (my/pycell--clean (buffer-substring from bound))))
-              (when my/pycell-quiet-repl
-                ;; Erase on a timer, not here: comint still works on this
-                ;; region (scrolling, marker bookkeeping) right after
-                ;; these hooks ran.
-                (run-with-timer 0 nil #'my/pycell--quiet-erase
-                                (current-buffer)
-                                (copy-marker from) (copy-marker bound)))
-              (when (buffer-live-p (marker-buffer beg))
-                (with-current-buffer (marker-buffer beg)
-                  (my/pycell--show beg fin text (- (float-time) start))))
-              ;; Keep `my/pycell-restart-and-run-all' going, or stop on error.
-              (when my/pycell--queue
-                (if (string-match-p "Traceback (most recent call last)" text)
-                    (progn (setq my/pycell--queue nil)
-                           (message "my/pycell: stopped at error"))
-                  (my/pycell--run-next))))))))
+            (my/pycell--end
+             (my/pycell--clean
+              (buffer-substring (car my/pycell--run)
+                                (if comint-last-prompt
+                                    (car comint-last-prompt)
+                                  (point-max)))))))))
+
+    (defun my/pycell--send (proc start end)
+      "Send START..END to PROC as the running cell and track it.
+    Call with the cell's buffer current."
+      (let ((beg (copy-marker start))
+            (fin (copy-marker end t)))
+        (with-current-buffer (process-buffer proc)
+          (when my/pycell--run
+            (user-error "The Python shell is still busy with another cell"))
+          ;; All idempotent: the filter idles while no cell runs, the other
+          ;; two catch the shell going away under a running cell.  comint-mime
+          ;; renders from the same hook; appending means the copied region
+          ;; already carries images instead of OSC escape sequences.
+          (add-hook 'comint-output-filter-functions #'my/pycell--filter t t)
+          (add-hook 'kill-buffer-hook #'my/pycell--abort nil t)
+          (add-hook 'change-major-mode-hook #'my/pycell--abort nil t)
+          ;; The ticker receives itself, so it can always self-cancel.
+          (let ((timer (run-with-timer 0.2 0.2 #'ignore)))
+            (timer-set-function timer #'my/pycell--tick
+                                (list (current-buffer) timer))
+            (setq my/pycell--run (list (copy-marker (process-mark proc))
+                                       beg fin "" (float-time) timer))))
+        (my/pycell--show beg fin "" 0.0 t)
+        ;; `python-shell-send-region' pads the code so that traceback line
+        ;; numbers match the buffer.
+        (python-shell-send-region beg fin)))
+
+    (defun my/pycell--run-cold ()
+      "Evaluate the cell that waited for the interpreter to come up.
+    Unlike `my/pycell--run-next' this must not move point: the command
+    that triggered the cold start may have moved it on already."
+      (remove-hook 'python-shell-first-prompt-hook #'my/pycell--run-cold t)
+      (pcase-let ((`(,beg . ,end) my/pycell--cold-cell)
+                  (proc (get-buffer-process (current-buffer))))
+        (setq my/pycell--cold-cell nil)
+        (when (and beg (buffer-live-p (marker-buffer beg)))
+          (with-current-buffer (marker-buffer beg)
+            (my/pycell--send proc beg end)))))
 
     (defun my/pycell-eval-region (start end)
-      "Send START..END to the Python shell and mirror the output below the cell.
+      "Evaluate START..END as a cell, mirroring the output below it.
     Matches the calling convention of `code-cells-eval-region-commands'.
     Without a running interpreter one is started, and the cell evaluates
     as soon as its first prompt arrives."
       ;; ponytail: one cell at a time; add a queue if that ever chafes.
-      (if (not (python-shell-get-process))
-          ;; Cold start: queue this one cell — `my/pycell--run-next'
-          ;; evaluates it once the fresh interpreter prompts.
-          (progn
-            (push (copy-marker start) my/pycell--queue)
-            (run-python nil python-shell-dedicated)
-            (with-current-buffer
-              (process-buffer (python-shell-get-process-or-error))
-              (add-hook 'python-shell-first-prompt-hook
-                        #'my/pycell--run-next 90 t))
-            (message "my/pycell: starting the interpreter…"))
-        (my/pycell--eval-region-1 start end)))
-
-    (defun my/pycell--eval-region-1 (start end)
-      "Send START..END to the running Python shell and mirror its output."
-      (let ((proc (python-shell-get-process-or-error))
-            (beg (copy-marker start))
-            (fin (copy-marker end t)))
-        (with-current-buffer (process-buffer proc)
-          (when my/pycell--target
-            (user-error "The Python shell is still busy with another cell"))
-          (setq my/pycell--target
-                (list (copy-marker (process-mark proc)) beg fin "" (float-time)))
-          ;; comint-mime renders from the same hook: append, so that by the time
-          ;; we copy the region it already carries images instead of OSC escapes.
-          (add-hook 'comint-output-filter-functions #'my/pycell--filter t t)
-          (add-hook 'kill-buffer-hook #'my/pycell--shell-reset nil t)
-          (add-hook 'change-major-mode-hook #'my/pycell--shell-reset nil t)
-          (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
-          ;; The timer receives itself, so it can always self-cancel — even
-          ;; after a shell restart wiped this buffer-local variable.
-          (setq my/pycell--ticker (run-with-timer 0.2 0.2 #'ignore))
-          (timer-set-function my/pycell--ticker #'my/pycell--tick
-                              (list (current-buffer) my/pycell--ticker)))
-        (my/pycell--show beg fin "" 0.0 t)
-        ;; `python-shell-send-region' pads the code so that traceback line
-        ;; numbers match the buffer.
-        (python-shell-send-region start end)))
+      (if-let* ((proc (python-shell-get-process)))
+          (my/pycell--send proc start end)
+        (run-python)
+        (with-current-buffer (process-buffer (python-shell-get-process-or-error))
+          (setq my/pycell--cold-cell (cons (copy-marker start)
+                                           (copy-marker end t)))
+          (add-hook 'python-shell-first-prompt-hook #'my/pycell--run-cold 90 t))
+        (message "my/pycell: starting the interpreter…")))
 
     (defun my/pycell-interrupt ()
       "Send a KeyboardInterrupt to the cell's Python process.
@@ -4949,18 +4939,16 @@ python section below); a plain =python3= shell yields text only.
       (setq my/pycell--queue nil)
       (if-let* ((proc (python-shell-get-process)))
           (progn
+            ;; Drop the run silently: this command discards results rather
+            ;; than marking the running cell as aborted.  The orphaned
+            ;; ticker cancels itself on its next tick.
             (with-current-buffer (process-buffer proc)
-              ;; Cancel the ticker before the restart wipes the local
-              ;; variable holding it, and drop the target so the abort
-              ;; handler does not resurrect the running cell's overlay —
-              ;; this command's contract is to discard all results.
-              (when (timerp my/pycell--ticker) (cancel-timer my/pycell--ticker))
-              (setq my/pycell--target nil))
+              (setq my/pycell--run nil))
             (python-shell-restart))
-          (run-python nil python-shell-dedicated)))
+        (run-python)))
 
     (defun my/pycell--run-next ()
-      "Evaluate the cell at the head of `my/pycell--queue'."
+      "Evaluate the cell at the head of `my/pycell--queue', point following."
       (remove-hook 'python-shell-first-prompt-hook #'my/pycell--run-next t)
       (when-let* ((m (pop my/pycell--queue)))
         (if (not (buffer-live-p (marker-buffer m)))
@@ -4995,7 +4983,7 @@ python section below); a plain =python3= shell yields text only.
                 (nreverse cells))))
       ;; Evaluation may only start once the fresh interpreter has prompted —
       ;; and after comint-mime's setup, which runs off the same hook, hence
-      ;; the depth.  `my/pycell--filter' then chains the remaining cells.
+      ;; the depth.  `my/pycell--end' then chains the remaining cells.
       (with-current-buffer (process-buffer (python-shell-get-process-or-error))
         (add-hook 'python-shell-first-prompt-hook #'my/pycell--run-next 90 t))
       (set-transient-map my/pycell-stop-map (lambda () my/pycell--queue) nil
