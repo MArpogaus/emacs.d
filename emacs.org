@@ -39,6 +39,7 @@ Here are some notable features:
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#01-conventional-library-header][01 Conventional Library Header]]
+    - [[#configuration-directory][Configuration Directory]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
     - [[#hide-initial-frame-until-all-packages-are-loaded][Hide initial frame until all packages are loaded]]
