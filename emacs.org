@@ -4444,12 +4444,13 @@ folds too.
 
 Markdown cells (=# %% [markdown]=): the mode uncomments the source,
 converts it with =markdown-command= and shr, and shows it in place —
-the source becomes invisible, the =# %%= line with it, and a header bar
-with =↗= (edit) and =✕= (show the source) takes their place.  The block
-is a result block in every way; its overlay only reaches one line
-further up, so the invisible run starts at the end of the visible line
-above the cell — outline fold geometry.  Links keep the keymap that shr
-gave them, so a click follows the URL.
+the source becomes invisible, and a header bar with =↗= (edit) and =✕=
+(show the source) sits below the cell's =# %%= line.  The block is a
+result block in every way; its overlay is one character larger, so the
+invisible run starts at the end of the visible boundary line.  That
+line must stay visible: an invisible run that begins at a line start
+makes =scroll-down= fail with a beginning-of-buffer error.  Links keep
+the keymap that shr gave them, so a click follows the URL.
 =$…$= and =$$…$$= fragments become LaTeX images through org's formula
 machinery, cached under =~/.cache/pycell-math= — a directory that the
 LaTeX distrobox reaches, unlike =/tmp=.  Evaluate a markdown cell to
@@ -4499,9 +4500,10 @@ error or on =ESC=.
         (seq-filter (lambda (o) (overlay-get o prop)) (overlays-in beg end))))
 
     (defun my/pycell--delete (ov)
-      "Delete the block overlay OV together with its body overlay."
-      (when-let* ((bov (overlay-get ov 'my/pycell-body)))
-        (delete-overlay bov))
+      "Delete the block overlay OV together with its helper overlays."
+      (dolist (prop '(my/pycell-body my/pycell-head))
+        (when-let* ((o (overlay-get ov prop)))
+          (delete-overlay o)))
       (delete-overlay ov))
 
     (defun my/pycell-remove-overlays (&optional beg end)
@@ -4895,15 +4897,12 @@ error or on =ESC=.
     (defun my/pycell--md-show (beg end)
       "Show the markdown cell body BEG..END rendered, in place.
     The block is built exactly like a result block — the overlay just
-    reaches further up, over the cell's =# %%= line, and hides its
-    text.  The invisible run therefore starts at the end of the visible
-    line above the cell, the same geometry as an outline fold, and the
-    block anchors on the body's final newline, never on the overlined
-    boundary."
-      (let* ((start (max (point-min)
-                         (1- (save-excursion (goto-char beg)
-                                             (forward-line -1)
-                                             (point)))))
+    grows by one character, the boundary line's newline, and hides its
+    text.  The invisible run must start at the end of a visible line:
+    `scroll-down' fails with a beginning-of-buffer error when it has to
+    move the window start over a run that begins at a line start, which
+    is why the =# %%= line stays visible."
+      (let* ((start (1- beg))
              (_ (mapc #'my/pycell--delete
                       (my/pycell--overlays start end 'my/pycell-md)))
              (help "RET/mouse-2: edit this markdown cell, mouse-1: show source")
@@ -4924,7 +4923,14 @@ error or on =ESC=.
                                                #'my/pycell-md-raw)
                             " ")))
              (ov (my/pycell--make-overlay start end))
-             (bov (overlay-get ov 'my/pycell-body)))
+             (bov (overlay-get ov 'my/pycell-body))
+             ;; The header rides a before-string on the boundary line, so
+             ;; it draws above the =# %%= comment without touching the
+             ;; invisible run — which must keep starting at a line end.
+             (hov (make-overlay (save-excursion (goto-char beg)
+                                                (forward-line -1)
+                                                (point))
+                                beg)))
         ;; The property carries the body bounds: the overlay starts
         ;; above the cell and ends before the final newline.
         (overlay-put ov 'my/pycell-md
@@ -4934,10 +4940,16 @@ error or on =ESC=.
         (when bov
           (overlay-put bov 'keymap my/pycell-md-map)
           (overlay-put bov 'help-echo help))
-        ;; The leading newline breaks the line above the cell; at the
-        ;; start of the buffer there is none to break.
-        (my/pycell--attach
-         ov (concat (unless (= start (point-min)) "\n") head) text)))
+        (overlay-put ov 'my/pycell-head hov)
+        (overlay-put hov 'evaporate t)
+        (overlay-put hov 'keymap my/pycell-md-map)
+        ;; The header covers the =# %%= text.  `invisible' on that text
+        ;; would move the start of the invisible run to a line start,
+        ;; where `scroll-down' fails; the before-string draws the header
+        ;; and a zero-width display property hides the comment.
+        (overlay-put hov 'before-string head)
+        (overlay-put hov 'display "")
+        (my/pycell--attach ov "" text)))
 
     (defun my/pycell-md-render-all ()
       "Render every markdown cell (=# %% [markdown]=) in the buffer."
