@@ -1637,7 +1637,8 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
       :right
       (((mood-line-segment-process)                                               . " ")
        ((mood-line-segment-buffer-status)                                         . " ")
-       ((mood-line-segment-misc-info)                                             . " ")
+       ;; ((mood-line-segment-misc-info)                                             . " ")
+       ((format-mode-line mode-line-misc-info)                                    . " ")
        ((mood-line-segment-major-mode)                                            . " ")
        ((mood-line-segment-vc)                                                    . " ")
        ((mood-line-segment-checker)                                               . " "))))
