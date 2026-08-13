@@ -5032,7 +5032,7 @@ python section below); a plain =python3= shell yields text only.
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package combobulate
     :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
