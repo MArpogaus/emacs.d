@@ -4496,8 +4496,8 @@ error or on =ESC=.
     (defun my/pycell--overlays (beg end &optional prop)
       "Return the result overlays between BEG and END.
     With PROP, return the overlays that carry PROP instead."
-      (let ((prop (or prop 'my/pycell)))
-        (seq-filter (lambda (o) (overlay-get o prop)) (overlays-in beg end))))
+      (seq-filter (lambda (o) (overlay-get o (or prop 'my/pycell)))
+                  (overlays-in beg end)))
 
     (defun my/pycell--delete (ov)
       "Delete the block overlay OV together with its helper overlays."
@@ -4506,13 +4506,15 @@ error or on =ESC=.
           (delete-overlay o)))
       (delete-overlay ov))
 
-    (defun my/pycell-remove-overlays (&optional beg end)
+    (defun my/pycell-remove-overlays (&optional beg end prop)
       "Remove the result overlays between BEG and END.
-    BEG and END default to the whole buffer."
+    BEG and END default to the whole buffer.  With PROP, remove the
+    overlays that carry PROP instead."
       (interactive)
       (without-restriction
         (mapc #'my/pycell--delete
-              (my/pycell--overlays (or beg (point-min)) (or end (point-max))))))
+              (my/pycell--overlays (or beg (point-min)) (or end (point-max))
+                                   prop))))
 
     (defun my/pycell--faced (string face)
       "Add FACE below the faces STRING already carries.  Return STRING.
@@ -4528,6 +4530,10 @@ error or on =ESC=.
                   'keymap (let ((map (make-sparse-keymap)))
                             (define-key map [mouse-1] command)
                             map)))
+
+    (defun my/pycell--icons (&rest buttons)
+      "Join the non-nil BUTTONS into the icon group of a header bar."
+      (concat (string-join (delq nil buttons) "  ") " "))
 
     (defun my/pycell--bar (left icons)
       "Return a header line: LEFT text, ICONS at the right window edge.
@@ -4634,23 +4640,18 @@ error or on =ESC=.
     TOTAL and SHOWN count the lines and the inline subset.  RUNTIME is
     the time in seconds since the cell started.  RUNNING is non-nil
     while the cell runs.  IMAGEP marks a result with an image."
-      (let* ((icons (concat (when imagep
-                              (concat (my/pycell--button
-                                       "⤓" "Save the result's image to a file"
-                                       #'my/pycell-save-image)
-                                      "  "))
-                            (when (> total 0)
-                              (concat (my/pycell--button
-                                       "⧉" "Copy this result"
-                                       #'my/pycell-copy-output)
-                                      "  "
-                                      (my/pycell--button
-                                       "↗" "Show this result in its own buffer"
-                                       #'my/pycell-pop-output)
-                                      "  "))
-                            (my/pycell--button "✕" "Discard this result"
-                                               #'my/pycell-discard-output)
-                            " "))
+      (let* ((icons (my/pycell--icons
+                     (when imagep
+                       (my/pycell--button "⤓" "Save the result's image to a file"
+                                          #'my/pycell-save-image))
+                     (when (> total 0)
+                       (my/pycell--button "⧉" "Copy this result"
+                                          #'my/pycell-copy-output))
+                     (when (> total 0)
+                       (my/pycell--button "↗" "Show this result in its own buffer"
+                                          #'my/pycell-pop-output))
+                     (my/pycell--button "✕" "Discard this result"
+                                        #'my/pycell-discard-output)))
              ;; The stopwatch drives the spinner: one frame for each tick.
              (state (cond ((eq running t)
                            (string ?\s (aref "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -4794,30 +4795,25 @@ error or on =ESC=.
 
     ;;;; Markdown cells
 
-    (defun my/pycell--md-cell-p (pos)
-      "Return non-nil when POS sits in the body of a markdown cell.
-    The header line above the body is =# %% [markdown]=."
+    (defun my/pycell--md-head (pos)
+      "Return the start of the =# %% [markdown]= line above POS, or nil.
+    A non-nil value marks POS as the body of a markdown cell."
       (save-excursion
         (goto-char pos)
         (forward-line -1)
-        (looking-at-p "# %% \\[markdown\\]")))
+        (and (looking-at-p "# %% \\[markdown\\]") (point))))
 
-    (defun my/pycell--fill-props (string props)
-      "Add the plist PROPS where STRING does not carry them yet.
+    (defun my/pycell--fill-prop (string prop value)
+      "Set PROP to VALUE where STRING does not carry PROP yet.
     Return STRING.  shr gives a link its own keymap and help echo; a
     plain `propertize' would clobber both, and the link would then run
     this block's commands instead of following the URL."
-      (let ((len (length string)))
-        (while props
-          (let ((prop (car props))
-                (value (cadr props))
-                (pos 0))
-            (setq props (cddr props))
-            (while (< pos len)
-              (let ((next (or (next-single-property-change pos prop string) len)))
-                (unless (get-text-property pos prop string)
-                  (put-text-property pos next prop value string))
-                (setq pos next))))))
+      (let ((pos 0) (len (length string)))
+        (while (< pos len)
+          (let ((next (or (next-single-property-change pos prop string) len)))
+            (unless (get-text-property pos prop string)
+              (put-text-property pos next prop value string))
+            (setq pos next))))
       string)
 
     (defun my/pycell--md-uncomment (text)
@@ -4903,34 +4899,31 @@ error or on =ESC=.
     move the window start over a run that begins at a line start, which
     is why the =# %%= line stays visible."
       (let* ((start (1- beg))
-             (_ (mapc #'my/pycell--delete
-                      (my/pycell--overlays start end 'my/pycell-md)))
+             (_ (my/pycell-remove-overlays start end 'my/pycell-md))
              (help "RET/mouse-2: edit this markdown cell, mouse-1: show source")
-             (text (my/pycell--fill-props
-                    (my/pycell--faced
-                     (my/pycell--md-rendered
-                      (my/pycell--md-uncomment
-                       (buffer-substring-no-properties beg end)))
-                     'default)
-                    (list 'keymap my/pycell-md-map 'help-echo help)))
+             (text (my/pycell--fill-prop
+                    (my/pycell--fill-prop
+                     (my/pycell--faced
+                      (my/pycell--md-rendered
+                       (my/pycell--md-uncomment
+                        (buffer-substring-no-properties beg end)))
+                      'default)
+                     'keymap my/pycell-md-map)
+                    'help-echo help))
              (head (my/pycell--bar
                     " markdown"
-                    (concat (my/pycell--button
-                             "↗" "Edit this markdown cell in its own buffer"
-                             #'my/pycell-md-edit)
-                            "  "
-                            (my/pycell--button "✕" "Show the plain source"
-                                               #'my/pycell-md-raw)
-                            " ")))
+                    (my/pycell--icons
+                     (my/pycell--button
+                      "↗" "Edit this markdown cell in its own buffer"
+                      #'my/pycell-md-edit)
+                     (my/pycell--button "✕" "Show the plain source"
+                                        #'my/pycell-md-raw))))
              (ov (my/pycell--make-overlay start end))
              (bov (overlay-get ov 'my/pycell-body))
-             ;; The header rides a before-string on the boundary line, so
-             ;; it draws above the =# %%= comment without touching the
-             ;; invisible run — which must keep starting at a line end.
-             (hov (make-overlay (save-excursion (goto-char beg)
-                                                (forward-line -1)
-                                                (point))
-                                beg)))
+             ;; The header rides on the boundary line, so it draws over
+             ;; the =# %%= comment without touching the invisible run —
+             ;; which must keep starting at a line end.
+             (hov (make-overlay (my/pycell--md-head beg) beg)))
         ;; The property carries the body bounds: the overlay starts
         ;; above the cell and ends before the final newline.
         (overlay-put ov 'my/pycell-md
@@ -4943,6 +4936,11 @@ error or on =ESC=.
         (overlay-put ov 'my/pycell-head hov)
         (overlay-put hov 'evaporate t)
         (overlay-put hov 'keymap my/pycell-md-map)
+        ;; A click on the header resolves to this overlay, so it must
+        ;; answer for the block: mark it, and point back at the main
+        ;; overlay, which holds the cell bounds.
+        (overlay-put hov 'my/pycell-md t)
+        (overlay-put hov 'my/pycell-main ov)
         ;; The header covers the =# %%= text.  `invisible' on that text
         ;; would move the start of the invisible run to a line start,
         ;; where `scroll-down' fails; the before-string draws the header
@@ -4975,17 +4973,22 @@ error or on =ESC=.
     (defun my/pycell-md-unrender ()
       "Show all markdown cells as their plain source again."
       (interactive)
-      (mapc #'my/pycell--delete
-            (my/pycell--overlays (point-min) (point-max) 'my/pycell-md)))
+      (my/pycell-remove-overlays (point-min) (point-max) 'my/pycell-md))
+
+    (defun my/pycell--md-at (event)
+      "Return the markdown block at point, or at the click in EVENT.
+    Always the main overlay: a click on the header bar lands on the
+    small overlay that draws it."
+      (let ((ov (or (my/pycell--at-point event 'my/pycell-md)
+                    (user-error "No rendered markdown cell here"))))
+        (or (overlay-get ov 'my/pycell-main) ov)))
 
     (defun my/pycell-md-raw (&optional event)
       "Show the markdown cell at point as plain source.
     The cell is then editable in place; evaluate it, or run
     `my/pycell-md-render-all', to render it again."
       (interactive (list last-input-event))
-      (my/pycell--delete
-       (or (my/pycell--at-point event 'my/pycell-md)
-           (user-error "No rendered markdown cell here"))))
+      (my/pycell--delete (my/pycell--md-at event)))
 
     (defvar-local my/pycell--md-source nil
       "Markdown cell (BUFFER BEG END) that this edit buffer feeds.")
@@ -5005,8 +5008,7 @@ error or on =ESC=.
     \\<my/pycell-md-edit-mode-map>\\[my/pycell-md-commit] puts it back \
     and renders it; \\[my/pycell-md-abort] discards the edit."
       (interactive (list last-input-event))
-      (pcase-let* ((ov (or (my/pycell--at-point event 'my/pycell-md)
-                           (user-error "No rendered markdown cell here")))
+      (pcase-let* ((ov (my/pycell--md-at event))
                    (`(,beg . ,end) (overlay-get ov 'my/pycell-md))
                    (src (current-buffer))
                    (md (my/pycell--md-uncomment
@@ -5018,10 +5020,12 @@ error or on =ESC=.
           (insert md)
           (markdown-mode)
           (my/pycell-md-edit-mode)
-          ;; With standard-keys-mode, the C-c prefix sits behind C-p;
-          ;; show both routes.
+          ;; The keys come from the keymap, so the hint stays true under
+          ;; `standard-keys-mode', which moves the C-c prefix to C-p.
           (setq header-line-format
-                " Markdown cell — apply: C-p C-c (C-c C-c), discard: C-p C-k")
+                (substitute-command-keys
+                 " Markdown cell — \\[my/pycell-md-commit] applies, \
+      \\[my/pycell-md-abort] discards"))
           (setq my/pycell--md-source (list src beg end)))
         (pop-to-buffer buf)))
 
@@ -5188,7 +5192,7 @@ error or on =ESC=.
     Without an interpreter, one starts and the cell follows on its
     first prompt."
       ;; ponytail: one cell at a time; add a queue if that ever chafes.
-      (if (my/pycell--md-cell-p start)
+      (if (my/pycell--md-head start)
           ;; Keep a running restart-and-run-all chain going — no prompt
           ;; will arrive to do it.
           (progn
