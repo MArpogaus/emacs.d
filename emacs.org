@@ -4578,6 +4578,11 @@ stored as an absolute path so the REPL keeps using that interpreter.
     (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
     (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 #+end_src
+**** [[https://github.com/z80dev/uv-mode.git][uv-mode]]
+Emacs integration for uv virtual environments.
+#+begin_src emacs-lisp
+  (use-package uv-mode)
+#+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
 #+begin_src emacs-lisp
