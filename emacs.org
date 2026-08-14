@@ -4418,6 +4418,8 @@ are specific to this configuration remain.
 #+begin_src emacs-lisp
   (use-package pycell
     :ensure (:host github :repo "MArpogaus/pycell")
+    ;; The package installs no hook itself; this is where it turns on.
+    :hook (code-cells-mode . pycell-mode-maybe)
     :config
     (with-eval-after-load 'auto-side-windows
       (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
