@@ -1991,9 +1991,7 @@ the edges the window does not have.
                                                        'face 'header-line))))))
            buttons
            " "
-           ;; Two pixels wide, so the cap lines up with the box edge
-           ;; window-box draws down the sides of the body.
-           (propertize " " 'face prefix-face 'display '(space :width (2)))))))
+           (propertize " " 'face prefix-face 'display '(space :width (1)))))))
     :custom
     ;; Of non of our rules apply try the following strategies to dispaly new buffers
     (display-buffer-base-action '((display-buffer-in-previous-window
