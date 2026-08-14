@@ -437,13 +437,13 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
     ;; Smoother scrolling
-    (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+    ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
     ;; 100 and not 101: above 100 redisplay may never recenter, and over
     ;; two display blocks taller than the window (pycell results) it then
     ;; hands the window from one block to the other endlessly.
-    (scroll-conservatively 100)                        ; Avoid recentering when scrolling far
-    (scroll-preserve-screen-position t)                ; Don't move point when scrolling
-    (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
+    ;; (scroll-conservatively 100)                        ; Avoid recentering when scrolling far
+    ;; (scroll-preserve-screen-position t)                ; Don't move point when scrolling
+    ;; (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
     (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
     (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
     (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
@@ -1968,6 +1968,10 @@ the edges the window does not have.
                        " "
                        (my/side-window-button "✕" "Close this side window and kill its buffers"
                                               #'my/side-window-kill))))
+          ;; The tail below aligns to the right edge of the text area and
+          ;; then runs on, so it needs a right margin to land in; window-box
+          ;; draws the sides from the fringes and leaves the margins alone.
+          (set-window-margins nil 1 1)
           (list
            (propertize prefix 'face prefix-face 'display '(space-width 0.7))
            " "
@@ -1987,7 +1991,9 @@ the edges the window does not have.
                                                        'face 'header-line))))))
            buttons
            " "
-           (propertize " " 'face prefix-face 'display '(space :width (1)))))))
+           ;; Two pixels wide, so the cap lines up with the box edge
+           ;; window-box draws down the sides of the body.
+           (propertize " " 'face prefix-face 'display '(space :width (2)))))))
     :custom
     ;; Of non of our rules apply try the following strategies to dispaly new buffers
     (display-buffer-base-action '((display-buffer-in-previous-window
