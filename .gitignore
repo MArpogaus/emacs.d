@@ -382,7 +382,8 @@ TSWLatexianTemp*
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -439,3 +440,6 @@ straight/*
 elpaca/*
 /.agent-shell/
 custom.el
+
+# local checkouts of the sibling package repositories
+/packages/
