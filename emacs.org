@@ -1890,6 +1890,14 @@ Revert buffers when the underlying file has changed
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
+**** [[https://github.com/MArpogaus/window-box][window-box]] :own:
+A rectangular box around a window: side windows read as panels.  The
+mode line and the header line stay as configured; the box only adds
+the edges the window does not have.
+#+begin_src emacs-lisp
+  (use-package window-box
+    :ensure (:host github :repo "MArpogaus/window-box"))
+#+end_src
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
@@ -1921,20 +1929,6 @@ Revert buffers when the underlying file has changed
                         '(" AGENDA " . mode-line-emphasis))
                        (t '(" ? " . mode-line-inactive)))))
         header-line-icon))
-    (defun my/install-top-side-window-face-remaps (buffer foreground background)
-      (with-current-buffer buffer
-        (unless (bound-and-true-p top-side-window-face-remaps-cookies)
-          (setq-local top-side-window-face-remaps-cookies
-                      (list
-                       (face-remap-add-relative 'header-line
-                                                `(:box nil :underline nil :overline ,foreground :foreground ,foreground :background ,background))
-                       (face-remap-add-relative 'fringe
-                                                `(:background ,foreground))
-                       (face-remap-add-relative 'mode-line-active
-                                                `(:overline ,foreground :underline nil :height 0))
-                       (face-remap-add-relative 'mode-line-inactive
-                                                `(:overline ,foreground :underline nil :height 0))
-                       )))))
     (defun my/side-window-button (label help command)
       "Return LABEL as a header-line button running COMMAND on mouse-1."
       (propertize label 'mouse-face 'highlight 'help-echo help
@@ -1974,9 +1968,6 @@ Revert buffers when the underlying file has changed
                        " "
                        (my/side-window-button "✕" "Close this side window and kill its buffers"
                                               #'my/side-window-kill))))
-          (set-window-fringes nil 1 1 t)
-          (set-window-margins nil 1 1)
-          (my/install-top-side-window-face-remaps buffer foreground background)
           (list
            (propertize prefix 'face prefix-face 'display '(space-width 0.7))
            " "
@@ -2085,19 +2076,21 @@ Revert buffers when the underlying file has changed
        shortdoc-mode))
 
     ;; Window parameters
-    (auto-side-windows-top-window-parameters `((mode-line-format . t)
+    (auto-side-windows-top-window-parameters `((mode-line-format . none)
                                                (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-right-window-parameters `((mode-line-format . t)
+    (auto-side-windows-right-window-parameters `((mode-line-format . none)
                                                  (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-bottom-window-parameters `((mode-line-format . t)
+    (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                   (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-before-display-hook '((lambda (buffer)
-                                               (with-current-buffer buffer
-                                                 (when (bound-and-true-p top-side-window-face-remaps-cookies)
-                                                   (dolist (cookie top-side-window-face-remaps-cookies)
-                                                     (face-remap-remove-relative cookie))
-                                                   (kill-local-variable 'top-side-window-face-remaps-cookies))))))
-    (auto-side-windows-before-toggle-hook auto-side-windows-before-display-hook)
+    ;; window-box draws the frame around every side window; detaching a
+    ;; buffer into a normal window takes the box away, and displaying it
+    ;; on a side brings it back.
+    (auto-side-windows-after-display-hook '((lambda (buffer &rest _)
+                                              (with-current-buffer buffer
+                                                (window-box-mode 1)))))
+    (auto-side-windows-before-toggle-hook '((lambda (buffer)
+                                              (with-current-buffer buffer
+                                                (window-box-mode -1)))))
     (window-combination-resize t)
     (window-sides-vertical t)
     (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
