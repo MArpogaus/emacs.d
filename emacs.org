@@ -2023,7 +2023,7 @@ the edges the window does not have.
        "^\\*diff-hl\\*$"
        "^\\*gptel-system\\*$"
        "^\\*jinx module compilation\\*$"
-       "^ \\*Install vterm\\*$"))
+       "^ \\*Install vterm\\* $"))
     (auto-side-windows-top-buffer-modes
      '(compilation-mode
        flymake-diagnostics-buffer-mode
