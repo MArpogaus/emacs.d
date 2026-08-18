@@ -1901,7 +1901,6 @@ the edges the window does not have.
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
-    :ensure (:host github :repo "MArpogaus/auto-side-windows")
     :preface
     (defun my/get-header-line-icon-for-buffer (buffer)
       (with-current-buffer buffer
