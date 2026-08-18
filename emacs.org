@@ -1967,30 +1967,30 @@ the edges the window does not have.
                        " "
                        (my/side-window-button "✕" "Close this side window and kill its buffers"
                                               #'my/side-window-kill))))
-          ;; The tail below aligns to the right edge of the text area and
-          ;; then runs on, so it needs a right margin to land in; window-box
-          ;; draws the sides from the fringes and leaves the margins alone.
-          (set-window-margins nil 1 1)
+          ;; The header carries content only.  window-box's row wrapper
+          ;; caps the row's ends and owns its edges; a margin write on
+          ;; every redisplay, a tail past `right', and a cap of this
+          ;; header's own all fought it — magit's log margin and a
+          ;; colored fragment left of the edge were the visible fight.
           (list
            (propertize prefix 'face prefix-face 'display '(space-width 0.7))
            " "
            header-line-format
            ;; Pixel-exact: measure the buttons with the face they render
            ;; in — a bare string would be measured in the default font,
-           ;; `string-width' merely counts columns.  In the display spec,
-           ;; `right' and `-' belong to the spec language (hence outside
-           ;; the unquote), and (N) denotes N pixels.
-           ;; Measuring the buttons without their trailing space shifts
-           ;; the tail one space into the right margin, flush with the
-           ;; window edge.
+           ;; `string-width' merely counts columns.
+           ;; `right' is the right edge of the text area; a display
+           ;; margin — magit's log keeps its dates in one — sits beyond
+           ;; it, and this row spans the margin.  Give the margin's
+           ;; width back, or the buttons strand mid-row.
            (propertize " " 'display
                        `(space :align-to
-                               (- right (,(string-pixel-width
-                                           (propertize buttons
-                                                       'face 'header-line))))))
-           buttons
-           " "
-           (propertize " " 'face prefix-face 'display '(space :width (1)))))))
+                               (- right (,(- (string-pixel-width
+                                              (propertize buttons
+                                                          'face 'header-line))
+                                             (* (or (cdr (window-margins)) 0)
+                                                (frame-char-width)))))))
+           buttons))))
     :custom
     ;; Of non of our rules apply try the following strategies to dispaly new buffers
     (display-buffer-base-action '((display-buffer-in-previous-window
