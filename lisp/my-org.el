@@ -598,6 +598,7 @@ context.  When called with an argument, unconditionally call
 
 ;; ox-beamer :build_in:
 
+
 (use-package ox-beamer
   :ensure nil
   :after ox
@@ -608,6 +609,7 @@ context.  When called with an argument, unconditionally call
                '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
 
 ;; ox-extra :build_in:
+
 
 (use-package ox-extra
   :ensure nil

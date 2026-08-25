@@ -134,8 +134,8 @@ from there.")
            (prefix (car prefix-and-face))
            (foreground (face-foreground (cdr prefix-and-face)))
            (background (face-background (cdr prefix-and-face) nil 'default))
-           ;; Emacs 31 draws a header line with `header-line-active' in
-           ;; the selected window and `header-line-inactive' in all the
+           ;; A header line is drawn with `header-line-active' in the
+           ;; selected window and `header-line-inactive' in all the
            ;; others.  A face named here has to say which of the two it
            ;; sits on: it takes its font from it, and the measurement
            ;; below strands the buttons when it is taken in the other.
@@ -190,9 +190,9 @@ from there.")
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 
-  ;; Emacs 31 shows the target of a jump through `display-buffer' under
-  ;; the `xref-jump' category.  A definition is what the jump is for, so
-  ;; it lands in an ordinary window and never in a panel.
+  ;; A jump shows its target through `display-buffer' under the
+  ;; `xref-jump' category.  The definition is what the jump is for, so it
+  ;; lands in an ordinary window and never in a panel.
   (display-buffer-alist
    '(((category . xref-jump)
       (display-buffer-reuse-window display-buffer-use-some-window)
@@ -530,7 +530,7 @@ buffer's text scale."
   (recentf-keep '(file-remote-p file-readable-p))
   (recentf-max-menu-items 10)
   (recentf-max-saved-items 100)
-  ;; Emacs 31 saves the list on a timer, so a crash costs at most this.
+  ;; The list is saved on a timer, so a crash costs at most this much of it.
   (recentf-autosave-interval 300)
   (recentf-show-messages nil)
   :config
@@ -619,7 +619,7 @@ buffer's text scale."
 (use-package saveplace
   :ensure nil
   :custom
-  ;; Emacs 31 saves the places on a timer, not only when Emacs exits.
+  ;; The places are saved on a timer, not only when Emacs exits.
   (save-place-autosave-interval 300)
   :preface
   (defun my/saveplace-recenter (&rest _)
@@ -648,6 +648,8 @@ buffer's text scale."
   (wgrep-auto-save-buffer t))
 
 ;; window :build_in:
+;; Window sizes, splits and whole layouts: =R= rotates the layout and =W=
+;; rotates the windows through it.
 
 (use-package window
   :ensure nil

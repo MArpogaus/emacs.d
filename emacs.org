@@ -18,7 +18,7 @@ Here are some notable features:
 
 - *Minimal UI:* The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen efficiency. Additional packages like [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]], [[https://github.com/doomemacs/themes][doom-themes]], [[https://gitlab.com/jessieh/mood-line.git][mood-line]], [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]] and [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]] are used to ensure a distraction free and consistent, yet modern design.
 
-- *Optimized UX:* Several build-in packages like =autorevert=, =del-sel=, =elec-pair=, =hide-show-mode=, =outline-mode=, =saveplace= and =savehist= are enabled and configured for optimal user experience. Additionally, third-party packages like [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]] and [[https://github.com/karthink/popper.git][popper]] are used for a more streamlined window layout and management, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
+- *Optimized UX:* Several built-in packages like =autorevert=, =delsel=, =elec-pair=, =hideshow=, =outline=, =saveplace= and =savehist= are enabled and configured for optimal user experience. The window layout is managed by [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-windows]], which puts a buffer on the side it belongs to, and [[https://github.com/MArpogaus/window-box][window-box]], which draws those sides as panels, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
 
@@ -1492,8 +1492,8 @@ Enable line numbers for some modes
     :after doom-themes)
 #+end_src
 **** mode-line-invisible :build_in:
-Emacs 31 hides a buffer's mode line by itself.  Only the whole-session
-switch is missing, and a globalized mode is the whole of it.
+Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
+whole-session switch is a globalized mode of its own.
 #+begin_src emacs-lisp
   (define-globalized-minor-mode my/global-mode-line-invisible-mode
     mode-line-invisible-mode
@@ -1991,8 +1991,8 @@ the edges the window does not have.
              (prefix (car prefix-and-face))
              (foreground (face-foreground (cdr prefix-and-face)))
              (background (face-background (cdr prefix-and-face) nil 'default))
-             ;; Emacs 31 draws a header line with `header-line-active' in
-             ;; the selected window and `header-line-inactive' in all the
+             ;; A header line is drawn with `header-line-active' in the
+             ;; selected window and `header-line-inactive' in all the
              ;; others.  A face named here has to say which of the two it
              ;; sits on: it takes its font from it, and the measurement
              ;; below strands the buttons when it is taken in the other.
@@ -2047,9 +2047,9 @@ the edges the window does not have.
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
-    ;; Emacs 31 shows the target of a jump through `display-buffer' under
-    ;; the `xref-jump' category.  A definition is what the jump is for, so
-    ;; it lands in an ordinary window and never in a panel.
+    ;; A jump shows its target through `display-buffer' under the
+    ;; `xref-jump' category.  The definition is what the jump is for, so it
+    ;; lands in an ordinary window and never in a panel.
     (display-buffer-alist
      '(((category . xref-jump)
         (display-buffer-reuse-window display-buffer-use-some-window)
@@ -2400,7 +2400,7 @@ Paren mode for highlighting matcing paranthesis
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
     (recentf-max-saved-items 100)
-    ;; Emacs 31 saves the list on a timer, so a crash costs at most this.
+    ;; The list is saved on a timer, so a crash costs at most this much of it.
     (recentf-autosave-interval 300)
     (recentf-show-messages nil)
     :config
@@ -2489,7 +2489,7 @@ Record cursor position from one session to the other
   (use-package saveplace
     :ensure nil
     :custom
-    ;; Emacs 31 saves the places on a timer, not only when Emacs exits.
+    ;; The places are saved on a timer, not only when Emacs exits.
     (save-place-autosave-interval 300)
     :preface
     (defun my/saveplace-recenter (&rest _)
@@ -2518,6 +2518,8 @@ Writable grep buffer and apply the changes to files.
     (wgrep-auto-save-buffer t))
 #+end_src
 **** window :build_in:
+Window sizes, splits and whole layouts: =R= rotates the layout and =W=
+rotates the windows through it.
 #+begin_src emacs-lisp
   (use-package window
     :ensure nil
@@ -4184,6 +4186,8 @@ Enhancements to Emacs' built in project library.
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** speedbar :build_in:
+A tree of the files and the symbols around the current one, in a window of
+this frame rather than a frame of its own.
 #+begin_src emacs-lisp
   (use-package speedbar
     :ensure nil
@@ -4202,7 +4206,7 @@ Enhancements to Emacs' built in project library.
     ;; make speedbar update automaticaly, and dont use ugly icons(images)
     (speedbar-update-flag t)
     (speedbar-use-images nil)
-    ;; Emacs 31 can show speedbar in a side window instead of its own frame.
+    ;; A window of this frame, not a frame of its own.
     (speedbar-prefer-window t)
 
     :bind
@@ -4663,8 +4667,8 @@ Childframe doc for eglot and anything that uses eldoc.
       (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 #+end_src
 **** elisp-mode :build_in:
-Emacs 31 can fontify Emacs Lisp from a code analysis rather than from the
-symbol alone, so a let-bound variable no longer reads as a function call.
+Font lock for Emacs Lisp from a code analysis rather than from the symbol
+alone: a let-bound variable no longer reads as a function call.
 #+begin_src emacs-lisp
   (use-package elisp-mode
     :ensure nil
@@ -4739,7 +4743,7 @@ Universal on-the-fly syntax checker for Emacs.
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe)
-    ;; Emacs 31 lays the message out below its line and points at the spot.
+    ;; Lay the message out below its line, pointing at the spot it is about.
     (flymake-show-diagnostics-at-end-of-line 'fancy)
     :hook
     ((prog-mode conf-mode) . flymake-mode))
@@ -4754,8 +4758,9 @@ Auto-format source code in many languages with one command.
           ("f" . format-all-buffer)))
 #+end_src
 **** hideshow :build_in:
-Code folding.  Emacs 31 folds tree-sitter blocks through the =list= thing,
-which is what =treesit-fold= was here for.
+Code folding.  Hideshow reads tree-sitter's =list= thing where the mode
+defines one, so a parsed buffer folds the same way as an unparsed one and
+folding needs no package of its own.
 #+begin_src emacs-lisp
   (use-package hideshow
     :ensure nil
@@ -4766,8 +4771,10 @@ which is what =treesit-fold= was here for.
     :bind
     (:map hs-minor-mode-map
           ("<backtab>" . hs-cycle))
+    ;; YAML folds by indentation with `outline-indent', which is the one
+    ;; folding UI that buffer needs.
     :hook
-    ((prog-mode conf-mode yaml-ts-mode) . hs-minor-mode))
+    ((prog-mode conf-mode) . hs-minor-mode))
 #+end_src
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 Emacs major mode for editing Lua.
@@ -4865,8 +4872,9 @@ Display symbols (functions, variables, etc) in a side window.
     (symbols-outline-follow-mode))
 #+end_src
 **** treesit :build_in:
-Emacs 31 remaps major modes to their tree-sitter variants and installs the
-missing grammars itself, so no external package is needed.
+The tree-sitter modes in place of their classic counterparts, with the
+grammars fetched as they are wanted: =treesit-enabled-modes= does the
+remapping and =treesit-auto-install-grammar= the fetching.
 #+begin_src emacs-lisp
   (use-package treesit
     :ensure nil

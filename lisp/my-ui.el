@@ -61,8 +61,8 @@
   :after doom-themes)
 
 ;; mode-line-invisible :build_in:
-;; Emacs 31 hides a buffer's mode line by itself.  Only the whole-session
-;; switch is missing, and a globalized mode is the whole of it.
+;; Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
+;; whole-session switch is a globalized mode of its own.
 
 (define-globalized-minor-mode my/global-mode-line-invisible-mode
   mode-line-invisible-mode
