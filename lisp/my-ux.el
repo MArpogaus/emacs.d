@@ -134,8 +134,16 @@ from there.")
            (prefix (car prefix-and-face))
            (foreground (face-foreground (cdr prefix-and-face)))
            (background (face-background (cdr prefix-and-face) nil 'default))
-           (prefix-face (list :inherit 'bold :background background :foreground foreground :inverse-video t))
-           (buffer-face (list :inherit 'bold))
+           ;; Emacs 31 draws a header line with `header-line-active' in
+           ;; the selected window and `header-line-inactive' in all the
+           ;; others.  A face named here has to say which of the two it
+           ;; sits on: it takes its font from it, and the measurement
+           ;; below strands the buttons when it is taken in the other.
+           (row-face (if (mode-line-window-selected-p)
+                         'header-line-active
+                       'header-line-inactive))
+           (prefix-face (list :inherit (list 'bold row-face) :background background :foreground foreground :inverse-video t))
+           (buffer-face (list :inherit (list 'bold row-face) :underline nil))
            (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face)))
            (buttons (concat
                      (my/side-window-button "─" "Hide this side window"
@@ -167,7 +175,7 @@ from there.")
                      `(space :align-to
                              (- right (,(- (string-pixel-width
                                             (propertize buttons
-                                                        'face 'header-line))
+                                                        'face row-face))
                                            (* (or (cdr (window-margins)) 0)
                                               (frame-char-width)))))))
          buttons))))
@@ -181,6 +189,14 @@ from there.")
                                 ))
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
+
+  ;; Emacs 31 shows the target of a jump through `display-buffer' under
+  ;; the `xref-jump' category.  A definition is what the jump is for, so
+  ;; it lands in an ordinary window and never in a panel.
+  (display-buffer-alist
+   '(((category . xref-jump)
+      (display-buffer-reuse-window display-buffer-use-some-window)
+      (some-window . mru))))
 
   ;; Dont resue sidewindows if there are still free slots
   (auto-side-windows-reuse-mode-window nil)
@@ -514,6 +530,9 @@ buffer's text scale."
   (recentf-keep '(file-remote-p file-readable-p))
   (recentf-max-menu-items 10)
   (recentf-max-saved-items 100)
+  ;; Emacs 31 saves the list on a timer, so a crash costs at most this.
+  (recentf-autosave-interval 300)
+  (recentf-show-messages nil)
   :config
   (add-to-list 'recentf-exclude
                (recentf-expand-file-name no-littering-var-directory))
@@ -541,16 +560,14 @@ buffer's text scale."
          (put cmd 'repeat-map (unless unset keymap))))
      (symbol-value keymap)))
   :config
-  (with-eval-after-load 'smerge-mode
-    (my/repeatize-keymap 'smerge-basic-map))
   (with-eval-after-load 'which-key
     (setopt repeat-echo-function #'ignore)
     ;; Spawn or hide a which-key popup
     (advice-add 'repeat-post-hook :after
                 (defun repeat-help--which-key-popup ()
-                  (if-let ((cmd (or this-command real-this-command))
-                           (keymap (or repeat-map
-                                       (repeat--command-property 'repeat-map))))
+                  (if-let* ((cmd (or this-command real-this-command))
+                            (keymap (or repeat-map
+                                        (repeat--command-property 'repeat-map))))
                       (run-at-time
                        0 nil
                        (lambda ()
@@ -558,15 +575,6 @@ buffer's text scale."
                           nil (symbol-value keymap))))
                     (which-key--hide-popup)))))
   :hook elpaca-after-init)
-
-;; [[https://github.com/daichirata/emacs-rotate.git][rotate]]
-;; Rotate the layout of emacs.
-
-(use-package rotate
-  :bind
-  (:repeat-map my/window-map
-               ("R" . rotate-layout)
-               ("W" . rotate-window)))
 
 ;; savehist :build_in:
 
@@ -610,6 +618,9 @@ buffer's text scale."
 
 (use-package saveplace
   :ensure nil
+  :custom
+  ;; Emacs 31 saves the places on a timer, not only when Emacs exits.
+  (save-place-autosave-interval 300)
   :preface
   (defun my/saveplace-recenter (&rest _)
     (when buffer-file-name (ignore-errors (recenter))))
@@ -643,6 +654,12 @@ buffer's text scale."
   :custom
   (window-resize-pixelwise t)   ; Resize windows pixelwise
   (frame-resize-pixelwise t)    ; Resize frame pixelwise
+  ;; `kill-buffer' hands the window to `quit-restore-window', so killing
+  ;; a buffer undoes the display that showed it instead of leaving the
+  ;; window behind with something arbitrary in it.
+  (kill-buffer-quit-windows t)
+  ;; And `q' kills the buffers that are worth nothing once read.
+  (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
   :config
   (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
   :bind
@@ -664,6 +681,8 @@ buffer's text scale."
    ("h" . split-window-horizontally)
    ("m" . delete-other-windows)
    ("M" . delete-other-windows-vertically)
+   ("R" . window-layout-rotate-clockwise)
+   ("W" . rotate-windows)
    :exit
    ("=" . balance-windows)))
 

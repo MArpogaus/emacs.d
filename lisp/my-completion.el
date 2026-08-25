@@ -34,15 +34,7 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
-
-  ;; The advices are only needed on Emacs 28 and older.
-  (when (< emacs-major-version 29)
-    ;; Silence the pcomplete capf, no errors or messages!
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure `completion-at-point-function'.
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+  )
 
 ;; [[https://github.com/emacs-citar/citar.git][citar]]
 ;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -312,12 +304,6 @@
                     (corfu-mode)))
    ;; Enable minibuffer completion
    (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
-
-(use-package corfu-terminal
-  :if (not (display-graphic-p))
-  :after corfu
-  :hook
-  (global-corfu-mode . corfu-terminal-mode))
 
 ;; dabbrev :build_in:
 

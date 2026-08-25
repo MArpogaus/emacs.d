@@ -60,12 +60,18 @@
   :ensure (:host github :repo "ember-theme/emacs")
   :after doom-themes)
 
-;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
-;; An Emacs plugin that hides (or masks) the current buffer's mode-line.
+;; mode-line-invisible :build_in:
+;; Emacs 31 hides a buffer's mode line by itself.  Only the whole-session
+;; switch is missing, and a globalized mode is the whole of it.
 
-(use-package hide-mode-line
+(define-globalized-minor-mode my/global-mode-line-invisible-mode
+  mode-line-invisible-mode
+  (lambda () (mode-line-invisible-mode 1)))
+
+(use-package emacs
+  :ensure nil
   :hook
-  (symbols-outline-mode . hide-mode-line-mode))
+  (symbols-outline-mode . mode-line-invisible-mode))
 
 ;; hl-line :build_in:
 

@@ -387,6 +387,15 @@
     (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
     (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 
+;; elisp-mode :build_in:
+;; Emacs 31 can fontify Emacs Lisp from a code analysis rather than from the
+;; symbol alone, so a let-bound variable no longer reads as a function call.
+
+(use-package elisp-mode
+  :ensure nil
+  :custom
+  (elisp-fontify-semantically t))
+
 ;; [[https://codeberg.org/pastor/ben.el][ben]]
 ;; Asynchronous fork of envrc: https://github.com/purcell/envrc
 
@@ -455,6 +464,8 @@
   :custom
   ;; Let git gutter have left fringe, flymake can have right fringe
   (flymake-fringe-indicator-position 'right-fringe)
+  ;; Emacs 31 lays the message out below its line and points at the spot.
+  (flymake-show-diagnostics-at-end-of-line 'fancy)
   :hook
   ((prog-mode conf-mode) . flymake-mode))
 
@@ -466,6 +477,22 @@
   :bind
   (:map my/toggle-map
         ("f" . format-all-buffer)))
+
+;; hideshow :build_in:
+;; Code folding.  Emacs 31 folds tree-sitter blocks through the =list= thing,
+;; which is what =treesit-fold= was here for.
+
+(use-package hideshow
+  :ensure nil
+  :custom
+  ;; Say how much a fold swallowed.  The indicators stay off: they draw
+  ;; in the fringe, where diff-hl already draws.
+  (hs-display-lines-hidden t)
+  :bind
+  (:map hs-minor-mode-map
+        ("<backtab>" . hs-cycle))
+  :hook
+  ((prog-mode conf-mode yaml-ts-mode) . hs-minor-mode))
 
 ;; [[https://github.com/immerrr/lua-mode.git][lua]]
 ;; Emacs major mode for editing Lua.
@@ -562,15 +589,15 @@ window it already made, so a key bound to it cannot put the panel away."
     (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
   (symbols-outline-follow-mode))
 
-;; [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
-;; built-in tree-sitter integration for Emacs
+;; treesit :build_in:
+;; Emacs 31 remaps major modes to their tree-sitter variants and installs the
+;; missing grammars itself, so no external package is needed.
 
-(use-package treesit-auto
-  :if (>= emacs-major-version 29)
+(use-package treesit
+  :ensure nil
   :custom
-  (treesit-auto-install 'prompt)
-  :hook
-  (elpaca-after-init . global-treesit-auto-mode))
+  (treesit-enabled-modes t)
+  (treesit-auto-install-grammar 'ask))
 
 ;; yaml-ts-mode :build_in:
 ;; The emacs major mode for editing files in the YAML data serialization format.
