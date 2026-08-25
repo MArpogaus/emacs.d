@@ -96,6 +96,8 @@
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:
+;; A tree of the files and the symbols around the current one, in a window of
+;; this frame rather than a frame of its own.
 
 (use-package speedbar
   :ensure nil
@@ -114,7 +116,7 @@
   ;; make speedbar update automaticaly, and dont use ugly icons(images)
   (speedbar-update-flag t)
   (speedbar-use-images nil)
-  ;; Emacs 31 can show speedbar in a side window instead of its own frame.
+  ;; A window of this frame, not a frame of its own.
   (speedbar-prefer-window t)
 
   :bind
