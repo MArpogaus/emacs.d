@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -70,35 +70,163 @@
 
 ;; [[https://github.com/astoff/code-cells.el.git][code-cells]]
 ;; Emacs utilities for code split into cells, including Jupyter notebooks.
+;; Two binding layers, mimicking JupyterLab: modified keys for /edit mode/
+;; (the =<return>= family, =C-<up>/<down>= navigation, =M-S-<up>/<down>= to
+;; move cells), and =my/code-cells-repeat-map= as /command mode/ — entered
+;; through any of its commands or via =SPC j=, single keys (=n p j k e r a b
+;; c i o O 0 R=) then chain until a foreign key exits.  =C-c C-c= interrupts
+;; the running cell, as in the REPL (with =standard-keys-mode= that is
+;; =C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
+;; No other prefix bindings, and no plain speed keys, which meow's normal
+;; state would shadow.  Rarely used commands (split, merge, markdown cells)
+;; are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
 
 (use-package code-cells
   :preface
-  (defun my/code-cells-eval (start end)
-    (interactive (code-cells--bounds (prefix-numeric-value current-prefix-arg)
-                                     'use-region
-                                     'no-header))
-    (code-cells-eval start end)
-    (code-cells-forward-cell 1))
+  (defvar my/code-cells-repeat-map (make-sparse-keymap)
+    "key-map for code cell commands")
+  (defun my/code-cells-insert-below ()
+    "Insert a new cell below the current one (JupyterLab: b)."
+    (interactive)
+    (pcase-let ((`(,_ ,end) (code-cells--bounds)))
+      (goto-char end)
+      (unless (bolp) (insert "\n"))
+      (insert "# %%\n\n")
+      (forward-line -1)))
+  (defun my/code-cells-insert-above ()
+    "Insert a new cell above the current one (JupyterLab: a)."
+    (interactive)
+    (pcase-let ((`(,start ,_) (code-cells--bounds)))
+      (goto-char start)
+      (insert "# %%\n\n")
+      (forward-line -1)))
+  (defun my/code-cells-split ()
+    "Split the current cell at point (JupyterLab: C-S--)."
+    (interactive)
+    (unless (bolp) (insert "\n"))
+    (insert "# %%\n"))
+  (defun my/code-cells-merge-above ()
+    "Merge the current cell with the one above (JupyterLab: S-m)."
+    (interactive)
+    (pcase-let ((`(,start ,_) (code-cells--bounds)))
+      (goto-char start)
+      (when (and (looking-at-p code-cells-boundary-regexp)
+                 (/= start (point-min)))
+        (delete-region start (progn (forward-line) (point))))))
+  (defun my/code-cells-merge-below ()
+    "Merge the current cell with the one below."
+    (interactive)
+    (pcase-let ((`(,_ ,end) (code-cells--bounds)))
+      (save-excursion
+        (goto-char end)
+        (when (looking-at-p code-cells-boundary-regexp)
+          (delete-region end (progn (forward-line) (point)))))))
+  (defun my/code-cells-eval-and-insert-below (arg)
+    "Evaluate the current cell and insert a new one below (JupyterLab: M-RET)."
+    (interactive "p")
+    (pcase-let ((`(,start ,end) (code-cells--bounds arg nil t)))
+      (code-cells-eval start end))
+    (my/code-cells-insert-below))
+  (defun my/code-cells-insert-markdown-below ()
+    "Insert a jupytext markdown cell below the current one (JupyterLab: m)."
+    (interactive)
+    (my/code-cells-insert-below)
+    (save-excursion
+      (forward-line -1)
+      (end-of-line)
+      (insert " [markdown]"))
+    (insert "# "))
+  :init
+  (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
   :config
-  (add-to-list 'code-cells-eval-region-commands '(python-base-mode . python-shell-send-region))
-  ;; Setup speed keys
-  (let ((map code-cells-mode-map))
-    (define-key map "n" (code-cells-speed-key 'code-cells-forward-cell))
-    (define-key map "p" (code-cells-speed-key 'code-cells-backward-cell))
-    (define-key map "e" (code-cells-speed-key 'code-cells-eval))
-    (define-key map (kbd "TAB") (code-cells-speed-key 'outline-cycle)))
+  ;; code-cells' own C-c % prefix map declares `:repeat t', claiming the
+  ;; repeat-map property of the very commands bound in our repeat map when
+  ;; the package loads.  Drop that prefix and re-assert our map, so the
+  ;; repeat chain and `SPC j' stay one and the same.
+  (keymap-unset code-cells-mode-map "C-c %" t)
+  (my/repeatize-keymap 'code-cells--prefix-map t)
+  (my/repeatize-keymap 'my/code-cells-repeat-map)
   :bind
   (:map code-cells-mode-map
-        ("M-S-<down>"   . outline-move-subtree-down)
+        ;; evaluation
+        ("C-<return>"   . code-cells-eval)
+        ("S-<return>"   . code-cells-eval-and-step)
+        ("C-S-<return>" . code-cells-eval-and-step)
+        ("M-<return>"   . my/code-cells-eval-and-insert-below)
+        ("C-M-<return>" . pycell-restart-and-run-all)
+        ;; navigation
+        ("C-<up>"       . code-cells-backward-cell)
+        ("C-<down>"     . code-cells-forward-cell)
+        ;; cell structure
+        ("M-S-<up>"     . code-cells-move-cell-up)
+        ("M-S-<down>"   . code-cells-move-cell-down)
+        ;; outline
         ("M-S-<right>"  . outline-demote)
         ("M-S-<left>"   . outline-promote)
-        ("M-S-<up>"     . outline-move-subtree-up)
-        ("M-<return>"   . outline-insert-heading)
         ("C-S-<tab>"    . outline-cycle-buffer)
         ("C-<backtab>"  . outline-cycle-buffer)
-        ("C-S-<return>" . my/code-cells-eval))
+        ;; interrupt, under the C-c prefix like in the REPL; reachable as
+        ;; C-p C-c through standard-keys' dynamic prefix, and as plain
+        ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
+        ("C-c C-c"      . pycell-interrupt)
+        ;; "command mode" à la JupyterLab: any entry key activates the
+        ;; repeat map, single keys then chain until a foreign key exits.
+        ;; The same map hangs off the leader as `SPC j'.
+        :map my/code-cells-repeat-map
+        ("n" . code-cells-forward-cell)
+        ("p" . code-cells-backward-cell)
+        ("j" . code-cells-forward-cell)
+        ("k" . code-cells-backward-cell)
+        ("e" . code-cells-eval)
+        ("r" . code-cells-eval-and-step)
+        ("a" . my/code-cells-insert-above)
+        ("b" . my/code-cells-insert-below)
+        ("c" . pycell-copy-output)
+        ("i" . pycell-interrupt)
+        ("o" . pycell-toggle-output)
+        ("O" . pycell-remove-overlays)
+        ("0" . pycell-restart)
+        ("R" . pycell-restart-and-run-all))
   :hook
   (python-base-mode . code-cells-mode-maybe))
+
+;; [[https://github.com/MArpogaus/pycell][pycell]] :own:
+;; Notebook style results for Python code cells: the output of an evaluated
+;; cell shows up below it, and markdown cells render in place.  This used to
+;; be a long block right here; it is a package now, so only the parts that
+;; are specific to this configuration remain.
+
+(use-package pycell
+  :ensure (:host github :repo "MArpogaus/pycell")
+  ;; The package installs no hook itself; this is where it turns on.
+  :hook (code-cells-mode . pycell-mode-maybe)
+  :config
+  (with-eval-after-load 'auto-side-windows
+    (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
+      (add-to-list 'auto-side-windows-right-buffer-names name))))
+
+;; [[https://github.com/mickeynp/combobulate.git][combobulate]]
+;; Structured Editing and Navigation in Emacs.
+
+(use-package combobulate
+  :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
+  :custom
+  ;; Disable combobulate key prefix
+  (combobulate-key-prefix nil)
+  :config
+  (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
+  :bind
+  (:map combobulate-key-map
+        ("S-<left>"  . combobulate-navigate-previous)
+        ("S-<right>" . combobulate-navigate-next)
+        ("S-<down>"  . combobulate-navigate-down)
+        ("S-<up>"    . combobulate-navigate-up)
+        ("M-<left>"  . combobulate-navigate-logical-previous)
+        ("M-<right>" . combobulate-navigate-logical-next)
+        ("M-<down>"  . combobulate-drag-down)
+        ("M-<up>"    . combobulate-drag-up))
+  :hook
+  ((prog-mode yaml-ts-mode) . combobulate-mode))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -387,6 +515,11 @@
   (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
   (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 
+;; [[https://github.com/z80dev/uv-mode.git][uv-mode]]
+;; Emacs integration for uv virtual environments.
+
+(use-package uv-mode)
+
 ;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 ;; Generate Sphinx friendly docstrings for Python functions in Emacs.
 
@@ -399,9 +532,27 @@
 ;; Display symbols (functions, variables, etc) in a side window.
 
 (use-package symbols-outline
+  :preface
+  (defun my/symbols-outline-toggle ()
+    "Show the symbols outline, or close its window when it is up.
+`symbols-outline-show' only ever shows: called again it selects the
+window it already made, so a key bound to it cannot put the panel away."
+    (interactive)
+    (if-let* ((window (and
+                       (bound-and-true-p symbols-outline-buffer-name)
+                       (get-buffer-window symbols-outline-buffer-name))))
+        (delete-window window)
+      (symbols-outline-show)))
   :bind
   (:map my/toggle-map
-        ("o" . symbols-outline-show))
+        ("o" . my/symbols-outline-toggle))
+  ;; `symbols-outline-show' calls `display-buffer-in-side-window' itself
+  ;; rather than `display-buffer', so `display-buffer-alist' never sees
+  ;; it: auto-side-windows does not dress this panel and
+  ;; `auto-side-windows-after-display-hook' does not run for it.  The
+  ;; mode is the buffer's, so the buffer asks for it here, and
+  ;; `window-box-window-predicate' still decides the place.
+  :hook (symbols-outline-mode . window-box-mode)
   :custom
   (symbols-outline-window-position 'left)
   :config

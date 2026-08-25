@@ -1896,7 +1896,20 @@ mode line and the header line stay as configured; the box only adds
 the edges the window does not have.
 #+begin_src emacs-lisp
   (use-package window-box
-    :ensure (:host github :repo "MArpogaus/window-box"))
+    :ensure (:host github :repo "MArpogaus/window-box")
+    :custom
+    ;; The header line and the mode line inside the box, a tab line
+    ;; outside it: `window-box-encloses' was one set of rows and is now
+    ;; these two, so that the inside cannot be asked for in pieces.
+    (window-box-enclose-top 'header-line)
+    (window-box-enclose-mode-line t)
+    ;; The mode belongs to the buffer, and Emacs can show one buffer in a
+    ;; panel and in an ordinary window at the same time.  A box belongs to
+    ;; the place: the side windows wear it and the ordinary windows do not.
+    (window-box-window-predicate
+     (lambda (window)
+       (and (window-parameter window 'window-side)
+            (not (buffer-match-p "^ \\*SIDE :: " (window-buffer window)))))))
 #+end_src
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
@@ -1928,6 +1941,16 @@ the edges the window does not have.
                         '(" AGENDA " . mode-line-emphasis))
                        (t '(" ? " . mode-line-inactive)))))
         header-line-icon))
+    (defvar my/side-window-drag-map
+      (let ((map (make-sparse-keymap)))
+        (define-key map [header-line down-mouse-1]
+                    #'auto-side-windows-drag-slot)
+        map)
+      "Keymap that turns part of a header line into a drag handle.
+  Emacs binds a press on a header line to `mouse-drag-header-line', which
+  resizes the window, so the press is the event to take: a keymap on the
+  text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+  from there.")
     (defun my/side-window-button (label help command)
       "Return LABEL as a header-line button running COMMAND on mouse-1."
       (propertize label 'mouse-face 'highlight 'help-echo help
@@ -1973,7 +1996,9 @@ the edges the window does not have.
           ;; header's own all fought it — magit's log margin and a
           ;; colored fragment left of the edge were the visible fight.
           (list
-           (propertize prefix 'face prefix-face 'display '(space-width 0.7))
+           (propertize prefix 'face prefix-face 'display '(space-width 0.7)
+                       'local-map my/side-window-drag-map
+                       'help-echo "Drag to another slot")
            " "
            header-line-format
            ;; Pixel-exact: measure the buttons with the face they render
@@ -1983,7 +2008,9 @@ the edges the window does not have.
            ;; margin — magit's log keeps its dates in one — sits beyond
            ;; it, and this row spans the margin.  Give the margin's
            ;; width back, or the buttons strand mid-row.
-           (propertize " " 'display
+           (propertize " " 'local-map my/side-window-drag-map
+                       'help-echo "Drag to another slot"
+                       'display
                        `(space :align-to
                                (- right (,(- (string-pixel-width
                                               (propertize buttons
@@ -2002,8 +2029,26 @@ the edges the window does not have.
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
+    ;; Dont resue sidewindows if there are still free slots
+    (auto-side-windows-reuse-mode-window nil)
+
+    ;; The package ships no taste of its own, so the panels get theirs
+    ;; here: a side window is not a place to land in with `other-window',
+    ;; and it wears neither a tab line nor a mode line.
+    (auto-side-windows-common-window-parameters '((no-other-window . t)
+                                                  (tab-line-format . none)
+                                                  (mode-line-format . none)))
+
+    ;; A side keeps the size I give it, per tab.
+    (auto-side-windows-remember-sizes t)
+
+    ;; How wide the right side starts.
+    (auto-side-windows-right-width 80)
+
     ;; Top side window configurations
-    (auto-side-windows-top-alist '((window-height . 15)))
+    ;; The size of a side is its own option now; the alists carry the
+    ;; rest of the action.
+    (auto-side-windows-top-height 15)
     (auto-side-windows-top-buffer-names
      '("^COMMIT_EDITMSG$"
        "^\\*Agenda Commands\\*$"
@@ -2050,7 +2095,8 @@ the edges the window does not have.
      '("^\\*toc*\\*$"
        "*SIDE ::"))
     (auto-side-windows-left-buffer-modes
-     '(reftex-toc-mode))
+     '(reftex-toc-mode
+       symbols-outline-mode))
 
     ;; Right side window configurations
     (auto-side-windows-right-buffer-names
@@ -2085,18 +2131,17 @@ the edges the window does not have.
                                                  (header-line-format . ,my/header-line-format-top)))
     (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                   (header-line-format . ,my/header-line-format-top)))
-    ;; window-box draws the frame around every side window; detaching a
-    ;; buffer into a normal window takes the box away, and displaying it
-    ;; on a side brings it back.
+    ;; The box goes on the buffer once it appears on a side, and
+    ;; `window-box-window-predicate' keeps it to the side windows from
+    ;; there: detaching the buffer into an ordinary window takes the box
+    ;; away by itself, and putting it back on a side brings it back.  No
+    ;; hook has to take the mode off again.
     (auto-side-windows-after-display-hook '((lambda (buffer &rest _)
                                               (with-current-buffer buffer
                                                 (window-box-mode 1)))))
-    (auto-side-windows-before-toggle-hook '((lambda (buffer)
-                                              (with-current-buffer buffer
-                                                (window-box-mode -1)))))
     (window-combination-resize t)
     (window-sides-vertical t)
-    (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
+    (window-sides-slots '(2 1 5 2)) ; maximum number of side windows on the left, top, right and bottom
     (window-persistent-parameters
      (append window-persistent-parameters
              '((tab-line-format . t)
@@ -2110,7 +2155,10 @@ the edges the window does not have.
           :map my/window-map
           ("s" . auto-side-windows-display-buffer-on-side)
           :map my/buffer-map
-          ("B"  . auto-side-windows-switch-to-buffer))
+          ("B"  . auto-side-windows-switch-to-buffer)
+          :repeat-map my/window-map
+          ("N" . auto-side-windows-move-to-next-slot)
+          ("P" . auto-side-windows-move-to-previous-slot))
     :config
     (with-eval-after-load 'magit
       (setopt magit-display-buffer-function #'display-buffer
@@ -2739,6 +2787,8 @@ A polished Dired with batteries included.
      '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-attributes
      '(nerd-icons file-time file-size collapse subtree-state vc-state))
+    (dirvish-side-attributes
+     '(nerd-icons collapse subtree-state))
     (dirvish-subtree-state-style 'nerd)
     (dirvish-path-separators (list
                               (format "  %s " (nerd-icons-codicon "nf-cod-home"))
@@ -2750,6 +2800,7 @@ A polished Dired with batteries included.
     (dirvish-reuse-session nil)
     (dirvish-mode-line-height my/modeline-height)
     (dirvish-header-line-height my/modeline-height)
+
     :init
     (dirvish-override-dired-mode)
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -3117,12 +3168,7 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
     (agent-shell-header-style 'text)
     :bind
     (:map my/ai-map
-          ("s" . agent-shell))
-    :ensure-system-package
-    ;; Add agent installation configs here
-    ((npm . "sudo dnf install -y npm")
-     (claude . "curl -fsSL https://claude.ai/install.sh | bash")
-     (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+          ("s" . agent-shell)))
 #+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
 A simple LLM client for Emacs.
@@ -4750,9 +4796,27 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
 Display symbols (functions, variables, etc) in a side window.
 #+begin_src emacs-lisp
   (use-package symbols-outline
+    :preface
+    (defun my/symbols-outline-toggle ()
+      "Show the symbols outline, or close its window when it is up.
+  `symbols-outline-show' only ever shows: called again it selects the
+  window it already made, so a key bound to it cannot put the panel away."
+      (interactive)
+      (if-let* ((window (and
+                         (bound-and-true-p symbols-outline-buffer-name)
+                         (get-buffer-window symbols-outline-buffer-name))))
+          (delete-window window)
+        (symbols-outline-show)))
     :bind
     (:map my/toggle-map
-          ("o" . symbols-outline-show))
+          ("o" . my/symbols-outline-toggle))
+    ;; `symbols-outline-show' calls `display-buffer-in-side-window' itself
+    ;; rather than `display-buffer', so `display-buffer-alist' never sees
+    ;; it: auto-side-windows does not dress this panel and
+    ;; `auto-side-windows-after-display-hook' does not run for it.  The
+    ;; mode is the buffer's, so the buffer asks for it here, and
+    ;; `window-box-window-predicate' still decides the place.
+    :hook (symbols-outline-mode . window-box-mode)
     :custom
     (symbols-outline-window-position 'left)
     :config

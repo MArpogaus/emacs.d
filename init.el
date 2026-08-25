@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -53,10 +53,13 @@
   (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
   ;; Smoother scrolling
-  (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
-  (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
-  (scroll-preserve-screen-position t)                ; Don't move point when scrolling
-  (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
+  ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+  ;; 100 and not 101: above 100 redisplay may never recenter, and over
+  ;; two display blocks taller than the window (pycell results) it then
+  ;; hands the window from one block to the other endlessly.
+  ;; (scroll-conservatively 100)                        ; Avoid recentering when scrolling far
+  ;; (scroll-preserve-screen-position t)                ; Don't move point when scrolling
+  ;; (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
   (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -229,7 +229,8 @@
     :right
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
-     ((mood-line-segment-misc-info)                                             . " ")
+     ;; ((mood-line-segment-misc-info)                                             . " ")
+     ((format-mode-line mode-line-misc-info)                                    . " ")
      ((mood-line-segment-major-mode)                                            . " ")
      ((mood-line-segment-vc)                                                    . " ")
      ((mood-line-segment-checker)                                               . " "))))
@@ -349,16 +350,10 @@
     "Return the buffer represented by TAB."
     (if (bufferp tab) tab (cdr (assq 'buffer tab))))
 
-  (defun my/tab-line-windows-with-buffer (buffer)
-    "Return a list of windows displaying BUFFER across all frames."
-    (seq-filter (lambda (window)
-                  (eq buffer (window-buffer window)))
-                (window-list-1 nil nil t)))
-
   (defun my/tab-line-close-or-bury-buffer (buffer)
     "Close or bury BUFFER based on its presence in other windows."
-    (let ((other-windows (my/tab-line-windows-with-buffer buffer)))
-      (if (> (length other-windows) 1)
+    (let ((other-windows (get-buffer-window-list buffer nil t)))
+      (if (length> other-windows 1)
           (progn
             (message "Burying buffer %s" buffer)
             (bury-buffer))

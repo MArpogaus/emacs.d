@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -22,12 +22,7 @@
   (agent-shell-header-style 'text)
   :bind
   (:map my/ai-map
-        ("s" . agent-shell))
-  :ensure-system-package
-  ;; Add agent installation configs here
-  ((npm . "sudo dnf install -y npm")
-   (claude . "curl -fsSL https://claude.ai/install.sh | bash")
-   (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+        ("s" . agent-shell)))
 
 ;; [[https://github.com/karthink/gptel.git][gptel]]
 ;; A simple LLM client for Emacs.
