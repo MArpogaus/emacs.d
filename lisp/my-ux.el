@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -43,10 +43,30 @@
   :hook
   (elpaca-after-init . global-auto-revert-mode))
 
+;; [[https://github.com/MArpogaus/window-box][window-box]] :own:
+;; A rectangular box around a window: side windows read as panels.  The
+;; mode line and the header line stay as configured; the box only adds
+;; the edges the window does not have.
+
+(use-package window-box
+  :ensure (:host github :repo "MArpogaus/window-box")
+  :custom
+  ;; The header line and the mode line inside the box, a tab line
+  ;; outside it: `window-box-encloses' was one set of rows and is now
+  ;; these two, so that the inside cannot be asked for in pieces.
+  (window-box-enclose-top 'header-line)
+  (window-box-enclose-mode-line t)
+  ;; The mode belongs to the buffer, and Emacs can show one buffer in a
+  ;; panel and in an ordinary window at the same time.  A box belongs to
+  ;; the place: the side windows wear it and the ordinary windows do not.
+  (window-box-window-predicate
+   (lambda (window)
+     (and (window-parameter window 'window-side)
+          (not (buffer-match-p "^ \\*SIDE :: " (window-buffer window)))))))
+
 ;; [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 
 (use-package auto-side-windows
-  :ensure (:host github :repo "MArpogaus/auto-side-windows")
   :preface
   (defun my/get-header-line-icon-for-buffer (buffer)
     (with-current-buffer buffer
@@ -74,20 +94,38 @@
                       '(" AGENDA " . mode-line-emphasis))
                      (t '(" ? " . mode-line-inactive)))))
       header-line-icon))
-  (defun my/install-top-side-window-face-remaps (buffer foreground background)
-    (with-current-buffer buffer
-      (unless (bound-and-true-p top-side-window-face-remaps-cookies)
-        (setq-local top-side-window-face-remaps-cookies
-                    (list
-                     (face-remap-add-relative 'header-line
-                                              `(:box nil :underline nil :overline ,foreground :foreground ,foreground :background ,background))
-                     (face-remap-add-relative 'fringe
-                                              `(:background ,foreground))
-                     (face-remap-add-relative 'mode-line-active
-                                              `(:overline ,foreground :underline nil :height 0))
-                     (face-remap-add-relative 'mode-line-inactive
-                                              `(:overline ,foreground :underline nil :height 0))
-                     )))))
+  (defvar my/side-window-drag-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map [header-line down-mouse-1]
+                  #'auto-side-windows-drag-slot)
+      map)
+    "Keymap that turns part of a header line into a drag handle.
+Emacs binds a press on a header line to `mouse-drag-header-line', which
+resizes the window, so the press is the event to take: a keymap on the
+text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+from there.")
+  (defun my/side-window-button (label help command)
+    "Return LABEL as a header-line button running COMMAND on mouse-1."
+    (propertize label 'mouse-face 'highlight 'help-echo help
+                'local-map (let ((map (make-sparse-keymap)))
+                             (define-key map [header-line mouse-1] command)
+                             map)))
+  (defun my/side-window-minimize (event)
+    "Delete the clicked side window; its buffers stay alive."
+    (interactive "e")
+    (delete-window (posn-window (event-start event))))
+  (defun my/side-window-kill (event)
+    "Delete the clicked side window and kill the buffers it displayed."
+    (interactive "e")
+    (let* ((win (posn-window (event-start event)))
+           (bufs (delete-dups (cons (window-buffer win)
+                                    (mapcar #'car (window-prev-buffers win))))))
+      (dolist (buf bufs)
+        ;; Keep buffers that are still visible somewhere else.
+        (unless (length> (get-buffer-window-list buf nil t) 1)
+          (kill-buffer buf)))
+      (when (window-valid-p win)
+        (delete-window win))))
   (defvar my/header-line-format-top
     '(:eval
       (let*
@@ -98,19 +136,41 @@
            (background (face-background (cdr prefix-and-face) nil 'default))
            (prefix-face (list :inherit 'bold :background background :foreground foreground :inverse-video t))
            (buffer-face (list :inherit 'bold))
-           (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
-        (set-window-fringes nil 1 1 t)
-        (set-window-margins nil 1 1)
-        (my/install-top-side-window-face-remaps buffer foreground background)
+           (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face)))
+           (buttons (concat
+                     (my/side-window-button "─" "Hide this side window"
+                                            #'my/side-window-minimize)
+                     " "
+                     (my/side-window-button "✕" "Close this side window and kill its buffers"
+                                            #'my/side-window-kill))))
+        ;; The header carries content only.  window-box's row wrapper
+        ;; caps the row's ends and owns its edges; a margin write on
+        ;; every redisplay, a tail past `right', and a cap of this
+        ;; header's own all fought it — magit's log margin and a
+        ;; colored fragment left of the edge were the visible fight.
         (list
-         (propertize prefix 'face prefix-face 'display '(space-width 0.7))
+         (propertize prefix 'face prefix-face 'display '(space-width 0.7)
+                     'local-map my/side-window-drag-map
+                     'help-echo "Drag to another slot")
          " "
          header-line-format
-         (propertize " " 'display `(space :align-to right))
-         ;; (buttonize " 󰍷 " nil)
-         ;; (buttonize " 󰅚 " nil)
-         " "
-         (propertize " " 'face prefix-face 'display '(space-width 1))))))
+         ;; Pixel-exact: measure the buttons with the face they render
+         ;; in — a bare string would be measured in the default font,
+         ;; `string-width' merely counts columns.
+         ;; `right' is the right edge of the text area; a display
+         ;; margin — magit's log keeps its dates in one — sits beyond
+         ;; it, and this row spans the margin.  Give the margin's
+         ;; width back, or the buttons strand mid-row.
+         (propertize " " 'local-map my/side-window-drag-map
+                     'help-echo "Drag to another slot"
+                     'display
+                     `(space :align-to
+                             (- right (,(- (string-pixel-width
+                                            (propertize buttons
+                                                        'face 'header-line))
+                                           (* (or (cdr (window-margins)) 0)
+                                              (frame-char-width)))))))
+         buttons))))
   :custom
   ;; Of non of our rules apply try the following strategies to dispaly new buffers
   (display-buffer-base-action '((display-buffer-in-previous-window
@@ -122,8 +182,26 @@
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 
+  ;; Dont resue sidewindows if there are still free slots
+  (auto-side-windows-reuse-mode-window nil)
+
+  ;; The package ships no taste of its own, so the panels get theirs
+  ;; here: a side window is not a place to land in with `other-window',
+  ;; and it wears neither a tab line nor a mode line.
+  (auto-side-windows-common-window-parameters '((no-other-window . t)
+                                                (tab-line-format . none)
+                                                (mode-line-format . none)))
+
+  ;; A side keeps the size I give it, per tab.
+  (auto-side-windows-remember-sizes t)
+
+  ;; How wide the right side starts.
+  (auto-side-windows-right-width 80)
+
   ;; Top side window configurations
-  (auto-side-windows-top-alist '((window-height . 15)))
+  ;; The size of a side is its own option now; the alists carry the
+  ;; rest of the action.
+  (auto-side-windows-top-height 15)
   (auto-side-windows-top-buffer-names
    '("^COMMIT_EDITMSG$"
      "^\\*Agenda Commands\\*$"
@@ -142,7 +220,7 @@
      "^\\*diff-hl\\*$"
      "^\\*gptel-system\\*$"
      "^\\*jinx module compilation\\*$"
-     "^ \\*Install vterm\\*$"))
+     "^ \\*Install vterm\\* $"))
   (auto-side-windows-top-buffer-modes
    '(compilation-mode
      flymake-diagnostics-buffer-mode
@@ -170,7 +248,8 @@
    '("^\\*toc*\\*$"
      "*SIDE ::"))
   (auto-side-windows-left-buffer-modes
-   '(reftex-toc-mode))
+   '(reftex-toc-mode
+     symbols-outline-mode))
 
   ;; Right side window configurations
   (auto-side-windows-right-buffer-names
@@ -199,22 +278,23 @@
      shortdoc-mode))
 
   ;; Window parameters
-  (auto-side-windows-top-window-parameters `((mode-line-format . t)
+  (auto-side-windows-top-window-parameters `((mode-line-format . none)
                                              (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-right-window-parameters `((mode-line-format . t)
+  (auto-side-windows-right-window-parameters `((mode-line-format . none)
                                                (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-bottom-window-parameters `((mode-line-format . t)
+  (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                 (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-before-display-hook '((lambda (buffer)
-                                             (with-current-buffer buffer
-                                               (when (bound-and-true-p top-side-window-face-remaps-cookies)
-                                                 (dolist (cookie top-side-window-face-remaps-cookies)
-                                                   (face-remap-remove-relative cookie))
-                                                 (kill-local-variable 'top-side-window-face-remaps-cookies))))))
-  (auto-side-windows-before-toggle-hook auto-side-windows-before-display-hook)
+  ;; The box goes on the buffer once it appears on a side, and
+  ;; `window-box-window-predicate' keeps it to the side windows from
+  ;; there: detaching the buffer into an ordinary window takes the box
+  ;; away by itself, and putting it back on a side brings it back.  No
+  ;; hook has to take the mode off again.
+  (auto-side-windows-after-display-hook '((lambda (buffer &rest _)
+                                            (with-current-buffer buffer
+                                              (window-box-mode 1)))))
   (window-combination-resize t)
   (window-sides-vertical t)
-  (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
+  (window-sides-slots '(2 1 5 2)) ; maximum number of side windows on the left, top, right and bottom
   (window-persistent-parameters
    (append window-persistent-parameters
            '((tab-line-format . t)
@@ -228,7 +308,10 @@
         :map my/window-map
         ("s" . auto-side-windows-display-buffer-on-side)
         :map my/buffer-map
-        ("B"  . auto-side-windows-switch-to-buffer))
+        ("B"  . auto-side-windows-switch-to-buffer)
+        :repeat-map my/window-map
+        ("N" . auto-side-windows-move-to-next-slot)
+        ("P" . auto-side-windows-move-to-previous-slot))
   :config
   (with-eval-after-load 'magit
     (setopt magit-display-buffer-function #'display-buffer
@@ -450,12 +533,12 @@ buffer's text scale."
   :ensure nil
   :preface
   ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
-  (defun my/repeatize-keymap (keymap)
-    "Add `repeat-mode' support to a KEYMAP."
+  (defun my/repeatize-keymap (keymap &optional unset)
+    "Add `repeat-mode' support to a KEYMAP. If UNSET is true remove repeat property"
     (map-keymap
      (lambda (_key cmd)
        (when (symbolp cmd)
-         (put cmd 'repeat-map keymap)))
+         (put cmd 'repeat-map (unless unset keymap))))
      (symbol-value keymap)))
   :config
   (with-eval-after-load 'smerge-mode

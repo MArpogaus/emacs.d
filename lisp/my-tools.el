@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-08-25
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -79,6 +79,8 @@
    '(:left (sort symlink) :right (vc-info yank index)))
   (dirvish-attributes
    '(nerd-icons file-time file-size collapse subtree-state vc-state))
+  (dirvish-side-attributes
+   '(nerd-icons collapse subtree-state))
   (dirvish-subtree-state-style 'nerd)
   (dirvish-path-separators (list
                             (format "  %s " (nerd-icons-codicon "nf-cod-home"))
@@ -90,6 +92,7 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
+
   :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
