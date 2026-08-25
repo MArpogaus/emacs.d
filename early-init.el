@@ -96,6 +96,10 @@
 ;; This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 
 (defvar elpaca-installer-version 0.12)
+;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
+;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
+;; built-in packages by itself.  31.1 was released on 2026-08-24.
+(defvar elpaca-core-date '(20260824))
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))

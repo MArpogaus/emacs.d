@@ -325,7 +325,7 @@
     "Memoize a value if the key is a remote path."
     (if (and key
              (file-remote-p key))
-        (if-let ((current (assoc key (symbol-value cache))))
+        (if-let* ((current (assoc key (symbol-value cache))))
             (cdr current)
           (let ((current (apply orig-fn args)))
             (set cache (cons (cons key current) (symbol-value cache)))
@@ -388,7 +388,7 @@
            (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
            (vterm-buffer (get-buffer vterm-buffer-name)))
       (if (and vterm-buffer (not current-prefix-arg))
-          (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
+          (pop-to-buffer vterm-buffer '(nil (category . comint)))
         (call-interactively #'vterm))))
   ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
   (defun my/vterm--get-shell-adv (vterm-shell)

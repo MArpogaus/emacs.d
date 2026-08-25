@@ -247,6 +247,10 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.12)
+  ;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
+  ;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
+  ;; built-in packages by itself.  31.1 was released on 2026-08-24.
+  (defvar elpaca-core-date '(20260824))
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
@@ -734,14 +738,14 @@ In this section, I define some custom Lisp functions.
             (set-fringe-style 0)
             (tab-bar-mode -1)
             (global-tab-line-mode -1)
-            (global-hide-mode-line-mode 1)
+            (my/global-mode-line-invisible-mode 1)
             (spacious-padding-mode -1))
         (progn
           (setq tab-bar-show t)
           (set-fringe-style nil)
           (tab-bar-mode 1)
           (global-tab-line-mode 1)
-          (global-hide-mode-line-mode -1)
+          (my/global-mode-line-invisible-mode -1)
           (spacious-padding-mode 1)))))
 #+end_src
 ** Configure Packages
@@ -1487,12 +1491,18 @@ Enable line numbers for some modes
     :ensure (:host github :repo "ember-theme/emacs")
     :after doom-themes)
 #+end_src
-**** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
-An Emacs plugin that hides (or masks) the current buffer's mode-line.
+**** mode-line-invisible :build_in:
+Emacs 31 hides a buffer's mode line by itself.  Only the whole-session
+switch is missing, and a globalized mode is the whole of it.
 #+begin_src emacs-lisp
-  (use-package hide-mode-line
+  (define-globalized-minor-mode my/global-mode-line-invisible-mode
+    mode-line-invisible-mode
+    (lambda () (mode-line-invisible-mode 1)))
+
+  (use-package emacs
+    :ensure nil
     :hook
-    (symbols-outline-mode . hide-mode-line-mode))
+    (symbols-outline-mode . mode-line-invisible-mode))
 #+end_src
 **** hl-line :build_in:
 
@@ -1981,8 +1991,16 @@ the edges the window does not have.
              (prefix (car prefix-and-face))
              (foreground (face-foreground (cdr prefix-and-face)))
              (background (face-background (cdr prefix-and-face) nil 'default))
-             (prefix-face (list :inherit 'bold :background background :foreground foreground :inverse-video t))
-             (buffer-face (list :inherit 'bold))
+             ;; Emacs 31 draws a header line with `header-line-active' in
+             ;; the selected window and `header-line-inactive' in all the
+             ;; others.  A face named here has to say which of the two it
+             ;; sits on: it takes its font from it, and the measurement
+             ;; below strands the buttons when it is taken in the other.
+             (row-face (if (mode-line-window-selected-p)
+                           'header-line-active
+                         'header-line-inactive))
+             (prefix-face (list :inherit (list 'bold row-face) :background background :foreground foreground :inverse-video t))
+             (buffer-face (list :inherit (list 'bold row-face) :underline nil))
              (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face)))
              (buttons (concat
                        (my/side-window-button "─" "Hide this side window"
@@ -2014,7 +2032,7 @@ the edges the window does not have.
                        `(space :align-to
                                (- right (,(- (string-pixel-width
                                               (propertize buttons
-                                                          'face 'header-line))
+                                                          'face row-face))
                                              (* (or (cdr (window-margins)) 0)
                                                 (frame-char-width)))))))
            buttons))))
@@ -2028,6 +2046,14 @@ the edges the window does not have.
                                   ))
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
+
+    ;; Emacs 31 shows the target of a jump through `display-buffer' under
+    ;; the `xref-jump' category.  A definition is what the jump is for, so
+    ;; it lands in an ordinary window and never in a panel.
+    (display-buffer-alist
+     '(((category . xref-jump)
+        (display-buffer-reuse-window display-buffer-use-some-window)
+        (some-window . mru))))
 
     ;; Dont resue sidewindows if there are still free slots
     (auto-side-windows-reuse-mode-window nil)
@@ -2374,6 +2400,9 @@ Paren mode for highlighting matcing paranthesis
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
     (recentf-max-saved-items 100)
+    ;; Emacs 31 saves the list on a timer, so a crash costs at most this.
+    (recentf-autosave-interval 300)
+    (recentf-show-messages nil)
     :config
     (add-to-list 'recentf-exclude
                  (recentf-expand-file-name no-littering-var-directory))
@@ -2401,16 +2430,14 @@ Enable repeat maps
            (put cmd 'repeat-map (unless unset keymap))))
        (symbol-value keymap)))
     :config
-    (with-eval-after-load 'smerge-mode
-      (my/repeatize-keymap 'smerge-basic-map))
     (with-eval-after-load 'which-key
       (setopt repeat-echo-function #'ignore)
       ;; Spawn or hide a which-key popup
       (advice-add 'repeat-post-hook :after
                   (defun repeat-help--which-key-popup ()
-                    (if-let ((cmd (or this-command real-this-command))
-                             (keymap (or repeat-map
-                                         (repeat--command-property 'repeat-map))))
+                    (if-let* ((cmd (or this-command real-this-command))
+                              (keymap (or repeat-map
+                                          (repeat--command-property 'repeat-map))))
                         (run-at-time
                          0 nil
                          (lambda ()
@@ -2418,15 +2445,6 @@ Enable repeat maps
                             nil (symbol-value keymap))))
                       (which-key--hide-popup)))))
     :hook elpaca-after-init)
-#+end_src
-**** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
-Rotate the layout of emacs.
-#+begin_src emacs-lisp
-  (use-package rotate
-    :bind
-    (:repeat-map my/window-map
-                 ("R" . rotate-layout)
-                 ("W" . rotate-window)))
 #+end_src
 **** savehist :build_in:
 #+begin_src emacs-lisp
@@ -2470,6 +2488,9 @@ Record cursor position from one session to the other
 #+begin_src emacs-lisp
   (use-package saveplace
     :ensure nil
+    :custom
+    ;; Emacs 31 saves the places on a timer, not only when Emacs exits.
+    (save-place-autosave-interval 300)
     :preface
     (defun my/saveplace-recenter (&rest _)
       (when buffer-file-name (ignore-errors (recenter))))
@@ -2503,6 +2524,12 @@ Writable grep buffer and apply the changes to files.
     :custom
     (window-resize-pixelwise t)   ; Resize windows pixelwise
     (frame-resize-pixelwise t)    ; Resize frame pixelwise
+    ;; `kill-buffer' hands the window to `quit-restore-window', so killing
+    ;; a buffer undoes the display that showed it instead of leaving the
+    ;; window behind with something arbitrary in it.
+    (kill-buffer-quit-windows t)
+    ;; And `q' kills the buffers that are worth nothing once read.
+    (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
     :config
     (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
     :bind
@@ -2524,6 +2551,8 @@ Writable grep buffer and apply the changes to files.
      ("h" . split-window-horizontally)
      ("m" . delete-other-windows)
      ("M" . delete-other-windows-vertically)
+     ("R" . window-layout-rotate-clockwise)
+     ("W" . rotate-windows)
      :exit
      ("=" . balance-windows)))
 #+end_src
@@ -3048,7 +3077,7 @@ Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
       "Memoize a value if the key is a remote path."
       (if (and key
                (file-remote-p key))
-          (if-let ((current (assoc key (symbol-value cache))))
+          (if-let* ((current (assoc key (symbol-value cache))))
               (cdr current)
             (let ((current (apply orig-fn args)))
               (set cache (cons (cons key current) (symbol-value cache)))
@@ -3111,7 +3140,7 @@ Emacs libvterm integration.
              (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
              (vterm-buffer (get-buffer vterm-buffer-name)))
         (if (and vterm-buffer (not current-prefix-arg))
-            (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
+            (pop-to-buffer vterm-buffer '(nil (category . comint)))
           (call-interactively #'vterm))))
     ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
     (defun my/vterm--get-shell-adv (vterm-shell)
@@ -3417,15 +3446,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     ;;(add-to-list 'completion-at-point-functions #'cape-dict)
     ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
     ;;(add-to-list 'completion-at-point-functions #'cape-line)
-
-    ;; The advices are only needed on Emacs 28 and older.
-    (when (< emacs-major-version 29)
-      ;; Silence the pcomplete capf, no errors or messages!
-      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-      ;; Ensure that pcomplete does not write to the buffer
-      ;; and behaves as a pure `completion-at-point-function'.
-      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+    )
 #+end_src
 **** [[https://github.com/emacs-citar/citar.git][citar]]
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -3695,12 +3716,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
                       (corfu-mode)))
      ;; Enable minibuffer completion
      (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
-
-  (use-package corfu-terminal
-    :if (not (display-graphic-p))
-    :after corfu
-    :hook
-    (global-corfu-mode . corfu-terminal-mode))
 #+end_src
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
@@ -3982,7 +3997,7 @@ Emacs package for highlighting uncommitted changes.
     (defun my/diff-hl-fix-face-colors (&rest _)
       "Set foreground to background color for diff-hl faces"
       (seq-do (lambda (face)
-                (if-let ((color (face-background face)))
+                (if-let* ((color (face-background face)))
                     (progn (set-face-foreground face color)
                            (set-face-background face nil))))
               '(diff-hl-insert
@@ -4187,6 +4202,12 @@ Enhancements to Emacs' built in project library.
     ;; make speedbar update automaticaly, and dont use ugly icons(images)
     (speedbar-update-flag t)
     (speedbar-use-images nil)
+    ;; Emacs 31 can show speedbar in a side window instead of its own frame.
+    (speedbar-prefer-window t)
+
+    :bind
+    (:map my/toggle-map
+          ("s" . speedbar-window-mode))
 
     :config
     ;; list of supported file-extensions
@@ -4251,16 +4272,6 @@ Enhancements to Emacs' built in project library.
                         (visual-line-mode 0)
                         ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                         (text-scale-adjust -1)))))
-#+end_src
-**** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
-Same frame speedbar.
-#+begin_src emacs-lisp
-  (use-package sr-speedbar
-    :custom
-    (sr-speedbar-right-side nil)
-    :bind
-    (:map my/toggle-map
-          ("s" . sr-speedbar-toggle)))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
@@ -4651,6 +4662,15 @@ Childframe doc for eglot and anything that uses eldoc.
       (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
       (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 #+end_src
+**** elisp-mode :build_in:
+Emacs 31 can fontify Emacs Lisp from a code analysis rather than from the
+symbol alone, so a let-bound variable no longer reads as a function call.
+#+begin_src emacs-lisp
+  (use-package elisp-mode
+    :ensure nil
+    :custom
+    (elisp-fontify-semantically t))
+#+end_src
 **** [[https://codeberg.org/pastor/ben.el][ben]]
 Asynchronous fork of envrc: https://github.com/purcell/envrc
 #+begin_src emacs-lisp
@@ -4719,6 +4739,8 @@ Universal on-the-fly syntax checker for Emacs.
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe)
+    ;; Emacs 31 lays the message out below its line and points at the spot.
+    (flymake-show-diagnostics-at-end-of-line 'fancy)
     :hook
     ((prog-mode conf-mode) . flymake-mode))
 #+end_src
@@ -4730,6 +4752,22 @@ Auto-format source code in many languages with one command.
     :bind
     (:map my/toggle-map
           ("f" . format-all-buffer)))
+#+end_src
+**** hideshow :build_in:
+Code folding.  Emacs 31 folds tree-sitter blocks through the =list= thing,
+which is what =treesit-fold= was here for.
+#+begin_src emacs-lisp
+  (use-package hideshow
+    :ensure nil
+    :custom
+    ;; Say how much a fold swallowed.  The indicators stay off: they draw
+    ;; in the fringe, where diff-hl already draws.
+    (hs-display-lines-hidden t)
+    :bind
+    (:map hs-minor-mode-map
+          ("<backtab>" . hs-cycle))
+    :hook
+    ((prog-mode conf-mode yaml-ts-mode) . hs-minor-mode))
 #+end_src
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 Emacs major mode for editing Lua.
@@ -4826,29 +4864,15 @@ Display symbols (functions, variables, etc) in a side window.
       (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
     (symbols-outline-follow-mode))
 #+end_src
-**** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
-built-in tree-sitter integration for Emacs
+**** treesit :build_in:
+Emacs 31 remaps major modes to their tree-sitter variants and installs the
+missing grammars itself, so no external package is needed.
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :if (>= emacs-major-version 29)
+  (use-package treesit
+    :ensure nil
     :custom
-    (treesit-auto-install 'prompt)
-    :hook
-    (elpaca-after-init . global-treesit-auto-mode))
-#+end_src
-**** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
-Code-folding using =treesit.el=.
-#+begin_src emacs-lisp :tangle no
-  (use-package treesit-fold
-    :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-    :custom
-    ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
-    (treesit-fold-indicators-priority -1)
-    :bind
-    (:map treesit-fold-mode-map
-          ("<backtab>" . treesit-fold-toggle))
-    :hook
-    (((yaml-ts-mode) . treesit-fold-indicators-mode)))
+    (treesit-enabled-modes t)
+    (treesit-auto-install-grammar 'ask))
 #+end_src
 **** yaml-ts-mode :build_in:
 The emacs major mode for editing files in the YAML data serialization format.

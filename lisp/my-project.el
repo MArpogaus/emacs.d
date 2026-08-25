@@ -114,6 +114,12 @@
   ;; make speedbar update automaticaly, and dont use ugly icons(images)
   (speedbar-update-flag t)
   (speedbar-use-images nil)
+  ;; Emacs 31 can show speedbar in a side window instead of its own frame.
+  (speedbar-prefer-window t)
+
+  :bind
+  (:map my/toggle-map
+        ("s" . speedbar-window-mode))
 
   :config
   ;; list of supported file-extensions
@@ -178,16 +184,6 @@
                       (visual-line-mode 0)
                       ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                       (text-scale-adjust -1)))))
-
-;; [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
-;; Same frame speedbar.
-
-(use-package sr-speedbar
-  :custom
-  (sr-speedbar-right-side nil)
-  :bind
-  (:map my/toggle-map
-        ("s" . sr-speedbar-toggle)))
 
 ;; ZZ Library Footer
 

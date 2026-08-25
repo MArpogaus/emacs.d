@@ -33,7 +33,7 @@
   (defun my/diff-hl-fix-face-colors (&rest _)
     "Set foreground to background color for diff-hl faces"
     (seq-do (lambda (face)
-              (if-let ((color (face-background face)))
+              (if-let* ((color (face-background face)))
                   (progn (set-face-foreground face color)
                          (set-face-background face nil))))
             '(diff-hl-insert
