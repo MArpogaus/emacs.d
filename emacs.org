@@ -4515,6 +4515,14 @@ Structured Editing and Navigation in Emacs.
     :custom
     ;; Disable combobulate key prefix
     (combobulate-key-prefix nil)
+    :preface
+    (defun my/combobulate-mode-maybe ()
+      "Turn `combobulate-mode' on in a buffer that tree-sitter has parsed.
+  The mode errors where the language has no grammar, and `set-auto-mode'
+  reports that error rather than raising it: the rest of the major mode
+  setup is dropped, `after-change-major-mode-hook' included, and every
+  globalized minor mode stays off in the buffer."
+      (when (treesit-parser-list) (combobulate-mode 1)))
     :config
     (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
     :bind
@@ -4528,7 +4536,7 @@ Structured Editing and Navigation in Emacs.
           ("M-<down>"  . combobulate-drag-down)
           ("M-<up>"    . combobulate-drag-up))
     :hook
-    ((prog-mode yaml-ts-mode) . combobulate-mode))
+    ((prog-mode yaml-ts-mode) . my/combobulate-mode-maybe))
 #+end_src
 **** [[https://github.com/svaante/dape.git][dape]]
 Debug Adapter Protocol for Emacs.
