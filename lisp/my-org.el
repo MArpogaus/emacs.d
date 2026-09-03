@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -598,7 +598,6 @@ context.  When called with an argument, unconditionally call
 
 ;; ox-beamer :build_in:
 
-
 (use-package ox-beamer
   :ensure nil
   :after ox
@@ -609,7 +608,6 @@ context.  When called with an argument, unconditionally call
                '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
 
 ;; ox-extra :build_in:
-
 
 (use-package ox-extra
   :ensure nil
