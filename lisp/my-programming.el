@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -74,7 +74,7 @@
 ;; (the =<return>= family, =C-<up>/<down>= navigation, =M-S-<up>/<down>= to
 ;; move cells), and =my/code-cells-repeat-map= as /command mode/ — entered
 ;; through any of its commands or via =SPC j=, single keys (=n p j k e r a b
-;; c i o O 0 R=) then chain until a foreign key exits.  =C-c C-c= interrupts
+;; c i o O 0 A R=) then chain until a foreign key exits.  =C-c C-c= interrupts
 ;; the running cell, as in the REPL (with =standard-keys-mode= that is
 ;; =C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
 ;; No other prefix bindings, and no plain speed keys, which meow's normal
@@ -157,9 +157,12 @@
         ;; navigation
         ("C-<up>"       . code-cells-backward-cell)
         ("C-<down>"     . code-cells-forward-cell)
-        ;; cell structure
-        ("M-S-<up>"     . code-cells-move-cell-up)
-        ("M-S-<down>"   . code-cells-move-cell-down)
+        ;; cell structure.  pycell's move and not code-cells' own:
+        ;; the latter transposes the two regions, and
+        ;; `transpose-regions' leaves an overlay where the text used
+        ;; to be, so the result of one cell lands under the other.
+        ("M-S-<up>"     . pycell-move-cell-up)
+        ("M-S-<down>"   . pycell-move-cell-down)
         ;; outline
         ("M-S-<right>"  . outline-demote)
         ("M-S-<left>"   . outline-promote)
@@ -184,8 +187,9 @@
         ("c" . pycell-copy-output)
         ("i" . pycell-interrupt)
         ("o" . pycell-toggle-output)
-        ("O" . pycell-remove-overlays)
+        ("O" . pycell-remove-blocks)
         ("0" . pycell-restart)
+        ("A" . pycell-run-above)
         ("R" . pycell-restart-and-run-all))
   :hook
   (python-base-mode . code-cells-mode-maybe))
