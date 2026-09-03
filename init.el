@@ -341,7 +341,8 @@ The DWIM behaviour of this command is as follows:
          " " 'display
          (create-image
           (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-          'pbm t :foreground color :ascent 'center))
+          ;; `:scale 1\=': the size is in pixels, as asked for.
+          'pbm t :foreground color :ascent 'center :scale 1))
       (propertize "|" 'face (list :foreground color
                                   :background color))))
   (define-minor-mode my/minimal-ui-mode
