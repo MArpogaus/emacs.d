@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -61,8 +61,7 @@
   ;; the place: the side windows wear it and the ordinary windows do not.
   (window-box-window-predicate
    (lambda (window)
-     (and (window-parameter window 'window-side)
-          (not (buffer-match-p "^ \\*SIDE :: " (window-buffer window)))))))
+     (window-parameter window 'window-side))))
 
 ;; [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 
@@ -83,6 +82,8 @@
                       '(" ! " . error))
                      ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$" (derived-mode . magit-mode)) buffer)
                       '(" VC " . success))
+                     ((buffer-match-p '(derived-mode . dired-mode) buffer)
+                      '(" DIR " . mode-line-emphasis))
                      ((buffer-match-p "^\\*Org Src.*\\*" buffer)
                       '(" SRC " . mode-line-emphasis))
                      ((buffer-match-p '(or (derived-mode . shell-mode)
@@ -100,10 +101,10 @@
                   #'auto-side-windows-drag-slot)
       map)
     "Keymap that turns part of a header line into a drag handle.
-Emacs binds a press on a header line to `mouse-drag-header-line', which
-resizes the window, so the press is the event to take: a keymap on the
-text takes it first, and `auto-side-windows-drag-slot' follows the mouse
-from there.")
+  Emacs binds a press on a header line to `mouse-drag-header-line', which
+  resizes the window, so the press is the event to take: a keymap on the
+  text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+  from there.")
   (defun my/side-window-button (label help command)
     "Return LABEL as a header-line button running COMMAND on mouse-1."
     (propertize label 'mouse-face 'highlight 'help-echo help
@@ -126,61 +127,92 @@ from there.")
           (kill-buffer buf)))
       (when (window-valid-p win)
         (delete-window win))))
+  (defface my/panel-header-line
+    '((t :inherit bold :underline nil))
+    "The look of a side window's header row.
+`my/header-line-format-top\=' remaps it over the header line faces, so
+the whole row wears it and a mode's own header colours do not.  It
+names as little as it can: window-box remaps those faces too, and what
+is named here outranks its overline.")
+
+  (defun my/panel-label ()
+      "Return what a panel header calls the current buffer.
+A dired or dirvish buffer is named by its directory: their own header
+lines carry a stretch to the window's right edge, which took the whole
+row and pushed the panel's buttons out of it.  The project's crumbs
+where the directory is inside a project — the same ones the mode line
+shows — and the path itself where it is not."
+      (if (not (derived-mode-p 'dired-mode))
+          (format-mode-line (or header-line-format "%b") nil nil
+                            (current-buffer))
+        (let* ((here (directory-file-name
+                      (abbreviate-file-name default-directory)))
+               (project (project-current nil default-directory))
+               (root (and project
+                          (directory-file-name
+                           (abbreviate-file-name (project-root project))))))
+          (cond ((null project) here)
+                ((equal here root) (project-name project))
+                (t (concat (project-name project) "/"
+                           (file-relative-name here root)))))))
+
+  (defvar-local my/header-line-faces-overloaded nil
+    "Whether the remap below has been added to this buffer already.
+A relative remap stacks, and redisplay comes round again.")
+
   (defvar my/header-line-format-top
     '(:eval
-      (let*
-          ((buffer (current-buffer))
-           (prefix-and-face (my/get-header-line-icon-for-buffer buffer))
-           (prefix (car prefix-and-face))
-           (foreground (face-foreground (cdr prefix-and-face)))
-           (background (face-background (cdr prefix-and-face) nil 'default))
-           ;; A header line is drawn with `header-line-active' in the
-           ;; selected window and `header-line-inactive' in all the
-           ;; others.  A face named here has to say which of the two it
-           ;; sits on: it takes its font from it, and the measurement
-           ;; below strands the buttons when it is taken in the other.
-           (row-face (if (mode-line-window-selected-p)
-                         'header-line-active
-                       'header-line-inactive))
-           (prefix-face (list :inherit (list 'bold row-face) :background background :foreground foreground :inverse-video t))
-           (buffer-face (list :inherit (list 'bold row-face) :underline nil))
-           (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face)))
-           (buttons (concat
-                     (my/side-window-button "─" "Hide this side window"
-                                            #'my/side-window-minimize)
-                     " "
-                     (my/side-window-button "✕" "Close this side window and kill its buffers"
-                                            #'my/side-window-kill))))
-        ;; The header carries content only.  window-box's row wrapper
-        ;; caps the row's ends and owns its edges; a margin write on
-        ;; every redisplay, a tail past `right', and a cap of this
-        ;; header's own all fought it — magit's log margin and a
-        ;; colored fragment left of the edge were the visible fight.
-        (list
-         (propertize prefix 'face prefix-face 'display '(space-width 0.7)
+      (pcase-let* ((`(,prefix . ,icon)
+                    (my/get-header-line-icon-for-buffer (current-buffer)))
+                   (row (if (mode-line-window-selected-p)
+                            'header-line-active
+                          'header-line-inactive))
+                   (face (list :inherit (list 'my/panel-header-line row)
+                               :background (face-background icon nil 'default)
+                               :foreground (face-foreground icon)))
+                   (own (my/panel-label))
+                   ;; Padding of an exact width, and the row's height.
+                   (pad (and (display-graphic-p)
+                             (my/get-bar-image my/modeline-height 6
+                                               (face-foreground icon))))
+                   (badge (if pad
+                              (concat pad (string-trim prefix) pad)
+                            prefix))
+                   (buttons
+                    (propertize
+                     (concat (my/side-window-button
+                              "─" "Hide this side window"
+                              #'my/side-window-minimize)
+                             " "
+                             (my/side-window-button
+                              "✕" "Close this side window and kill its buffers"
+                              #'my/side-window-kill))
+                     'face face)))
+        ;; The blanks of the row are the panel's too, so the look goes
+        ;; on the faces themselves.
+        (unless my/header-line-faces-overloaded
+          (setq-local my/header-line-faces-overloaded t)
+          (dolist (name '(header-line header-line-active
+                                      header-line-inactive))
+            (face-remap-add-relative
+             name (list :inherit 'my/panel-header-line
+                        :background (face-background name nil 'default)
+                        :foreground (face-foreground name nil 'default)))))
+        ;; Content only: window-box owns the ends of the row.
+        (concat
+         (propertize badge 'face (append '(:inverse-video t) face)
                      'local-map my/side-window-drag-map
                      'help-echo "Drag to another slot")
-         " "
-         header-line-format
-         ;; Pixel-exact: measure the buttons with the face they render
-         ;; in — a bare string would be measured in the default font,
-         ;; `string-width' merely counts columns.
-         ;; `right' is the right edge of the text area; a display
-         ;; margin — magit's log keeps its dates in one — sits beyond
-         ;; it, and this row spans the margin.  Give the margin's
-         ;; width back, or the buttons strand mid-row.
-         (propertize " " 'local-map my/side-window-drag-map
-                     'help-echo "Drag to another slot"
-                     'display
-                     `(space :align-to
-                             (- right (,(- (string-pixel-width
-                                            (propertize buttons
-                                                        'face row-face))
-                                           (* (or (cdr (window-margins)) 0)
-                                              (frame-char-width)))))))
+         ;; The buffer's own header brings faces of its own —
+         ;; `magit-header-line\=' for one — which the remap does not
+         ;; reach: it names the header line faces, not theirs.
+         (propertize (concat " " own) 'face face)
+         (propertize " " 'display `(space :align-to
+                                          (- right ,(string-width buttons))))
          buttons))))
+
   :custom
-  ;; Of non of our rules apply try the following strategies to dispaly new buffers
+  ;; If non of our rules apply try the following strategies to dispaly new buffers
   (display-buffer-base-action '((display-buffer-in-previous-window
                                  display-buffer-reuse-mode-window
                                  display-buffer-use-some-window
@@ -262,7 +294,7 @@ from there.")
   ;; Left side window configurations
   (auto-side-windows-left-buffer-names
    '("^\\*toc*\\*$"
-     "*SIDE ::"))
+     "^ \\*SIDE ::"))
   (auto-side-windows-left-buffer-modes
    '(reftex-toc-mode
      symbols-outline-mode))
@@ -298,6 +330,8 @@ from there.")
                                              (header-line-format . ,my/header-line-format-top)))
   (auto-side-windows-right-window-parameters `((mode-line-format . none)
                                                (header-line-format . ,my/header-line-format-top)))
+  (auto-side-windows-left-window-parameters `((mode-line-format . none)
+                                              (header-line-format . ,my/header-line-format-top)))
   (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                 (header-line-format . ,my/header-line-format-top)))
   ;; The box goes on the buffer once it appears on a side, and
