@@ -388,10 +388,25 @@ The following optimizations have been inspired by:
 :PROPERTIES:
 :ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
 :END:
+The font waits for =window-setup-hook=: a family the system does not have
+makes every frame creation fail, and the frame that fails at startup takes
+Emacs down with it, so the name may only reach =default-frame-alist= once
+the display is up and can be asked whether the font is there.
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist '(width . 100))
   (add-to-list 'default-frame-alist '(height . 25))
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
+
+  (defun my/set-frame-font (family)
+    "Use FAMILY in this frame and in the frames to come.
+  Do nothing but warn when the system has no such font."
+    (if (find-font (font-spec :family family))
+        (progn
+          (add-to-list 'default-frame-alist (cons 'font family))
+          (set-frame-font family nil t))
+      (warn "Font `%s' is not installed, frames keep the default font" family)))
+
+  (add-hook 'window-setup-hook
+            (lambda () (my/set-frame-font "FiraCode Nerd Font")))
 #+end_src
 *** ZZ Conventional Library Footer
 #+begin_src emacs-lisp
