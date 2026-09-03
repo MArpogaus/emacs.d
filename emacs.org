@@ -2463,20 +2463,18 @@ Enable repeat maps
            (put cmd 'repeat-map (unless unset keymap))))
        (symbol-value keymap)))
     :config
+    ;; `repeat-mode' offers the echo area or a mode-line indicator to say
+    ;; which keys repeat; a which-key popup says it better, and
+    ;; `repeat-echo-function' is where repeat.el asks for one.  It comes
+    ;; with the map while a chain is on and with nil once it ends.
     (with-eval-after-load 'which-key
-      (setopt repeat-echo-function #'ignore)
-      ;; Spawn or hide a which-key popup
-      (advice-add 'repeat-post-hook :after
-                  (defun repeat-help--which-key-popup ()
-                    (if-let* ((cmd (or this-command real-this-command))
-                              (keymap (or repeat-map
-                                          (repeat--command-property 'repeat-map))))
-                        (run-at-time
-                         0 nil
-                         (lambda ()
-                           (which-key--create-buffer-and-show
-                            nil (symbol-value keymap))))
-                      (which-key--hide-popup)))))
+      (setopt repeat-echo-function
+              (lambda (keymap)
+                (if keymap
+                    ;; Not from here: the popup would be drawn inside
+                    ;; `post-command-hook' and taken away again right after.
+                    (run-at-time 0 nil #'which-key--create-buffer-and-show nil keymap)
+                  (which-key--hide-popup)))))
     :hook elpaca-after-init)
 #+end_src
 **** savehist :build_in:
