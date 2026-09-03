@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -27,8 +27,8 @@
   :config
   (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
-  (with-eval-after-load 'tab-line
-    (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
+  (with-eval-after-load 'modern-tab-line
+    (advice-add #'meow-quit :override #'modern-tab-line-close-tab))
   (setopt meow-mode-state-list
           (append meow-mode-state-list '((comint-mode . insert)
                                          (eshell-mode . insert)
