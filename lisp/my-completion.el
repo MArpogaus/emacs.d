@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -34,15 +34,7 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
-
-  ;; The advices are only needed on Emacs 28 and older.
-  (when (< emacs-major-version 29)
-    ;; Silence the pcomplete capf, no errors or messages!
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure `completion-at-point-function'.
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+  )
 
 ;; [[https://github.com/emacs-citar/citar.git][citar]]
 ;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -307,17 +299,11 @@
    (elpaca-after-init . corfu-echo-mode)
    (elpaca-after-init . corfu-history-mode)
    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
-   (eshell-mode-hook . (lambda ()
-                         (setq-local corfu-auto nil)
-                         (corfu-mode)))
+   (eshell-mode . (lambda ()
+                    (setq-local corfu-auto nil)
+                    (corfu-mode)))
    ;; Enable minibuffer completion
    (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
-
-(use-package corfu-terminal
-  :if (not (display-graphic-p))
-  :after corfu
-  :hook
-  (global-corfu-mode . corfu-terminal-mode))
 
 ;; dabbrev :build_in:
 
@@ -557,10 +543,9 @@
   :config
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
   (require 'vertico-directory)
-  :bind
-  ;; Improve directory navigation
-  (:map vertico-map
-        ("<return>" . vertico-directory-enter))
+  ;; NOTE: `<return>' in `vertico-map' is bound by embark to
+  ;; `my/embark-act-or-vertico-enter', which falls back to
+  ;; `vertico-directory-enter'.
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (elpaca-after-init . vertico-mode)))

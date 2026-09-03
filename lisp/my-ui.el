@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -19,9 +19,9 @@
 
 (use-package auto-dark
   :custom
-  ;; (auto-dark-themes '((doom-one) (doom-one-light)))
+  (auto-dark-themes '((doom-one) (doom-one-light)))
   ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
-  (auto-dark-themes '((modus-vivendi) (modus-operandi)))
+  ;; (auto-dark-themes '((modus-vivendi) (modus-operandi)))
   :hook elpaca-after-init)
 
 ;; [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -60,12 +60,18 @@
   :ensure (:host github :repo "ember-theme/emacs")
   :after doom-themes)
 
-;; [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
-;; An Emacs plugin that hides (or masks) the current buffer's mode-line.
+;; mode-line-invisible :build_in:
+;; Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
+;; whole-session switch is a globalized mode of its own.
 
-(use-package hide-mode-line
+(define-globalized-minor-mode my/global-mode-line-invisible-mode
+  mode-line-invisible-mode
+  (lambda () (mode-line-invisible-mode 1)))
+
+(use-package emacs
+  :ensure nil
   :hook
-  (symbols-outline-mode . hide-mode-line-mode))
+  (symbols-outline-mode . mode-line-invisible-mode))
 
 ;; hl-line :build_in:
 
@@ -214,8 +220,6 @@
 ;; [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 
 (use-package mood-line
-  :config
-  (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
   :custom
   ;; Use pretty Fira Code-compatible glyphs
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
@@ -225,18 +229,14 @@
     :left
     (((my/get-bar-image my/modeline-height 3 nil)                               . " ")
      ((mood-line-segment-modal)                                                 . " ")
-     ((mood-line-segment-anzu)                                                  . " ")
      ((mood-line-segment-multiple-cursors)                                      . " ")
-     ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
      " "
-     ;; ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
-     ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " ")
-     ;; ((window-tool-bar-string)                                                  . " "))
-     )
+     ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " "))
     :right
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
-     ((mood-line-segment-misc-info)                                             . " ")
+     ;; ((mood-line-segment-misc-info)                                             . " ")
+     ((format-mode-line mode-line-misc-info)                                    . " ")
      ((mood-line-segment-major-mode)                                            . " ")
      ((mood-line-segment-vc)                                                    . " ")
      ((mood-line-segment-checker)                                               . " "))))
@@ -290,17 +290,14 @@
   :custom
   (tab-bar-history-limit 100)
   (tab-bar-close-button-show nil)
-  :preface
-  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   :config
   ;; Prevent accidental tab switches when scrolling the buffer
   (define-key tab-bar-map (kbd "<wheel-down>") nil t)
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
-  :config
   (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
   :bind
   (([remap winner-undo] . tab-bar-history-back)
-   ([remap winner-undo] . tab-bar-history-forward)
+   ([remap winner-redo] . tab-bar-history-forward)
    :map my/toggle-map
    ("t"                 . tab-bar-mode)
    :map my/leader-map
@@ -320,102 +317,67 @@
   ((elpaca-after-init . tab-bar-history-mode)
    (elpaca-after-init . tab-bar-mode)))
 
+;; [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]]
+;; The look of both rows of tabs: the tab bar, one tab per tab group, and
+;; the tab line, one tab per buffer of a window.  This used to be
+;; =auto-tab-groups-eyecandy= and the =tab-line= block below it.
+
+;; One declaration, because it is one package: elpaca queues an id once,
+;; and a second =:ensure= of the same id is a duplicate it warns about.
+
+(use-package modern-tab
+  ;; The id is the main file elpaca looks for — `modern-tab.el' — and
+  ;; the repository is named after what it holds.
+  ;; `main' holds the start of the repository; the work is on `dev'.
+  :ensure (modern-tab :host github :repo "MArpogaus/modern-tab-bars"
+                      :branch "dev")
+  :custom
+  ;; The bar beside a tab group, as high as the mode line.
+  (modern-tab-bar-indicator-height my/modeline-height)
+  ;; Assign Icons to tab groups
+  (modern-tab-bar-icons
+   '(("HOME"       . (:style "suc" :icon "custom-emacs"))
+     ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
+     ("denote"     . (:style "md"  :icon "notebook_edit"))
+     ("customize"  . (:style "cod" :icon "settings"))
+     ("^\\[P\\] *" . (:style "oct" :icon "repo"))
+     ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
+  ;; Remove prefix from project groups
+  (modern-tab-bar-group-name-function
+   (lambda (group-name)
+     (if (string-match "^\\[.\\] *" group-name)
+         (substring group-name (match-end 0))
+       group-name)))
+  ;; The new button makes a group, not a tab.
+  (modern-tab-bar-new-command #'auto-tab-groups-new-group)
+  ;; The tab line looked like this before the package existed: no bar
+  ;; beside a tab.  A width turns one on for the selected tab.
+  (modern-tab-line-active-indicator-width 0)
+  (modern-tab-line-indicator-height my/tabline-height)
+  :hook
+  ((tab-line-mode . modern-tab-line-mode)
+   (tab-bar-mode . modern-tab-bar-mode)))
+
 ;; tab-line :build_in:
 ;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
 
-;; Some customizations are made to prettify the look of tabs using =nerd-icons= and make the close button behave as known from other editors.
-
-;; References:
-;; - https://github.com/benleis1/emacs-init/blob/main/tab-config.md#tab2-close-tab
-;; - https://andreyor.st/posts/2020-05-07-making-emacs-tabs-work-like-in-atom/
+;; The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]], configured
+;; above: the icon per buffer, the close button that buries or kills, and
+;; the row that hides itself where a window shows one buffer.  What stays
+;; here is which buffers get a tab line at all.
 
 
 (use-package tab-line
   :ensure nil
   :custom
   (tab-line-new-tab-choice nil)
-  (tab-line-new-button-show nil)
-  (tab-line-tab-name-function #'my/tab-line-tab-name-function)
-  (tab-line-close-tab-function #'my/tab-line-close-tab-function)
   (tab-line-exclude-modes '(completion-list-mode
-                            imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                            ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
                             dirvish-directory-view-mode dirvish-special-preview-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                             dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
-  (tab-line-close-button-show 'selected)
-  :bind
-  (:map my/toggle-map
-        ("T" . global-tab-line-mode))
-  :autoload tab-line-tabs-window-buffers
-  :preface
-  (defun my/tab-line-tab-name-function (buffer &optional _buffers)
-    (let ((name (buffer-name buffer)))
-      (concat ;;(my/get-bar-image 20 2 nil)
-       " "
-       (nerd-icons-icon-for-file name)
-       (format " %s " name))))
-
-  (defun my/tab-line-get-buffer (tab)
-    "Return the buffer represented by TAB."
-    (if (bufferp tab) tab (cdr (assq 'buffer tab))))
-
-  (defun my/tab-line-windows-with-buffer (buffer)
-    "Return a list of windows displaying BUFFER across all frames."
-    (seq-filter (lambda (window)
-                  (eq buffer (window-buffer window)))
-                (window-list-1 nil nil t)))
-
-  (defun my/tab-line-close-or-bury-buffer (buffer)
-    "Close or bury BUFFER based on its presence in other windows."
-    (let ((other-windows (my/tab-line-windows-with-buffer buffer)))
-      (if (> (length other-windows) 1)
-          (progn
-            (message "Burying buffer %s" buffer)
-            (bury-buffer))
-        (progn
-          (message "Closing buffer %s" buffer)
-          (kill-buffer buffer)))))
-
-  (defun my/multi-buffer-window-p ()
-    "Evaluates to `t' if windows has mutible tab-line buffers, else `nil'."
-    (> (length (tab-line-tabs-window-buffers)) 1))
-
-  (defun my/tab-line-close-tab-function (tab)
-    "Close the selected tab.
-      If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-      If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-      Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
-    (interactive (list (current-buffer)))
-    (let ((window (selected-window))
-          (kill-window-p (not (my/multi-buffer-window-p)))
-          (buffer (my/tab-line-get-buffer tab)))
-      (my/tab-line-close-or-bury-buffer buffer)
-      (when kill-window-p
-        (message "Closing window")
-        (ignore-errors (delete-window window)))))
-
-  (defun my/enable-tab-line-if-multiple-buffers ()
-    "Enable tab line mode if there are multiple buffers in the current window."
-    (if (my/multi-buffer-window-p)
-        (set-window-parameter nil 'tab-line-format nil)
-      (set-window-parameter nil 'tab-line-format 'none)))
-
-  (defun my/update-tab-line-state ()
-    "Update visibility of tab-line on all active windows"
-    (dolist (window (window-list))
-      (with-selected-window window
-        (my/enable-tab-line-if-multiple-buffers))))
-  :config
-  (setq tab-line-close-button
-        (propertize "✕ "
-                    'keymap tab-line-tab-close-map
-                    'mouse-face 'tab-line-close-highlight
-                    'help-echo "Click to close tab")
-        tab-line-separator "")
   :hook
-  ((buffer-list-update  . my/enable-tab-line-if-multiple-buffers)
-   (window-state-change . my/update-tab-line-state)
-   (elpaca-after-init   . global-tab-line-mode)))
+  (elpaca-after-init . global-tab-line-mode))
 
 ;; time :build_in:
 

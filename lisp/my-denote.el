@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -65,8 +65,6 @@
   (denote-excluded-keywords-regexp nil)
   ;; Pick dates, where relevant, with Org's advanced interface:
   (denote-date-prompt-use-org-read-date t)
-  ;; Automatically rename Denote buffers using the `denote-rename-buffer-format'.
-  (denote-rename-buffer-mode t)
   ;; Define templates for notes
   (denote-templates
    '((minutes . "minutes")
@@ -100,7 +98,6 @@ Prompts for metadata only if the file is not already a Denote file."
               (widen)
               (goto-char (point-min))
               (insert header)
-              (when (and (nth 6 data) (not (string-empty-p (format "%s" (nth 6 data))))))
               (insert (cond ((stringp (nth 6 data)) (nth 6 data))
                             ((functionp (nth 6 data)) (funcall (nth 6 data)))
                             (t "")))))
@@ -113,7 +110,6 @@ Prompts for metadata only if the file is not already a Denote file."
         ("R" . denote-rename-file-using-front-matter)
         ("b" . denote-backlinks)
         ("d" . denote-dired)
-        ("g" . denote-grep)
         ("i" . denote-link)
         ("k" . my/kill-denote-buffers)
         ("s" . my/denote-save-buffer)

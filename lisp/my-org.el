@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -90,6 +90,13 @@ context.  When called with an argument, unconditionally call
 
 
 (use-package org
+  :preface
+  (defface my/org-todo-active-face '((t :inherit (bold font-lock-constant-face org-todo)))
+    "Face for todo keywords of tasks in progress.")
+  (defface my/org-todo-onhold-face '((t :inherit (bold warning org-todo)))
+    "Face for todo keywords of paused or blocked tasks.")
+  (defface my/org-todo-project-face '((t :inherit (bold font-lock-doc-face org-todo)))
+    "Face for the PROJ todo keyword.")
   :init
   (setopt org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
           org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
@@ -122,12 +129,12 @@ context.  When called with an argument, unconditionally call
       "|"
       "[X](D)"))) ; Task was completed
   (org-todo-keyword-faces
-   '(("[-]"  . +org-todo-active)
-     ("STRT" . +org-todo-active)
-     ("[?]"  . +org-todo-onhold)
-     ("WAIT" . +org-todo-onhold)
-     ("HOLD" . +org-todo-onhold)
-     ("PROJ" . +org-todo-project)))
+   '(("[-]"  . my/org-todo-active-face)
+     ("STRT" . my/org-todo-active-face)
+     ("[?]"  . my/org-todo-onhold-face)
+     ("WAIT" . my/org-todo-onhold-face)
+     ("HOLD" . my/org-todo-onhold-face)
+     ("PROJ" . my/org-todo-project-face)))
 
   ;; Add timstamp to items when done
   (org-log-done 'time)
@@ -299,6 +306,15 @@ context.  When called with an argument, unconditionally call
   :custom
   (org-cycle-level-faces nil)
   (org-n-level-faces 4)
+  ;; org-modern draws todo keywords itself and ignores
+  ;; `org-todo-keyword-faces'; mirror them here, keeping the label look.
+  (org-modern-todo-faces
+   '(("[-]"  :inherit (my/org-todo-active-face org-modern-todo))
+     ("STRT" :inherit (my/org-todo-active-face org-modern-todo))
+     ("[?]"  :inherit (my/org-todo-onhold-face org-modern-todo))
+     ("WAIT" :inherit (my/org-todo-onhold-face org-modern-todo))
+     ("HOLD" :inherit (my/org-todo-onhold-face org-modern-todo))
+     ("PROJ" :inherit (my/org-todo-project-face org-modern-todo))))
   (org-modern-fold-stars '(("⯈" . "⯆") ("▸" . "▾")))
   (org-modern-block-name
    '((t . t)
@@ -389,8 +405,8 @@ context.  When called with an argument, unconditionally call
   (org-agenda-time-grid
    '((daily today require-timed)
      (800 1000 1200 1400 1600 1800 2000)
-     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-   org-agenda-current-time-string
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"))
+  (org-agenda-current-time-string
    "◀── now ─────────────────────────────────────────────────")
   :hook ((org-mode . org-modern-mode)
          (org-agenda-finalize . org-modern-agenda)))
@@ -546,7 +562,7 @@ context.  When called with an argument, unconditionally call
     (org-fold-show-children))
   :bind
   (:map org-mode-map
-        ("C-c p"         . org-present)
+        ("C-c P"         . org-present)
         :map org-present-mode-keymap
         ("q"         . org-present-quit)
         ("C-<left>"  . org-present-prev)

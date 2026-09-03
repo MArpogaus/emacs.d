@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -22,12 +22,7 @@
   (agent-shell-header-style 'text)
   :bind
   (:map my/ai-map
-        ("s" . agent-shell))
-  :ensure-system-package
-  ;; Add agent installation configs here
-  ((npm . "sudo dnf install -y npm")
-   (claude . "curl -fsSL https://claude.ai/install.sh | bash")
-   (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+        ("s" . agent-shell)))
 
 ;; [[https://github.com/karthink/gptel.git][gptel]]
 ;; A simple LLM client for Emacs.
@@ -222,23 +217,6 @@ Triggered after the first response is received in a new buffer."
   :preface
   (with-eval-after-load 'gptel
     (gptel-agent-update)))
-
-;; [[https://github.com/kmontag/macher.git][macher]]
-
-(use-package macher
-  :ensure (:host github :repo "kmontag/macher")
-  :demand t
-  :after gptel
-  :custom
-  ;; The org UI has structured navigation and nice content folding.
-  (macher-action-buffer-ui 'org)
-  :config
-  ;; Adjust buffer positioning to taste.
-  (with-eval-after-load 'auto-side-windows
-    (add-to-list 'auto-side-windows-top-buffer-names "\\*macher:.*\\*")
-    (add-to-list 'auto-side-windows-right-buffer-names "\\*macher-patch:.*\\*"))
-  :init
-  (macher-install))
 
 ;; ZZ Library Footer
 

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -23,7 +23,6 @@
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
   (inhibit-splash-screen t)                          ; disable startup screens and messages
   (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
-  (inhibit-startup-echo-area-message t)              ; Disable initial echo message
   (inhibit-startup-message t)                        ; Disable startup message
   (inhibit-startup-screen t)                         ; Disable start-up screen
   (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
@@ -32,6 +31,7 @@
   (auto-save-default t)                              ; Auto-save every buffer that visits a file
   (auto-save-timeout 10)                             ; Number of seconds between auto-save
   (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
+  (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
 
   ;; Backups
   (backup-by-copying t)                              ; Backs up by moving the actual file
@@ -54,28 +54,32 @@
   (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
   ;; Smoother scrolling
-  (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+  ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+  ;; 100 and not 101: above 100 redisplay may never recenter, and over
+  ;; two display blocks taller than the window (pycell results) it then
+  ;; hands the window from one block to the other endlessly.
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
   (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
+  (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
+  (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
   ;; Cursor
   (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
-  (cursor-intangible-mode t)                         ; Enforce cursor intangibility
   (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
   (blink-cursor-mode nil)                            ; Still cursor
 
   ;; Typography
   (fill-column 80)                                   ; Default line width
+  (truncate-lines t)                                 ; Give each line of text just one screen line
   (sentence-end-double-space nil)                    ; Use a single space after dots
   (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
   ;; Default mode
   (initial-major-mode 'fundamental-mode)             ; Initial mode is text
-  (default-major-mode 'fundamental-mode)             ; Default mode is text
 
   ;; Tabulations
   (indent-tabs-mode nil)                             ; Stop using tabs to indent
@@ -97,6 +101,7 @@
   (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
   (custom-buffer-done-kill t)                        ; Kill custom buffer when done
   (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer .
+  (help-window-select t)                             ; Select help windows when they open
   (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
   (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
   (windmove-mode nil)                                ; Disable windmove mode
@@ -116,7 +121,7 @@
   (set-language-environment "English") ; Set up multilingual environment
   :hook
   ;; Enable word wrapping
-  (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
+  (;; ((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
    ;; Enable automatic line breaks before `fill-column' is exceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
    ;; cleanup unnecessary white spaces before saving a buffer
@@ -136,6 +141,10 @@
 (elpaca elpaca-use-package
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
+
+;; Force update compat
+;; https://github.com/progfolio/elpaca/issues/538
+(use-package compat :ensure (:wait t))
 
 ;; Configure use-package
 
@@ -174,6 +183,10 @@
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+  ;; These two are bound into from a different module than the one that
+  ;; configures them, so they have to exist before any module loads.
+  (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+  (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
   (defun prot/keyboard-quit-dwim ()
     "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -239,11 +252,10 @@ The DWIM behaviour of this command is as follows:
    ("t"                   . switch-to-buffer-other-tab)
    ("w"                   . switch-to-buffer-other-window)
    :map my/file-map
+   ("D"                   . delete-file)
    ("F"                   . find-file-other-window)
    ("c"                   . copy-file)
-   ("d"                   . delete-file)
    ("d"                   . find-dired)
-   ("f"                   . find-file)
    ("f"                   . find-file)
    ("r"                   . rename-file)
    ("w"                   . write-file)
@@ -264,11 +276,12 @@ The DWIM behaviour of this command is as follows:
 (use-package no-littering
   :demand t
   :init
-  (setq emacs-config-directory user-emacs-directory
-        ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-        custom-file (expand-file-name "custom.el" user-emacs-directory)
-        ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-        user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+  ;; `emacs-config-directory' is captured in early-init.el.
+  (setq
+   ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+   custom-file (expand-file-name "custom.el" user-emacs-directory)
+   ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+   user-emacs-directory (expand-file-name "~/.cache/emacs/"))
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups)
@@ -328,7 +341,8 @@ The DWIM behaviour of this command is as follows:
          " " 'display
          (create-image
           (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-          'pbm t :foreground color :ascent 'center))
+          ;; `:scale 1\=': the size is in pixels, as asked for.
+          'pbm t :foreground color :ascent 'center :scale 1))
       (propertize "|" 'face (list :foreground color
                                   :background color))))
   (define-minor-mode my/minimal-ui-mode
@@ -340,22 +354,22 @@ The DWIM behaviour of this command is as follows:
           (setq tab-bar-show nil)
           (set-fringe-style 0)
           (tab-bar-mode -1)
-          (global-tab-line-mode -1)
-          (global-hide-mode-line-mode 1)
+          (modern-tab-line-mode -1)
+          (my/global-mode-line-invisible-mode 1)
           (spacious-padding-mode -1))
       (progn
         (setq tab-bar-show t)
         (set-fringe-style nil)
         (tab-bar-mode 1)
-        (global-tab-line-mode 1)
-        (global-hide-mode-line-mode -1)
+        (modern-tab-line-mode 1)
+        (my/global-mode-line-invisible-mode -1)
         (spacious-padding-mode 1)))))
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.
 ;; To load the we have to add this directory to the =load-path=.
 
-(add-to-list 'load-path "~/.emacs.d/lisp/")
+(add-to-list 'load-path (expand-file-name "lisp/" emacs-config-directory))
 
 ;; Org
 ;; :PROPERTIES:

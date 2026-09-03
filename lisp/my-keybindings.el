@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -27,8 +27,8 @@
   :config
   (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
-  (with-eval-after-load 'tab-line
-    (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
+  (with-eval-after-load 'modern-tab-line
+    (advice-add #'meow-quit :override #'modern-tab-line-close-tab))
   (setopt meow-mode-state-list
           (append meow-mode-state-list '((comint-mode . insert)
                                          (eshell-mode . insert)
@@ -169,10 +169,12 @@
         :map y-or-n-p-map
         ("<return>"   . y-or-n-p-insert-y)))
 
-;; [[https://github.com/justbur/emacs-which-key.git][which-key]]
+;; which-key :build_in:
 ;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+;; Built into Emacs since 30.1, so no package is needed.
 
 (use-package which-key
+  :ensure nil
   :custom
   (which-key-idle-delay 0.1)
   (which-key-compute-remaps t)

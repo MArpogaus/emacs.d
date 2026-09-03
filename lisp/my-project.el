@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -30,35 +30,14 @@
    '((dirvish-quit "dirvish" :ignore-result t)
      (my/kill-denote-buffers "denote" :ignore-result t)
      (Custom-buffer-done "customize" :ignore-result t)))
-  ;; height of tabs
-  (auto-tab-groups-eyecandy-tab-height my/modeline-height)
-  ;; Assign Icons to tab groups
-  (auto-tab-groups-eyecandy-icons
-   '(("HOME"       . (:style "suc" :icon "custom-emacs"))
-     ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
-     ("denote"     . (:style "md"  :icon "notebook_edit"))
-     ("customize"  . (:style "cod" :icon "settings"))
-     ("^\\[P\\] *" . (:style "oct" :icon "repo"))
-     ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
-  ;; Remove prefix from project groups
-  (auto-tab-groups-eyecandy-tab-bar-group-name-format-function
-   (lambda (tab-group-name)
-     (if (string-match "^\\[.\\] *" tab-group-name)
-         (substring tab-group-name (match-end 0))
-       tab-group-name)))
   :bind
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
   :init
   ;; automatically assign projects to groups
   (auto-tab-groups-project-mode)
-  ;; Enable modern tabs style
-  (auto-tab-groups-eyecandy-mode)
   ;; Enable automatic tab group management based on the rules defined above
-  (auto-tab-groups-mode)
-  :hook
-  ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
-  (tab-bar-mode . auto-tab-groups-eyecandy-mode))
+  (auto-tab-groups-mode))
 
 ;; project :build_in:
 
@@ -91,11 +70,13 @@
   :commands project-x-try-local project-x--window-state-write
   :init
   (add-to-list 'project-switch-commands
-               '(?j "Restore windows" project-x-windows) t)
+               '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:
+;; A tree of the files and the symbols around the current one, in a window of
+;; this frame rather than a frame of its own.
 
 (use-package speedbar
   :ensure nil
@@ -114,6 +95,12 @@
   ;; make speedbar update automaticaly, and dont use ugly icons(images)
   (speedbar-update-flag t)
   (speedbar-use-images nil)
+  ;; A window of this frame, not a frame of its own.
+  (speedbar-prefer-window t)
+
+  :bind
+  (:map my/toggle-map
+        ("s" . speedbar-window-mode))
 
   :config
   ;; list of supported file-extensions
@@ -178,16 +165,6 @@
                       (visual-line-mode 0)
                       ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                       (text-scale-adjust -1)))))
-
-;; [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
-;; Same frame speedbar.
-
-(use-package sr-speedbar
-  :custom
-  (sr-speedbar-right-side nil)
-  :bind
-  (:map my/toggle-map
-        ("s" . sr-speedbar-toggle)))
 
 ;; ZZ Library Footer
 

@@ -18,7 +18,7 @@ Here are some notable features:
 
 - *Minimal UI:* The interface is streamlined by default, hiding the menu bar, tool bar, and scroll bar to maximize screen efficiency. Additional packages like [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]], [[https://github.com/doomemacs/themes][doom-themes]], [[https://gitlab.com/jessieh/mood-line.git][mood-line]], [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]] and [[https://github.com/emacs-straight/spacious-padding.git][spacious-padding]] are used to ensure a distraction free and consistent, yet modern design.
 
-- *Optimized UX:* Several build-in packages like =autorevert=, =del-sel=, =elec-pair=, =hide-show-mode=, =outline-mode=, =saveplace= and =savehist= are enabled and configured for optimal user experience. Additionally, third-party packages like [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]] and [[https://github.com/karthink/popper.git][popper]] are used for a more streamlined window layout and management, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
+- *Optimized UX:* Several built-in packages like =autorevert=, =delsel=, =elec-pair=, =hideshow=, =outline=, =saveplace= and =savehist= are enabled and configured for optimal user experience. The window layout is managed by [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-windows]], which puts a buffer on the side it belongs to, and [[https://github.com/MArpogaus/window-box][window-box]], which draws those sides as panels, while [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]] and [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]] enhance the editing experience across multiple lines or files.
 
 - *Extensive Completion Framework:* A powerful completion framework is provided using [[https://github.com/minad/corfu][Corfu]], [[https://github.com/minad/cape][Cape]], [[https://github.com/oantolin/orderless][Orderless]], and [[https://github.com/minad/vertico][Vertico]], offering intelligent and context-aware completion suggestions. This framework is enhanced with [[https://github.com/minad/marginalia][Marginalia]] to provide additional context in the minibuffer, [[https://github.com/oantolin/embark][Embark]] for actions on completion candidates, and [[https://github.com/minad/consult][Consult]] for enhanced minibuffer completion commands.
 
@@ -39,6 +39,7 @@ Here are some notable features:
   - [[#common-header-for-emacs-libraries][Common Header for Emacs Libraries]]
   - [[#early-emacs-initialization][Early Emacs Initialization]]
     - [[#01-conventional-library-header][01 Conventional Library Header]]
+    - [[#configuration-directory][Configuration Directory]]
     - [[#configure-byte-compile][Configure Byte Compile]]
     - [[#doom-runtime-optimizations][DOOM runtime optimizations]]
     - [[#hide-initial-frame-until-all-packages-are-loaded][Hide initial frame until all packages are loaded]]
@@ -164,6 +165,13 @@ It should only consist of code that is independent of any package.
 #+begin_src emacs-lisp :noweb yes :comments no
   <<header(file_name="early-init.el")>>
 #+end_src
+*** Configuration Directory
+=no-littering= repoints =user-emacs-directory= at =~/.cache/emacs/= later on, so we capture the directory this configuration actually lives in while it is still correct.
+It has to happen here rather than in =init.el=, because =no-littering= is an =elpaca= package: its =:init= block only runs once the package queue is processed, which is *after* =init.el= has finished loading and needs this value to locate the =lisp/= modules.
+#+begin_src emacs-lisp
+  (defvar emacs-config-directory user-emacs-directory
+    "Directory this configuration lives in, unaffected by `no-littering'.")
+#+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
   ;; In noninteractive sessions, prioritize non-byte-compiled source files to
@@ -231,7 +239,7 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 #+end_src
 *** Hide initial frame until all packages are loaded
 #+begin_src emacs-lisp
-  (add-to-list 'initial-frame-alist '(visibility . init-file-debug))
+  (add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
   (add-to-list 'initial-frame-alist '(fullscreen . maximized))
   (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
 #+end_src
@@ -239,6 +247,10 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.12)
+  ;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
+  ;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
+  ;; built-in packages by itself.  31.1 was released on 2026-08-24.
+  (defvar elpaca-core-date '(20260824))
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
@@ -399,7 +411,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
     (inhibit-splash-screen t)                          ; disable startup screens and messages
     (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
-    (inhibit-startup-echo-area-message t)              ; Disable initial echo message
     (inhibit-startup-message t)                        ; Disable startup message
     (inhibit-startup-screen t)                         ; Disable start-up screen
     (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
@@ -408,6 +419,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (auto-save-default t)                              ; Auto-save every buffer that visits a file
     (auto-save-timeout 10)                             ; Number of seconds between auto-save
     (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
+    (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
 
     ;; Backups
     (backup-by-copying t)                              ; Backs up by moving the actual file
@@ -430,28 +442,32 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
     ;; Smoother scrolling
-    (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+    ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
+    ;; 100 and not 101: above 100 redisplay may never recenter, and over
+    ;; two display blocks taller than the window (pycell results) it then
+    ;; hands the window from one block to the other endlessly.
     (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
     (scroll-preserve-screen-position t)                ; Don't move point when scrolling
     (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
     (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
     (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
     (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
+    (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
+    (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
     ;; Cursor
     (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
-    (cursor-intangible-mode t)                         ; Enforce cursor intangibility
     (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
     (blink-cursor-mode nil)                            ; Still cursor
 
     ;; Typography
     (fill-column 80)                                   ; Default line width
+    (truncate-lines t)                                 ; Give each line of text just one screen line
     (sentence-end-double-space nil)                    ; Use a single space after dots
     (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
     ;; Default mode
     (initial-major-mode 'fundamental-mode)             ; Initial mode is text
-    (default-major-mode 'fundamental-mode)             ; Default mode is text
 
     ;; Tabulations
     (indent-tabs-mode nil)                             ; Stop using tabs to indent
@@ -473,6 +489,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
     (custom-buffer-done-kill t)                        ; Kill custom buffer when done
     (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer .
+    (help-window-select t)                             ; Select help windows when they open
     (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
     (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
     (windmove-mode nil)                                ; Disable windmove mode
@@ -492,7 +509,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (set-language-environment "English") ; Set up multilingual environment
     :hook
     ;; Enable word wrapping
-    (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
+    (;; ((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
      ;; Enable automatic line breaks before `fill-column' is exceeded
      ((prog-mode conf-mode text-mode) . auto-fill-mode)
      ;; cleanup unnecessary white spaces before saving a buffer
@@ -512,6 +529,10 @@ The main initialization file, =init.el=, is responsible for defining essential c
   (elpaca elpaca-use-package
     ;; Enable use-package :ensure support for Elpaca.
     (elpaca-use-package-mode))
+
+  ;; Force update compat
+  ;; https://github.com/progfolio/elpaca/issues/538
+  (use-package compat :ensure (:wait t))
 #+end_src
 *** Configure use-package
 #+begin_src emacs-lisp
@@ -550,6 +571,10 @@ Package specific keymap definitions are kept in preface of the respective packag
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
+    ;; These two are bound into from a different module than the one that
+    ;; configures them, so they have to exist before any module loads.
+    (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+    (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
     (defun prot/keyboard-quit-dwim ()
       "Do-What-I-Mean behaviour for a general `keyboard-quit'.
@@ -615,11 +640,10 @@ Package specific keymap definitions are kept in preface of the respective packag
      ("t"                   . switch-to-buffer-other-tab)
      ("w"                   . switch-to-buffer-other-window)
      :map my/file-map
+     ("D"                   . delete-file)
      ("F"                   . find-file-other-window)
      ("c"                   . copy-file)
-     ("d"                   . delete-file)
      ("d"                   . find-dired)
-     ("f"                   . find-file)
      ("f"                   . find-file)
      ("r"                   . rename-file)
      ("w"                   . write-file)
@@ -641,11 +665,12 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
   (use-package no-littering
     :demand t
     :init
-    (setq emacs-config-directory user-emacs-directory
-          ;; Since init.el will be generated from this file, we save customization in a dedicated file.
-          custom-file (expand-file-name "custom.el" user-emacs-directory)
-          ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
-          user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+    ;; `emacs-config-directory' is captured in early-init.el.
+    (setq
+     ;; Since init.el will be generated from this file, we save customization in a dedicated file.
+     custom-file (expand-file-name "custom.el" user-emacs-directory)
+     ;; Change the user-emacs-directory to keep unwanted things out of ~/.emacs.d
+     user-emacs-directory (expand-file-name "~/.cache/emacs/"))
     :config
     ;; store backup and auto-save files in =no-littering-var-directory=
     (no-littering-theme-backups)
@@ -659,6 +684,7 @@ In this section, I define some custom Lisp functions.
     :ensure nil
     :preface
     (setq my/modeline-height 30)
+    (setq my/tabline-height 25)
     (defun my/extract-username-repo ()
       "Extract the username and repository name from a GitHub repository link at point."
       (interactive)
@@ -705,7 +731,8 @@ In this section, I define some custom Lisp functions.
            " " 'display
            (create-image
             (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-            'pbm t :foreground color :ascent 'center))
+            ;; `:scale 1\=': the size is in pixels, as asked for.
+            'pbm t :foreground color :ascent 'center :scale 1))
         (propertize "|" 'face (list :foreground color
                                     :background color))))
     (define-minor-mode my/minimal-ui-mode
@@ -717,22 +744,22 @@ In this section, I define some custom Lisp functions.
             (setq tab-bar-show nil)
             (set-fringe-style 0)
             (tab-bar-mode -1)
-            (global-tab-line-mode -1)
-            (global-hide-mode-line-mode 1)
+            (modern-tab-line-mode -1)
+            (my/global-mode-line-invisible-mode 1)
             (spacious-padding-mode -1))
         (progn
           (setq tab-bar-show t)
           (set-fringe-style nil)
           (tab-bar-mode 1)
-          (global-tab-line-mode 1)
-          (global-hide-mode-line-mode -1)
+          (modern-tab-line-mode 1)
+          (my/global-mode-line-invisible-mode -1)
           (spacious-padding-mode 1)))))
-#+end_src
+            #+end_src
 ** Configure Packages
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
 #+begin_src emacs-lisp :tangle init.el
-  (add-to-list 'load-path "~/.emacs.d/lisp/")
+  (add-to-list 'load-path (expand-file-name "lisp/" emacs-config-directory))
 #+end_src
 *** Org
 :PROPERTIES:
@@ -821,6 +848,13 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 
 #+begin_src emacs-lisp
   (use-package org
+    :preface
+    (defface my/org-todo-active-face '((t :inherit (bold font-lock-constant-face org-todo)))
+      "Face for todo keywords of tasks in progress.")
+    (defface my/org-todo-onhold-face '((t :inherit (bold warning org-todo)))
+      "Face for todo keywords of paused or blocked tasks.")
+    (defface my/org-todo-project-face '((t :inherit (bold font-lock-doc-face org-todo)))
+      "Face for the PROJ todo keyword.")
     :init
     (setopt org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
             org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
@@ -853,12 +887,12 @@ Agenda view and task management has been inspired by https://github.com/rougier/
         "|"
         "[X](D)"))) ; Task was completed
     (org-todo-keyword-faces
-     '(("[-]"  . +org-todo-active)
-       ("STRT" . +org-todo-active)
-       ("[?]"  . +org-todo-onhold)
-       ("WAIT" . +org-todo-onhold)
-       ("HOLD" . +org-todo-onhold)
-       ("PROJ" . +org-todo-project)))
+     '(("[-]"  . my/org-todo-active-face)
+       ("STRT" . my/org-todo-active-face)
+       ("[?]"  . my/org-todo-onhold-face)
+       ("WAIT" . my/org-todo-onhold-face)
+       ("HOLD" . my/org-todo-onhold-face)
+       ("PROJ" . my/org-todo-project-face)))
 
     ;; Add timstamp to items when done
     (org-log-done 'time)
@@ -1030,6 +1064,15 @@ This package implements a modern style for your Org buffers using font locking a
     :custom
     (org-cycle-level-faces nil)
     (org-n-level-faces 4)
+    ;; org-modern draws todo keywords itself and ignores
+    ;; `org-todo-keyword-faces'; mirror them here, keeping the label look.
+    (org-modern-todo-faces
+     '(("[-]"  :inherit (my/org-todo-active-face org-modern-todo))
+       ("STRT" :inherit (my/org-todo-active-face org-modern-todo))
+       ("[?]"  :inherit (my/org-todo-onhold-face org-modern-todo))
+       ("WAIT" :inherit (my/org-todo-onhold-face org-modern-todo))
+       ("HOLD" :inherit (my/org-todo-onhold-face org-modern-todo))
+       ("PROJ" :inherit (my/org-todo-project-face org-modern-todo))))
     (org-modern-fold-stars '(("⯈" . "⯆") ("▸" . "▾")))
     (org-modern-block-name
      '((t . t)
@@ -1120,8 +1163,8 @@ This package implements a modern style for your Org buffers using font locking a
     (org-agenda-time-grid
      '((daily today require-timed)
        (800 1000 1200 1400 1600 1800 2000)
-       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-     org-agenda-current-time-string
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"))
+    (org-agenda-current-time-string
      "◀── now ─────────────────────────────────────────────────")
     :hook ((org-mode . org-modern-mode)
            (org-agenda-finalize . org-modern-agenda)))
@@ -1277,7 +1320,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (org-fold-show-children))
     :bind
     (:map org-mode-map
-          ("C-c p"         . org-present)
+          ("C-c P"         . org-present)
           :map org-present-mode-keymap
           ("q"         . org-present-quit)
           ("C-<left>"  . org-present-prev)
@@ -1414,9 +1457,9 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
 #+begin_src emacs-lisp
   (use-package auto-dark
     :custom
-    ;; (auto-dark-themes '((doom-one) (doom-one-light)))
+    (auto-dark-themes '((doom-one) (doom-one-light)))
     ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
-    (auto-dark-themes '((modus-vivendi) (modus-operandi)))
+    ;; (auto-dark-themes '((modus-vivendi) (modus-operandi)))
     :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -1455,12 +1498,18 @@ Enable line numbers for some modes
     :ensure (:host github :repo "ember-theme/emacs")
     :after doom-themes)
 #+end_src
-**** [[https://github.com/hlissner/emacs-hide-mode-line.git][hide-mode-line]]
-An Emacs plugin that hides (or masks) the current buffer's mode-line.
+**** mode-line-invisible :build_in:
+Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
+whole-session switch is a globalized mode of its own.
 #+begin_src emacs-lisp
-  (use-package hide-mode-line
+  (define-globalized-minor-mode my/global-mode-line-invisible-mode
+    mode-line-invisible-mode
+    (lambda () (mode-line-invisible-mode 1)))
+
+  (use-package emacs
+    :ensure nil
     :hook
-    (symbols-outline-mode . hide-mode-line-mode))
+    (symbols-outline-mode . mode-line-invisible-mode))
 #+end_src
 **** hl-line :build_in:
 
@@ -1609,8 +1658,6 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
 **** [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 #+begin_src emacs-lisp
   (use-package mood-line
-    :config
-    (setq my/window-tool-bar-modes '(Custom-mode edebug-mode debugger-mode debug mode))
     :custom
     ;; Use pretty Fira Code-compatible glyphs
     (mood-line-glyph-alist mood-line-glyphs-fira-code)
@@ -1620,18 +1667,14 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
       :left
       (((my/get-bar-image my/modeline-height 3 nil)                               . " ")
        ((mood-line-segment-modal)                                                 . " ")
-       ((mood-line-segment-anzu)                                                  . " ")
        ((mood-line-segment-multiple-cursors)                                      . " ")
-       ;; ((when (derived-mode-p my/window-tool-bar-modes) (window-tool-bar-string)) . " "))
        " "
-       ;; ((when (> (window-text-width) 55) (window-tool-bar-string))                . " ")
-       ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " ")
-       ;; ((window-tool-bar-string)                                                  . " "))
-       )
+       ((when (featurep 'breadcrumb) (breadcrumb-imenu-crumbs))                   . " "))
       :right
       (((mood-line-segment-process)                                               . " ")
        ((mood-line-segment-buffer-status)                                         . " ")
-       ((mood-line-segment-misc-info)                                             . " ")
+       ;; ((mood-line-segment-misc-info)                                             . " ")
+       ((format-mode-line mode-line-misc-info)                                    . " ")
        ((mood-line-segment-major-mode)                                            . " ")
        ((mood-line-segment-vc)                                                    . " ")
        ((mood-line-segment-checker)                                               . " "))))
@@ -1685,17 +1728,14 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     :custom
     (tab-bar-history-limit 100)
     (tab-bar-close-button-show nil)
-    :preface
-    (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     :config
     ;; Prevent accidental tab switches when scrolling the buffer
     (define-key tab-bar-map (kbd "<wheel-down>") nil t)
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
-    :config
     (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
     :bind
     (([remap winner-undo] . tab-bar-history-back)
-     ([remap winner-undo] . tab-bar-history-forward)
+     ([remap winner-redo] . tab-bar-history-forward)
      :map my/toggle-map
      ("t"                 . tab-bar-mode)
      :map my/leader-map
@@ -1715,102 +1755,67 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     ((elpaca-after-init . tab-bar-history-mode)
      (elpaca-after-init . tab-bar-mode)))
 #+end_src
+**** [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]]
+The look of both rows of tabs: the tab bar, one tab per tab group, and
+the tab line, one tab per buffer of a window.  This used to be
+=auto-tab-groups-eyecandy= and the =tab-line= block below it.
+
+One declaration, because it is one package: elpaca queues an id once,
+and a second =:ensure= of the same id is a duplicate it warns about.
+#+begin_src emacs-lisp
+  (use-package modern-tab
+    ;; The id is the main file elpaca looks for — `modern-tab.el' — and
+    ;; the repository is named after what it holds.
+    ;; `main' holds the start of the repository; the work is on `dev'.
+    :ensure (modern-tab :host github :repo "MArpogaus/modern-tab-bars"
+                        :branch "dev")
+    :custom
+    ;; The bar beside a tab group, as high as the mode line.
+    (modern-tab-bar-indicator-height my/modeline-height)
+    ;; Assign Icons to tab groups
+    (modern-tab-bar-icons
+     '(("HOME"       . (:style "suc" :icon "custom-emacs"))
+       ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
+       ("denote"     . (:style "md"  :icon "notebook_edit"))
+       ("customize"  . (:style "cod" :icon "settings"))
+       ("^\\[P\\] *" . (:style "oct" :icon "repo"))
+       ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
+    ;; Remove prefix from project groups
+    (modern-tab-bar-group-name-function
+     (lambda (group-name)
+       (if (string-match "^\\[.\\] *" group-name)
+           (substring group-name (match-end 0))
+         group-name)))
+    ;; The new button makes a group, not a tab.
+    (modern-tab-bar-new-command #'auto-tab-groups-new-group)
+    ;; The tab line looked like this before the package existed: no bar
+    ;; beside a tab.  A width turns one on for the selected tab.
+    (modern-tab-line-active-indicator-width 0)
+    (modern-tab-line-indicator-height my/tabline-height)
+    :hook
+    ((tab-line-mode . modern-tab-line-mode)
+     (tab-bar-mode . modern-tab-bar-mode)))
+#+end_src
 **** tab-line :build_in:
 Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
 
-Some customizations are made to prettify the look of tabs using =nerd-icons= and make the close button behave as known from other editors.
-
-References:
-- https://github.com/benleis1/emacs-init/blob/main/tab-config.md#tab2-close-tab
-- https://andreyor.st/posts/2020-05-07-making-emacs-tabs-work-like-in-atom/
+The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]], configured
+above: the icon per buffer, the close button that buries or kills, and
+the row that hides itself where a window shows one buffer.  What stays
+here is which buffers get a tab line at all.
 
 #+begin_src emacs-lisp
   (use-package tab-line
     :ensure nil
     :custom
     (tab-line-new-tab-choice nil)
-    (tab-line-new-button-show nil)
-    (tab-line-tab-name-function #'my/tab-line-tab-name-function)
-    (tab-line-close-tab-function #'my/tab-line-close-tab-function)
     (tab-line-exclude-modes '(completion-list-mode
-                              imenu-list-major-mode ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                              ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
                               dirvish-directory-view-mode dirvish-special-preview-mode
                               dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
                               dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
-    (tab-line-close-button-show 'selected)
-    :bind
-    (:map my/toggle-map
-          ("T" . global-tab-line-mode))
-    :autoload tab-line-tabs-window-buffers
-    :preface
-    (defun my/tab-line-tab-name-function (buffer &optional _buffers)
-      (let ((name (buffer-name buffer)))
-        (concat ;;(my/get-bar-image 20 2 nil)
-         " "
-         (nerd-icons-icon-for-file name)
-         (format " %s " name))))
-
-    (defun my/tab-line-get-buffer (tab)
-      "Return the buffer represented by TAB."
-      (if (bufferp tab) tab (cdr (assq 'buffer tab))))
-
-    (defun my/tab-line-windows-with-buffer (buffer)
-      "Return a list of windows displaying BUFFER across all frames."
-      (seq-filter (lambda (window)
-                    (eq buffer (window-buffer window)))
-                  (window-list-1 nil nil t)))
-
-    (defun my/tab-line-close-or-bury-buffer (buffer)
-      "Close or bury BUFFER based on its presence in other windows."
-      (let ((other-windows (my/tab-line-windows-with-buffer buffer)))
-        (if (> (length other-windows) 1)
-            (progn
-              (message "Burying buffer %s" buffer)
-              (bury-buffer))
-          (progn
-            (message "Closing buffer %s" buffer)
-            (kill-buffer buffer)))))
-
-    (defun my/multi-buffer-window-p ()
-      "Evaluates to `t' if windows has mutible tab-line buffers, else `nil'."
-      (> (length (tab-line-tabs-window-buffers)) 1))
-
-    (defun my/tab-line-close-tab-function (tab)
-      "Close the selected tab.
-        If the tab is presented in another window, close the tab by using the `bury-buffer` function.
-        If the tab is unique to all existing windows, kill the buffer with the `kill-buffer` function.
-        Lastly, if no tabs are left in the window, it is deleted with the `delete-window` function."
-      (interactive (list (current-buffer)))
-      (let ((window (selected-window))
-            (kill-window-p (not (my/multi-buffer-window-p)))
-            (buffer (my/tab-line-get-buffer tab)))
-        (my/tab-line-close-or-bury-buffer buffer)
-        (when kill-window-p
-          (message "Closing window")
-          (ignore-errors (delete-window window)))))
-
-    (defun my/enable-tab-line-if-multiple-buffers ()
-      "Enable tab line mode if there are multiple buffers in the current window."
-      (if (my/multi-buffer-window-p)
-          (set-window-parameter nil 'tab-line-format nil)
-        (set-window-parameter nil 'tab-line-format 'none)))
-
-    (defun my/update-tab-line-state ()
-      "Update visibility of tab-line on all active windows"
-      (dolist (window (window-list))
-        (with-selected-window window
-          (my/enable-tab-line-if-multiple-buffers))))
-    :config
-    (setq tab-line-close-button
-          (propertize "✕ "
-                      'keymap tab-line-tab-close-map
-                      'mouse-face 'tab-line-close-highlight
-                      'help-echo "Click to close tab")
-          tab-line-separator "")
     :hook
-    ((buffer-list-update  . my/enable-tab-line-if-multiple-buffers)
-     (window-state-change . my/update-tab-line-state)
-     (elpaca-after-init   . global-tab-line-mode)))
+    (elpaca-after-init . global-tab-line-mode))
 #+end_src
 **** time :build_in:
 #+begin_src emacs-lisp
@@ -1873,10 +1878,29 @@ Revert buffers when the underlying file has changed
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
+**** [[https://github.com/MArpogaus/window-box][window-box]] :own:
+A rectangular box around a window: side windows read as panels.  The
+mode line and the header line stay as configured; the box only adds
+the edges the window does not have.
+#+begin_src emacs-lisp
+  (use-package window-box
+    :ensure (:host github :repo "MArpogaus/window-box")
+    :custom
+    ;; The header line and the mode line inside the box, a tab line
+    ;; outside it: `window-box-encloses' was one set of rows and is now
+    ;; these two, so that the inside cannot be asked for in pieces.
+    (window-box-enclose-top 'header-line)
+    (window-box-enclose-mode-line t)
+    ;; The mode belongs to the buffer, and Emacs can show one buffer in a
+    ;; panel and in an ordinary window at the same time.  A box belongs to
+    ;; the place: the side windows wear it and the ordinary windows do not.
+    (window-box-window-predicate
+     (lambda (window)
+       (window-parameter window 'window-side))))
+#+end_src
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
-    :ensure (:host github :repo "MArpogaus/auto-side-windows")
     :preface
     (defun my/get-header-line-icon-for-buffer (buffer)
       (with-current-buffer buffer
@@ -1893,6 +1917,8 @@ Revert buffers when the underlying file has changed
                         '(" ! " . error))
                        ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$" (derived-mode . magit-mode)) buffer)
                         '(" VC " . success))
+                       ((buffer-match-p '(derived-mode . dired-mode) buffer)
+                        '(" DIR " . mode-line-emphasis))
                        ((buffer-match-p "^\\*Org Src.*\\*" buffer)
                         '(" SRC " . mode-line-emphasis))
                        ((buffer-match-p '(or (derived-mode . shell-mode)
@@ -1904,45 +1930,124 @@ Revert buffers when the underlying file has changed
                         '(" AGENDA " . mode-line-emphasis))
                        (t '(" ? " . mode-line-inactive)))))
         header-line-icon))
-    (defun my/install-top-side-window-face-remaps (buffer foreground background)
-      (with-current-buffer buffer
-        (unless (bound-and-true-p top-side-window-face-remaps-cookies)
-          (setq-local top-side-window-face-remaps-cookies
-                      (list
-                       (face-remap-add-relative 'header-line
-                                                `(:box nil :underline nil :overline ,foreground :foreground ,foreground :background ,background))
-                       (face-remap-add-relative 'fringe
-                                                `(:background ,foreground))
-                       (face-remap-add-relative 'mode-line-active
-                                                `(:overline ,foreground :underline nil :height 0))
-                       (face-remap-add-relative 'mode-line-inactive
-                                                `(:overline ,foreground :underline nil :height 0))
-                       )))))
+    (defvar my/side-window-drag-map
+      (let ((map (make-sparse-keymap)))
+        (define-key map [header-line down-mouse-1]
+                    #'auto-side-windows-drag-slot)
+        map)
+      "Keymap that turns part of a header line into a drag handle.
+    Emacs binds a press on a header line to `mouse-drag-header-line', which
+    resizes the window, so the press is the event to take: a keymap on the
+    text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+    from there.")
+    (defun my/side-window-button (label help command)
+      "Return LABEL as a header-line button running COMMAND on mouse-1."
+      (propertize label 'mouse-face 'highlight 'help-echo help
+                  'local-map (let ((map (make-sparse-keymap)))
+                               (define-key map [header-line mouse-1] command)
+                               map)))
+    (defun my/side-window-minimize (event)
+      "Delete the clicked side window; its buffers stay alive."
+      (interactive "e")
+      (delete-window (posn-window (event-start event))))
+    (defun my/side-window-kill (event)
+      "Delete the clicked side window and kill the buffers it displayed."
+      (interactive "e")
+      (let* ((win (posn-window (event-start event)))
+             (bufs (delete-dups (cons (window-buffer win)
+                                      (mapcar #'car (window-prev-buffers win))))))
+        (dolist (buf bufs)
+          ;; Keep buffers that are still visible somewhere else.
+          (unless (length> (get-buffer-window-list buf nil t) 1)
+            (kill-buffer buf)))
+        (when (window-valid-p win)
+          (delete-window win))))
+    (defface my/panel-header-line
+      '((t :inherit bold :underline nil))
+      "The look of a side window's header row.
+  `my/header-line-format-top\=' remaps it over the header line faces, so
+  the whole row wears it and a mode's own header colours do not.  It
+  names as little as it can: window-box remaps those faces too, and what
+  is named here outranks its overline.")
+
+    (defun my/panel-label ()
+        "Return what a panel header calls the current buffer.
+  A dired or dirvish buffer is named by its directory: their own header
+  lines carry a stretch to the window's right edge, which took the whole
+  row and pushed the panel's buttons out of it.  The project's crumbs
+  where the directory is inside a project — the same ones the mode line
+  shows — and the path itself where it is not."
+        (if (not (derived-mode-p 'dired-mode))
+            (format-mode-line (or header-line-format "%b") nil nil
+                              (current-buffer))
+          (let* ((here (directory-file-name
+                        (abbreviate-file-name default-directory)))
+                 (project (project-current nil default-directory))
+                 (root (and project
+                            (directory-file-name
+                             (abbreviate-file-name (project-root project))))))
+            (cond ((null project) here)
+                  ((equal here root) (project-name project))
+                  (t (concat (project-name project) "/"
+                             (file-relative-name here root)))))))
+
+    (defvar-local my/header-line-faces-overloaded nil
+      "Whether the remap below has been added to this buffer already.
+  A relative remap stacks, and redisplay comes round again.")
+
     (defvar my/header-line-format-top
       '(:eval
-        (let*
-            ((buffer (current-buffer))
-             (prefix-and-face (my/get-header-line-icon-for-buffer buffer))
-             (prefix (car prefix-and-face))
-             (foreground (face-foreground (cdr prefix-and-face)))
-             (background (face-background (cdr prefix-and-face) nil 'default))
-             (prefix-face (list :inherit 'bold :background background :foreground foreground :inverse-video t))
-             (buffer-face (list :inherit 'bold))
-             (header-line-format (or header-line-format (propertize (format-mode-line "%b") 'face buffer-face))))
-          (set-window-fringes nil 1 1 t)
-          (set-window-margins nil 1 1)
-          (my/install-top-side-window-face-remaps buffer foreground background)
-          (list
-           (propertize prefix 'face prefix-face 'display '(space-width 0.7))
-           " "
-           header-line-format
-           (propertize " " 'display `(space :align-to right))
-           ;; (buttonize " 󰍷 " nil)
-           ;; (buttonize " 󰅚 " nil)
-           " "
-           (propertize " " 'face prefix-face 'display '(space-width 1))))))
+        (pcase-let* ((`(,prefix . ,icon)
+                      (my/get-header-line-icon-for-buffer (current-buffer)))
+                     (row (if (mode-line-window-selected-p)
+                              'header-line-active
+                            'header-line-inactive))
+                     (face (list :inherit (list 'my/panel-header-line row)
+                                 :background (face-background icon nil 'default)
+                                 :foreground (face-foreground icon)))
+                     (own (my/panel-label))
+                     ;; Padding of an exact width, and the row's height.
+                     (pad (and (display-graphic-p)
+                               (my/get-bar-image my/tabline-height 6
+                                                 (face-foreground icon))))
+                     (badge (if pad
+                                (concat pad (string-trim prefix) pad)
+                              prefix))
+                     (buttons
+                      (propertize
+                       (concat (my/side-window-button
+                                "─" "Hide this side window"
+                                #'my/side-window-minimize)
+                               " "
+                               (my/side-window-button
+                                "✕" "Close this side window and kill its buffers"
+                                #'my/side-window-kill))
+                       'face face)))
+          ;; The blanks of the row are the panel's too, so the look goes
+          ;; on the faces themselves.
+          (unless my/header-line-faces-overloaded
+            (setq-local my/header-line-faces-overloaded t)
+            (dolist (name '(header-line header-line-active
+                                        header-line-inactive))
+              (face-remap-add-relative
+               name (list :inherit 'my/panel-header-line
+                          :background (face-background name nil 'default)
+                          :foreground (face-foreground name nil 'default)))))
+          ;; Content only: window-box owns the ends of the row.
+          (concat
+           (propertize badge 'face (append '(:inverse-video t) face)
+                       'local-map my/side-window-drag-map
+                       'help-echo "Drag to another slot")
+           ;; The buffer's own header brings faces of its own —
+           ;; `magit-header-line\=' for one — which the remap does not
+           ;; reach: it names the header line faces, not theirs.
+           (propertize (concat " " own) 'face face)
+           (propertize " " 'display `(space :align-to
+                                            (- right ,(string-width buttons))))
+           buttons))))
+
     :custom
-    ;; Of non of our rules apply try the following strategies to dispaly new buffers
+    ;; If non of our rules apply try the following strategies to dispaly new buffers
     (display-buffer-base-action '((display-buffer-in-previous-window
                                    display-buffer-reuse-mode-window
                                    display-buffer-use-some-window
@@ -1952,8 +2057,34 @@ Revert buffers when the underlying file has changed
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
+    ;; A jump shows its target through `display-buffer' under the
+    ;; `xref-jump' category.  The definition is what the jump is for, so it
+    ;; lands in an ordinary window and never in a panel.
+    (display-buffer-alist
+     '(((category . xref-jump)
+        (display-buffer-reuse-window display-buffer-use-some-window)
+        (some-window . mru))))
+
+    ;; Dont resue sidewindows if there are still free slots
+    (auto-side-windows-reuse-mode-window nil)
+
+    ;; The package ships no taste of its own, so the panels get theirs
+    ;; here: a side window is not a place to land in with `other-window',
+    ;; and it wears neither a tab line nor a mode line.
+    (auto-side-windows-common-window-parameters '((no-other-window . t)
+                                                  (tab-line-format . none)
+                                                  (mode-line-format . none)))
+
+    ;; A side keeps the size I give it, per tab.
+    (auto-side-windows-remember-sizes t)
+
+    ;; How wide the right side starts.
+    (auto-side-windows-right-width 80)
+
     ;; Top side window configurations
-    (auto-side-windows-top-alist '((window-height . 15)))
+    ;; The size of a side is its own option now; the alists carry the
+    ;; rest of the action.
+    (auto-side-windows-top-height 15)
     (auto-side-windows-top-buffer-names
      '("^COMMIT_EDITMSG$"
        "^\\*Agenda Commands\\*$"
@@ -1972,7 +2103,7 @@ Revert buffers when the underlying file has changed
        "^\\*diff-hl\\*$"
        "^\\*gptel-system\\*$"
        "^\\*jinx module compilation\\*$"
-       "^ \\*Install vterm\\*$"))
+       "^ \\*Install vterm\\* $"))
     (auto-side-windows-top-buffer-modes
      '(compilation-mode
        flymake-diagnostics-buffer-mode
@@ -1998,9 +2129,10 @@ Revert buffers when the underlying file has changed
     ;; Left side window configurations
     (auto-side-windows-left-buffer-names
      '("^\\*toc*\\*$"
-       "*SIDE ::"))
+       "^ \\*SIDE ::"))
     (auto-side-windows-left-buffer-modes
-     '(reftex-toc-mode))
+     '(reftex-toc-mode
+       symbols-outline-mode))
 
     ;; Right side window configurations
     (auto-side-windows-right-buffer-names
@@ -2029,22 +2161,25 @@ Revert buffers when the underlying file has changed
        shortdoc-mode))
 
     ;; Window parameters
-    (auto-side-windows-top-window-parameters `((mode-line-format . t)
+    (auto-side-windows-top-window-parameters `((mode-line-format . none)
                                                (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-right-window-parameters `((mode-line-format . t)
+    (auto-side-windows-right-window-parameters `((mode-line-format . none)
                                                  (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-bottom-window-parameters `((mode-line-format . t)
+    (auto-side-windows-left-window-parameters `((mode-line-format . none)
+                                                (header-line-format . ,my/header-line-format-top)))
+    (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                   (header-line-format . ,my/header-line-format-top)))
-    (auto-side-windows-before-display-hook '((lambda (buffer)
-                                               (with-current-buffer buffer
-                                                 (when (bound-and-true-p top-side-window-face-remaps-cookies)
-                                                   (dolist (cookie top-side-window-face-remaps-cookies)
-                                                     (face-remap-remove-relative cookie))
-                                                   (kill-local-variable 'top-side-window-face-remaps-cookies))))))
-    (auto-side-windows-before-toggle-hook auto-side-windows-before-display-hook)
+    ;; The box goes on the buffer once it appears on a side, and
+    ;; `window-box-window-predicate' keeps it to the side windows from
+    ;; there: detaching the buffer into an ordinary window takes the box
+    ;; away by itself, and putting it back on a side brings it back.  No
+    ;; hook has to take the mode off again.
+    (auto-side-windows-after-display-hook '((lambda (buffer &rest _)
+                                              (with-current-buffer buffer
+                                                (window-box-mode 1)))))
     (window-combination-resize t)
     (window-sides-vertical t)
-    (window-sides-slots '(2 1 2 2)) ; maximum number of side windows on the left, top, right and bottom
+    (window-sides-slots '(2 1 5 2)) ; maximum number of side windows on the left, top, right and bottom
     (window-persistent-parameters
      (append window-persistent-parameters
              '((tab-line-format . t)
@@ -2058,7 +2193,10 @@ Revert buffers when the underlying file has changed
           :map my/window-map
           ("s" . auto-side-windows-display-buffer-on-side)
           :map my/buffer-map
-          ("B"  . auto-side-windows-switch-to-buffer))
+          ("B"  . auto-side-windows-switch-to-buffer)
+          :repeat-map my/window-map
+          ("N" . auto-side-windows-move-to-next-slot)
+          ("P" . auto-side-windows-move-to-previous-slot))
     :config
     (with-eval-after-load 'magit
       (setopt magit-display-buffer-function #'display-buffer
@@ -2127,7 +2265,7 @@ https://karthinks.com/software/scaling-latex-previews-in-emacs/
       "Adjust the size of latex preview fragments when changing the
   buffer's text scale."
       (pcase major-mode
-        ((or 'latex-mode (guard 'org-auctex-mode))
+        ((or 'latex-mode (guard (bound-and-true-p org-auctex-mode)))
          (dolist (ov (overlays-in (point-min) (point-max)))
            (if (eq (overlay-get ov 'category)
                    'preview-overlay)
@@ -2165,13 +2303,6 @@ Sidebar showing a "mini-map" of a buffer.
     (minimap-minimum-width 25)
     (minimap-width-fraction 0)
     (minimap-major-modes '(prog-mode conf-mode))
-    :config
-    (with-eval-after-load 'golden-ratio
-      (add-to-list 'golden-ratio-inhibit-functions
-                   (lambda ()
-                     (and minimap-buffer-name
-                          (window-live-p (get-buffer-window minimap-buffer-name)))))
-      (add-to-list 'golden-ratio-exclude-buffer-names `(,minimap-buffer-name)))
     :bind
     (:map my/toggle-map
           ("m" . minimap-mode)))
@@ -2281,6 +2412,9 @@ Paren mode for highlighting matcing paranthesis
     (recentf-keep '(file-remote-p file-readable-p))
     (recentf-max-menu-items 10)
     (recentf-max-saved-items 100)
+    ;; The list is saved on a timer, so a crash costs at most this much of it.
+    (recentf-autosave-interval 300)
+    (recentf-show-messages nil)
     :config
     (add-to-list 'recentf-exclude
                  (recentf-expand-file-name no-littering-var-directory))
@@ -2300,24 +2434,22 @@ Enable repeat maps
     :ensure nil
     :preface
     ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
-    (defun my/repeatize-keymap (keymap)
-      "Add `repeat-mode' support to a KEYMAP."
+    (defun my/repeatize-keymap (keymap &optional unset)
+      "Add `repeat-mode' support to a KEYMAP. If UNSET is true remove repeat property"
       (map-keymap
        (lambda (_key cmd)
          (when (symbolp cmd)
-           (put cmd 'repeat-map keymap)))
+           (put cmd 'repeat-map (unless unset keymap))))
        (symbol-value keymap)))
     :config
-    (with-eval-after-load 'smerge-mode
-      (my/repeatize-keymap 'smerge-basic-map))
     (with-eval-after-load 'which-key
       (setopt repeat-echo-function #'ignore)
       ;; Spawn or hide a which-key popup
       (advice-add 'repeat-post-hook :after
                   (defun repeat-help--which-key-popup ()
-                    (if-let ((cmd (or this-command real-this-command))
-                             (keymap (or repeat-map
-                                         (repeat--command-property 'repeat-map))))
+                    (if-let* ((cmd (or this-command real-this-command))
+                              (keymap (or repeat-map
+                                          (repeat--command-property 'repeat-map))))
                         (run-at-time
                          0 nil
                          (lambda ()
@@ -2325,15 +2457,6 @@ Enable repeat maps
                             nil (symbol-value keymap))))
                       (which-key--hide-popup)))))
     :hook elpaca-after-init)
-#+end_src
-**** [[https://github.com/daichirata/emacs-rotate.git][rotate]]
-Rotate the layout of emacs.
-#+begin_src emacs-lisp
-  (use-package rotate
-    :bind
-    (:repeat-map my/window-map
-                 ("R" . rotate-layout)
-                 ("W" . rotate-window)))
 #+end_src
 **** savehist :build_in:
 #+begin_src emacs-lisp
@@ -2377,6 +2500,9 @@ Record cursor position from one session to the other
 #+begin_src emacs-lisp
   (use-package saveplace
     :ensure nil
+    :custom
+    ;; The places are saved on a timer, not only when Emacs exits.
+    (save-place-autosave-interval 300)
     :preface
     (defun my/saveplace-recenter (&rest _)
       (when buffer-file-name (ignore-errors (recenter))))
@@ -2404,14 +2530,20 @@ Writable grep buffer and apply the changes to files.
     (wgrep-auto-save-buffer t))
 #+end_src
 **** window :build_in:
+Window sizes, splits and whole layouts: =R= rotates the layout and =W=
+rotates the windows through it.
 #+begin_src emacs-lisp
   (use-package window
     :ensure nil
-    :preface
-    (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     :custom
     (window-resize-pixelwise t)   ; Resize windows pixelwise
     (frame-resize-pixelwise t)    ; Resize frame pixelwise
+    ;; `kill-buffer' hands the window to `quit-restore-window', so killing
+    ;; a buffer undoes the display that showed it instead of leaving the
+    ;; window behind with something arbitrary in it.
+    (kill-buffer-quit-windows t)
+    ;; And `q' kills the buffers that are worth nothing once read.
+    (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
     :config
     (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
     :bind
@@ -2426,14 +2558,15 @@ Writable grep buffer and apply the changes to files.
      ("+" . enlarge-window)
      ("-" . shrink-window)
      ("*" . enlarge-window-horizontally)
-     ("’" . shrink-window-horizontally)
+     ("_" . shrink-window-horizontally)
      ("r" . split-window-right)
      ("b" . split-window-below)
      ("v" . split-window-vertically)
      ("h" . split-window-horizontally)
      ("m" . delete-other-windows)
-     ("m" . delete-other-windows)
      ("M" . delete-other-windows-vertically)
+     ("R" . window-layout-rotate-clockwise)
+     ("W" . rotate-windows)
      :exit
      ("=" . balance-windows)))
 #+end_src
@@ -2512,8 +2645,6 @@ Simple note taking and file naming.
     (denote-excluded-keywords-regexp nil)
     ;; Pick dates, where relevant, with Org's advanced interface:
     (denote-date-prompt-use-org-read-date t)
-    ;; Automatically rename Denote buffers using the `denote-rename-buffer-format'.
-    (denote-rename-buffer-mode t)
     ;; Define templates for notes
     (denote-templates
      '((minutes . "minutes")
@@ -2547,7 +2678,6 @@ Simple note taking and file naming.
                 (widen)
                 (goto-char (point-min))
                 (insert header)
-                (when (and (nth 6 data) (not (string-empty-p (format "%s" (nth 6 data))))))
                 (insert (cond ((stringp (nth 6 data)) (nth 6 data))
                               ((functionp (nth 6 data)) (funcall (nth 6 data)))
                               (t "")))))
@@ -2560,7 +2690,6 @@ Simple note taking and file naming.
           ("R" . denote-rename-file-using-front-matter)
           ("b" . denote-backlinks)
           ("d" . denote-dired)
-          ("g" . denote-grep)
           ("i" . denote-link)
           ("k" . my/kill-denote-buffers)
           ("s" . my/denote-save-buffer)
@@ -2692,6 +2821,7 @@ A polished Dired with batteries included.
 #+begin_src emacs-lisp
   (use-package dirvish
     :after dired mood-line
+    :preface
     :custom
     (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
      '(("h" "~/"                          "Home")
@@ -2701,6 +2831,8 @@ A polished Dired with batteries included.
      '(:left (sort symlink) :right (vc-info yank index)))
     (dirvish-attributes
      '(nerd-icons file-time file-size collapse subtree-state vc-state))
+    (dirvish-side-attributes
+     '(nerd-icons subtree-state))
     (dirvish-subtree-state-style 'nerd)
     (dirvish-path-separators (list
                               (format "  %s " (nerd-icons-codicon "nf-cod-home"))
@@ -2712,6 +2844,15 @@ A polished Dired with batteries included.
     (dirvish-reuse-session nil)
     (dirvish-mode-line-height my/modeline-height)
     (dirvish-header-line-height my/modeline-height)
+    ;; `dirvish-side' displays its buffer itself, so the parameters a
+    ;; panel is given never reach it: that window wore dirvish's own
+    ;; header, without the icon or the buttons every other panel has.
+    (dirvish-side-window-parameters
+     `((no-delete-other-windows . t)
+       (no-other-window . t)
+       (mode-line-format . none)
+       (header-line-format . ,my/header-line-format-top)))
+
     :init
     (dirvish-override-dired-mode)
     ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -2759,7 +2900,7 @@ We will tweak the Emacs built-in ediff configuration a bit.
   (use-package ediff
     :ensure nil
     :preface
-    (defvar my-ediff-original-windows nil)
+    (defvar my/ediff-original-windows nil)
     (defun my/store-pre-ediff-winconfig ()
       "This function stores the current window configuration before opening ediff."
       (setq my/ediff-original-windows (current-window-configuration)))
@@ -2812,15 +2953,17 @@ Make Emacs use the $PATH set up by the user's shell.
     ;; messages for every word when checking the entire buffer
     (flyspell-issue-message-flag nil)
     :preface
-    (defun my/restart-flyspell-mode ()
+    (defun my/restart-flyspell-mode (&rest _)
       (when flyspell-mode
         (flyspell-mode-off)
         (flyspell-mode-on)
         (flyspell-buffer)))
+    :config
+    ;; `ispell-change-dictionary' is a command, not a hook
+    (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
     :hook
     (((text-mode org-mode LaTeX-mode) . flyspell-mode)
-     ((prog-mode conf-mode) . flyspell-prog-mode)
-     (ispell-change-dictionary . restart-flyspell-mode)))
+     ((prog-mode conf-mode) . flyspell-prog-mode)))
 #+end_src
 **** [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
 Distraction-free words correction with flyspell via selected interface.
@@ -2922,7 +3065,7 @@ Major mode for interacting with a terminal
   (use-package term
     :ensure nil
     :commands term
-    :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
+    :if (file-exists-p "/bin/zsh") ; we only use it if shell exists
     :custom
     (shell-file-name "/bin/zsh")
     (explicit-shell-file-name "/bin/zsh"))
@@ -2957,7 +3100,7 @@ Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
       "Memoize a value if the key is a remote path."
       (if (and key
                (file-remote-p key))
-          (if-let ((current (assoc key (symbol-value cache))))
+          (if-let* ((current (assoc key (symbol-value cache))))
               (cdr current)
             (let ((current (apply orig-fn args)))
               (set cache (cons (cons key current) (symbol-value cache)))
@@ -3020,7 +3163,7 @@ Emacs libvterm integration.
              (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
              (vterm-buffer (get-buffer vterm-buffer-name)))
         (if (and vterm-buffer (not current-prefix-arg))
-            (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
+            (pop-to-buffer vterm-buffer '(nil (category . comint)))
           (call-interactively #'vterm))))
     ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
     (defun my/vterm--get-shell-adv (vterm-shell)
@@ -3077,12 +3220,7 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
     (agent-shell-header-style 'text)
     :bind
     (:map my/ai-map
-          ("s" . agent-shell))
-    :ensure-system-package
-    ;; Add agent installation configs here
-    ((npm . "sudo dnf install -y npm")
-     (claude . "curl -fsSL https://claude.ai/install.sh | bash")
-     (claude-agent-acp . "sudo npm install -g @zed-industries/claude-agent-acp")))
+          ("s" . agent-shell)))
 #+end_src
 **** [[https://github.com/karthink/gptel.git][gptel]]
 A simple LLM client for Emacs.
@@ -3279,7 +3417,7 @@ Agent mode for gptel.
       (gptel-agent-update)))
 #+end_src
 **** [[https://github.com/kmontag/macher.git][macher]]
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package macher
     :ensure (:host github :repo "kmontag/macher")
     :demand t
@@ -3331,15 +3469,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     ;;(add-to-list 'completion-at-point-functions #'cape-dict)
     ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
     ;;(add-to-list 'completion-at-point-functions #'cape-line)
-
-    ;; The advices are only needed on Emacs 28 and older.
-    (when (< emacs-major-version 29)
-      ;; Silence the pcomplete capf, no errors or messages!
-      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-      ;; Ensure that pcomplete does not write to the buffer
-      ;; and behaves as a pure `completion-at-point-function'.
-      (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+    )
 #+end_src
 **** [[https://github.com/emacs-citar/citar.git][citar]]
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -3604,17 +3734,11 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      (elpaca-after-init . corfu-echo-mode)
      (elpaca-after-init . corfu-history-mode)
      ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
-     (eshell-mode-hook . (lambda ()
-                           (setq-local corfu-auto nil)
-                           (corfu-mode)))
+     (eshell-mode . (lambda ()
+                      (setq-local corfu-auto nil)
+                      (corfu-mode)))
      ;; Enable minibuffer completion
      (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
-
-  (use-package corfu-terminal
-    :if (not (display-graphic-p))
-    :after corfu
-    :hook
-    (global-corfu-mode . corfu-terminal-mode))
 #+end_src
 **** dabbrev :build_in:
 #+begin_src emacs-lisp
@@ -3854,10 +3978,9 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :config
     (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
     (require 'vertico-directory)
-    :bind
-    ;; Improve directory navigation
-    (:map vertico-map
-          ("<return>" . vertico-directory-enter))
+    ;; NOTE: `<return>' in `vertico-map' is bound by embark to
+    ;; `my/embark-act-or-vertico-enter', which falls back to
+    ;; `vertico-directory-enter'.
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (elpaca-after-init . vertico-mode)))
@@ -3897,7 +4020,7 @@ Emacs package for highlighting uncommitted changes.
     (defun my/diff-hl-fix-face-colors (&rest _)
       "Set foreground to background color for diff-hl faces"
       (seq-do (lambda (face)
-                (if-let ((color (face-background face)))
+                (if-let* ((color (face-background face)))
                     (progn (set-face-foreground face color)
                            (set-face-background face nil))))
               '(diff-hl-insert
@@ -3947,6 +4070,8 @@ functions we invoke regularly outside of magit is called.
   (use-package magit
     :commands (magit-status magit-log-buffer-file magit-log-all)
     :autoload magit-git-repo-p
+    :custom
+    (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
     :preface
     (defun my/project-magit-status ()
       (interactive)
@@ -3956,12 +4081,11 @@ functions we invoke regularly outside of magit is called.
     :init
     (with-eval-after-load 'project
       (add-to-list 'project-switch-commands
-                   '(?v "Version Control" my/project-magit-status) t))
+                   '(my/project-magit-status "Version Control" ?v) t))
     :bind
     (:map my/version-control-map
           ("F"  . magit-fetch-all)
           ("P"  . magit-push-current)
-          ("b"  . magit-branch)
           ("b"  . magit-branch-or-checkout)
           ("c"  . magit-commit)
           ("d"  . magit-diff-unstaged)
@@ -4017,35 +4141,14 @@ Tab group based workflow isolation.
      '((dirvish-quit "dirvish" :ignore-result t)
        (my/kill-denote-buffers "denote" :ignore-result t)
        (Custom-buffer-done "customize" :ignore-result t)))
-    ;; height of tabs
-    (auto-tab-groups-eyecandy-tab-height my/modeline-height)
-    ;; Assign Icons to tab groups
-    (auto-tab-groups-eyecandy-icons
-     '(("HOME"       . (:style "suc" :icon "custom-emacs"))
-       ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
-       ("denote"     . (:style "md"  :icon "notebook_edit"))
-       ("customize"  . (:style "cod" :icon "settings"))
-       ("^\\[P\\] *" . (:style "oct" :icon "repo"))
-       ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
-    ;; Remove prefix from project groups
-    (auto-tab-groups-eyecandy-tab-bar-group-name-format-function
-     (lambda (tab-group-name)
-       (if (string-match "^\\[.\\] *" tab-group-name)
-           (substring tab-group-name (match-end 0))
-         tab-group-name)))
     :bind
     (:map my/workspace-map
           ("w" . auto-tab-groups-new-group))
     :init
     ;; automatically assign projects to groups
     (auto-tab-groups-project-mode)
-    ;; Enable modern tabs style
-    (auto-tab-groups-eyecandy-mode)
     ;; Enable automatic tab group management based on the rules defined above
-    (auto-tab-groups-mode)
-    :hook
-    ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
-    (tab-bar-mode . auto-tab-groups-eyecandy-mode))
+    (auto-tab-groups-mode))
 #+end_src
 **** project :build_in:
 #+begin_src emacs-lisp
@@ -4078,11 +4181,13 @@ Enhancements to Emacs' built in project library.
     :commands project-x-try-local project-x--window-state-write
     :init
     (add-to-list 'project-switch-commands
-                 '(?j "Restore windows" project-x-windows) t)
+                 '(project-x-window-state-load "Restore windows" ?j) t)
     (add-hook 'project-find-functions 'project-x-try-local 90)
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** speedbar :build_in:
+A tree of the files and the symbols around the current one, in a window of
+this frame rather than a frame of its own.
 #+begin_src emacs-lisp
   (use-package speedbar
     :ensure nil
@@ -4101,6 +4206,12 @@ Enhancements to Emacs' built in project library.
     ;; make speedbar update automaticaly, and dont use ugly icons(images)
     (speedbar-update-flag t)
     (speedbar-use-images nil)
+    ;; A window of this frame, not a frame of its own.
+    (speedbar-prefer-window t)
+
+    :bind
+    (:map my/toggle-map
+          ("s" . speedbar-window-mode))
 
     :config
     ;; list of supported file-extensions
@@ -4165,16 +4276,6 @@ Enhancements to Emacs' built in project library.
                         (visual-line-mode 0)
                         ;; Change speedbar's text size.  May need to alter the icon size if you change size.
                         (text-scale-adjust -1)))))
-#+end_src
-**** [[https://github.com/emacsorphanage/sr-speedbar.git][sr-speedbar]]
-Same frame speedbar.
-#+begin_src emacs-lisp
-  (use-package sr-speedbar
-    :custom
-    (sr-speedbar-right-side nil)
-    :bind
-    (:map my/toggle-map
-          ("s" . sr-speedbar-toggle)))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
@@ -4248,39 +4349,148 @@ Integrated environment for *TeX*
 #+end_src
 **** [[https://github.com/astoff/code-cells.el.git][code-cells]]
 Emacs utilities for code split into cells, including Jupyter notebooks.
+Two binding layers, mimicking JupyterLab: modified keys for /edit mode/
+(the =<return>= family, =C-<up>/<down>= navigation, =M-S-<up>/<down>= to
+move cells), and =my/code-cells-repeat-map= as /command mode/ — entered
+through any of its commands or via =SPC j=, single keys (=n p j k e r a b
+c i o O 0 A R=) then chain until a foreign key exits.  =C-c C-c= interrupts
+the running cell, as in the REPL (with =standard-keys-mode= that is
+=C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
+No other prefix bindings, and no plain speed keys, which meow's normal
+state would shadow.  Rarely used commands (split, merge, markdown cells)
+are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
 #+begin_src emacs-lisp
   (use-package code-cells
     :preface
-    (defun my/code-cells-eval (start end)
-      (interactive (code-cells--bounds (prefix-numeric-value current-prefix-arg)
-                                       'use-region
-                                       'no-header))
-      (code-cells-eval start end)
-      (code-cells-forward-cell 1))
+    (defvar my/code-cells-repeat-map (make-sparse-keymap)
+      "key-map for code cell commands")
+    (defun my/code-cells-insert-below ()
+      "Insert a new cell below the current one (JupyterLab: b)."
+      (interactive)
+      (pcase-let ((`(,_ ,end) (code-cells--bounds)))
+        (goto-char end)
+        (unless (bolp) (insert "\n"))
+        (insert "# %%\n\n")
+        (forward-line -1)))
+    (defun my/code-cells-insert-above ()
+      "Insert a new cell above the current one (JupyterLab: a)."
+      (interactive)
+      (pcase-let ((`(,start ,_) (code-cells--bounds)))
+        (goto-char start)
+        (insert "# %%\n\n")
+        (forward-line -1)))
+    (defun my/code-cells-split ()
+      "Split the current cell at point (JupyterLab: C-S--)."
+      (interactive)
+      (unless (bolp) (insert "\n"))
+      (insert "# %%\n"))
+    (defun my/code-cells-merge-above ()
+      "Merge the current cell with the one above (JupyterLab: S-m)."
+      (interactive)
+      (pcase-let ((`(,start ,_) (code-cells--bounds)))
+        (goto-char start)
+        (when (and (looking-at-p code-cells-boundary-regexp)
+                   (/= start (point-min)))
+          (delete-region start (progn (forward-line) (point))))))
+    (defun my/code-cells-merge-below ()
+      "Merge the current cell with the one below."
+      (interactive)
+      (pcase-let ((`(,_ ,end) (code-cells--bounds)))
+        (save-excursion
+          (goto-char end)
+          (when (looking-at-p code-cells-boundary-regexp)
+            (delete-region end (progn (forward-line) (point)))))))
+    (defun my/code-cells-eval-and-insert-below (arg)
+      "Evaluate the current cell and insert a new one below (JupyterLab: M-RET)."
+      (interactive "p")
+      (pcase-let ((`(,start ,end) (code-cells--bounds arg nil t)))
+        (code-cells-eval start end))
+      (my/code-cells-insert-below))
+    (defun my/code-cells-insert-markdown-below ()
+      "Insert a jupytext markdown cell below the current one (JupyterLab: m)."
+      (interactive)
+      (my/code-cells-insert-below)
+      (save-excursion
+        (forward-line -1)
+        (end-of-line)
+        (insert " [markdown]"))
+      (insert "# "))
+    :init
+    (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
     :config
-    (add-to-list 'code-cells-eval-region-commands '(python-base-mode . python-shell-send-region))
-    ;; Setup speed keys
-    (let ((map code-cells-mode-map))
-      (define-key map "n" (code-cells-speed-key 'code-cells-forward-cell))
-      (define-key map "p" (code-cells-speed-key 'code-cells-backward-cell))
-      (define-key map "e" (code-cells-speed-key 'code-cells-eval))
-      (define-key map (kbd "TAB") (code-cells-speed-key 'outline-cycle)))
+    ;; code-cells' own C-c % prefix map declares `:repeat t', claiming the
+    ;; repeat-map property of the very commands bound in our repeat map when
+    ;; the package loads.  Drop that prefix and re-assert our map, so the
+    ;; repeat chain and `SPC j' stay one and the same.
+    (keymap-unset code-cells-mode-map "C-c %" t)
+    (my/repeatize-keymap 'code-cells--prefix-map t)
+    (my/repeatize-keymap 'my/code-cells-repeat-map)
     :bind
     (:map code-cells-mode-map
-          ("M-S-<down>"   . outline-move-subtree-down)
+          ;; evaluation
+          ("C-<return>"   . code-cells-eval)
+          ("S-<return>"   . code-cells-eval-and-step)
+          ("C-S-<return>" . code-cells-eval-and-step)
+          ("M-<return>"   . my/code-cells-eval-and-insert-below)
+          ("C-M-<return>" . pycell-restart-and-run-all)
+          ;; navigation
+          ("C-<up>"       . code-cells-backward-cell)
+          ("C-<down>"     . code-cells-forward-cell)
+          ;; cell structure.  pycell's move and not code-cells' own:
+          ;; the latter transposes the two regions, and
+          ;; `transpose-regions' leaves an overlay where the text used
+          ;; to be, so the result of one cell lands under the other.
+          ("M-S-<up>"     . pycell-move-cell-up)
+          ("M-S-<down>"   . pycell-move-cell-down)
+          ;; outline
           ("M-S-<right>"  . outline-demote)
           ("M-S-<left>"   . outline-promote)
-          ("M-S-<up>"     . outline-move-subtree-up)
-          ("M-<return>"   . outline-insert-heading)
           ("C-S-<tab>"    . outline-cycle-buffer)
           ("C-<backtab>"  . outline-cycle-buffer)
-          ("C-S-<return>" . my/code-cells-eval))
+          ;; interrupt, under the C-c prefix like in the REPL; reachable as
+          ;; C-p C-c through standard-keys' dynamic prefix, and as plain
+          ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
+          ("C-c C-c"      . pycell-interrupt)
+          ;; "command mode" à la JupyterLab: any entry key activates the
+          ;; repeat map, single keys then chain until a foreign key exits.
+          ;; The same map hangs off the leader as `SPC j'.
+          :map my/code-cells-repeat-map
+          ("n" . code-cells-forward-cell)
+          ("p" . code-cells-backward-cell)
+          ("j" . code-cells-forward-cell)
+          ("k" . code-cells-backward-cell)
+          ("e" . code-cells-eval)
+          ("r" . code-cells-eval-and-step)
+          ("a" . my/code-cells-insert-above)
+          ("b" . my/code-cells-insert-below)
+          ("c" . pycell-copy-output)
+          ("i" . pycell-interrupt)
+          ("o" . pycell-toggle-output)
+          ("O" . pycell-remove-blocks)
+          ("0" . pycell-restart)
+          ("A" . pycell-run-above)
+          ("R" . pycell-restart-and-run-all))
     :hook
     (python-base-mode . code-cells-mode-maybe))
 #+end_src
+**** [[https://github.com/MArpogaus/pycell][pycell]] :own:
+Notebook style results for Python code cells: the output of an evaluated
+cell shows up below it, and markdown cells render in place.  This used to
+be a long block right here; it is a package now, so only the parts that
+are specific to this configuration remain.
+#+begin_src emacs-lisp
+  (use-package pycell
+    :ensure (:host github :repo "MArpogaus/pycell")
+    ;; The package installs no hook itself; this is where it turns on.
+    :hook (code-cells-mode . pycell-mode-maybe)
+    :config
+    (with-eval-after-load 'auto-side-windows
+      (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
+        (add-to-list 'auto-side-windows-right-buffer-names name))))
+#+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (use-package combobulate
     :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
     :custom
@@ -4353,13 +4563,14 @@ Debug Adapter Protocol for Emacs.
 
     ;; Projectile users
     ;; (setq dape-cwd-fn 'projectile-project-root)
+
+    ;; Save buffers on startup, useful for interpreted languages
+    (add-hook 'dape-on-start-hooks (lambda () (save-some-buffers t t)))
     :hook
     ;; Kill compile buffer on build success
     ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
     ;; Set breakpints via fringe or margin mouse clicks
-    ((prog-mode . dape-breakpoint-global-mode)
-     ;; Save buffers on startup, useful for interpreted languages
-     (dape-on-start-hooks . (lambda () (save-some-buffers t t)))))
+    (prog-mode . dape-breakpoint-global-mode))
 #+end_src
 **** [[https://github.com/spotify/dockerfile-mode.git][docker]]
 An emacs mode for handling Dockerfiles.
@@ -4386,10 +4597,6 @@ A client for Language Server Protocol servers.
     :init
     (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
     :custom
-    ;; Filter list of all possible completions with Orderless
-    ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-    (completion-category-overrides '((eglot (styles orderless))
-                                     (eglot-capf (styles orderless))))
     (eglot-send-changes-idle-time 0.1)
     :preface
     (defun my/eglot-capf ()
@@ -4412,6 +4619,10 @@ A client for Language Server Protocol servers.
           ("a" . eglot-code-actions)
           ("r" . eglot-rename))
     :config
+    ;; Filter list of all possible completions with Orderless
+    ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
+    (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
+    (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
     ;; https://github.com/doomemacs/doomemacs/blob/a90c06dc6b104afbe0c93f0107df5c42b8137b5e/modules/tools/lsp/%2Beglot.el#L36
     (plist-put eglot-events-buffer-config :size 0)
 
@@ -4437,11 +4648,11 @@ Configure emacs documentation support.
     :ensure nil
     :custom
     (eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+    (eldoc-echo-area-use-multiline-p nil)
     :bind
     (:map my/lsp-map
           ("d" . eldoc-doc-buffer))
     :config
-    (eldoc-add-command-completions "paredit-")
     (with-eval-after-load 'combobulate
       (eldoc-add-command-completions "combobulate-")))
 #+end_src
@@ -4459,36 +4670,32 @@ Childframe doc for eglot and anything that uses eldoc.
       (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
       (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 #+end_src
-**** [[https://github.com/purcell/envrc.git][envrc]]
-Emacs support for direnv which operates buffer-locally.
+**** elisp-mode :build_in:
+Font lock for Emacs Lisp from a code analysis rather than from the symbol
+alone: a let-bound variable no longer reads as a function call.
 #+begin_src emacs-lisp
-  (use-package envrc
-    :if (executable-find "direnv")
-    :preface
-    (defun my/find-python-interpreter nil
-      "Find the Python interpreter and set `python-shell-interpreter' and `python-shell-interpreter-args' accordingly."
-      (cond
-       ((executable-find "ipython3")
-        (setq-local python-shell-interpreter "ipython3"
-                    python-shell-interpreter-args "--simple-prompt"))
-       ((executable-find "python3")
-        (setq-local python-shell-interpreter "python3")
-        (kill-local-variable 'python-shell-interpreter-args))
-       (t (kill-local-variable 'python-shell-interpreter)
-          (kill-local-variable 'python-shell-interpreter-args)))
-      nil)
-    :config
-    ;; Fix problem with python promt detection
-    ;; https://github.com/purcell/envrc#troubleshooting
-    ;; (with-eval-after-load 'python
-    ;;   (advice-add 'python-shell-make-comint :around #'envrc-propagate-environment))
+  (use-package elisp-mode
+    :ensure nil
+    :custom
+    (elisp-fontify-semantically t))
+#+end_src
+**** [[https://codeberg.org/pastor/ben.el][ben]]
+Asynchronous fork of envrc: https://github.com/purcell/envrc
+#+begin_src emacs-lisp
+  (use-package ben
+    :ensure (:host codeberg :repo "pastor/ben.el")
+    :bind
+    (:map my/leader-map
+          ("E" . ben-command-map))
+    :custom
+    (ben-indicator '((:eval (ben--status))))
+    (ben-on-indicator '(:propertize "󰯸" face ben-mode-line-on-face))
+    (ben-denied-indicator '(:propertize "󰯹" face ben-mode-line-denied-face))
+    (ben-error-indicator '(:propertize "󰯹" face ben-mode-line-error-face))
+    (ben-none-indicator nil); '(:propertize "󰯹" face mode-line))
+    (ben-status-frames '("" "" "" "" "" ""))
     :init
-    ;; The global mode should be enabled late in the startup sequence,
-    ;; to prevent inference with other other global minor modes.
-    ;; We have to use add-hook here manually until [[https://github.com/jwiegley/use-package/issues/965][#965]] is solved.
-    (add-hook 'elpaca-after-init-hook #'envrc-global-mode 97)
-    :hook
-    (envrc-mode . my/find-python-interpreter))
+    (add-hook 'elpaca-after-init-hook #'ben-global-mode 97))
 #+end_src
 **** [[https://github.com/emacs-ess/ESS.git][ESS]]
 Emacs Speaks Statistics: ESS.
@@ -4540,6 +4747,8 @@ Universal on-the-fly syntax checker for Emacs.
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe)
+    ;; Lay the message out below its line, pointing at the spot it is about.
+    (flymake-show-diagnostics-at-end-of-line 'fancy)
     :hook
     ((prog-mode conf-mode) . flymake-mode))
 #+end_src
@@ -4551,6 +4760,25 @@ Auto-format source code in many languages with one command.
     :bind
     (:map my/toggle-map
           ("f" . format-all-buffer)))
+#+end_src
+**** hideshow :build_in:
+Code folding.  Hideshow reads tree-sitter's =list= thing where the mode
+defines one, so a parsed buffer folds the same way as an unparsed one and
+folding needs no package of its own.
+#+begin_src emacs-lisp
+  (use-package hideshow
+    :ensure nil
+    :custom
+    ;; Say how much a fold swallowed.  The indicators stay off: they draw
+    ;; in the fringe, where diff-hl already draws.
+    (hs-display-lines-hidden t)
+    :bind
+    (:map hs-minor-mode-map
+          ("<backtab>" . hs-cycle))
+    ;; YAML folds by indentation with `outline-indent', which is the one
+    ;; folding UI that buffer needs.
+    :hook
+    ((prog-mode conf-mode) . hs-minor-mode))
 #+end_src
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 Emacs major mode for editing Lua.
@@ -4570,19 +4798,11 @@ Insert NumPy style docstrings in Python functions.
   (use-package numpydoc
     :after python)
 #+end_src
-**** [[https://github.com/Wilfred/pyimport.git][pyimport]]
-Manage Python imports from Emacs!.
-#+begin_src emacs-lisp
-  (use-package pyimport
-    :after conda)
-#+end_src
-**** [[https://github.com/paetzke/py-isort.el.git][py-isort]]
-Py-isort.el integrates isort into Emacs.
-#+begin_src emacs-lisp
-  (use-package py-isort
-    :after conda)
-#+end_src
 **** python :build_in:
+Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
+environment.  =executable-find= is evaluated per buffer, so it picks up a
+project-local IPython installed by =uv= or exported by =ben=, and the result is
+stored as an absolute path so the REPL keeps using that interpreter.
 #+begin_src emacs-lisp
   (use-package python
     :ensure nil
@@ -4590,7 +4810,28 @@ Py-isort.el integrates isort into Emacs.
     ;; Let Emacs guess Python indent silently
     (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil)
-    (python-shell-dedicated 'project))
+    (python-shell-dedicated 'project)
+    :preface
+    (defun my/python-set-interpreter ()
+      "Use IPython as `python-shell-interpreter' when one is on `exec-path'."
+      (when (derived-mode-p 'python-base-mode)
+        (if-let* ((ipython (or (executable-find "ipython")
+                               (executable-find "ipython3"))))
+            (setq-local python-shell-interpreter ipython
+                        python-shell-interpreter-args "-i --simple-prompt --no-color-info")
+          (kill-local-variable 'python-shell-interpreter)
+          (kill-local-variable 'python-shell-interpreter-args))))
+    :config
+    ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
+    ;; only becomes project-local at the latter point.  `ben' skips its hook in
+    ;; buffers without an `.envrc', hence both.
+    (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
+    (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
+#+end_src
+**** [[https://github.com/z80dev/uv-mode.git][uv-mode]]
+Emacs integration for uv virtual environments.
+#+begin_src emacs-lisp
+  (use-package uv-mode)
 #+end_src
 **** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
 Generate Sphinx friendly docstrings for Python functions in Emacs.
@@ -4598,15 +4839,33 @@ Generate Sphinx friendly docstrings for Python functions in Emacs.
   (use-package sphinx-doc
     :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
     :hook
-    (python-mode . sphinx-doc-mode))
+    (python-base-mode . sphinx-doc-mode))
 #+end_src
 **** [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
 Display symbols (functions, variables, etc) in a side window.
 #+begin_src emacs-lisp
   (use-package symbols-outline
+    :preface
+    (defun my/symbols-outline-toggle ()
+      "Show the symbols outline, or close its window when it is up.
+  `symbols-outline-show' only ever shows: called again it selects the
+  window it already made, so a key bound to it cannot put the panel away."
+      (interactive)
+      (if-let* ((window (and
+                         (bound-and-true-p symbols-outline-buffer-name)
+                         (get-buffer-window symbols-outline-buffer-name))))
+          (delete-window window)
+        (symbols-outline-show)))
     :bind
     (:map my/toggle-map
-          ("o" . symbols-outline-show))
+          ("o" . my/symbols-outline-toggle))
+    ;; `symbols-outline-show' calls `display-buffer-in-side-window' itself
+    ;; rather than `display-buffer', so `display-buffer-alist' never sees
+    ;; it: auto-side-windows does not dress this panel and
+    ;; `auto-side-windows-after-display-hook' does not run for it.  The
+    ;; mode is the buffer's, so the buffer asks for it here, and
+    ;; `window-box-window-predicate' still decides the place.
+    :hook (symbols-outline-mode . window-box-mode)
     :custom
     (symbols-outline-window-position 'left)
     :config
@@ -4616,37 +4875,23 @@ Display symbols (functions, variables, etc) in a side window.
       (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
     (symbols-outline-follow-mode))
 #+end_src
-**** [[https://github.com/renzmann/treesit-auto.git][treesit-auto]]
-built-in tree-sitter integration for Emacs
+**** treesit :build_in:
+The tree-sitter modes in place of their classic counterparts, with the
+grammars fetched as they are wanted: =treesit-enabled-modes= does the
+remapping and =treesit-auto-install-grammar= the fetching.
 #+begin_src emacs-lisp
-  (use-package treesit-auto
-    :if (>= emacs-major-version 29)
+  (use-package treesit
+    :ensure nil
     :custom
-    (treesit-auto-install 'prompt)
-    :hook
-    (elpaca-after-init . global-treesit-auto-mode))
+    (treesit-enabled-modes t)
+    (treesit-auto-install-grammar 'ask))
 #+end_src
-**** [[https://github.com/emacs-tree-sitter/treesit-fold.git][treesit-fold]]
-Code-folding using =treesit.el=.
-#+begin_src emacs-lisp :tangle no
-  (use-package treesit-fold
-    :ensure (:host github :repo "emacs-tree-sitter/treesit-fold")
-    :custom
-    ;; Reduce indicators priority to draw below other fringe indicators like diff-hl.
-    (treesit-fold-indicators-priority -1)
-    :bind
-    (:map treesit-fold-mode-map
-          ("<backtab>" . treesit-fold-toggle))
-    :hook
-    (((yaml-ts-mode) . treesit-fold-indicators-mode)))
-#+end_src
-**** [[https://github.com/yoshiki/yaml-mode.git][yaml]]
+**** yaml-ts-mode :build_in:
 The emacs major mode for editing files in the YAML data serialization format.
 #+begin_src emacs-lisp
-  (use-package yaml-mode
-    :bind
-    (:map yaml-mode-map ("\C-m" . newline-and-indent))
-    :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+  (use-package yaml-ts-mode
+    :ensure nil
+    :mode "\\.ya?ml\\'")
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
@@ -4677,8 +4922,8 @@ Meow is yet another modal editing mode for Emacs.
     :config
     (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
     (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
-    (with-eval-after-load 'tab-line
-      (advice-add #'meow-quit :override #'my/tab-line-close-tab-function))
+    (with-eval-after-load 'modern-tab-line
+      (advice-add #'meow-quit :override #'modern-tab-line-close-tab))
     (setopt meow-mode-state-list
             (append meow-mode-state-list '((comint-mode . insert)
                                            (eshell-mode . insert)
@@ -4819,10 +5064,12 @@ Emulate standard keybindings from modern editors.
           :map y-or-n-p-map
           ("<return>"   . y-or-n-p-insert-y)))
 #+end_src
-**** [[https://github.com/justbur/emacs-which-key.git][which-key]]
+**** which-key :build_in:
 The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
+Built into Emacs since 30.1, so no package is needed.
 #+begin_src emacs-lisp
   (use-package which-key
+    :ensure nil
     :custom
     (which-key-idle-delay 0.1)
     (which-key-compute-remaps t)

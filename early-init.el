@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -13,6 +13,13 @@
 ;; This file has been generated from emacs.org file. DO NOT EDIT.
 
 ;;; Code:
+
+;; Configuration Directory
+;; =no-littering= repoints =user-emacs-directory= at =~/.cache/emacs/= later on, so we capture the directory this configuration actually lives in while it is still correct.
+;; It has to happen here rather than in =init.el=, because =no-littering= is an =elpaca= package: its =:init= block only runs once the package queue is processed, which is *after* =init.el= has finished loading and needs this value to locate the =lisp/= modules.
+
+(defvar emacs-config-directory user-emacs-directory
+  "Directory this configuration lives in, unaffected by `no-littering'.")
 
 ;; Configure Byte Compile
 
@@ -81,7 +88,7 @@
 
 ;; Hide initial frame until all packages are loaded
 
-(add-to-list 'initial-frame-alist '(visibility . init-file-debug))
+(add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
 
@@ -89,6 +96,10 @@
 ;; This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 
 (defvar elpaca-installer-version 0.12)
+;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
+;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
+;; built-in packages by itself.  31.1 was released on 2026-08-24.
+(defvar elpaca-core-date '(20260824))
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))

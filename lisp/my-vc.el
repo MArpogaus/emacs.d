@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -33,7 +33,7 @@
   (defun my/diff-hl-fix-face-colors (&rest _)
     "Set foreground to background color for diff-hl faces"
     (seq-do (lambda (face)
-              (if-let ((color (face-background face)))
+              (if-let* ((color (face-background face)))
                   (progn (set-face-foreground face color)
                          (set-face-background face nil))))
             '(diff-hl-insert
@@ -83,6 +83,8 @@
 (use-package magit
   :commands (magit-status magit-log-buffer-file magit-log-all)
   :autoload magit-git-repo-p
+  :custom
+  (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
   :preface
   (defun my/project-magit-status ()
     (interactive)
@@ -92,12 +94,11 @@
   :init
   (with-eval-after-load 'project
     (add-to-list 'project-switch-commands
-                 '(?v "Version Control" my/project-magit-status) t))
+                 '(my/project-magit-status "Version Control" ?v) t))
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
         ("P"  . magit-push-current)
-        ("b"  . magit-branch)
         ("b"  . magit-branch-or-checkout)
         ("c"  . magit-commit)
         ("d"  . magit-diff-unstaged)

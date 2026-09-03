@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-04-13
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -70,6 +70,7 @@
 
 (use-package dirvish
   :after dired mood-line
+  :preface
   :custom
   (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
    '(("h" "~/"                          "Home")
@@ -79,6 +80,8 @@
    '(:left (sort symlink) :right (vc-info yank index)))
   (dirvish-attributes
    '(nerd-icons file-time file-size collapse subtree-state vc-state))
+  (dirvish-side-attributes
+   '(nerd-icons subtree-state))
   (dirvish-subtree-state-style 'nerd)
   (dirvish-path-separators (list
                             (format "  %s " (nerd-icons-codicon "nf-cod-home"))
@@ -90,6 +93,15 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
+  ;; `dirvish-side' displays its buffer itself, so the parameters a
+  ;; panel is given never reach it: that window wore dirvish's own
+  ;; header, without the icon or the buttons every other panel has.
+  (dirvish-side-window-parameters
+   `((no-delete-other-windows . t)
+     (no-other-window . t)
+     (mode-line-format . none)
+     (header-line-format . ,my/header-line-format-top)))
+
   :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
@@ -137,7 +149,7 @@
 (use-package ediff
   :ensure nil
   :preface
-  (defvar my-ediff-original-windows nil)
+  (defvar my/ediff-original-windows nil)
   (defun my/store-pre-ediff-winconfig ()
     "This function stores the current window configuration before opening ediff."
     (setq my/ediff-original-windows (current-window-configuration)))
@@ -175,15 +187,17 @@
   ;; messages for every word when checking the entire buffer
   (flyspell-issue-message-flag nil)
   :preface
-  (defun my/restart-flyspell-mode ()
+  (defun my/restart-flyspell-mode (&rest _)
     (when flyspell-mode
       (flyspell-mode-off)
       (flyspell-mode-on)
       (flyspell-buffer)))
+  :config
+  ;; `ispell-change-dictionary' is a command, not a hook
+  (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
   :hook
   (((text-mode org-mode LaTeX-mode) . flyspell-mode)
-   ((prog-mode conf-mode) . flyspell-prog-mode)
-   (ispell-change-dictionary . restart-flyspell-mode)))
+   ((prog-mode conf-mode) . flyspell-prog-mode)))
 
 ;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
 ;; Distraction-free words correction with flyspell via selected interface.
@@ -285,7 +299,7 @@
 (use-package term
   :ensure nil
   :commands term
-  :unless (not (file-exists-p "/bin/zsh")) ; we only use it if shell exists
+  :if (file-exists-p "/bin/zsh") ; we only use it if shell exists
   :custom
   (shell-file-name "/bin/zsh")
   (explicit-shell-file-name "/bin/zsh"))
@@ -320,7 +334,7 @@
     "Memoize a value if the key is a remote path."
     (if (and key
              (file-remote-p key))
-        (if-let ((current (assoc key (symbol-value cache))))
+        (if-let* ((current (assoc key (symbol-value cache))))
             (cdr current)
           (let ((current (apply orig-fn args)))
             (set cache (cons (cons key current) (symbol-value cache)))
@@ -383,7 +397,7 @@
            (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
            (vterm-buffer (get-buffer vterm-buffer-name)))
       (if (and vterm-buffer (not current-prefix-arg))
-          (pop-to-buffer vterm-buffer  (bound-and-true-p display-comint-buffer-action))
+          (pop-to-buffer vterm-buffer '(nil (category . comint)))
         (call-interactively #'vterm))))
   ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
   (defun my/vterm--get-shell-adv (vterm-shell)
