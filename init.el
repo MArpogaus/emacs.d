@@ -353,14 +353,14 @@ The DWIM behaviour of this command is as follows:
           (setq tab-bar-show nil)
           (set-fringe-style 0)
           (tab-bar-mode -1)
-          (global-tab-line-mode -1)
+          (modern-tab-line-mode -1)
           (my/global-mode-line-invisible-mode 1)
           (spacious-padding-mode -1))
       (progn
         (setq tab-bar-show t)
         (set-fringe-style nil)
         (tab-bar-mode 1)
-        (global-tab-line-mode 1)
+        (modern-tab-line-mode 1)
         (my/global-mode-line-invisible-mode -1)
         (spacious-padding-mode 1)))))
 

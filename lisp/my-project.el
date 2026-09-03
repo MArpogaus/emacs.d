@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -30,35 +30,14 @@
    '((dirvish-quit "dirvish" :ignore-result t)
      (my/kill-denote-buffers "denote" :ignore-result t)
      (Custom-buffer-done "customize" :ignore-result t)))
-  ;; height of tabs
-  (auto-tab-groups-eyecandy-tab-height my/modeline-height)
-  ;; Assign Icons to tab groups
-  (auto-tab-groups-eyecandy-icons
-   '(("HOME"       . (:style "suc" :icon "custom-emacs"))
-     ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
-     ("denote"     . (:style "md"  :icon "notebook_edit"))
-     ("customize"  . (:style "cod" :icon "settings"))
-     ("^\\[P\\] *" . (:style "oct" :icon "repo"))
-     ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
-  ;; Remove prefix from project groups
-  (auto-tab-groups-eyecandy-tab-bar-group-name-format-function
-   (lambda (tab-group-name)
-     (if (string-match "^\\[.\\] *" tab-group-name)
-         (substring tab-group-name (match-end 0))
-       tab-group-name)))
   :bind
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
   :init
   ;; automatically assign projects to groups
   (auto-tab-groups-project-mode)
-  ;; Enable modern tabs style
-  (auto-tab-groups-eyecandy-mode)
   ;; Enable automatic tab group management based on the rules defined above
-  (auto-tab-groups-mode)
-  :hook
-  ;; HACK: Re-enable eyecandy mode after tab-bar-mode has been disabled
-  (tab-bar-mode . auto-tab-groups-eyecandy-mode))
+  (auto-tab-groups-mode))
 
 ;; project :build_in:
 
