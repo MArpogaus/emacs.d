@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -70,6 +70,7 @@
 
 (use-package dirvish
   :after dired mood-line
+  :preface
   :custom
   (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
    '(("h" "~/"                          "Home")
@@ -80,7 +81,7 @@
   (dirvish-attributes
    '(nerd-icons file-time file-size collapse subtree-state vc-state))
   (dirvish-side-attributes
-   '(nerd-icons collapse subtree-state))
+   '(nerd-icons subtree-state))
   (dirvish-subtree-state-style 'nerd)
   (dirvish-path-separators (list
                             (format "  %s " (nerd-icons-codicon "nf-cod-home"))
@@ -92,6 +93,14 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
+  ;; `dirvish-side' displays its buffer itself, so the parameters a
+  ;; panel is given never reach it: that window wore dirvish's own
+  ;; header, without the icon or the buttons every other panel has.
+  (dirvish-side-window-parameters
+   `((no-delete-other-windows . t)
+     (no-other-window . t)
+     (mode-line-format . none)
+     (header-line-format . ,my/header-line-format-top)))
 
   :init
   (dirvish-override-dired-mode)
