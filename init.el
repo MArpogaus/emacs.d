@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-08-25
+;; Created: 2026-09-03
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -31,6 +31,7 @@
   (auto-save-default t)                              ; Auto-save every buffer that visits a file
   (auto-save-timeout 10)                             ; Number of seconds between auto-save
   (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
+  (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
 
   ;; Backups
   (backup-by-copying t)                              ; Backs up by moving the actual file
@@ -57,12 +58,14 @@
   ;; 100 and not 101: above 100 redisplay may never recenter, and over
   ;; two display blocks taller than the window (pycell results) it then
   ;; hands the window from one block to the other endlessly.
-  ;; (scroll-conservatively 100)                        ; Avoid recentering when scrolling far
-  ;; (scroll-preserve-screen-position t)                ; Don't move point when scrolling
-  ;; (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
+  (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
+  (scroll-preserve-screen-position t)                ; Don't move point when scrolling
+  (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
   (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
   (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
   (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
+  (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
+  (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
   ;; Cursor
   (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
@@ -71,6 +74,7 @@
 
   ;; Typography
   (fill-column 80)                                   ; Default line width
+  (truncate-lines t)                                 ; Give each line of text just one screen line
   (sentence-end-double-space nil)                    ; Use a single space after dots
   (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
@@ -97,6 +101,7 @@
   (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
   (custom-buffer-done-kill t)                        ; Kill custom buffer when done
   (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer .
+  (help-window-select t)                             ; Select help windows when they open
   (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
   (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
   (windmove-mode nil)                                ; Disable windmove mode
@@ -116,7 +121,7 @@
   (set-language-environment "English") ; Set up multilingual environment
   :hook
   ;; Enable word wrapping
-  (((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
+  (;; ((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
    ;; Enable automatic line breaks before `fill-column' is exceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
    ;; cleanup unnecessary white spaces before saving a buffer
