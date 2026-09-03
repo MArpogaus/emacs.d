@@ -19,9 +19,9 @@
 
 (use-package auto-dark
   :custom
-  ;; (auto-dark-themes '((doom-one) (doom-one-light)))
+  (auto-dark-themes '((doom-one) (doom-one-light)))
   ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
-  (auto-dark-themes '((modus-vivendi) (modus-operandi)))
+  ;; (auto-dark-themes '((modus-vivendi) (modus-operandi)))
   :hook elpaca-after-init)
 
 ;; [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
