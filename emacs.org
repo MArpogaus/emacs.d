@@ -4794,11 +4794,41 @@ Insert NumPy style docstrings in Python functions.
   (use-package numpydoc
     :after python)
 #+end_src
+**** [[https://github.com/purcell/inheritenv][inheritenv]]
+Carry a buffer's environment into the temp buffers that commands make: a
+buffer-local =process-environment= is invisible to =shell-command= and its
+like without help.  =ben= brings the package along for the buffers direnv
+owns; =my/python-env-mode= below uses it for the buffers it owns itself.
+#+begin_src emacs-lisp
+  (use-package inheritenv
+    :demand t)
+#+end_src
 **** python :build_in:
 Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
 environment.  =executable-find= is evaluated per buffer, so it picks up a
 project-local IPython installed by =uv= or exported by =ben=, and the result is
 stored as an absolute path so the REPL keeps using that interpreter.
+
+A project without an =.envrc= gets its environment from =C-c v= (=C-p v= with
+=standard-keys-mode=); =C-c V= drops it again.  An environment is any
+directory with a =bin/python= inside, so a venv and a conda prefix are the
+same thing here, and the presence of =conda-meta= says which variable to
+export.  The command looks in the project root first: it takes the only
+environment it finds there, asks which one where there are several, and
+falls back to the environments of =my/python-env-parents= (conda, mamba,
+=virtualenvwrapper=) where the project holds none.
+
+=my/python-env-mode= carries the choice, one buffer at a time, so two
+projects can use two environments in one session.  It is a globalized mode
+after the manner of =ben-global-mode=: the mode goes on in every buffer and
+does nothing until the buffer's project has a choice to apply, which is
+also what lets a buffer opened later pick the choice up.  A per-major-mode
+hook cannot do this job, because =python.el= loads inside the first Python
+buffer's own mode setup, too late for that buffer.
+
+To activate an environment without being asked at all, put
+=my/python-env-path= in a =.dir-locals.el=: the variable is read per buffer
+and takes precedence over the choice made with the command.
 #+begin_src emacs-lisp
   (use-package python
     :ensure nil
@@ -4808,6 +4838,109 @@ stored as an absolute path so the REPL keeps using that interpreter.
     (python-indent-guess-indent-offset-verbose nil)
     (python-shell-dedicated 'project)
     :preface
+    (defvar my/python-env-parents '("~/.conda/envs" "~/miniconda3/envs"
+                                    "~/micromamba/envs" "~/.virtualenvs")
+      "Directories that hold one Python environment per subdirectory.")
+
+    (defvar my/python-env-alist nil
+      "Alist of (DIRECTORY . ENVIRONMENT) set by `my/python-env-activate'.")
+
+    (defvar-local my/python-env-path nil
+      "Python environment of this buffer, taken without asking.
+  Set it in a `.dir-locals.el' to activate one automatically.  It takes
+  precedence over anything `my/python-env-activate' chose.")
+    (put 'my/python-env-path 'safe-local-variable #'stringp)
+
+    (defvar-local my/python-env--applied nil
+      "Environment `my/python-env-mode' put into this buffer.
+  It also says the environment here is ours, so clearing one never takes
+  away what `ben' exported.")
+
+    (defun my/python-env-dir ()
+      "Return the directory an environment is keyed on: the project root, or this one."
+      (if-let* ((project (project-current))) (project-root project) default-directory))
+
+    (defun my/python-env--in (parent)
+      "Return every directory in PARENT that holds a Python environment."
+      (and (file-directory-p parent)
+           (seq-filter (lambda (dir)
+                         (file-executable-p (expand-file-name "bin/python" dir)))
+                       (directory-files parent t directory-files-no-dot-files-regexp))))
+
+    (defun my/python-env-read ()
+      "Return the environment of this project, asking where the answer is open.
+  The single environment of the project root needs no question; several of
+  them, or none there at all, do."
+      (let ((local (my/python-env--in (my/python-env-dir))))
+        (if (and local (not (cdr local)))
+            (car local)
+          (completing-read "Environment: "
+                           (or local (mapcan #'my/python-env--in my/python-env-parents))
+                           nil t))))
+
+    (defun my/python-env--clear ()
+      "Take back what `my/python-env--set' gave this buffer."
+      (when my/python-env--applied
+        (kill-local-variable 'exec-path)
+        (kill-local-variable 'process-environment)
+        (kill-local-variable 'my/python-env--applied)))
+
+    (defun my/python-env--set ()
+      "Put the environment chosen for this buffer into this buffer.
+  Whatever an earlier call gave it goes first, so a new choice replaces the
+  old one instead of stacking on it.  Buffers under an `.envrc' get nothing
+  from us: `ben' exports an environment there already, and direnv is the
+  one that says what it holds."
+      (my/python-env--clear)
+      (when-let* (((not (eq (bound-and-true-p ben--status) 'on)))
+                  (env (or my/python-env-path
+                           (and my/python-env-alist
+                                (cdr (assoc (my/python-env-dir) my/python-env-alist)))))
+                  (bin (expand-file-name "bin" env)))
+        (setq-local my/python-env--applied env
+                    exec-path (cons bin exec-path)
+                    process-environment
+                    (append (list (concat "PATH=" bin path-separator (getenv "PATH"))
+                                  (concat (if (file-directory-p
+                                               (expand-file-name "conda-meta" env))
+                                              "CONDA_PREFIX"
+                                            "VIRTUAL_ENV")
+                                          "=" env))
+                            process-environment))
+        (my/python-set-interpreter)))
+
+    (define-minor-mode my/python-env-mode
+      "Give this buffer the Python environment chosen for its project.
+  The environment is the `exec-path' and the `process-environment' of this
+  buffer alone."
+      :init-value nil :lighter nil
+      (if my/python-env-mode (my/python-env--set) (my/python-env--clear)))
+
+    (define-globalized-minor-mode my/python-env-global-mode
+      my/python-env-mode
+      (lambda () (unless (minibufferp) (my/python-env-mode 1)))
+      :predicate t)
+
+    (defun my/python-env--refresh (dir)
+      "Give every buffer that DIR keys its environment again."
+      (dolist (buffer (buffer-list))
+        (with-current-buffer buffer
+          (when (and my/python-env-mode (equal dir (my/python-env-dir)))
+            (my/python-env--set)))))
+
+    (defun my/python-env-activate (env)
+      "Use ENV in every buffer of this buffer's project, and in the ones to come.
+  ENV nil drops the choice again, which is `my/python-env-deactivate'."
+      (interactive (list (my/python-env-read)))
+      (let ((dir (my/python-env-dir)))
+        (setf (alist-get dir my/python-env-alist nil (null env) #'equal) env)
+        (my/python-env--refresh dir)))
+
+    (defun my/python-env-deactivate ()
+      "Drop the environment chosen for this buffer's project."
+      (interactive)
+      (my/python-env-activate nil))
+
     (defun my/python-set-interpreter ()
       "Use IPython as `python-shell-interpreter' when one is on `exec-path'."
       (when (derived-mode-p 'python-base-mode)
@@ -4817,25 +4950,27 @@ stored as an absolute path so the REPL keeps using that interpreter.
                         python-shell-interpreter-args "-i --simple-prompt --no-color-info")
           (kill-local-variable 'python-shell-interpreter)
           (kill-local-variable 'python-shell-interpreter-args))))
+    :bind
+    (:map python-base-mode-map
+          ("C-c v" . my/python-env-activate)
+          ("C-c V" . my/python-env-deactivate))
+    :init
+    (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
+    ;; The directory-local variables are read after the major mode is set, so
+    ;; this is the first point at which `my/python-env-path' can be seen.  The
+    ;; mode function applies again where it is already on.
+    (add-hook 'hack-local-variables-hook #'my/python-env-mode)
+    ;; These start their processes in a temp buffer, which inherits none of the
+    ;; environment of the buffer the command was called from.
+    (dolist (command '(shell-command shell-command-to-string async-shell-command
+                                     compile org-babel-eval))
+      (advice-add command :around #'inheritenv-apply))
     :config
     ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
     ;; only becomes project-local at the latter point.  `ben' skips its hook in
     ;; buffers without an `.envrc', hence both.
     (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
     (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
-#+end_src
-**** [[https://github.com/z80dev/uv-mode.git][uv-mode]]
-Emacs integration for uv virtual environments.
-#+begin_src emacs-lisp
-  (use-package uv-mode)
-#+end_src
-**** [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
-Generate Sphinx friendly docstrings for Python functions in Emacs.
-#+begin_src emacs-lisp
-  (use-package sphinx-doc
-    :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
-    :hook
-    (python-base-mode . sphinx-doc-mode))
 #+end_src
 **** [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
 Display symbols (functions, variables, etc) in a side window.
