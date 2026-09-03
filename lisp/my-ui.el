@@ -353,15 +353,10 @@
   ;; The tab line looked like this before the package existed: no bar
   ;; beside a tab.  A width turns one on for the selected tab.
   (modern-tab-line-active-indicator-width 0)
-  :bind
-  (:map my/toggle-map
-        ("T" . modern-tab-line-mode))
-  :init
-  (modern-tab-bar-mode)
-  (modern-tab-line-mode)
+  (modern-tab-line-indicator-height my/tabline-height)
   :hook
-  ;; HACK: Re-enable the mode after `tab-bar-mode' has been disabled
-  (tab-bar-mode . modern-tab-bar-mode))
+  ((tab-line-mode . modern-tab-line-mode)
+   (tab-bar-mode . modern-tab-bar-mode)))
 
 ;; tab-line :build_in:
 ;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
@@ -380,7 +375,9 @@
                             ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
                             dirvish-directory-view-mode dirvish-special-preview-mode
                             dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
-                            dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode)))
+                            dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
+  :hook
+  (elpaca-after-init . global-tab-line-mode))
 
 ;; time :build_in:
 
