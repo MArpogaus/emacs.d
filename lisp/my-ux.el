@@ -173,7 +173,7 @@ A relative remap stacks, and redisplay comes round again.")
                    (own (my/panel-label))
                    ;; Padding of an exact width, and the row's height.
                    (pad (and (display-graphic-p)
-                             (my/get-bar-image my/modeline-height 6
+                             (my/get-bar-image my/tabline-height 6
                                                (face-foreground icon))))
                    (badge (if pad
                               (concat pad (string-trim prefix) pad)
