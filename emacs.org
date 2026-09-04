@@ -515,7 +515,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
     ;; Smoother scrolling
     ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
     ;; 100 and not 101: above 100 redisplay may never recenter, and over
-    ;; two display blocks taller than the window (pycell results) it then
+    ;; two display blocks taller than the window (overblock-pycell results) it then
     ;; hands the window from one block to the other endlessly.
     (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
     (scroll-preserve-screen-position t)                ; Don't move point when scrolling
@@ -2122,6 +2122,7 @@ the edges the window does not have.
                  name `( :inherit my/panel-header-line
                          ,@(when bg (list :background bg))
                          ,@(when fg (list :foreground fg)))))))
+          (setq-local window-box-color (face-foreground icon))
           ;; Content only: window-box owns the ends of the row.
           (concat
            (propertize badge 'face (append '(:inverse-video t) face)
@@ -4452,7 +4453,7 @@ the running cell, as in the REPL (with =standard-keys-mode= that is
 =C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
 No other prefix bindings, and no plain speed keys, which meow's normal
 state would shadow.  Rarely used commands (split, merge, markdown cells)
-are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
+are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= package below.
 #+begin_src emacs-lisp
   (use-package code-cells
     :preface
@@ -4526,16 +4527,16 @@ are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
           ("S-<return>"   . code-cells-eval-and-step)
           ("C-S-<return>" . code-cells-eval-and-step)
           ("M-<return>"   . my/code-cells-eval-and-insert-below)
-          ("C-M-<return>" . pycell-restart-and-run-all)
+          ("C-M-<return>" . overblock-pycell-restart-and-run-all)
           ;; navigation
           ("C-<up>"       . code-cells-backward-cell)
           ("C-<down>"     . code-cells-forward-cell)
-          ;; cell structure.  pycell's move and not code-cells' own:
+          ;; cell structure.  overblock-pycell's move and not code-cells' own:
           ;; the latter transposes the two regions, and
           ;; `transpose-regions' leaves an overlay where the text used
           ;; to be, so the result of one cell lands under the other.
-          ("M-S-<up>"     . pycell-move-cell-up)
-          ("M-S-<down>"   . pycell-move-cell-down)
+          ("M-S-<up>"     . overblock-pycell-move-cell-up)
+          ("M-S-<down>"   . overblock-pycell-move-cell-down)
           ;; outline
           ("M-S-<right>"  . outline-demote)
           ("M-S-<left>"   . outline-promote)
@@ -4544,7 +4545,7 @@ are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
           ;; interrupt, under the C-c prefix like in the REPL; reachable as
           ;; C-p C-c through standard-keys' dynamic prefix, and as plain
           ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
-          ("C-c C-c"      . pycell-interrupt)
+          ("C-c C-c"      . overblock-pycell-interrupt)
           ;; "command mode" à la JupyterLab: any entry key activates the
           ;; repeat map, single keys then chain until a foreign key exits.
           ;; The same map hangs off the leader as `SPC j'.
@@ -4557,17 +4558,17 @@ are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
           ("r" . code-cells-eval-and-step)
           ("a" . my/code-cells-insert-above)
           ("b" . my/code-cells-insert-below)
-          ("c" . pycell-copy-output)
-          ("i" . pycell-interrupt)
-          ("o" . pycell-toggle-output)
-          ("O" . pycell-remove-blocks)
-          ("0" . pycell-restart)
-          ("A" . pycell-run-above)
-          ("R" . pycell-restart-and-run-all))
+          ("c" . overblock-pycell-copy-output)
+          ("i" . overblock-pycell-interrupt)
+          ("o" . overblock-pycell-toggle-output)
+          ("O" . overblock-pycell-remove-blocks)
+          ("0" . overblock-pycell-restart)
+          ("A" . overblock-pycell-run-above)
+          ("R" . overblock-pycell-restart-and-run-all))
     :hook
     (python-base-mode . code-cells-mode-maybe))
 #+end_src
-**** [[https://github.com/MArpogaus/pycell][pycell]] :own:
+**** [[https://github.com/MArpogaus/overblock-pycell][overblock-pycell]] :own:
 Notebook style results for Python code cells: the output of an evaluated
 cell shows up below it, and markdown cells render in place.  This used to
 be a long block right here; it is a package now, so only the parts that
@@ -4575,17 +4576,48 @@ are specific to this configuration remain — among them that the terminal
 here draws the icon font, which is the one thing Emacs cannot find out
 for itself.
 #+begin_src emacs-lisp
-  (use-package pycell
-    :ensure (:host github :repo "MArpogaus/pycell")
-    ;; The package installs no hook itself; this is where it turns on.
-    :hook (code-cells-mode . pycell-mode-maybe)
+  ;; The layer the three below are built on: text blocks over a region of
+  ;; a buffer.  It draws nothing by itself.
+  (use-package overblock
+    :ensure (overblock :host github :repo "MArpogaus/overblock"
+                       :branch "dev"
+                       :files ("overblock.el" "overblock-repl.el"))
     :custom
-    ;; The same word the panel header goes by: without it the cell bars
-    ;; fall back to their words in a terminal.
-    (overblock-terminal-glyphs my/terminal-glyphs)
+    ;; The same word the panel header goes by: without it every bar of
+    ;; every package here falls back to its plain candidates in a
+    ;; terminal.
+    (overblock-terminal-glyphs my/terminal-glyphs))
+
+  ;; Markup rendered to text: a converter and shr, or a mode's font lock.
+  ;; `overblock-md-preview-mode' renders a markdown buffer block by block
+  ;; and gives the source back where you click.
+  (use-package overblock-md
+    :ensure (overblock-md :host github :repo "MArpogaus/overblock"
+                          :branch "dev"
+                          :files ("overblock-md.el" "overblock-md-preview.el")))
+
+  ;; Python doc strings rendered where they are written, with a bar of
+  ;; their own.  `M-x overblock-pydoc-mode' in a Python buffer; not on a
+  ;; hook, because a file of doc strings is worth reading as prose only
+  ;; when you mean to.
+  (use-package overblock-pydoc
+    :ensure (overblock-pydoc :host github :repo "MArpogaus/overblock"
+                             :branch "dev"
+                             :files ("overblock-pydoc.el")))
+
+  (use-package overblock-pycell
+    ;; Four packages live in that repository — the layer, the markup
+    ;; renderer, the doc string mode and this notebook — so the recipe
+    ;; names the files of this one.  The layer and the renderer arrive as
+    ;; its dependencies, each with a recipe of its own below.
+    :ensure (overblock-pycell :host github :repo "MArpogaus/overblock"
+                              :branch "dev"
+                              :files ("overblock-pycell.el"))
+    ;; The package installs no hook itself; this is where it turns on.
+    :hook (code-cells-mode . overblock-pycell-mode-maybe)
     :config
     (with-eval-after-load 'auto-side-windows
-      (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
+      (dolist (name '("^\\*overblock-pycell: .*\\*$" "^\\*overblock-pycell md: .*\\*$"))
         (add-to-list 'auto-side-windows-right-buffer-names name))))
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
