@@ -426,6 +426,38 @@ nothing for the graphic frame an =emacsclient -c= brings later.
   (add-hook 'window-setup-hook #'my/set-my-frame-font)
   (add-hook 'server-after-make-frame-hook #'my/set-my-frame-font)
 #+end_src
+
+The other half of the same question: which glyphs a display draws.  A
+graphic frame can be asked, character by character; a terminal cannot be
+asked at all, so it is told.  Everything that picks an icon reads this —
+the panel header below, and the two packages of my own that draw one.
+#+begin_src emacs-lisp
+  (defvar my/terminal-glyphs t
+    "Whether this terminal draws the glyphs a graphic frame draws.
+      Emacs can ask a font what it holds and a terminal nothing: the
+      terminal picks the font and draws the characters, and
+      `char-displayable-p' answers for the coding system alone, so a glyph
+      the font lacks arrives as an empty box rather than being refused.
+      This terminal carries the nerd font, which is a word from me and not
+      a question Emacs can answer; the packages below are told the same.")
+
+  (defun my/glyph (&rest candidates)
+    "Return the first of CANDIDATES this display can draw.
+      A graphic frame is asked about every character of a candidate, since
+      one of them is a space and a space is always there.  A terminal is
+      asked about the coding system, and only where `my/terminal-glyphs'
+      says its font carries the glyphs; without that it takes the last
+      candidate, so keep a word there."
+    (or (and (or (display-graphic-p) my/terminal-glyphs)
+             (seq-find (lambda (candidate)
+                         (seq-every-p (if (display-graphic-p)
+                                          (lambda (ch)
+                                            (internal-char-font nil ch))
+                                        #'char-displayable-p)
+                                      candidate))
+                       candidates))
+        (car (last candidates))))
+#+end_src
 *** ZZ Conventional Library Footer
 #+begin_src emacs-lisp
   (provide 'early-init)
@@ -1810,6 +1842,9 @@ and a second =:ensure= of the same id is a duplicate it warns about.
     :ensure (modern-tab :host github :repo "MArpogaus/modern-tabs"
                         :branch "dev")
     :custom
+    ;; The same word the panel header goes by: without it both rows of
+    ;; tabs fall back to their plain candidates in a terminal.
+    (modern-tab-terminal-glyphs my/terminal-glyphs)
     ;; The bar beside a tab group, as high as the mode line.
     (modern-tab-bar-indicator-height my/modeline-height)
     ;; Assign Icons to tab groups
@@ -1967,7 +2002,8 @@ the edges the window does not have.
                                              (derived-mode . comint-mode)
                                              (derived-mode . term-mode)
                                              (derived-mode . vterm-mode)) buffer)
-                        '(" " . default))
+                        (cons (concat (my/glyph "" "SH") " ")
+                              'default))
                        ((buffer-match-p "^\\*Org Agenda\\*$" buffer)
                         '("AGENDA" . mode-line-emphasis))
                        (t '("?" . mode-line-inactive)))))
@@ -2058,11 +2094,18 @@ the edges the window does not have.
                      (buttons
                       (propertize
                        (concat (my/side-window-button
-                                "─" "Hide this side window"
+                                ;; `nf-cod-chrome_minimize' and
+                                ;; `nf-cod-close': one hairline family, and
+                                ;; measured at 36 pt the plain pair is not —
+                                ;; `✕' is in no nerd font and arrives from
+                                ;; DejaVu Sans, heavier than the `─' beside it.
+                                (my/glyph "\uEABA" "─" "hide")
+                                "Hide this side window"
                                 #'my/side-window-minimize)
                                " "
                                (my/side-window-button
-                                "✕" "Close this side window and kill its buffers"
+                                (my/glyph "\uEA76" "✕" "close")
+                                "Close this side window and kill its buffers"
                                 #'my/side-window-kill))
                        'face face)))
           ;; The blanks of the row are the panel's too, so the look goes
@@ -4537,9 +4580,9 @@ for itself.
     ;; The package installs no hook itself; this is where it turns on.
     :hook (code-cells-mode . pycell-mode-maybe)
     :custom
-    ;; This terminal carries the nerd font, and Emacs cannot ask it:
-    ;; without this the bars fall back to their words there.
-    (overblock-terminal-glyphs t)
+    ;; The same word the panel header goes by: without it the cell bars
+    ;; fall back to their words in a terminal.
+    (overblock-terminal-glyphs my/terminal-glyphs)
     :config
     (with-eval-after-load 'auto-side-windows
       (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
