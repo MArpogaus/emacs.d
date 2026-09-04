@@ -392,21 +392,39 @@ The font waits for =window-setup-hook=: a family the system does not have
 makes every frame creation fail, and the frame that fails at startup takes
 Emacs down with it, so the name may only reach =default-frame-alist= once
 the display is up and can be asked whether the font is there.
+
+A terminal has no fonts to be asked about at all: =find-font= answers nil
+there and =font-family-list= is empty, whatever the terminal itself draws
+with, so a terminal frame is left alone rather than told the font is
+missing.  The question comes back on =server-after-make-frame-hook=,
+because the first frame of a terminal session or of the daemon settles
+nothing for the graphic frame an =emacsclient -c= brings later.
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist '(width . 100))
   (add-to-list 'default-frame-alist '(height . 25))
 
   (defun my/set-frame-font (family)
     "Use FAMILY in this frame and in the frames to come.
-  Do nothing but warn when the system has no such font."
-    (if (find-font (font-spec :family family))
-        (progn
-          (add-to-list 'default-frame-alist (cons 'font family))
-          (set-frame-font family nil t))
-      (warn "Font `%s' is not installed, frames keep the default font" family)))
+  A terminal draws with the font of the terminal and has none of its own
+  to set, so nothing happens there.  A graphic display that has no such
+  family keeps its default font and says so."
+    (when (and (display-graphic-p)
+               ;; Once per session: the entry below is what says it was
+               ;; asked and answered.
+               (not (assq 'font default-frame-alist)))
+      (if (find-font (font-spec :family family))
+          (progn
+            (add-to-list 'default-frame-alist (cons 'font family))
+            (set-frame-font family nil t))
+        (warn "Font `%s' is not installed, frames keep the default font"
+              family))))
 
-  (add-hook 'window-setup-hook
-            (lambda () (my/set-frame-font "FiraCode Nerd Font")))
+  (defun my/set-my-frame-font ()
+    "Use the font this configuration asks for."
+    (my/set-frame-font "FiraCode Nerd Font"))
+
+  (add-hook 'window-setup-hook #'my/set-my-frame-font)
+  (add-hook 'server-after-make-frame-hook #'my/set-my-frame-font)
 #+end_src
 *** ZZ Conventional Library Footer
 #+begin_src emacs-lisp
@@ -752,7 +770,6 @@ In this section, I define some custom Lisp functions.
            " " 'display
            (create-image
             (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-            ;; `:scale 1\=': the size is in pixels, as asked for.
             'pbm t :foreground color :ascent 'center :scale 1))
         (propertize "|" 'face (list :foreground color
                                     :background color))))
@@ -763,19 +780,21 @@ In this section, I define some custom Lisp functions.
       (if my/minimal-ui-mode
           (progn
             (setq tab-bar-show nil)
-            (set-fringe-style 0)
             (tab-bar-mode -1)
-            (modern-tab-line-mode -1)
+            (global-tab-line-mode -1)
             (my/global-mode-line-invisible-mode 1)
-            (spacious-padding-mode -1))
+            ;; Order matters: disabling spacious-padding resets the
+            ;; fringes it widened, so zero them afterwards.
+            (spacious-padding-mode -1)
+            (set-fringe-style 0))
         (progn
           (setq tab-bar-show t)
-          (set-fringe-style nil)
           (tab-bar-mode 1)
-          (modern-tab-line-mode 1)
+          (global-tab-line-mode 1)
           (my/global-mode-line-invisible-mode -1)
-          (spacious-padding-mode 1)))))
-            #+end_src
+          (spacious-padding-mode 1)
+          (set-fringe-style nil)))))
+#+end_src
 ** Configure Packages
 We save the following package declaration into separate files in the =modules= directory.
 To load the we have to add this directory to the =load-path=.
@@ -1776,7 +1795,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     ((elpaca-after-init . tab-bar-history-mode)
      (elpaca-after-init . tab-bar-mode)))
 #+end_src
-**** [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]]
+**** [[https://github.com/MArpogaus/modern-tabs][modern-tab]]
 The look of both rows of tabs: the tab bar, one tab per tab group, and
 the tab line, one tab per buffer of a window.  This used to be
 =auto-tab-groups-eyecandy= and the =tab-line= block below it.
@@ -1785,10 +1804,10 @@ One declaration, because it is one package: elpaca queues an id once,
 and a second =:ensure= of the same id is a duplicate it warns about.
 #+begin_src emacs-lisp
   (use-package modern-tab
-    ;; The id is the main file elpaca looks for — `modern-tab.el' — and
-    ;; the repository is named after what it holds.
-    ;; `main' holds the start of the repository; the work is on `dev'.
-    :ensure (modern-tab :host github :repo "MArpogaus/modern-tab-bars"
+    ;; The package is `modern-tab', after its main file and the prefix
+    ;; of every symbol; the repository is `modern-tabs', after the two
+    ;; rows of tabs it dresses.  The work is on `dev'.
+    :ensure (modern-tab :host github :repo "MArpogaus/modern-tabs"
                         :branch "dev")
     :custom
     ;; The bar beside a tab group, as high as the mode line.
@@ -1811,16 +1830,17 @@ and a second =:ensure= of the same id is a duplicate it warns about.
     (modern-tab-bar-new-command #'auto-tab-groups-new-group)
     ;; The tab line looked like this before the package existed: no bar
     ;; beside a tab.  A width turns one on for the selected tab.
-    (modern-tab-line-active-indicator-width 0)
+    (modern-tab-line-active-indicator-width 2)
     (modern-tab-line-indicator-height my/tabline-height)
     :hook
-    ((tab-line-mode . modern-tab-line-mode)
+    ;; The rows are mine to turn on; each mode only dresses its row.
+    ((global-tab-line-mode . modern-tab-line-mode)
      (tab-bar-mode . modern-tab-bar-mode)))
 #+end_src
 **** tab-line :build_in:
 Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
 
-The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]], configured
+The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tabs][modern-tab]], configured
 above: the icon per buffer, the close button that buries or kills, and
 the row that hides itself where a window shows one buffer.  What stays
 here is which buffers get a tab line at all.
@@ -1922,6 +1942,7 @@ the edges the window does not have.
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
+    :ensure (:host github :repo "MArpogaus/auto-side-windows")
     :preface
     (defun my/get-header-line-icon-for-buffer (buffer)
       (with-current-buffer buffer
@@ -1931,25 +1952,25 @@ the edges the window does not have.
                        ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (or (bound-and-true-p gptel-mode)
                                                                                          (bound-and-true-p agent-shell-ui-mode))))
                                         buffer)
-                        '(" AI " . mode-line-emphasis))
+                        '("AI" . mode-line-emphasis))
                        ((buffer-match-p "Warning" buffer)
-                        '(" ! " . warning))
+                        '("WARN" . warning))
                        ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer)
-                        '(" ! " . error))
+                        '("ERR" . error))
                        ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$" (derived-mode . magit-mode)) buffer)
-                        '(" VC " . success))
+                        '("VC" . success))
                        ((buffer-match-p '(derived-mode . dired-mode) buffer)
-                        '(" DIR " . mode-line-emphasis))
+                        '("DIR" . mode-line-emphasis))
                        ((buffer-match-p "^\\*Org Src.*\\*" buffer)
-                        '(" SRC " . mode-line-emphasis))
+                        '("SRC" . mode-line-emphasis))
                        ((buffer-match-p '(or (derived-mode . shell-mode)
                                              (derived-mode . comint-mode)
                                              (derived-mode . term-mode)
                                              (derived-mode . vterm-mode)) buffer)
-                        '("   " . default))
+                        '(" " . default))
                        ((buffer-match-p "^\\*Org Agenda\\*$" buffer)
-                        '(" AGENDA " . mode-line-emphasis))
-                       (t '(" ? " . mode-line-inactive)))))
+                        '("AGENDA" . mode-line-emphasis))
+                       (t '("?" . mode-line-inactive)))))
         header-line-icon))
     (defvar my/side-window-drag-map
       (let ((map (make-sparse-keymap)))
@@ -1957,10 +1978,10 @@ the edges the window does not have.
                     #'auto-side-windows-drag-slot)
         map)
       "Keymap that turns part of a header line into a drag handle.
-    Emacs binds a press on a header line to `mouse-drag-header-line', which
-    resizes the window, so the press is the event to take: a keymap on the
-    text takes it first, and `auto-side-windows-drag-slot' follows the mouse
-    from there.")
+        Emacs binds a press on a header line to `mouse-drag-header-line', which
+        resizes the window, so the press is the event to take: a keymap on the
+        text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+        from there.")
     (defun my/side-window-button (label help command)
       "Return LABEL as a header-line button running COMMAND on mouse-1."
       (propertize label 'mouse-face 'highlight 'help-echo help
@@ -1986,35 +2007,35 @@ the edges the window does not have.
     (defface my/panel-header-line
       '((t :inherit bold :underline nil))
       "The look of a side window's header row.
-  `my/header-line-format-top\=' remaps it over the header line faces, so
-  the whole row wears it and a mode's own header colours do not.  It
-  names as little as it can: window-box remaps those faces too, and what
-  is named here outranks its overline.")
+      `my/header-line-format-top' remaps it over the header line faces, so
+      the whole row wears it and a mode's own header colours do not.  It
+      names as little as it can: window-box remaps those faces too, and what
+      is named here outranks its overline.")
 
     (defun my/panel-label ()
-        "Return what a panel header calls the current buffer.
-  A dired or dirvish buffer is named by its directory: their own header
-  lines carry a stretch to the window's right edge, which took the whole
-  row and pushed the panel's buttons out of it.  The project's crumbs
-  where the directory is inside a project — the same ones the mode line
-  shows — and the path itself where it is not."
-        (if (not (derived-mode-p 'dired-mode))
-            (format-mode-line (or header-line-format "%b") nil nil
-                              (current-buffer))
-          (let* ((here (directory-file-name
-                        (abbreviate-file-name default-directory)))
-                 (project (project-current nil default-directory))
-                 (root (and project
-                            (directory-file-name
-                             (abbreviate-file-name (project-root project))))))
-            (cond ((null project) here)
-                  ((equal here root) (project-name project))
-                  (t (concat (project-name project) "/"
-                             (file-relative-name here root)))))))
+      "Return what a panel header calls the current buffer.
+      A dired or dirvish buffer is named by its directory: their own header
+      lines carry a stretch to the window's right edge, which took the whole
+      row and pushed the panel's buttons out of it.  The project's crumbs
+      where the directory is inside a project — the same ones the mode line
+      shows — and the path itself where it is not."
+      (if (not (derived-mode-p 'dired-mode))
+          (format-mode-line (or header-line-format "%b") nil nil
+                            (current-buffer))
+        (let* ((here (directory-file-name
+                      (abbreviate-file-name default-directory)))
+               (project (project-current nil default-directory))
+               (root (and project
+                          (directory-file-name
+                           (abbreviate-file-name (project-root project))))))
+          (cond ((null project) here)
+                ((equal here root) (project-name project))
+                (t (concat (project-name project) "/"
+                           (file-relative-name here root)))))))
 
     (defvar-local my/header-line-faces-overloaded nil
       "Whether the remap below has been added to this buffer already.
-  A relative remap stacks, and redisplay comes round again.")
+      A relative remap stacks, and redisplay comes round again.")
 
     (defvar my/header-line-format-top
       '(:eval
@@ -2029,10 +2050,10 @@ the edges the window does not have.
                      (own (my/panel-label))
                      ;; Padding of an exact width, and the row's height.
                      (pad (and (display-graphic-p)
-                               (my/get-bar-image my/tabline-height 6
+                               (my/get-bar-image my/tabline-height (/ my/tabline-height 3)
                                                  (face-foreground icon))))
                      (badge (if pad
-                                (concat pad (string-trim prefix) pad)
+                                (concat pad prefix pad)
                               prefix))
                      (buttons
                       (propertize
@@ -2050,21 +2071,29 @@ the edges the window does not have.
             (setq-local my/header-line-faces-overloaded t)
             (dolist (name '(header-line header-line-active
                                         header-line-inactive))
-              (face-remap-add-relative
-               name (list :inherit 'my/panel-header-line
-                          :background (face-background name nil 'default)
-                          :foreground (face-foreground name nil 'default)))))
+              ;; A tty leaves these faces' colors unspecified, and a
+              ;; nil attribute in the remap warns on every redisplay.
+              (let ((bg (face-background name nil 'default))
+                    (fg (face-foreground name nil 'default)))
+                (face-remap-add-relative
+                 name `( :inherit my/panel-header-line
+                         ,@(when bg (list :background bg))
+                         ,@(when fg (list :foreground fg)))))))
           ;; Content only: window-box owns the ends of the row.
           (concat
            (propertize badge 'face (append '(:inverse-video t) face)
                        'local-map my/side-window-drag-map
                        'help-echo "Drag to another slot")
            ;; The buffer's own header brings faces of its own —
-           ;; `magit-header-line\=' for one — which the remap does not
+           ;; `magit-header-line' for one — which the remap does not
            ;; reach: it names the header line faces, not theirs.
            (propertize (concat " " own) 'face face)
+           ;; `right-fringe', not `right': the right margin a buffer
+           ;; sets (magit-log's 30, for one) sits between them, and the
+           ;; buttons would trail the box's line by exactly that.
            (propertize " " 'display `(space :align-to
-                                            (- right ,(string-width buttons))))
+                                            (- right-fringe
+                                               ,(string-width buttons))))
            buttons))))
 
     :custom
@@ -4156,10 +4185,13 @@ Tab group based workflow isolation.
      '(((denote--prepare-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
        ((custom-buffer-create custom-buffer-create-other-window) . "customize")
        ((dirvish dirvish-fd) . "dirvish")))
+    ;; `:always-close' closes the group whatever the command answered;
+    ;; a create rule's flag is `:before-command', which is about when
+    ;; the group is made rather than about the answer.
     (auto-tab-groups-close-commands
-     '((dirvish-quit "dirvish" :ignore-result t)
-       (my/kill-denote-buffers "denote" :ignore-result t)
-       (Custom-buffer-done "customize" :ignore-result t)))
+     '((dirvish-quit "dirvish" :always-close t)
+       (my/kill-denote-buffers "denote" :always-close t)
+       (Custom-buffer-done "customize" :always-close t)))
     :bind
     (:map my/workspace-map
           ("w" . auto-tab-groups-new-group))
