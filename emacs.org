@@ -1826,7 +1826,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     ((elpaca-after-init . tab-bar-history-mode)
      (elpaca-after-init . tab-bar-mode)))
 #+end_src
-**** [[https://github.com/MArpogaus/modern-tabs][modern-tab]]
+**** [[https://github.com/MArpogaus/modern-tab][modern-tab]]
 The look of both rows of tabs: the tab bar, one tab per tab group, and
 the tab line, one tab per buffer of a window.  This used to be
 =auto-tab-groups-eyecandy= and the =tab-line= block below it.
@@ -1835,11 +1835,7 @@ One declaration, because it is one package: elpaca queues an id once,
 and a second =:ensure= of the same id is a duplicate it warns about.
 #+begin_src emacs-lisp
   (use-package modern-tab
-    ;; The package is `modern-tab', after its main file and the prefix
-    ;; of every symbol; the repository is `modern-tabs', after the two
-    ;; rows of tabs it dresses.  The work is on `dev'.
-    :ensure (modern-tab :host github :repo "MArpogaus/modern-tabs"
-                        :branch "dev")
+    :ensure (modern-tab :host github :repo "MArpogaus/modern-tab")
     :custom
     ;; The same word the panel header goes by: without it both rows of
     ;; tabs fall back to their plain candidates in a terminal.
@@ -1874,7 +1870,7 @@ and a second =:ensure= of the same id is a duplicate it warns about.
 **** tab-line :build_in:
 Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
 
-The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tabs][modern-tab]], configured
+The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab][modern-tab]], configured
 above: the icon per buffer, the close button that buries or kills, and
 the row that hides itself where a window shows one buffer.  What stays
 here is which buffers get a tab line at all.
