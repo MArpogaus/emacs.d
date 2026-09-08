@@ -2814,7 +2814,7 @@ Simple note taking and file naming.
                      :kill-buffer t
                      :jump-to-captured t)))
     :hook
-    ((text-mode . denote-fontify-links-mode-maybe)
+    ((text-mode . denote-fontify-links-mode)
      (dired-mode . denote-dired-mode)
      (elpaca-after-init . denote-rename-buffer-mode)))
 #+end_src
