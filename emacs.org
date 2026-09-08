@@ -814,7 +814,7 @@ In this section, I define some custom Lisp functions.
         (propertize "|" 'face (list :foreground color
                                     :background color))))
     (define-minor-mode my/minimal-ui-mode
-      "Toggle automatic tab group management based on command execution."
+      "Hide the tab bar, the tab line, the mode line, the padding and the fringes."
       :global t
       :group 'frames
       (if my/minimal-ui-mode
