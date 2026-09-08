@@ -88,7 +88,6 @@
   :preface
   (defun my/project-magit-status ()
     (interactive)
-    (defvar vterm-buffer-name)
     (let* ((project-directory (project-root (project-current t))))
       (magit-status-setup-buffer project-directory)))
   :init

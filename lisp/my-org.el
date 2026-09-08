@@ -72,7 +72,7 @@ Calls `org-insert-heading', `org-insert-item',
 context.  When called with an argument, unconditionally call
 `org-insert-heading'."
     (interactive "P")
-    (org-check-before-invisible-edit 'insert)
+    (org-fold-check-before-invisible-edit 'insert)
     (or (run-hook-with-args-until-success 'org-metareturn-hook)
         (call-interactively (cond (arg #'org-insert-heading)
                                   ((org-at-table-p) #'org-table-wrap-region)
@@ -472,7 +472,7 @@ context.  When called with an argument, unconditionally call
   :preface
   (defun my/org-present-start ()
     (org-present-read-only)
-    (org-display-inline-images)
+    (org-link-preview-region)
 
     ;; Hide Property drawers
     (org-tidy-mode 1)
@@ -520,7 +520,7 @@ context.  When called with an argument, unconditionally call
     )
   (defun my/org-present-quit ()
     (org-present-read-write)
-    (org-remove-inline-images)
+    (org-link-preview-clear)
 
     ;; Show Property drawers
     (org-tidy-untidy-buffer)

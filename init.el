@@ -123,8 +123,9 @@
   :hook
   ;; Enable word wrapping in prose modes
   (((org-mode markdown-mode text-mode message-mode) . visual-line-mode)
-   ;; Enable automatic line breaks before `fill-column' is exceeded
-   ((prog-mode conf-mode text-mode) . auto-fill-mode)
+   ;; Enable automatic line breaks before `fill-column' is exceeded, in
+   ;; comments only: prose above is soft-wrapped instead
+   ((prog-mode conf-mode) . auto-fill-mode)
    ;; cleanup unnecessary white spaces before saving a buffer
    (before-save . whitespace-cleanup)))
 
@@ -294,6 +295,18 @@ The DWIM behaviour of this command is as follows:
   :preface
   (setq my/modeline-height 30)
   (setq my/tabline-height 25)
+  (defvar citar-bibliography)
+  (defun my/bib-note-template ()
+    "Return the body of a bibliography note, for citar and citar-denote."
+    (concat "#+cite_export: biblatex ieee\n"
+            "#+bibliography: " (car citar-bibliography) "\n\n"
+            "* Notes :ignore:\n"
+            ":PROPERTIES:\n"
+            ":NOTER_DOCUMENT: ${file} \n"
+            ":END:\n\n"
+            "* Summary :childless:showchildren:export:\n"
+            "This is a summary of [cite/t:@${=key=}].\n"
+            "** Bibliography :ignore:\n"))
   (defun my/extract-username-repo ()
     "Extract the username and repository name from a GitHub repository link at point."
     (interactive)
@@ -302,9 +315,10 @@ The DWIM behaviour of this command is as follows:
       (let* ((element (org-element-at-point))
              (headline (org-element-property :raw-value element))
              (url (save-match-data
-                    (string-match org-bracket-link-regexp headline)
-                    (match-string 1 headline))))
-        (if (and url (string-match "github.com/\\([[:alnum:]\.\-]+\\)/\\([[:alnum:]\.\-]+\\)\\(\.git\\)" url))
+                    (and (string-match org-link-bracket-re headline)
+                         (match-string 1 headline)))))
+        ;; With or without the `.git': both spellings are in this file.
+        (if (and url (string-match "github\\.com/\\([[:alnum:]._-]+\\)/\\([[:alnum:]._-]+?\\)\\(?:\\.git\\)?/?\\'" url))
             (list (match-string 1 url) (match-string 2 url))
           (error "No GitHub link found at point.")))))
   (defun my/insert-github-repo-description ()
@@ -344,7 +358,7 @@ The DWIM behaviour of this command is as follows:
       (propertize "|" 'face (list :foreground color
                                   :background color))))
   (define-minor-mode my/minimal-ui-mode
-    "Toggle automatic tab group management based on command execution."
+    "Hide the tab bar, the tab line, the mode line, the padding and the fringes."
     :global t
     :group 'frames
     (if my/minimal-ui-mode

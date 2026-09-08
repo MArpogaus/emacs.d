@@ -75,6 +75,9 @@
   (add-to-list 'project-switch-commands
                '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
+  :config
+  ;; Here and not in `:init': from there the hook loaded the package at
+  ;; quit, for a state it had never written.
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:

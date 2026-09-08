@@ -33,7 +33,7 @@
 (setq native-comp-jit-compilation t)
 
 ;; Disable certain byte compiler warnings to cut down on the noise.
-(setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+(setq byte-compile-warnings '(not unresolved noruntime lexical make-local))
 
 ;; Ensure that quitting only occurs once Emacs finishes native compiling,
 ;; preventing incomplete or leftover compilation files in `/tmp`.
@@ -65,9 +65,6 @@
 ;; Don't ping things that look like domain names.
 (setq ffap-machine-p-known 'reject)
 
-;; Emacs "updates" its ui more often than it needs to, so slow it down slightly
-(setq idle-update-delay 1.0)  ; default is 0.5
-
 ;; Font compacting can be terribly expensive, especially for rendering icon
 ;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
 ;; hasn't been determined, but do it anyway, just in case. This increases memory
@@ -91,6 +88,13 @@
 (add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
+;; An error before elpaca is done would leave an invisible Emacs, so
+;; whatever happened, the frame is shown after a while.
+(add-hook 'after-init-hook
+          (lambda ()
+            (run-at-time 15 nil (lambda ()
+                                  (when (display-graphic-p)
+                                    (make-frame-visible))))))
 
 ;; Install Elpaca
 ;; This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.

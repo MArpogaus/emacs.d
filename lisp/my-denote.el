@@ -22,17 +22,7 @@
   (citar-denote-template 'biblio)
   (citar-denote-subdir "bib_notes")
   :config
-  (add-to-list 'denote-templates
-               `(biblio . ,(concat
-                            "#+cite_export: biblatex ieee\n"
-                            (concat "#+bibliography: " (car citar-bibliography) "\n\n")
-                            "* Notes :ignore:\n"
-                            ":PROPERTIES:\n"
-                            ":NOTER_DOCUMENT: ${file} \n"
-                            ":END:\n\n"
-                            "* Summary :childless:showchildren:export:\n"
-                            "This is a summary of [cite/t:@${=key=}].\n"
-                            "** Bibliography :ignore:\n")))
+  (add-to-list 'denote-templates `(biblio . ,(my/bib-note-template)))
   :init
   (citar-denote-mode))
 
@@ -133,7 +123,7 @@ Prompts for metadata only if the file is not already a Denote file."
                    :kill-buffer t
                    :jump-to-captured t)))
   :hook
-  ((text-mode . denote-fontify-links-mode-maybe)
+  ((text-mode . denote-fontify-links-mode)
    (dired-mode . denote-dired-mode)
    (elpaca-after-init . denote-rename-buffer-mode)))
 

@@ -386,12 +386,12 @@ globalized minor mode stays off in the buffer."
   (setq dape-buffer-window-arrangement 'right)
 
   ;; To not display info and/or buffers on startup
-  ;; (remove-hook 'dape-on-start-hooks 'dape-info)
-  ;; (remove-hook 'dape-on-start-hooks 'dape-repl)
+  ;; (remove-hook 'dape-start-hook 'dape-info)
+  ;; (remove-hook 'dape-start-hook 'dape-repl)
 
   ;; To display info and/or repl buffers on stopped
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-info)
-  ;; (add-hook 'dape-on-stopped-hooks 'dape-repl)
+  ;; (add-hook 'dape-stopped-hook 'dape-info)
+  ;; (add-hook 'dape-stopped-hook 'dape-repl)
 
   ;; By default dape uses gdb keybinding prefix
   ;; If you do not want to use any prefix, set it to nil.
@@ -401,7 +401,7 @@ globalized minor mode stays off in the buffer."
   ;; (setq dape-cwd-fn 'projectile-project-root)
 
   ;; Save buffers on startup, useful for interpreted languages
-  (add-hook 'dape-on-start-hooks (lambda () (save-some-buffers t t)))
+  (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
   :hook
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)

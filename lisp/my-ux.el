@@ -534,7 +534,6 @@ buffer's text scale."
 ;; [[https://github.com/jamescherti/outline-indent.el.git][outline-indent]]
 
 (use-package outline-indent
-  :ensure t
   :hook
   ((yaml-ts-mode) . outline-indent-minor-mode))
 

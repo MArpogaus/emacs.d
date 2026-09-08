@@ -40,7 +40,6 @@
 ;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 
 (use-package citar
-  :after nerd-icons
   :custom
   (org-cite-insert-processor 'citar)
   (org-cite-follow-processor 'citar)
@@ -57,16 +56,7 @@
                                       "#+DATE: ${date}\n"
                                       "#+SOURCE: ${doi url}\n"
                                       "#+CUSTOM_ID: ${=key= id}\n"
-                                      "#+cite_export: biblatex ieee\n"
-                                      (concat "#+bibliography: " (car citar-bibliography) "\n\n")
-                                      "* Notes :ignore:\n"
-                                      ":PROPERTIES:\n"
-                                      ":NOTER_DOCUMENT: ${file} \n"
-                                      ":END:\n\n"
-                                      "* Summary :childless:showchildren:export:\n"
-                                      "This is a summary of [cite/t:@${=key=}].\n"
-                                      "** Bibliography :ignore:\n"
-                                      ))))
+                                      (my/bib-note-template)))))
   (citar-symbol-separator "  ")
   :config
   (defvar citar-indicator-files-icons
@@ -204,7 +194,7 @@
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep consult-man
-   consult-bookmark consult-recent-file consult-xref
+   consult-bookmark consult-recent-file
    consult-source-bookmark consult-source-file-register
    consult-source-recent-file consult-source-project-recent-file
    ;; :preview-key "M-."
