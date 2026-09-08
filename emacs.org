@@ -184,7 +184,7 @@ It has to happen here rather than in =init.el=, because =no-littering= is an =el
   (setq native-comp-jit-compilation t)
 
   ;; Disable certain byte compiler warnings to cut down on the noise.
-  (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+  (setq byte-compile-warnings '(not unresolved noruntime lexical make-local))
 
   ;; Ensure that quitting only occurs once Emacs finishes native compiling,
   ;; preventing incomplete or leftover compilation files in `/tmp`.
