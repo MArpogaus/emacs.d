@@ -4634,15 +4634,59 @@ for itself.
     :hook (python-base-mode . overblock-pydoc-mode))
 
   (use-package overblock-pycell
-    ;; Four packages live in that repository — the layer, the markup
-    ;; renderer, the doc string mode and this notebook — so the recipe
-    ;; names the files of this one.  The layer and the renderer arrive as
+    ;; Five packages live in that repository — the layer, the markup
+    ;; renderer, the doc string mode, this notebook and the one for R
+    ;; Markdown — so the recipe names the files of this one.  The layer and the renderer arrive as
     ;; its dependencies, each with a recipe of its own below.
     :ensure (overblock-pycell :host github :repo "MArpogaus/overblock"
                               :branch "dev"
                               :files ("overblock-pycell.el"))
     ;; The package installs no hook itself; this is where it turns on.
     :hook (code-cells-mode . overblock-pycell-mode-maybe))
+
+  ;; The same notebook for an =.Rmd= file: a chunk runs in the R that ESS
+  ;; started and its output shows under it, and the prose between chunks
+  ;; renders as markdown.  The keys are the notebook's, so a hand that
+  ;; knows one knows the other.
+  (use-package overblock-rmd
+    :ensure (overblock-rmd :host github :repo "MArpogaus/overblock"
+                           :branch "dev"
+                           :files ("overblock-rmd.el"))
+    :after ess
+    :hook (markdown-mode . overblock-rmd-mode-maybe)
+    :preface
+    ;; The same "command mode" as the Python notebook's: the same letters
+    ;; do the same things, entered through any of them and chained until
+    ;; a foreign key exits.  No insert keys (a b), because a chunk is
+    ;; written by hand between its fences.
+    (defvar my/overblock-rmd-repeat-map (make-sparse-keymap)
+      "Repeat map for chunk commands; mirrors `my/code-cells-repeat-map'.")
+    :config
+    (my/repeatize-keymap 'my/overblock-rmd-repeat-map)
+    :bind
+    ;; The keys of the Python notebook, one for one.
+    (:map overblock-rmd-mode-map
+          ("C-<return>"   . overblock-rmd-run-chunk)
+          ("S-<return>"   . overblock-rmd-run-chunk-and-step)
+          ("C-S-<return>" . overblock-rmd-run-chunk-and-step)
+          ("C-M-<return>" . overblock-rmd-restart-and-run-all)
+          ("C-<up>"       . overblock-rmd-backward-chunk)
+          ("C-<down>"     . overblock-rmd-forward-chunk)
+          ("C-c C-c"      . overblock-run-interrupt)
+          :map my/overblock-rmd-repeat-map
+          ("n" . overblock-rmd-forward-chunk)
+          ("p" . overblock-rmd-backward-chunk)
+          ("j" . overblock-rmd-forward-chunk)
+          ("k" . overblock-rmd-backward-chunk)
+          ("e" . overblock-rmd-run-chunk)
+          ("r" . overblock-rmd-run-chunk-and-step)
+          ("c" . overblock-run-copy-output)
+          ("i" . overblock-run-interrupt)
+          ("o" . overblock-run-toggle-output)
+          ("O" . overblock-run-discard-output)
+          ("0" . overblock-rmd-restart)
+          ("A" . overblock-run-above)
+          ("R" . overblock-rmd-restart-and-run-all)))
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
@@ -4868,8 +4912,45 @@ Emacs Speaks Statistics: ESS.
     :mode (("\\.[rR]\\'" . R-mode)
            ("\\.[rR]nw\\'" . Rnw-mode)
            ("\\.jl\\'" . julia-mode))
+    :custom
+    ;; Start R where the file is.  Asking for a directory every time is
+    ;; a question with one sensible answer, and it comes up again on
+    ;; every restart — including the ones a notebook asks for.
+    (ess-ask-for-ess-directory nil)
+    ;; Show what is sent, but do not wait for the echo: a long
+    ;; evaluation with this at t holds Emacs until R has printed every
+    ;; line of it.
+    (ess-eval-visibly 'nowait)
+    ;; No workspace written on exit and none read on start, so a session
+    ;; begins with what the file says and nothing else.
+    (inferior-R-args "--no-save --no-restore-data")
     :config
     (require 'ess-site))
+#+end_src
+**** [[https://github.com/polymode/poly-R][poly-R]]
+One buffer, two major modes: markdown for the prose of an =.Rmd= file and
+=ess-r-mode= inside every =```{r}= chunk, so indentation, completion and
+evaluation are the right ones wherever the point stands.  polymode does
+that with an indirect buffer per chunk.
+
+=poly-markdown+r-mode= is what an =.Rmd= file wants; the =gfm= variant
+reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=,
+which ESS already claims above.  The results of a chunk are shown inline
+by [[https://github.com/MArpogaus/overblock][overblock-rmd]], further down.
+#+begin_src emacs-lisp
+  (use-package poly-R
+    :ensure (poly-R :host github :repo "polymode/poly-R")
+    :after (ess markdown-mode)
+    :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
+    :custom
+    ;; A chunk's own process buffer is worth seeing when it errors; the
+    ;; output *file* of a weave is not — it opens in the browser or the
+    ;; PDF viewer on its own.
+    (polymode-display-output-file nil)
+    (polymode-display-process-buffers t)
+    ;; An unmodified chunk is not re-exported: a weave of a long document
+    ;; is minutes, and most of it has not changed.
+    (polymode-skip-processing-when-unmodified t))
 #+end_src
 **** [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
 Universal on-the-fly syntax checker for Emacs.
