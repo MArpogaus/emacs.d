@@ -2584,7 +2584,7 @@ Automatically update file timestamps when file is saved
     :ensure nil
     :custom
     (time-stamp-active t)
-    (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
+    (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%L)")
     :hook
     (before-save . time-stamp))
 #+end_src
