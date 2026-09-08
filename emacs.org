@@ -525,9 +525,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
     (scroll-preserve-screen-position t)                ; Don't move point when scrolling
     (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
-    (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
-    (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
-    (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
     (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
     (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
@@ -2617,6 +2614,14 @@ Automatically update file timestamps when file is saved
     (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
     :hook
     (before-save . time-stamp))
+#+end_src
+**** ultra-scroll
+#+begin_src emacs-lisp
+  (use-package ultra-scroll
+    :custom
+    (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes wired jumps)
+    :hook
+    (elpaca-after-init . ultra-scroll-mode))
 #+end_src
 **** [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
 Writable grep buffer and apply the changes to files.
