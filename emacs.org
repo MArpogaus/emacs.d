@@ -493,6 +493,10 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
     (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
 
+    ;; Auto save file buffers
+    (auto-save-visited-mode t)                         ; enable auto save for all file buffers
+    (auto-save-visited-interval 1)                     ; save every second
+
     ;; Backups
     (backup-by-copying t)                              ; Backs up by moving the actual file
 
