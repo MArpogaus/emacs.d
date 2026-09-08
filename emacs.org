@@ -242,6 +242,13 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   (add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
   (add-to-list 'initial-frame-alist '(fullscreen . maximized))
   (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
+  ;; An error before elpaca is done would leave an invisible Emacs, so
+  ;; whatever happened, the frame is shown after a while.
+  (add-hook 'after-init-hook
+            (lambda ()
+              (run-at-time 15 nil (lambda ()
+                                    (when (display-graphic-p)
+                                      (make-frame-visible))))))
 #+end_src
 *** Install Elpaca
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
