@@ -1949,26 +1949,6 @@ Revert buffers when the underlying file has changed
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
-**** [[https://github.com/MArpogaus/window-box][window-box]] :own:
-A rectangular box around a window: side windows read as panels.  The
-mode line and the header line stay as configured; the box only adds
-the edges the window does not have.
-#+begin_src emacs-lisp
-  (use-package window-box
-    :ensure (:host github :repo "MArpogaus/window-box")
-    :custom
-    ;; The header line and the mode line inside the box, a tab line
-    ;; outside it: `window-box-encloses' was one set of rows and is now
-    ;; these two, so that the inside cannot be asked for in pieces.
-    (window-box-enclose-top 'header-line)
-    (window-box-enclose-mode-line t)
-    ;; The mode belongs to the buffer, and Emacs can show one buffer in a
-    ;; panel and in an ordinary window at the same time.  A box belongs to
-    ;; the place: the side windows wear it and the ordinary windows do not.
-    (window-box-window-predicate
-     (lambda (window)
-       (window-parameter window 'window-side))))
-#+end_src
 **** [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 #+begin_src emacs-lisp
   (use-package auto-side-windows
@@ -2664,6 +2644,26 @@ rotates the windows through it.
      ("W" . rotate-windows)
      :exit
      ("=" . balance-windows)))
+#+end_src
+**** [[https://github.com/MArpogaus/window-box][window-box]] :own:
+A rectangular box around a window: side windows read as panels.  The
+mode line and the header line stay as configured; the box only adds
+the edges the window does not have.
+#+begin_src emacs-lisp
+  (use-package window-box
+    :ensure (:host github :repo "MArpogaus/window-box")
+    :custom
+    ;; The header line and the mode line inside the box, a tab line
+    ;; outside it: `window-box-encloses' was one set of rows and is now
+    ;; these two, so that the inside cannot be asked for in pieces.
+    (window-box-enclose-top 'header-line)
+    (window-box-enclose-mode-line t)
+    ;; The mode belongs to the buffer, and Emacs can show one buffer in a
+    ;; panel and in an ordinary window at the same time.  A box belongs to
+    ;; the place: the side windows wear it and the ordinary windows do not.
+    (window-box-window-predicate
+     (lambda (window)
+       (window-parameter window 'window-side))))
 #+end_src
 **** [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 Distraction-free writing for Emacs.
