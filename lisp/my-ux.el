@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -43,29 +43,10 @@
   :hook
   (elpaca-after-init . global-auto-revert-mode))
 
-;; [[https://github.com/MArpogaus/window-box][window-box]] :own:
-;; A rectangular box around a window: side windows read as panels.  The
-;; mode line and the header line stay as configured; the box only adds
-;; the edges the window does not have.
-
-(use-package window-box
-  :ensure (:host github :repo "MArpogaus/window-box")
-  :custom
-  ;; The header line and the mode line inside the box, a tab line
-  ;; outside it: `window-box-encloses' was one set of rows and is now
-  ;; these two, so that the inside cannot be asked for in pieces.
-  (window-box-enclose-top 'header-line)
-  (window-box-enclose-mode-line t)
-  ;; The mode belongs to the buffer, and Emacs can show one buffer in a
-  ;; panel and in an ordinary window at the same time.  A box belongs to
-  ;; the place: the side windows wear it and the ordinary windows do not.
-  (window-box-window-predicate
-   (lambda (window)
-     (window-parameter window 'window-side))))
-
 ;; [[https://github.com/MArpogaus/auto-side-windows.git][auto-side-window]]
 
 (use-package auto-side-windows
+  :ensure (:host github :repo "MArpogaus/auto-side-windows")
   :preface
   (defun my/get-header-line-icon-for-buffer (buffer)
     (with-current-buffer buffer
@@ -75,25 +56,26 @@
                      ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (or (bound-and-true-p gptel-mode)
                                                                                        (bound-and-true-p agent-shell-ui-mode))))
                                       buffer)
-                      '(" AI " . mode-line-emphasis))
+                      '("AI" . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer)
-                      '(" ! " . warning))
+                      '("WARN" . warning))
                      ((buffer-match-p '(or "^\\*Backtrace\\*$" ".*[Ee]rror.*") buffer)
-                      '(" ! " . error))
+                      '("ERR" . error))
                      ((buffer-match-p '(or "^COMMIT_EDITMSG$" "^\\*diff-hl\\*$" (derived-mode . magit-mode)) buffer)
-                      '(" VC " . success))
+                      '("VC" . success))
                      ((buffer-match-p '(derived-mode . dired-mode) buffer)
-                      '(" DIR " . mode-line-emphasis))
+                      '("DIR" . mode-line-emphasis))
                      ((buffer-match-p "^\\*Org Src.*\\*" buffer)
-                      '(" SRC " . mode-line-emphasis))
+                      '("SRC" . mode-line-emphasis))
                      ((buffer-match-p '(or (derived-mode . shell-mode)
                                            (derived-mode . comint-mode)
                                            (derived-mode . term-mode)
                                            (derived-mode . vterm-mode)) buffer)
-                      '("   " . default))
+                      (cons (concat (my/glyph "" "SH") " ")
+                            'default))
                      ((buffer-match-p "^\\*Org Agenda\\*$" buffer)
-                      '(" AGENDA " . mode-line-emphasis))
-                     (t '(" ? " . mode-line-inactive)))))
+                      '("AGENDA" . mode-line-emphasis))
+                     (t '("?" . mode-line-inactive)))))
       header-line-icon))
   (defvar my/side-window-drag-map
     (let ((map (make-sparse-keymap)))
@@ -101,10 +83,10 @@
                   #'auto-side-windows-drag-slot)
       map)
     "Keymap that turns part of a header line into a drag handle.
-  Emacs binds a press on a header line to `mouse-drag-header-line', which
-  resizes the window, so the press is the event to take: a keymap on the
-  text takes it first, and `auto-side-windows-drag-slot' follows the mouse
-  from there.")
+      Emacs binds a press on a header line to `mouse-drag-header-line', which
+      resizes the window, so the press is the event to take: a keymap on the
+      text takes it first, and `auto-side-windows-drag-slot' follows the mouse
+      from there.")
   (defun my/side-window-button (label help command)
     "Return LABEL as a header-line button running COMMAND on mouse-1."
     (propertize label 'mouse-face 'highlight 'help-echo help
@@ -130,35 +112,35 @@
   (defface my/panel-header-line
     '((t :inherit bold :underline nil))
     "The look of a side window's header row.
-`my/header-line-format-top\=' remaps it over the header line faces, so
-the whole row wears it and a mode's own header colours do not.  It
-names as little as it can: window-box remaps those faces too, and what
-is named here outranks its overline.")
+    `my/header-line-format-top' remaps it over the header line faces, so
+    the whole row wears it and a mode's own header colours do not.  It
+    names as little as it can: window-box remaps those faces too, and what
+    is named here outranks its overline.")
 
   (defun my/panel-label ()
-      "Return what a panel header calls the current buffer.
-A dired or dirvish buffer is named by its directory: their own header
-lines carry a stretch to the window's right edge, which took the whole
-row and pushed the panel's buttons out of it.  The project's crumbs
-where the directory is inside a project — the same ones the mode line
-shows — and the path itself where it is not."
-      (if (not (derived-mode-p 'dired-mode))
-          (format-mode-line (or header-line-format "%b") nil nil
-                            (current-buffer))
-        (let* ((here (directory-file-name
-                      (abbreviate-file-name default-directory)))
-               (project (project-current nil default-directory))
-               (root (and project
-                          (directory-file-name
-                           (abbreviate-file-name (project-root project))))))
-          (cond ((null project) here)
-                ((equal here root) (project-name project))
-                (t (concat (project-name project) "/"
-                           (file-relative-name here root)))))))
+    "Return what a panel header calls the current buffer.
+    A dired or dirvish buffer is named by its directory: their own header
+    lines carry a stretch to the window's right edge, which took the whole
+    row and pushed the panel's buttons out of it.  The project's crumbs
+    where the directory is inside a project — the same ones the mode line
+    shows — and the path itself where it is not."
+    (if (not (derived-mode-p 'dired-mode))
+        (format-mode-line (or header-line-format "%b") nil nil
+                          (current-buffer))
+      (let* ((here (directory-file-name
+                    (abbreviate-file-name default-directory)))
+             (project (project-current nil default-directory))
+             (root (and project
+                        (directory-file-name
+                         (abbreviate-file-name (project-root project))))))
+        (cond ((null project) here)
+              ((equal here root) (project-name project))
+              (t (concat (project-name project) "/"
+                         (file-relative-name here root)))))))
 
   (defvar-local my/header-line-faces-overloaded nil
     "Whether the remap below has been added to this buffer already.
-A relative remap stacks, and redisplay comes round again.")
+    A relative remap stacks, and redisplay comes round again.")
 
   (defvar my/header-line-format-top
     '(:eval
@@ -173,19 +155,26 @@ A relative remap stacks, and redisplay comes round again.")
                    (own (my/panel-label))
                    ;; Padding of an exact width, and the row's height.
                    (pad (and (display-graphic-p)
-                             (my/get-bar-image my/tabline-height 6
+                             (my/get-bar-image my/tabline-height (/ my/tabline-height 3)
                                                (face-foreground icon))))
                    (badge (if pad
-                              (concat pad (string-trim prefix) pad)
+                              (concat pad prefix pad)
                             prefix))
                    (buttons
                     (propertize
                      (concat (my/side-window-button
-                              "─" "Hide this side window"
+                              ;; `nf-cod-chrome_minimize' and
+                              ;; `nf-cod-close': one hairline family, and
+                              ;; measured at 36 pt the plain pair is not —
+                              ;; `✕' is in no nerd font and arrives from
+                              ;; DejaVu Sans, heavier than the `─' beside it.
+                              (my/glyph "\uEABA" "─" "hide")
+                              "Hide this side window"
                               #'my/side-window-minimize)
                              " "
                              (my/side-window-button
-                              "✕" "Close this side window and kill its buffers"
+                              (my/glyph "\uEA76" "✕" "close")
+                              "Close this side window and kill its buffers"
                               #'my/side-window-kill))
                      'face face)))
         ;; The blanks of the row are the panel's too, so the look goes
@@ -194,21 +183,30 @@ A relative remap stacks, and redisplay comes round again.")
           (setq-local my/header-line-faces-overloaded t)
           (dolist (name '(header-line header-line-active
                                       header-line-inactive))
-            (face-remap-add-relative
-             name (list :inherit 'my/panel-header-line
-                        :background (face-background name nil 'default)
-                        :foreground (face-foreground name nil 'default)))))
+            ;; A tty leaves these faces' colors unspecified, and a
+            ;; nil attribute in the remap warns on every redisplay.
+            (let ((bg (face-background name nil 'default))
+                  (fg (face-foreground name nil 'default)))
+              (face-remap-add-relative
+               name `( :inherit my/panel-header-line
+                       ,@(when bg (list :background bg))
+                       ,@(when fg (list :foreground fg)))))))
+        (setq-local window-box-color (face-foreground icon))
         ;; Content only: window-box owns the ends of the row.
         (concat
          (propertize badge 'face (append '(:inverse-video t) face)
                      'local-map my/side-window-drag-map
                      'help-echo "Drag to another slot")
          ;; The buffer's own header brings faces of its own —
-         ;; `magit-header-line\=' for one — which the remap does not
+         ;; `magit-header-line' for one — which the remap does not
          ;; reach: it names the header line faces, not theirs.
          (propertize (concat " " own) 'face face)
+         ;; `right-fringe', not `right': the right margin a buffer
+         ;; sets (magit-log's 30, for one) sits between them, and the
+         ;; buttons would trail the box's line by exactly that.
          (propertize " " 'display `(space :align-to
-                                          (- right ,(string-width buttons))))
+                                          (- right-fringe
+                                             ,(string-width buttons))))
          buttons))))
 
   :custom
@@ -594,20 +592,18 @@ buffer's text scale."
          (put cmd 'repeat-map (unless unset keymap))))
      (symbol-value keymap)))
   :config
+  ;; `repeat-mode' offers the echo area or a mode-line indicator to say
+  ;; which keys repeat; a which-key popup says it better, and
+  ;; `repeat-echo-function' is where repeat.el asks for one.  It comes
+  ;; with the map while a chain is on and with nil once it ends.
   (with-eval-after-load 'which-key
-    (setopt repeat-echo-function #'ignore)
-    ;; Spawn or hide a which-key popup
-    (advice-add 'repeat-post-hook :after
-                (defun repeat-help--which-key-popup ()
-                  (if-let* ((cmd (or this-command real-this-command))
-                            (keymap (or repeat-map
-                                        (repeat--command-property 'repeat-map))))
-                      (run-at-time
-                       0 nil
-                       (lambda ()
-                         (which-key--create-buffer-and-show
-                          nil (symbol-value keymap))))
-                    (which-key--hide-popup)))))
+    (setopt repeat-echo-function
+            (lambda (keymap)
+              (if keymap
+                  ;; Not from here: the popup would be drawn inside
+                  ;; `post-command-hook' and taken away again right after.
+                  (run-at-time 0 nil #'which-key--create-buffer-and-show nil keymap)
+                (which-key--hide-popup)))))
   :hook elpaca-after-init)
 
 ;; savehist :build_in:
@@ -669,9 +665,17 @@ buffer's text scale."
   :ensure nil
   :custom
   (time-stamp-active t)
-  (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%U)")
+  (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%L)")
   :hook
   (before-save . time-stamp))
+
+;; ultra-scroll
+
+(use-package ultra-scroll
+  :custom
+  (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes wired jumps)
+  :hook
+  (elpaca-after-init . ultra-scroll-mode))
 
 ;; [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
 ;; Writable grep buffer and apply the changes to files.
@@ -721,6 +725,26 @@ buffer's text scale."
    ("W" . rotate-windows)
    :exit
    ("=" . balance-windows)))
+
+;; [[https://github.com/MArpogaus/window-box][window-box]] :own:
+;; A rectangular box around a window: side windows read as panels.  The
+;; mode line and the header line stay as configured; the box only adds
+;; the edges the window does not have.
+
+(use-package window-box
+  :ensure (:host github :repo "MArpogaus/window-box")
+  :custom
+  ;; The header line and the mode line inside the box, a tab line
+  ;; outside it: `window-box-encloses' was one set of rows and is now
+  ;; these two, so that the inside cannot be asked for in pieces.
+  (window-box-enclose-top 'header-line)
+  (window-box-enclose-mode-line t)
+  ;; The mode belongs to the buffer, and Emacs can show one buffer in a
+  ;; panel and in an ordinary window at the same time.  A box belongs to
+  ;; the place: the side windows wear it and the ordinary windows do not.
+  (window-box-window-predicate
+   (lambda (window)
+     (window-parameter window 'window-side))))
 
 ;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 ;; Distraction-free writing for Emacs.

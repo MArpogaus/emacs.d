@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -79,7 +79,7 @@
 ;; =C-p C-c=; note it shadows =python-shell-send-buffer= in cell buffers).
 ;; No other prefix bindings, and no plain speed keys, which meow's normal
 ;; state would shadow.  Rarely used commands (split, merge, markdown cells)
-;; are =M-x= only.  Cell results are rendered inline by the =pycell= package below.
+;; are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= package below.
 
 (use-package code-cells
   :preface
@@ -153,16 +153,16 @@
         ("S-<return>"   . code-cells-eval-and-step)
         ("C-S-<return>" . code-cells-eval-and-step)
         ("M-<return>"   . my/code-cells-eval-and-insert-below)
-        ("C-M-<return>" . pycell-restart-and-run-all)
+        ("C-M-<return>" . overblock-pycell-restart-and-run-all)
         ;; navigation
         ("C-<up>"       . code-cells-backward-cell)
         ("C-<down>"     . code-cells-forward-cell)
-        ;; cell structure.  pycell's move and not code-cells' own:
+        ;; cell structure.  overblock-pycell's move and not code-cells' own:
         ;; the latter transposes the two regions, and
         ;; `transpose-regions' leaves an overlay where the text used
         ;; to be, so the result of one cell lands under the other.
-        ("M-S-<up>"     . pycell-move-cell-up)
-        ("M-S-<down>"   . pycell-move-cell-down)
+        ("M-S-<up>"     . overblock-pycell-move-cell-up)
+        ("M-S-<down>"   . overblock-pycell-move-cell-down)
         ;; outline
         ("M-S-<right>"  . outline-demote)
         ("M-S-<left>"   . outline-promote)
@@ -171,7 +171,7 @@
         ;; interrupt, under the C-c prefix like in the REPL; reachable as
         ;; C-p C-c through standard-keys' dynamic prefix, and as plain
         ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
-        ("C-c C-c"      . pycell-interrupt)
+        ("C-c C-c"      . overblock-run-interrupt)
         ;; "command mode" à la JupyterLab: any entry key activates the
         ;; repeat map, single keys then chain until a foreign key exits.
         ;; The same map hangs off the leader as `SPC j'.
@@ -184,30 +184,137 @@
         ("r" . code-cells-eval-and-step)
         ("a" . my/code-cells-insert-above)
         ("b" . my/code-cells-insert-below)
-        ("c" . pycell-copy-output)
-        ("i" . pycell-interrupt)
-        ("o" . pycell-toggle-output)
-        ("O" . pycell-remove-blocks)
-        ("0" . pycell-restart)
-        ("A" . pycell-run-above)
-        ("R" . pycell-restart-and-run-all))
+        ("c" . overblock-run-copy-output)
+        ("i" . overblock-run-interrupt)
+        ("o" . overblock-run-toggle-output)
+        ("O" . overblock-run-discard-output)
+        ("0" . overblock-pycell-restart)
+        ("A" . overblock-run-above)
+        ("R" . overblock-pycell-restart-and-run-all))
   :hook
   (python-base-mode . code-cells-mode-maybe))
 
-;; [[https://github.com/MArpogaus/pycell][pycell]] :own:
+;; [[https://github.com/MArpogaus/overblock][overblock]] :own:
 ;; Notebook style results for Python code cells: the output of an evaluated
 ;; cell shows up below it, and markdown cells render in place.  This used to
 ;; be a long block right here; it is a package now, so only the parts that
-;; are specific to this configuration remain.
+;; are specific to this configuration remain — among them that the terminal
+;; here draws the icon font, which is the one thing Emacs cannot find out
+;; for itself.
 
-(use-package pycell
-  :ensure (:host github :repo "MArpogaus/pycell")
-  ;; The package installs no hook itself; this is where it turns on.
-  :hook (code-cells-mode . pycell-mode-maybe)
+;; The layer the three below are built on: text blocks over a region of
+;; a buffer.  It draws nothing by itself.
+(use-package overblock
+  :ensure (overblock :host github :repo "MArpogaus/overblock"
+                     :branch "dev"
+                     :files ("overblock.el" "overblock-repl.el"
+                             "overblock-run.el"))
+  :custom
+  ;; The same word the panel header goes by: without it every bar of
+  ;; every package here falls back to its plain candidates in a
+  ;; terminal.
+  (overblock-terminal-glyphs my/terminal-glyphs)
   :config
+  ;; Every buffer the family opens beside a file goes to the right:
+  ;; a result popped out (*overblock-pycell: f:12*, *overblock-rmd: …*),
+  ;; a markdown cell being edited (*overblock-pycell md: …*), a doc
+  ;; string being edited (*overblock-pydoc: …*).  The shells go to
+  ;; the bottom with every other comint buffer.
   (with-eval-after-load 'auto-side-windows
-    (dolist (name '("^\\*pycell: .*\\*$" "^\\*pycell md: .*\\*$"))
-      (add-to-list 'auto-side-windows-right-buffer-names name))))
+    (add-to-list 'auto-side-windows-right-buffer-names
+                 "^\\*overblock-[a-z]+\\(?: md\\)?: .*\\*$")))
+
+;; The runner is a file of the layer, and the map of a result popped
+;; out into its own buffer lives there: bound once that file loads,
+;; from any notebook.  A pop-out remembers the shell it came from, so
+;; the interrupt works where a long run is watched.
+(use-package overblock-run
+  :ensure nil
+  :after overblock
+  :bind
+  (:map overblock-run-pop-map
+        ("C-c C-c" . overblock-run-interrupt)))
+
+;; Markup rendered to text: a converter and shr, or a mode's font lock.
+;; `overblock-md-preview-mode' renders a markdown buffer block by block
+;; and gives the source back where you click.  On for every markdown
+;; file but an Rmd, whose prose the notebook below renders itself; the
+;; hook is what loads the package, so nothing here costs a start-up.
+(use-package overblock-md
+  :ensure (overblock-md :host github :repo "MArpogaus/overblock"
+                        :branch "dev"
+                        :files ("overblock-md.el" "overblock-md-preview.el"))
+  :preface
+  (defun my/overblock-md-preview-maybe ()
+    "Turn on `overblock-md-preview-mode', unless this is an Rmd file."
+    (unless (and buffer-file-name
+                 (string-match-p "\\.[rR]md\\'" buffer-file-name))
+      (overblock-md-preview-mode)))
+  :hook (markdown-mode . my/overblock-md-preview-maybe))
+
+;; Python doc strings rendered where they are written, with a bar of
+;; their own.  On in every Python buffer; the doc string point is in
+;; shows its source, so writing one is writing plain text.
+(use-package overblock-pydoc
+  :ensure (overblock-pydoc :host github :repo "MArpogaus/overblock"
+                           :branch "dev"
+                           :files ("overblock-pydoc.el"))
+  :hook (python-base-mode . overblock-pydoc-mode))
+
+(use-package overblock-pycell
+  ;; Five packages live in that repository — the layer, the markup
+  ;; renderer, the doc string mode, this notebook and the one for R
+  ;; Markdown — so the recipe names the files of this one.  The layer and the renderer arrive as
+  ;; its dependencies, each with a recipe of its own below.
+  :ensure (overblock-pycell :host github :repo "MArpogaus/overblock"
+                            :branch "dev"
+                            :files ("overblock-pycell.el"))
+  ;; The package installs no hook itself; this is where it turns on.
+  :hook (code-cells-mode . overblock-pycell-mode-maybe))
+
+;; The same notebook for an =.Rmd= file: a chunk runs in the R that ESS
+;; started and its output shows under it, and the prose between chunks
+;; renders as markdown.  The keys are the notebook's, so a hand that
+;; knows one knows the other.
+(use-package overblock-rmd
+  :ensure (overblock-rmd :host github :repo "MArpogaus/overblock"
+                         :branch "dev"
+                         :files ("overblock-rmd.el"))
+  :after ess
+  :hook (markdown-mode . overblock-rmd-mode-maybe)
+  :preface
+  ;; The same "command mode" as the Python notebook's: the same letters
+  ;; do the same things, entered through any of them and chained until
+  ;; a foreign key exits.  No insert keys (a b), because a chunk is
+  ;; written by hand between its fences.
+  (defvar my/overblock-rmd-repeat-map (make-sparse-keymap)
+    "Repeat map for chunk commands; mirrors `my/code-cells-repeat-map'.")
+  :config
+  (my/repeatize-keymap 'my/overblock-rmd-repeat-map)
+  :bind
+  ;; The keys of the Python notebook, one for one.
+  (:map overblock-rmd-mode-map
+        ("C-<return>"   . overblock-rmd-run-chunk)
+        ("S-<return>"   . overblock-rmd-run-chunk-and-step)
+        ("C-S-<return>" . overblock-rmd-run-chunk-and-step)
+        ("C-M-<return>" . overblock-rmd-restart-and-run-all)
+        ("C-<up>"       . overblock-rmd-backward-chunk)
+        ("C-<down>"     . overblock-rmd-forward-chunk)
+        ("C-c C-c"      . overblock-run-interrupt)
+        :map my/overblock-rmd-repeat-map
+        ("n" . overblock-rmd-forward-chunk)
+        ("p" . overblock-rmd-backward-chunk)
+        ("j" . overblock-rmd-forward-chunk)
+        ("k" . overblock-rmd-backward-chunk)
+        ("e" . overblock-rmd-run-chunk)
+        ("r" . overblock-rmd-run-chunk-and-step)
+        ("c" . overblock-run-copy-output)
+        ("i" . overblock-run-interrupt)
+        ("o" . overblock-run-toggle-output)
+        ("O" . overblock-run-discard-output)
+        ("0" . overblock-rmd-restart)
+        ("A" . overblock-run-above)
+        ("R" . overblock-rmd-restart-and-run-all)))
 
 ;; [[https://github.com/mickeynp/combobulate.git][combobulate]]
 ;; Structured Editing and Navigation in Emacs.
@@ -217,6 +324,14 @@
   :custom
   ;; Disable combobulate key prefix
   (combobulate-key-prefix nil)
+  :preface
+  (defun my/combobulate-mode-maybe ()
+    "Turn `combobulate-mode' on in a buffer that tree-sitter has parsed.
+The mode errors where the language has no grammar, and `set-auto-mode'
+reports that error rather than raising it: the rest of the major mode
+setup is dropped, `after-change-major-mode-hook' included, and every
+globalized minor mode stays off in the buffer."
+    (when (treesit-parser-list) (combobulate-mode 1)))
   :config
   (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
   :bind
@@ -230,7 +345,7 @@
         ("M-<down>"  . combobulate-drag-down)
         ("M-<up>"    . combobulate-drag-up))
   :hook
-  ((prog-mode yaml-ts-mode) . combobulate-mode))
+  ((prog-mode yaml-ts-mode) . my/combobulate-mode-maybe))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
@@ -425,39 +540,45 @@
   :mode (("\\.[rR]\\'" . R-mode)
          ("\\.[rR]nw\\'" . Rnw-mode)
          ("\\.jl\\'" . julia-mode))
+  :custom
+  ;; Start R where the file is.  Asking for a directory every time is
+  ;; a question with one sensible answer, and it comes up again on
+  ;; every restart — including the ones a notebook asks for.
+  (ess-ask-for-ess-directory nil)
+  ;; Show what is sent, but do not wait for the echo: a long
+  ;; evaluation with this at t holds Emacs until R has printed every
+  ;; line of it.
+  (ess-eval-visibly 'nowait)
+  ;; No workspace written on exit and none read on start, so a session
+  ;; begins with what the file says and nothing else.
+  (inferior-R-args "--no-save --no-restore-data")
   :config
   (require 'ess-site))
 
-;; [[https://github.com/kaz-yos/eval-in-repl.git][eval-in-repl]]
-;; Consistent ESS-like eval interface for various REPLs.
+;; [[https://github.com/polymode/poly-R][poly-R]]
+;; One buffer, two major modes: markdown for the prose of an =.Rmd= file and
+;; =ess-r-mode= inside every =```{r}= chunk, so indentation, completion and
+;; evaluation are the right ones wherever the point stands.  polymode does
+;; that with an indirect buffer per chunk.
 
-(use-package eval-in-repl
+;; =poly-markdown+r-mode= is what an =.Rmd= file wants; the =gfm= variant
+;; reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=,
+;; which ESS already claims above.  The results of a chunk are shown inline
+;; by [[https://github.com/MArpogaus/overblock][overblock-rmd]], further down.
+
+(use-package poly-R
+  :ensure (poly-R :host github :repo "polymode/poly-R")
+  :after (ess markdown-mode)
+  :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
   :custom
-  ;; Uncomment if no need to jump after evaluating current line
-  ;; (eir-jump-after-eval nil)
-
-  ;; Uncomment if you want to always split the script window into two.
-  ;; This will just split the current script window into two without
-  ;; disturbing other windows.
-  ;; (eir-always-split-script-window t)
-
-  ;; Uncomment if you always prefer the two-window layout.
-  ;; (eir-delete-other-windows t)
-
-  ;; Place REPL on the left of the script window when splitting.
-  (eir-repl-placement 'left)
-  :preface
-  (defun my/setup-eir-python nil
-    (require 'eval-in-repl-python)
-    (local-set-key (kbd "C-<return>") 'eir-eval-in-python))
-  (defun my/setup-eir-lisp nil
-    (require 'eval-in-repl-ielm)
-    ;; Evaluate expression in the current buffer.
-    (setq-local eir-ielm-eval-in-current-buffer t)
-    (local-set-key (kbd "C-<return>") 'eir-eval-in-ielm))
-  :hook
-  ((python-base-mode . my/setup-eir-python)
-   ((emacs-lisp-mode lisp-interaction-mode Info-mode) . my/setup-eir-lisp)))
+  ;; A chunk's own process buffer is worth seeing when it errors; the
+  ;; output *file* of a weave is not — it opens in the browser or the
+  ;; PDF viewer on its own.
+  (polymode-display-output-file nil)
+  (polymode-display-process-buffers t)
+  ;; An unmodified chunk is not re-exported: a weave of a long document
+  ;; is minutes, and most of it has not changed.
+  (polymode-skip-processing-when-unmodified t))
 
 ;; [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
 ;; Universal on-the-fly syntax checker for Emacs.
@@ -519,11 +640,41 @@
 (use-package numpydoc
   :after python)
 
+;; [[https://github.com/purcell/inheritenv][inheritenv]]
+;; Carry a buffer's environment into the temp buffers that commands make: a
+;; buffer-local =process-environment= is invisible to =shell-command= and its
+;; like without help.  =ben= brings the package along for the buffers direnv
+;; owns; =my/python-env-mode= below uses it for the buffers it owns itself.
+
+(use-package inheritenv
+  :demand t)
+
 ;; python :build_in:
 ;; Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
 ;; environment.  =executable-find= is evaluated per buffer, so it picks up a
 ;; project-local IPython installed by =uv= or exported by =ben=, and the result is
 ;; stored as an absolute path so the REPL keeps using that interpreter.
+
+;; A project without an =.envrc= gets its environment from =C-c v= (=C-p v= with
+;; =standard-keys-mode=); =C-c V= drops it again.  An environment is any
+;; directory with a =bin/python= inside, so a venv and a conda prefix are the
+;; same thing here, and the presence of =conda-meta= says which variable to
+;; export.  The command looks in the project root first: it takes the only
+;; environment it finds there, asks which one where there are several, and
+;; falls back to the environments of =my/python-env-parents= (conda, mamba,
+;; =virtualenvwrapper=) where the project holds none.
+
+;; =my/python-env-mode= carries the choice, one buffer at a time, so two
+;; projects can use two environments in one session.  It is a globalized mode
+;; after the manner of =ben-global-mode=: the mode goes on in every buffer and
+;; does nothing until the buffer's project has a choice to apply, which is
+;; also what lets a buffer opened later pick the choice up.  A per-major-mode
+;; hook cannot do this job, because =python.el= loads inside the first Python
+;; buffer's own mode setup, too late for that buffer.
+
+;; To activate an environment without being asked at all, put
+;; =my/python-env-path= in a =.dir-locals.el=: the variable is read per buffer
+;; and takes precedence over the choice made with the command.
 
 (use-package python
   :ensure nil
@@ -533,6 +684,109 @@
   (python-indent-guess-indent-offset-verbose nil)
   (python-shell-dedicated 'project)
   :preface
+  (defvar my/python-env-parents '("~/.conda/envs" "~/miniconda3/envs"
+                                  "~/micromamba/envs" "~/.virtualenvs")
+    "Directories that hold one Python environment per subdirectory.")
+
+  (defvar my/python-env-alist nil
+    "Alist of (DIRECTORY . ENVIRONMENT) set by `my/python-env-activate'.")
+
+  (defvar-local my/python-env-path nil
+    "Python environment of this buffer, taken without asking.
+Set it in a `.dir-locals.el' to activate one automatically.  It takes
+precedence over anything `my/python-env-activate' chose.")
+  (put 'my/python-env-path 'safe-local-variable #'stringp)
+
+  (defvar-local my/python-env--applied nil
+    "Environment `my/python-env-mode' put into this buffer.
+It also says the environment here is ours, so clearing one never takes
+away what `ben' exported.")
+
+  (defun my/python-env-dir ()
+    "Return the directory an environment is keyed on: the project root, or this one."
+    (if-let* ((project (project-current))) (project-root project) default-directory))
+
+  (defun my/python-env--in (parent)
+    "Return every directory in PARENT that holds a Python environment."
+    (and (file-directory-p parent)
+         (seq-filter (lambda (dir)
+                       (file-executable-p (expand-file-name "bin/python" dir)))
+                     (directory-files parent t directory-files-no-dot-files-regexp))))
+
+  (defun my/python-env-read ()
+    "Return the environment of this project, asking where the answer is open.
+The single environment of the project root needs no question; several of
+them, or none there at all, do."
+    (let ((local (my/python-env--in (my/python-env-dir))))
+      (if (and local (not (cdr local)))
+          (car local)
+        (completing-read "Environment: "
+                         (or local (mapcan #'my/python-env--in my/python-env-parents))
+                         nil t))))
+
+  (defun my/python-env--clear ()
+    "Take back what `my/python-env--set' gave this buffer."
+    (when my/python-env--applied
+      (kill-local-variable 'exec-path)
+      (kill-local-variable 'process-environment)
+      (kill-local-variable 'my/python-env--applied)))
+
+  (defun my/python-env--set ()
+    "Put the environment chosen for this buffer into this buffer.
+Whatever an earlier call gave it goes first, so a new choice replaces the
+old one instead of stacking on it.  Buffers under an `.envrc' get nothing
+from us: `ben' exports an environment there already, and direnv is the
+one that says what it holds."
+    (my/python-env--clear)
+    (when-let* (((not (eq (bound-and-true-p ben--status) 'on)))
+                (env (or my/python-env-path
+                         (and my/python-env-alist
+                              (cdr (assoc (my/python-env-dir) my/python-env-alist)))))
+                (bin (expand-file-name "bin" env)))
+      (setq-local my/python-env--applied env
+                  exec-path (cons bin exec-path)
+                  process-environment
+                  (append (list (concat "PATH=" bin path-separator (getenv "PATH"))
+                                (concat (if (file-directory-p
+                                             (expand-file-name "conda-meta" env))
+                                            "CONDA_PREFIX"
+                                          "VIRTUAL_ENV")
+                                        "=" env))
+                          process-environment))
+      (my/python-set-interpreter)))
+
+  (define-minor-mode my/python-env-mode
+    "Give this buffer the Python environment chosen for its project.
+The environment is the `exec-path' and the `process-environment' of this
+buffer alone."
+    :init-value nil :lighter nil
+    (if my/python-env-mode (my/python-env--set) (my/python-env--clear)))
+
+  (define-globalized-minor-mode my/python-env-global-mode
+    my/python-env-mode
+    (lambda () (unless (minibufferp) (my/python-env-mode 1)))
+    :predicate t)
+
+  (defun my/python-env--refresh (dir)
+    "Give every buffer that DIR keys its environment again."
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (and my/python-env-mode (equal dir (my/python-env-dir)))
+          (my/python-env--set)))))
+
+  (defun my/python-env-activate (env)
+    "Use ENV in every buffer of this buffer's project, and in the ones to come.
+ENV nil drops the choice again, which is `my/python-env-deactivate'."
+    (interactive (list (my/python-env-read)))
+    (let ((dir (my/python-env-dir)))
+      (setf (alist-get dir my/python-env-alist nil (null env) #'equal) env)
+      (my/python-env--refresh dir)))
+
+  (defun my/python-env-deactivate ()
+    "Drop the environment chosen for this buffer's project."
+    (interactive)
+    (my/python-env-activate nil))
+
   (defun my/python-set-interpreter ()
     "Use IPython as `python-shell-interpreter' when one is on `exec-path'."
     (when (derived-mode-p 'python-base-mode)
@@ -542,25 +796,27 @@
                       python-shell-interpreter-args "-i --simple-prompt --no-color-info")
         (kill-local-variable 'python-shell-interpreter)
         (kill-local-variable 'python-shell-interpreter-args))))
+  :bind
+  (:map python-base-mode-map
+        ("C-c v" . my/python-env-activate)
+        ("C-c V" . my/python-env-deactivate))
+  :init
+  (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
+  ;; The directory-local variables are read after the major mode is set, so
+  ;; this is the first point at which `my/python-env-path' can be seen.  The
+  ;; mode function applies again where it is already on.
+  (add-hook 'hack-local-variables-hook #'my/python-env-mode)
+  ;; These start their processes in a temp buffer, which inherits none of the
+  ;; environment of the buffer the command was called from.
+  (dolist (command '(shell-command shell-command-to-string async-shell-command
+                                   compile org-babel-eval))
+    (advice-add command :around #'inheritenv-apply))
   :config
   ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
   ;; only becomes project-local at the latter point.  `ben' skips its hook in
   ;; buffers without an `.envrc', hence both.
   (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
   (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
-
-;; [[https://github.com/z80dev/uv-mode.git][uv-mode]]
-;; Emacs integration for uv virtual environments.
-
-(use-package uv-mode)
-
-;; [[https://github.com/eanopolsky/sphinx-doc.el.git][sphinx-doc]]
-;; Generate Sphinx friendly docstrings for Python functions in Emacs.
-
-(use-package sphinx-doc
-  :ensure (:host github :repo "eanopolsky/sphinx-doc.el" :branch "square-brackets-in-return-types")
-  :hook
-  (python-base-mode . sphinx-doc-mode))
 
 ;; [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
 ;; Display symbols (functions, variables, etc) in a side window.

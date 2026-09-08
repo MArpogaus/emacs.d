@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -26,10 +26,13 @@
    '(((denote--prepare-note denote-menu-list-notes consult-denote-find consult-denote-grep) . "denote")
      ((custom-buffer-create custom-buffer-create-other-window) . "customize")
      ((dirvish dirvish-fd) . "dirvish")))
+  ;; `:always-close' closes the group whatever the command answered;
+  ;; a create rule's flag is `:before-command', which is about when
+  ;; the group is made rather than about the answer.
   (auto-tab-groups-close-commands
-   '((dirvish-quit "dirvish" :ignore-result t)
-     (my/kill-denote-buffers "denote" :ignore-result t)
-     (Custom-buffer-done "customize" :ignore-result t)))
+   '((dirvish-quit "dirvish" :always-close t)
+     (my/kill-denote-buffers "denote" :always-close t)
+     (Custom-buffer-done "customize" :always-close t)))
   :bind
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))

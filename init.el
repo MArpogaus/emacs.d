@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -33,6 +33,10 @@
   (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
   (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
 
+  ;; Auto save file buffers
+  (auto-save-visited-mode t)                         ; enable auto save for all file buffers
+  (auto-save-visited-interval 1)                     ; save every second
+
   ;; Backups
   (backup-by-copying t)                              ; Backs up by moving the actual file
 
@@ -56,14 +60,11 @@
   ;; Smoother scrolling
   ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
   ;; 100 and not 101: above 100 redisplay may never recenter, and over
-  ;; two display blocks taller than the window (pycell results) it then
+  ;; two display blocks taller than the window (overblock-pycell results) it then
   ;; hands the window from one block to the other endlessly.
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
-  (pixel-scroll-precision-interpolate-mice nil)      ; Disable interpolation (causes wired jumps)
-  (pixel-scroll-precision-mode (display-graphic-p))  ; Enable pixel-wise scrolling
-  (pixel-scroll-precision-use-momentum t)            ; Enable momentum for scrolling lagre buffers
   (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
   (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
@@ -120,8 +121,8 @@
   (set-keyboard-coding-system 'utf-8)  ; Set coding system for keyboard input on TERMINAL
   (set-language-environment "English") ; Set up multilingual environment
   :hook
-  ;; Enable word wrapping
-  (;; ((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
+  ;; Enable word wrapping in prose modes
+  (((org-mode markdown-mode text-mode message-mode) . visual-line-mode)
    ;; Enable automatic line breaks before `fill-column' is exceeded
    ((prog-mode conf-mode text-mode) . auto-fill-mode)
    ;; cleanup unnecessary white spaces before saving a buffer
@@ -141,10 +142,6 @@
 (elpaca elpaca-use-package
   ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
-
-;; Force update compat
-;; https://github.com/progfolio/elpaca/issues/538
-(use-package compat :ensure (:wait t))
 
 ;; Configure use-package
 
@@ -268,7 +265,8 @@ The DWIM behaviour of this command is as follows:
    ("s"                   . scratch-buffer)
    ("t"                   . term)
    :map my/toggle-map
-   ("M"                   . my/minimal-ui-mode)))
+   ("M"                   . my/minimal-ui-mode)
+   ("v"                   . visual-line-mode)))
 
 ;; no-littering
 ;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
@@ -295,6 +293,7 @@ The DWIM behaviour of this command is as follows:
   :ensure nil
   :preface
   (setq my/modeline-height 30)
+  (setq my/tabline-height 25)
   (defun my/extract-username-repo ()
     "Extract the username and repository name from a GitHub repository link at point."
     (interactive)
@@ -341,7 +340,6 @@ The DWIM behaviour of this command is as follows:
          " " 'display
          (create-image
           (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
-          ;; `:scale 1\=': the size is in pixels, as asked for.
           'pbm t :foreground color :ascent 'center :scale 1))
       (propertize "|" 'face (list :foreground color
                                   :background color))))
@@ -352,18 +350,20 @@ The DWIM behaviour of this command is as follows:
     (if my/minimal-ui-mode
         (progn
           (setq tab-bar-show nil)
-          (set-fringe-style 0)
           (tab-bar-mode -1)
-          (modern-tab-line-mode -1)
+          (global-tab-line-mode -1)
           (my/global-mode-line-invisible-mode 1)
-          (spacious-padding-mode -1))
+          ;; Order matters: disabling spacious-padding resets the
+          ;; fringes it widened, so zero them afterwards.
+          (spacious-padding-mode -1)
+          (set-fringe-style 0))
       (progn
         (setq tab-bar-show t)
-        (set-fringe-style nil)
         (tab-bar-mode 1)
-        (modern-tab-line-mode 1)
+        (global-tab-line-mode 1)
         (my/global-mode-line-invisible-mode -1)
-        (spacious-padding-mode 1)))))
+        (spacious-padding-mode 1)
+        (set-fringe-style nil)))))
 
 ;; Configure Packages
 ;; We save the following package declaration into separate files in the =modules= directory.

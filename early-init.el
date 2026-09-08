@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -164,7 +164,8 @@
 (add-hook 'elpaca-after-init-hook
           (lambda ()
             ;; restore after startup
-            (setq gc-cons-threshold (* 16 1024 1024))) 97)
+            (setq gc-cons-threshold (* 16 1024 1024)
+                  gc-cons-percentage 0.1)) 97)
 
 ;; Profile emacs startup
 (defun my/count-modes-and-commands ()
@@ -184,7 +185,8 @@
              major-modes minor-modes commands (length features))))
 (add-hook 'elpaca-after-init-hook
           (lambda ()
-            (my/count-modes-and-commands)
+            (when init-file-debug
+              (my/count-modes-and-commands))
             (message "🚀 Emacs loaded in %.2f seconds with %d garbage collections."
                      (float-time (time-subtract elpaca-after-init-time before-init-time))
                      gcs-done)) 99)
@@ -213,7 +215,7 @@
 (setq ad-redefinition-action 'accept)
 
 ;; Ignore warnings about "existing variables being aliased".
-(setq warning-suppress-types '((defvaralias) (lexical-binding)))
+(setq warning-suppress-types '((defvaralias)))
 
 ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
 ;; loaded by Emacs will run through this list to check for a proper handler for
@@ -222,7 +224,12 @@
 (setq file-name-handler-alist nil)
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq file-name-handler-alist file-name-handler-alist-old)))
+            ;; Handlers registered while Emacs started (tramp, for one) are in
+            ;; the list now, so put the old ones back beside them rather than
+            ;; over them.
+            (setq file-name-handler-alist
+                  (delete-dups (append file-name-handler-alist
+                                       file-name-handler-alist-old)))))
 
 ;; Remove irreleant command line options for faster startup
 (setq command-line-x-option-alist nil)
@@ -231,10 +238,76 @@
 ;; :PROPERTIES:
 ;; :ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
 ;; :END:
+;; The font waits for =window-setup-hook=: a family the system does not have
+;; makes every frame creation fail, and the frame that fails at startup takes
+;; Emacs down with it, so the name may only reach =default-frame-alist= once
+;; the display is up and can be asked whether the font is there.
+
+;; A terminal has no fonts to be asked about at all: =find-font= answers nil
+;; there and =font-family-list= is empty, whatever the terminal itself draws
+;; with, so a terminal frame is left alone rather than told the font is
+;; missing.  The question comes back on =server-after-make-frame-hook=,
+;; because the first frame of a terminal session or of the daemon settles
+;; nothing for the graphic frame an =emacsclient -c= brings later.
 
 (add-to-list 'default-frame-alist '(width . 100))
 (add-to-list 'default-frame-alist '(height . 25))
-(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font"))
+
+(defun my/set-frame-font (family)
+  "Use FAMILY in this frame and in the frames to come.
+A terminal draws with the font of the terminal and has none of its own
+to set, so nothing happens there.  A graphic display that has no such
+family keeps its default font and says so."
+  (when (and (display-graphic-p)
+             ;; Once per session: the entry below is what says it was
+             ;; asked and answered.
+             (not (assq 'font default-frame-alist)))
+    (if (find-font (font-spec :family family))
+        (progn
+          (add-to-list 'default-frame-alist (cons 'font family))
+          (set-frame-font family nil t))
+      (warn "Font `%s' is not installed, frames keep the default font"
+            family))))
+
+(defun my/set-my-frame-font ()
+  "Use the font this configuration asks for."
+  (my/set-frame-font "FiraCode Nerd Font"))
+
+(add-hook 'window-setup-hook #'my/set-my-frame-font)
+(add-hook 'server-after-make-frame-hook #'my/set-my-frame-font)
+
+
+
+;; The other half of the same question: which glyphs a display draws.  A
+;; graphic frame can be asked, character by character; a terminal cannot be
+;; asked at all, so it is told.  Everything that picks an icon reads this —
+;; the panel header below, and the two packages of my own that draw one.
+
+(defvar my/terminal-glyphs t
+  "Whether this terminal draws the glyphs a graphic frame draws.
+    Emacs can ask a font what it holds and a terminal nothing: the
+    terminal picks the font and draws the characters, and
+    `char-displayable-p' answers for the coding system alone, so a glyph
+    the font lacks arrives as an empty box rather than being refused.
+    This terminal carries the nerd font, which is a word from me and not
+    a question Emacs can answer; the packages below are told the same.")
+
+(defun my/glyph (&rest candidates)
+  "Return the first of CANDIDATES this display can draw.
+    A graphic frame is asked about every character of a candidate, since
+    one of them is a space and a space is always there.  A terminal is
+    asked about the coding system, and only where `my/terminal-glyphs'
+    says its font carries the glyphs; without that it takes the last
+    candidate, so keep a word there."
+  (or (and (or (display-graphic-p) my/terminal-glyphs)
+           (seq-find (lambda (candidate)
+                       (seq-every-p (if (display-graphic-p)
+                                        (lambda (ch)
+                                          (internal-char-font nil ch))
+                                      #'char-displayable-p)
+                                    candidate))
+                     candidates))
+      (car (last candidates))))
 
 ;; ZZ Conventional Library Footer
 

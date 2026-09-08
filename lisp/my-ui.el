@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-03
+;; Created: 2026-09-08
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -317,7 +317,7 @@
   ((elpaca-after-init . tab-bar-history-mode)
    (elpaca-after-init . tab-bar-mode)))
 
-;; [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]]
+;; [[https://github.com/MArpogaus/modern-tab][modern-tab]]
 ;; The look of both rows of tabs: the tab bar, one tab per tab group, and
 ;; the tab line, one tab per buffer of a window.  This used to be
 ;; =auto-tab-groups-eyecandy= and the =tab-line= block below it.
@@ -326,12 +326,11 @@
 ;; and a second =:ensure= of the same id is a duplicate it warns about.
 
 (use-package modern-tab
-  ;; The id is the main file elpaca looks for — `modern-tab.el' — and
-  ;; the repository is named after what it holds.
-  ;; `main' holds the start of the repository; the work is on `dev'.
-  :ensure (modern-tab :host github :repo "MArpogaus/modern-tab-bars"
-                      :branch "dev")
+  :ensure (modern-tab :host github :repo "MArpogaus/modern-tab")
   :custom
+  ;; The same word the panel header goes by: without it both rows of
+  ;; tabs fall back to their plain candidates in a terminal.
+  (modern-tab-terminal-glyphs my/terminal-glyphs)
   ;; The bar beside a tab group, as high as the mode line.
   (modern-tab-bar-indicator-height my/modeline-height)
   ;; Assign Icons to tab groups
@@ -352,16 +351,17 @@
   (modern-tab-bar-new-command #'auto-tab-groups-new-group)
   ;; The tab line looked like this before the package existed: no bar
   ;; beside a tab.  A width turns one on for the selected tab.
-  (modern-tab-line-active-indicator-width 0)
+  (modern-tab-line-active-indicator-width 2)
   (modern-tab-line-indicator-height my/tabline-height)
   :hook
-  ((tab-line-mode . modern-tab-line-mode)
+  ;; The rows are mine to turn on; each mode only dresses its row.
+  ((global-tab-line-mode . modern-tab-line-mode)
    (tab-bar-mode . modern-tab-bar-mode)))
 
 ;; tab-line :build_in:
 ;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
 
-;; The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab-bars][modern-tab-bars]], configured
+;; The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab][modern-tab]], configured
 ;; above: the icon per buffer, the close button that buries or kills, and
 ;; the row that hides itself where a window shows one buffer.  What stays
 ;; here is which buffers get a tab line at all.
