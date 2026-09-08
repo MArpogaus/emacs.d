@@ -583,8 +583,9 @@ The main initialization file, =init.el=, is responsible for defining essential c
     :hook
     ;; Enable word wrapping in prose modes
     (((org-mode markdown-mode text-mode message-mode) . visual-line-mode)
-     ;; Enable automatic line breaks before `fill-column' is exceeded
-     ((prog-mode conf-mode text-mode) . auto-fill-mode)
+     ;; Enable automatic line breaks before `fill-column' is exceeded, in
+     ;; comments only: prose above is soft-wrapped instead
+     ((prog-mode conf-mode) . auto-fill-mode)
      ;; cleanup unnecessary white spaces before saving a buffer
      (before-save . whitespace-cleanup)))
 #+end_src
