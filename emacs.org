@@ -581,8 +581,8 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (set-keyboard-coding-system 'utf-8)  ; Set coding system for keyboard input on TERMINAL
     (set-language-environment "English") ; Set up multilingual environment
     :hook
-    ;; Enable word wrapping
-    (;; ((prog-mode conf-mode text-mode magit-mode) . visual-line-mode)
+    ;; Enable word wrapping in prose modes
+    (((org-mode markdown-mode text-mode message-mode) . visual-line-mode)
      ;; Enable automatic line breaks before `fill-column' is exceeded
      ((prog-mode conf-mode text-mode) . auto-fill-mode)
      ;; cleanup unnecessary white spaces before saving a buffer
@@ -729,7 +729,8 @@ Package specific keymap definitions are kept in preface of the respective packag
      ("s"                   . scratch-buffer)
      ("t"                   . term)
      :map my/toggle-map
-     ("M"                   . my/minimal-ui-mode)))
+     ("M"                   . my/minimal-ui-mode)
+     ("v"                   . visual-line-mode)))
 #+end_src
 
 *** no-littering
