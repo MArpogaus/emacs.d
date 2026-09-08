@@ -760,6 +760,18 @@ In this section, I define some custom Lisp functions.
     :preface
     (setq my/modeline-height 30)
     (setq my/tabline-height 25)
+    (defvar citar-bibliography)
+    (defun my/bib-note-template ()
+      "Return the body of a bibliography note, for citar and citar-denote."
+      (concat "#+cite_export: biblatex ieee\n"
+              "#+bibliography: " (car citar-bibliography) "\n\n"
+              "* Notes :ignore:\n"
+              ":PROPERTIES:\n"
+              ":NOTER_DOCUMENT: ${file} \n"
+              ":END:\n\n"
+              "* Summary :childless:showchildren:export:\n"
+              "This is a summary of [cite/t:@${=key=}].\n"
+              "** Bibliography :ignore:\n"))
     (defun my/extract-username-repo ()
       "Extract the username and repository name from a GitHub repository link at point."
       (interactive)
@@ -2702,17 +2714,7 @@ Distraction-free writing for Emacs.
     (citar-denote-template 'biblio)
     (citar-denote-subdir "bib_notes")
     :config
-    (add-to-list 'denote-templates
-                 `(biblio . ,(concat
-                              "#+cite_export: biblatex ieee\n"
-                              (concat "#+bibliography: " (car citar-bibliography) "\n\n")
-                              "* Notes :ignore:\n"
-                              ":PROPERTIES:\n"
-                              ":NOTER_DOCUMENT: ${file} \n"
-                              ":END:\n\n"
-                              "* Summary :childless:showchildren:export:\n"
-                              "This is a summary of [cite/t:@${=key=}].\n"
-                              "** Bibliography :ignore:\n")))
+    (add-to-list 'denote-templates `(biblio . ,(my/bib-note-template)))
     :init
     (citar-denote-mode))
 #+end_src
@@ -3592,16 +3594,7 @@ Citar provides a highly-configurable completing-read front-end to browse and act
                                         "#+DATE: ${date}\n"
                                         "#+SOURCE: ${doi url}\n"
                                         "#+CUSTOM_ID: ${=key= id}\n"
-                                        "#+cite_export: biblatex ieee\n"
-                                        (concat "#+bibliography: " (car citar-bibliography) "\n\n")
-                                        "* Notes :ignore:\n"
-                                        ":PROPERTIES:\n"
-                                        ":NOTER_DOCUMENT: ${file} \n"
-                                        ":END:\n\n"
-                                        "* Summary :childless:showchildren:export:\n"
-                                        "This is a summary of [cite/t:@${=key=}].\n"
-                                        "** Bibliography :ignore:\n"
-                                        ))))
+                                        (my/bib-note-template)))))
     (citar-symbol-separator "  ")
     :config
     (defvar citar-indicator-files-icons
