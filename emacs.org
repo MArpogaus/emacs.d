@@ -336,7 +336,8 @@ The following optimizations have been inspired by:
                major-modes minor-modes commands (length features))))
   (add-hook 'elpaca-after-init-hook
             (lambda ()
-              (my/count-modes-and-commands)
+              (when init-file-debug
+                (my/count-modes-and-commands))
               (message "🚀 Emacs loaded in %.2f seconds with %d garbage collections."
                        (float-time (time-subtract elpaca-after-init-time before-init-time))
                        gcs-done)) 99)
