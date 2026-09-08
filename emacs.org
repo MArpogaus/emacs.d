@@ -2459,7 +2459,6 @@ Outline-mode helps to fold and transform headers. Org-mode itself uses outline-m
 **** [[https://github.com/jamescherti/outline-indent.el.git][outline-indent]]
 #+begin_src emacs-lisp
   (use-package outline-indent
-    :ensure t
     :hook
     ((yaml-ts-mode) . outline-indent-minor-mode))
 #+end_src
