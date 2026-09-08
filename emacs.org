@@ -4609,20 +4609,29 @@ for itself.
 
   ;; Markup rendered to text: a converter and shr, or a mode's font lock.
   ;; `overblock-md-preview-mode' renders a markdown buffer block by block
-  ;; and gives the source back where you click.
+  ;; and gives the source back where you click.  On for every markdown
+  ;; file but an Rmd, whose prose the notebook below renders itself; the
+  ;; hook is what loads the package, so nothing here costs a start-up.
   (use-package overblock-md
     :ensure (overblock-md :host github :repo "MArpogaus/overblock"
                           :branch "dev"
-                          :files ("overblock-md.el" "overblock-md-preview.el")))
+                          :files ("overblock-md.el" "overblock-md-preview.el"))
+    :preface
+    (defun my/overblock-md-preview-maybe ()
+      "Turn on `overblock-md-preview-mode', unless this is an Rmd file."
+      (unless (and buffer-file-name
+                   (string-match-p "\\.[rR]md\\'" buffer-file-name))
+        (overblock-md-preview-mode)))
+    :hook (markdown-mode . my/overblock-md-preview-maybe))
 
   ;; Python doc strings rendered where they are written, with a bar of
-  ;; their own.  `M-x overblock-pydoc-mode' in a Python buffer; not on a
-  ;; hook, because a file of doc strings is worth reading as prose only
-  ;; when you mean to.
+  ;; their own.  On in every Python buffer; the doc string point is in
+  ;; shows its source, so writing one is writing plain text.
   (use-package overblock-pydoc
     :ensure (overblock-pydoc :host github :repo "MArpogaus/overblock"
                              :branch "dev"
-                             :files ("overblock-pydoc.el")))
+                             :files ("overblock-pydoc.el"))
+    :hook (python-base-mode . overblock-pydoc-mode))
 
   (use-package overblock-pycell
     ;; Four packages live in that repository — the layer, the markup
