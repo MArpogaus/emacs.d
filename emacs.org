@@ -3577,7 +3577,6 @@ Cape provides Completion At Point Extensions which can be used in combination wi
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
 #+begin_src emacs-lisp
   (use-package citar
-    :after nerd-icons
     :custom
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
