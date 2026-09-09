@@ -4621,6 +4621,20 @@ for itself.
     (:map overblock-run-pop-map
           ("C-c C-c" . overblock-run-interrupt)))
 
+  ;; What draws a LaTeX fragment in a rendering: `latex' and `dvisvgm'
+  ;; in a process of its own, one compile per equation, and an SVG that
+  ;; carries neither the colour nor the size — both are given to it when
+  ;; it is drawn, so a theme change and a `text-scale-adjust' cost no
+  ;; LaTeX.  `overblock-md' requires it.
+  ;;
+  ;; Declared with its URL, and before what needs it: the package is on
+  ;; MELPA, and elpaca can only resolve an id from a menu it has
+  ;; fetched — without this it answered "Unable to determine recipe
+  ;; URL", and took every package that requires it down with it.
+  (use-package latex-to-svg-backend
+    :ensure (latex-to-svg-backend
+             :host github :repo "alberti42/latex-to-svg-backend"))
+
   ;; Markup rendered to text: a converter and shr, or a mode's font lock.
   ;; `overblock-md-preview-mode' renders a markdown buffer block by block
   ;; and gives the source back where you click.  On for every markdown
