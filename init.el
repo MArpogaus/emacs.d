@@ -284,6 +284,15 @@ The DWIM behaviour of this command is as follows:
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups)
+  ;; Keep the cache out of the recent files.  This belongs here and not
+  ;; in the `recentf' block: something loads `recentf' before the
+  ;; package queue reaches this package, and the directories were void
+  ;; at that moment.
+  (with-eval-after-load 'recentf
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-var-directory))
+    (add-to-list 'recentf-exclude
+                 (recentf-expand-file-name no-littering-etc-directory)))
   ;; Load customization File
   (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 
