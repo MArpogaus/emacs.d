@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-08
+;; Created: 2026-09-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -52,10 +52,20 @@
   (doom-ayu-light-brighter-comments t)
   :preface
   (defun my/patch-doom-themes (&rest args)
+    "Give the tab bar a foreground it can be read in.
+A doom theme leaves `tab-bar' with the foreground of its own
+background — measured, #f0f0f0 on #f0f0f0 under doom-one-light — so
+everything the row shows that is not a tab is drawn and invisible:
+the clock of `tab-bar-format-global', and any segment beside it."
     (ignore args)
     (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
   :init
-  (advice-add 'load-theme :after #'my/patch-doom-themes))
+  ;; On the hook and not on `load-theme': a theme that comes back
+  ;; through `custom-enabled-themes' at startup, and one auto-dark
+  ;; switches to, are enabled rather than loaded, and the patch never
+  ;; ran for either — the row swallowed the clock in every session
+  ;; that did not load a theme by hand.
+  (add-hook 'enable-theme-functions #'my/patch-doom-themes))
 (use-package ember-theme
   :ensure (:host github :repo "ember-theme/emacs")
   :after doom-themes)
@@ -236,7 +246,10 @@
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
      ;; ((mood-line-segment-misc-info)                                             . " ")
-     ((format-mode-line mode-line-misc-info)                                    . " ")
+     ;; The clock and what a mode pushes beside it ride the tab bar,
+     ;; where `tab-bar-format-global' shows them; a mode line that
+     ;; showed them too said everything twice.
+     ;; ((format-mode-line mode-line-misc-info)                                    . " ")
      ((mood-line-segment-major-mode)                                            . " ")
      ((mood-line-segment-vc)                                                    . " ")
      ((mood-line-segment-checker)                                               . " "))))
@@ -350,8 +363,10 @@
   ;; The new button makes a group, not a tab.
   (modern-tab-bar-new-command #'auto-tab-groups-new-group)
   ;; The tab line looked like this before the package existed: no bar
-  ;; beside a tab.  A width turns one on for the selected tab.
-  (modern-tab-line-active-indicator-width 2)
+  ;; beside a tab.  Two pixels beside the selected one and one beside
+  ;; the rest is what the package defaults to now, so only the colour
+  ;; of the quiet ones is set here.
+  (modern-tab-line-inactive-indicator-color nil)
   (modern-tab-line-indicator-height my/tabline-height)
   :hook
   ;; The rows are mine to turn on; each mode only dresses its row.

@@ -2,7 +2,7 @@
 ;; Copyright (C) 2023-2026 Marcel Arpogaus
 
 ;; Author: Marcel Arpogaus
-;; Created: 2026-09-08
+;; Created: 2026-09-09
 ;; Keywords: configuration
 ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -557,9 +557,12 @@ globalized minor mode stays off in the buffer."
 
 ;; [[https://github.com/polymode/poly-R][poly-R]]
 ;; One buffer, two major modes: markdown for the prose of an =.Rmd= file and
-;; =ess-r-mode= inside every =```{r}= chunk, so indentation, completion and
-;; evaluation are the right ones wherever the point stands.  polymode does
-;; that with an indirect buffer per chunk.
+;; =ess-r-mode= inside every =```{r}= chunk, so the chunks are fontified and
+;; indented as R.  polymode does that with an indirect buffer per chunk,
+;; and would switch to it when the point enters one; =overblock-rmd= below
+;; keeps the buffer in its host mode instead, since the switch carried its
+;; bars and results along and drew them twice.  Evaluation is the
+;; notebook's, on the keys of =overblock-rmd-mode-map=.
 
 ;; =poly-markdown+r-mode= is what an =.Rmd= file wants; the =gfm= variant
 ;; reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=,
