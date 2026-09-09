@@ -246,10 +246,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
      ;; ((mood-line-segment-misc-info)                                             . " ")
-     ;; The clock and what a mode pushes beside it ride the tab bar,
-     ;; where `tab-bar-format-global' shows them; a mode line that
-     ;; showed them too said everything twice.
-     ;; ((format-mode-line mode-line-misc-info)                                    . " ")
+     ;; Misc info is shown in the tab bar.
      ((mood-line-segment-major-mode)                                            . " ")
      ((mood-line-segment-vc)                                                    . " ")
      ((mood-line-segment-checker)                                               . " "))))
