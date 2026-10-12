@@ -769,8 +769,9 @@ one that says what it holds."
                                             "CONDA_PREFIX"
                                           "VIRTUAL_ENV")
                                         "=" env))
-                          process-environment))
-      (my/python-set-interpreter)))
+                          process-environment)))
+    ;; Also without an environment, so the old interpreter goes.
+    (my/python-set-interpreter))
 
   (define-minor-mode my/python-env-mode
     "Give this buffer the Python environment chosen for its project.
