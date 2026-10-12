@@ -2297,18 +2297,18 @@ Revert buffers when the underlying file has changed
     (with-eval-after-load 'transient
       (setopt transient-display-buffer-action
               `(auto-side-windows--display-buffer
-                (side . top))
+                (auto-side-windows-side . top))
               transient-mode-line-format nil))
     (with-eval-after-load 'gptel
       (setopt gptel-display-buffer-action
               '(auto-side-windows--display-buffer
-                (side . right)
+                (auto-side-windows-side . right)
                 (body-function . select-window))))
     (with-eval-after-load 'agent-shell
       (setopt agent-shell-display-action
               '((auto-side-windows--display-buffer)
                 .
-                ((side . right)
+                ((auto-side-windows-side . right)
                  (body-function . select-window)))))
     :hook
     (elpaca-after-init . auto-side-windows-mode))
