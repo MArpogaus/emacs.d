@@ -166,11 +166,7 @@
                    (buttons
                     (propertize
                      (concat (my/side-window-button
-                              ;; `nf-cod-chrome_minimize' and
-                              ;; `nf-cod-close': one hairline family, and
-                              ;; measured at 36 pt the plain pair is not —
-                              ;; `✕' is in no nerd font and arrives from
-                              ;; DejaVu Sans, heavier than the `─' beside it.
+                              ;; One hairline family; the plain `✕' is heavier than `─'.
                               (my/glyph "\uEABA" "─" "hide")
                               "Hide this side window"
                               #'my/side-window-minimize)
@@ -180,8 +176,7 @@
                               "Close this side window and kill its buffers"
                               #'my/side-window-kill))
                      'face face)))
-        ;; The blanks of the row are the panel's too, so the look goes
-        ;; on the faces themselves.
+        ;; The whole row is the panel's, so the faces carry the look.
         (unless my/header-line-faces-overloaded
           (setq-local my/header-line-faces-overloaded t)
           (dolist (name '(header-line header-line-active
@@ -200,9 +195,7 @@
          (propertize badge 'face (append '(:inverse-video t) face)
                      'local-map my/side-window-drag-map
                      'help-echo "Drag to another slot")
-         ;; The buffer's own header brings faces of its own —
-         ;; `magit-header-line' for one — which the remap does not
-         ;; reach: it names the header line faces, not theirs.
+         ;; The remap misses a buffer's own header faces (`magit-header-line').
          (propertize (concat " " own) 'face face)
          ;; window-box moves `right' past the buffer's margin.
          (propertize " " 'display `(space :align-to
@@ -220,9 +213,7 @@
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 
-  ;; A jump shows its target through `display-buffer' under the
-  ;; `xref-jump' category.  The definition is what the jump is for, so it
-  ;; lands in an ordinary window and never in a panel.
+  ;; Xref targets go to an ordinary window, never to a panel.
   (display-buffer-alist
    '(((category . xref-jump)
       (display-buffer-reuse-window display-buffer-use-some-window)
@@ -231,9 +222,7 @@
   ;; Reuse on the left: dirvish kills the window of the old listing.
   (auto-side-windows-reuse-mode-window '((left . t)))
 
-  ;; The package ships no taste of its own, so the panels get theirs
-  ;; here: a side window is not a place to land in with `other-window',
-  ;; and it wears neither a tab line nor a mode line.
+  ;; Panels: no `other-window', no tab line, no mode line.
   (auto-side-windows-common-window-parameters '((no-other-window . t)
                                                 (tab-line-format . none)
                                                 (mode-line-format . none)))
@@ -245,8 +234,6 @@
   (auto-side-windows-right-width 80)
 
   ;; Top side window configurations
-  ;; The size of a side is its own option now; the alists carry the
-  ;; rest of the action.
   (auto-side-windows-top-height 15)
   (auto-side-windows-top-buffer-names
    '("^CAPTURE-.*\\.org$"
@@ -580,10 +567,7 @@ buffer's text scale."
          (put cmd 'repeat-map (unless unset keymap))))
      (symbol-value keymap)))
   :config
-  ;; `repeat-mode' offers the echo area or a mode-line indicator to say
-  ;; which keys repeat; a which-key popup says it better, and
-  ;; `repeat-echo-function' is where repeat.el asks for one.  It comes
-  ;; with the map while a chain is on and with nil once it ends.
+  ;; which-key shows the repeat keys via `repeat-echo-function'.
   (with-eval-after-load 'which-key
     (setopt repeat-echo-function
             (lambda (keymap)
@@ -682,9 +666,7 @@ buffer's text scale."
   :custom
   (window-resize-pixelwise t)   ; Resize windows pixelwise
   (frame-resize-pixelwise t)    ; Resize frame pixelwise
-  ;; `kill-buffer' hands the window to `quit-restore-window', so killing
-  ;; a buffer undoes the display that showed it instead of leaving the
-  ;; window behind with something arbitrary in it.
+  ;; Killing a buffer restores the window from before it was shown.
   (kill-buffer-quit-windows t)
   ;; And `q' kills the buffers that are worth nothing once read.
   (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
@@ -722,9 +704,7 @@ buffer's text scale."
 (use-package window-box
   :ensure (:host github :repo "MArpogaus/window-box")
   :custom
-  ;; The header line and the mode line inside the box, a tab line
-  ;; outside it: `window-box-encloses' was one set of rows and is now
-  ;; these two, so that the inside cannot be asked for in pieces.
+  ;; Header and mode line inside the box, tab line outside.
   (window-box-enclose-top 'header-line)
   (window-box-enclose-mode-line t)
   ;; Box side windows, whatever buffer they show.

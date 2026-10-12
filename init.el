@@ -59,9 +59,7 @@
 
   ;; Smoother scrolling
   ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
-  ;; 100 and not 101: above 100 redisplay may never recenter, and over
-  ;; two display blocks taller than the window (overblock-pycell results) it then
-  ;; hands the window from one block to the other endlessly.
+  ;; Not 101: above 100, blocks taller than the window make redisplay loop.
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
@@ -182,8 +180,7 @@
   (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
   (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-  ;; These two are bound into from a different module than the one that
-  ;; configures them, so they have to exist before any module loads.
+  ;; Bound from other modules, so they exist before any module loads.
   (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
   (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
@@ -285,10 +282,7 @@ The DWIM behaviour of this command is as follows:
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups)
-  ;; Keep the cache out of the recent files.  This belongs here and not
-  ;; in the `recentf' block: something loads `recentf' before the
-  ;; package queue reaches this package, and the directories were void
-  ;; at that moment.
+  ;; Here and not in `recentf', which loads before these paths exist.
   (with-eval-after-load 'recentf
     (add-to-list 'recentf-exclude
                  (recentf-expand-file-name no-littering-var-directory))

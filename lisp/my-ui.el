@@ -60,11 +60,8 @@ the clock of `tab-bar-format-global', and any segment beside it."
     (ignore args)
     (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
   :init
-  ;; On the hook and not on `load-theme': a theme that comes back
-  ;; through `custom-enabled-themes' at startup, and one auto-dark
-  ;; switches to, are enabled rather than loaded, and the patch never
-  ;; ran for either — the row swallowed the clock in every session
-  ;; that did not load a theme by hand.
+  ;; On the hook, not on `load-theme': restored and auto-dark themes
+  ;; are only enabled.
   (add-hook 'enable-theme-functions #'my/patch-doom-themes))
 (use-package ember-theme
   :ensure (:host github :repo "ember-theme/emacs")
@@ -318,8 +315,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
 (use-package modern-tab
   :ensure (modern-tab :host github :repo "MArpogaus/modern-tab")
   :custom
-  ;; The same word the panel header goes by: without it both rows of
-  ;; tabs fall back to their plain candidates in a terminal.
+  ;; Without it, the tab rows use plain glyphs in a terminal.
   (modern-tab-terminal-glyphs my/terminal-glyphs)
   ;; The bar beside a tab group, as high as the mode line.
   (modern-tab-bar-indicator-height my/modeline-height)
@@ -339,10 +335,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
        group-name)))
   ;; The new button makes a group, not a tab.
   (modern-tab-bar-new-command #'auto-tab-groups-new-group)
-  ;; The tab line looked like this before the package existed: no bar
-  ;; beside a tab.  Two pixels beside the selected one and one beside
-  ;; the rest is what the package defaults to now, so only the colour
-  ;; of the quiet ones is set here.
+  ;; Only the colour of inactive indicators differs from the default.
   (modern-tab-line-inactive-indicator-color nil)
   (modern-tab-line-indicator-height my/tabline-height)
   :hook

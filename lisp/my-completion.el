@@ -166,9 +166,7 @@
          ("M-r"                                 . consult-history))            ;; orig. previous-matching-history-element
 
   :custom
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
+  ;; Nicer register previews.
   (register-preview-delay 0.5)
   (register-preview-function #'consult-register-format)
 
@@ -276,9 +274,7 @@
    ("SPC"       . corfu-insert-separator)
    ("<escape>"  . corfu-quit))
   :hook
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since Dabbrev can be used globally (M-/).
-  ;; See also `corfu-exclude-modes'.
+  ;; Corfu everywhere; see also `corfu-exclude-modes'.
   ((elpaca-after-init . global-corfu-mode)
    (elpaca-after-init . corfu-popupinfo-mode)
    (elpaca-after-init . corfu-echo-mode)
@@ -324,9 +320,8 @@
   ;; Optionally replace the key help with a completing-read interface
   (prefix-help-command #'embark-prefix-help-command)
   :preface
-  ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
-  ;; Users desiring a more compact display can use which-key instead with the following configuration:
-  ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
+  ;; which-key as action menu:
+  ;; https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
   (defun my/embark-which-key-indicator ()
     "An embark indicator that displays keymaps using which-key.
     The which-key help message will show the type and value of the
@@ -463,13 +458,7 @@
   :preface
   ;; Setup completion at point
   (defun my/tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
+    ;; `tempel-expand' before the mode's capf, so it is tried first.
     (setq-local completion-at-point-functions
                 (cons #'tempel-complete
                       completion-at-point-functions)))
@@ -528,9 +517,7 @@
   :config
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
   (require 'vertico-directory)
-  ;; NOTE: `<return>' in `vertico-map' is bound by embark to
-  ;; `my/embark-act-or-vertico-enter', which falls back to
-  ;; `vertico-directory-enter'.
+  ;; <return> in `vertico-map' is `my/embark-act-or-vertico-enter'.
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
    (elpaca-after-init . vertico-mode)))

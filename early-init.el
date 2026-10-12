@@ -23,9 +23,7 @@
 
 ;; Configure Byte Compile
 
-;; In noninteractive sessions, prioritize non-byte-compiled source files to
-;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
-;; to skip the mtime checks on every *.elc file.
+;; Prefer sources when noninteractive; skip mtime checks otherwise.
 (setq load-prefer-newer t)
 
 ;; Ensure JIT compilation is enabled for improved performance by
@@ -46,15 +44,11 @@
 ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
 (setq auto-mode-case-fold nil)
 
-;; PERF: Disable bidirectional text scanning for a modest performance boost.
-;;   I've set this to `nil' in the past, but the `bidi-display-reordering's docs
-;;   say that is an undefined state and suggest this to be just as good:
+;; PERF: no bidirectional text scanning.
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
 
-;; PERF: Disabling BPA makes redisplay faster, but might produce incorrect
-;;   reordering of bidirectional text with embedded parentheses (and other
-;;   bracket characters whose 'paired-bracket' Unicode property is non-nil).
+;; PERF: faster redisplay, bidi text in brackets may reorder wrongly.
 (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
 
 ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
@@ -65,17 +59,10 @@
 ;; Don't ping things that look like domain names.
 (setq ffap-machine-p-known 'reject)
 
-;; Font compacting can be terribly expensive, especially for rendering icon
-;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
-;; hasn't been determined, but do it anyway, just in case. This increases memory
-;; usage, however!
+;; Font compacting is expensive for icon fonts; this costs memory.
 (setq inhibit-compacting-font-caches t)
 
-;; PGTK builds only: this timeout adds latency to frame operations, like
-;; `make-frame-invisible', which are frequently called without a guard because
-;; it's inexpensive in non-PGTK builds. Lowering the timeout from the default
-;; 0.1 should make childframes and packages that manipulate them (like `lsp-ui',
-;; `company-box', and `posframe') feel much snappier. See emacs-lsp/lsp-ui#613.
+;; PGTK: a lower timeout makes child frames snappier (lsp-ui#613).
 (when (boundp 'pgtk-wait-for-event-timeout)
   (setq pgtk-wait-for-event-timeout 0.001))
 
@@ -88,8 +75,7 @@
 (add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
-;; An error before elpaca is done would leave an invisible Emacs, so
-;; whatever happened, the frame is shown after a while.
+;; Show the frame after a while, even if init failed.
 (add-hook 'after-init-hook
           (lambda ()
             (run-at-time 15 nil (lambda ()
@@ -100,9 +86,8 @@
 ;; This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 
 (defvar elpaca-installer-version 0.12)
-;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
-;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
-;; built-in packages by itself.  31.1 was released on 2026-08-24.
+;; This build has no `emacs-build-time', so elpaca cannot date its
+;; built-in packages.  31.1 was released on 2026-08-24.
 (defvar elpaca-core-date '(20260824))
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -195,14 +180,10 @@
                      (float-time (time-subtract elpaca-after-init-time before-init-time))
                      gcs-done)) 99)
 
-;; Resizing the Emacs frame can be a terribly expensive part of changing the
-;; font. By inhibiting this, we easily halve startup times with fonts that are
-;; larger than the system default.
+;; Halves startup time with fonts larger than the system default.
 (setq frame-inhibit-implied-resize t)
 
-;; Ignore X resources; its settings would be redundant with the other settings
-;; in this file and can conflict with later config (particularly where the
-;; cursor color is concerned).
+;; X resources would conflict with this configuration.
 (advice-add #'x-apply-session-resources :override #'ignore)
 
 ;; remove "for information about gnu emacs..." message at startup
@@ -221,16 +202,12 @@
 ;; Ignore warnings about "existing variables being aliased".
 (setq warning-suppress-types '((defvaralias)))
 
-;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
-;; loaded by Emacs will run through this list to check for a proper handler for
-;; the file, but during startup, it won’t need any of them.
+;; No file handler is needed during startup.
 (defvar file-name-handler-alist-old file-name-handler-alist)
 (setq file-name-handler-alist nil)
 (add-hook 'emacs-startup-hook
           (lambda ()
-            ;; Handlers registered while Emacs started (tramp, for one) are in
-            ;; the list now, so put the old ones back beside them rather than
-            ;; over them.
+            ;; Keep the handlers registered during startup (tramp).
             (setq file-name-handler-alist
                   (delete-dups (append file-name-handler-alist
                                        file-name-handler-alist-old)))))
@@ -263,8 +240,7 @@ A terminal draws with the font of the terminal and has none of its own
 to set, so nothing happens there.  A graphic display that has no such
 family keeps its default font and says so."
   (when (and (display-graphic-p)
-             ;; Once per session: the entry below is what says it was
-             ;; asked and answered.
+             ;; Asked once per session.
              (not (assq 'font default-frame-alist)))
     (if (find-font (font-spec :family family))
         (progn

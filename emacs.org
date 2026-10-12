@@ -174,9 +174,7 @@ It has to happen here rather than in =init.el=, because =no-littering= is an =el
 #+end_src
 *** Configure Byte Compile
 #+begin_src emacs-lisp
-  ;; In noninteractive sessions, prioritize non-byte-compiled source files to
-  ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
-  ;; to skip the mtime checks on every *.elc file.
+  ;; Prefer sources when noninteractive; skip mtime checks otherwise.
   (setq load-prefer-newer t)
 
   ;; Ensure JIT compilation is enabled for improved performance by
@@ -197,15 +195,11 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
   (setq auto-mode-case-fold nil)
 
-  ;; PERF: Disable bidirectional text scanning for a modest performance boost.
-  ;;   I've set this to `nil' in the past, but the `bidi-display-reordering's docs
-  ;;   say that is an undefined state and suggest this to be just as good:
+  ;; PERF: no bidirectional text scanning.
   (setq-default bidi-display-reordering 'left-to-right
                 bidi-paragraph-direction 'left-to-right)
 
-  ;; PERF: Disabling BPA makes redisplay faster, but might produce incorrect
-  ;;   reordering of bidirectional text with embedded parentheses (and other
-  ;;   bracket characters whose 'paired-bracket' Unicode property is non-nil).
+  ;; PERF: faster redisplay, bidi text in brackets may reorder wrongly.
   (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
 
   ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
@@ -216,17 +210,10 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   ;; Don't ping things that look like domain names.
   (setq ffap-machine-p-known 'reject)
 
-  ;; Font compacting can be terribly expensive, especially for rendering icon
-  ;; fonts on Windows. Whether disabling it has a notable affect on Linux and Mac
-  ;; hasn't been determined, but do it anyway, just in case. This increases memory
-  ;; usage, however!
+  ;; Font compacting is expensive for icon fonts; this costs memory.
   (setq inhibit-compacting-font-caches t)
 
-  ;; PGTK builds only: this timeout adds latency to frame operations, like
-  ;; `make-frame-invisible', which are frequently called without a guard because
-  ;; it's inexpensive in non-PGTK builds. Lowering the timeout from the default
-  ;; 0.1 should make childframes and packages that manipulate them (like `lsp-ui',
-  ;; `company-box', and `posframe') feel much snappier. See emacs-lsp/lsp-ui#613.
+  ;; PGTK: a lower timeout makes child frames snappier (lsp-ui#613).
   (when (boundp 'pgtk-wait-for-event-timeout)
     (setq pgtk-wait-for-event-timeout 0.001))
 
@@ -239,8 +226,7 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   (add-to-list 'initial-frame-alist (cons 'visibility init-file-debug))
   (add-to-list 'initial-frame-alist '(fullscreen . maximized))
   (add-hook 'elpaca-after-init-hook #'make-frame-visible 98)
-  ;; An error before elpaca is done would leave an invisible Emacs, so
-  ;; whatever happened, the frame is shown after a while.
+  ;; Show the frame after a while, even if init failed.
   (add-hook 'after-init-hook
             (lambda ()
               (run-at-time 15 nil (lambda ()
@@ -251,9 +237,8 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.12)
-  ;; Emacs 31.1 is newer than elpaca's table of release dates, and this build
-  ;; has `emacs-build-time' nil (reproducible build), so elpaca cannot date the
-  ;; built-in packages by itself.  31.1 was released on 2026-08-24.
+  ;; This build has no `emacs-build-time', so elpaca cannot date its
+  ;; built-in packages.  31.1 was released on 2026-08-24.
   (defvar elpaca-core-date '(20260824))
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -346,14 +331,10 @@ The following optimizations have been inspired by:
                        (float-time (time-subtract elpaca-after-init-time before-init-time))
                        gcs-done)) 99)
 
-  ;; Resizing the Emacs frame can be a terribly expensive part of changing the
-  ;; font. By inhibiting this, we easily halve startup times with fonts that are
-  ;; larger than the system default.
+  ;; Halves startup time with fonts larger than the system default.
   (setq frame-inhibit-implied-resize t)
 
-  ;; Ignore X resources; its settings would be redundant with the other settings
-  ;; in this file and can conflict with later config (particularly where the
-  ;; cursor color is concerned).
+  ;; X resources would conflict with this configuration.
   (advice-add #'x-apply-session-resources :override #'ignore)
 
   ;; remove "for information about gnu emacs..." message at startup
@@ -372,16 +353,12 @@ The following optimizations have been inspired by:
   ;; Ignore warnings about "existing variables being aliased".
   (setq warning-suppress-types '((defvaralias)))
 
-  ;; Unset `file-name-handler-alist' too (temporarily). Every file opened and
-  ;; loaded by Emacs will run through this list to check for a proper handler for
-  ;; the file, but during startup, it won’t need any of them.
+  ;; No file handler is needed during startup.
   (defvar file-name-handler-alist-old file-name-handler-alist)
   (setq file-name-handler-alist nil)
   (add-hook 'emacs-startup-hook
             (lambda ()
-              ;; Handlers registered while Emacs started (tramp, for one) are in
-              ;; the list now, so put the old ones back beside them rather than
-              ;; over them.
+              ;; Keep the handlers registered during startup (tramp).
               (setq file-name-handler-alist
                     (delete-dups (append file-name-handler-alist
                                          file-name-handler-alist-old)))))
@@ -414,8 +391,7 @@ nothing for the graphic frame an =emacsclient -c= brings later.
   to set, so nothing happens there.  A graphic display that has no such
   family keeps its default font and says so."
     (when (and (display-graphic-p)
-               ;; Once per session: the entry below is what says it was
-               ;; asked and answered.
+               ;; Asked once per session.
                (not (assq 'font default-frame-alist)))
       (if (find-font (font-spec :family family))
           (progn
@@ -523,9 +499,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
 
     ;; Smoother scrolling
     ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
-    ;; 100 and not 101: above 100 redisplay may never recenter, and over
-    ;; two display blocks taller than the window (overblock-pycell results) it then
-    ;; hands the window from one block to the other endlessly.
+    ;; Not 101: above 100, blocks taller than the window make redisplay loop.
     (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
     (scroll-preserve-screen-position t)                ; Don't move point when scrolling
     (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
@@ -646,8 +620,7 @@ Package specific keymap definitions are kept in preface of the respective packag
     (defvar my/open-map (make-sparse-keymap) "key-map for open commands")
     (defvar my/toggle-map (make-sparse-keymap) "key-map for toggle commands")
     (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
-    ;; These two are bound into from a different module than the one that
-    ;; configures them, so they have to exist before any module loads.
+    ;; Bound from other modules, so they exist before any module loads.
     (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
     (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
     ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
@@ -750,10 +723,7 @@ Use no-littering to automatically set common paths to the new user-emacs-directo
     :config
     ;; store backup and auto-save files in =no-littering-var-directory=
     (no-littering-theme-backups)
-    ;; Keep the cache out of the recent files.  This belongs here and not
-    ;; in the `recentf' block: something loads `recentf' before the
-    ;; package queue reaches this package, and the directories were void
-    ;; at that moment.
+    ;; Here and not in `recentf', which loads before these paths exist.
     (with-eval-after-load 'recentf
       (add-to-list 'recentf-exclude
                    (recentf-expand-file-name no-littering-var-directory))
@@ -1592,11 +1562,8 @@ Enable line numbers for some modes
       (ignore args)
       (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
     :init
-    ;; On the hook and not on `load-theme': a theme that comes back
-    ;; through `custom-enabled-themes' at startup, and one auto-dark
-    ;; switches to, are enabled rather than loaded, and the patch never
-    ;; ran for either — the row swallowed the clock in every session
-    ;; that did not load a theme by hand.
+    ;; On the hook, not on `load-theme': restored and auto-dark themes
+    ;; are only enabled.
     (add-hook 'enable-theme-functions #'my/patch-doom-themes))
   (use-package ember-theme
     :ensure (:host github :repo "ember-theme/emacs")
@@ -1870,8 +1837,7 @@ and a second =:ensure= of the same id is a duplicate it warns about.
   (use-package modern-tab
     :ensure (modern-tab :host github :repo "MArpogaus/modern-tab")
     :custom
-    ;; The same word the panel header goes by: without it both rows of
-    ;; tabs fall back to their plain candidates in a terminal.
+    ;; Without it, the tab rows use plain glyphs in a terminal.
     (modern-tab-terminal-glyphs my/terminal-glyphs)
     ;; The bar beside a tab group, as high as the mode line.
     (modern-tab-bar-indicator-height my/modeline-height)
@@ -1891,10 +1857,7 @@ and a second =:ensure= of the same id is a duplicate it warns about.
          group-name)))
     ;; The new button makes a group, not a tab.
     (modern-tab-bar-new-command #'auto-tab-groups-new-group)
-    ;; The tab line looked like this before the package existed: no bar
-    ;; beside a tab.  Two pixels beside the selected one and one beside
-    ;; the rest is what the package defaults to now, so only the colour
-    ;; of the quiet ones is set here.
+    ;; Only the colour of inactive indicators differs from the default.
     (modern-tab-line-inactive-indicator-color nil)
     (modern-tab-line-indicator-height my/tabline-height)
     :hook
@@ -2107,11 +2070,7 @@ Revert buffers when the underlying file has changed
                      (buttons
                       (propertize
                        (concat (my/side-window-button
-                                ;; `nf-cod-chrome_minimize' and
-                                ;; `nf-cod-close': one hairline family, and
-                                ;; measured at 36 pt the plain pair is not —
-                                ;; `✕' is in no nerd font and arrives from
-                                ;; DejaVu Sans, heavier than the `─' beside it.
+                                ;; One hairline family; the plain `✕' is heavier than `─'.
                                 (my/glyph "\uEABA" "─" "hide")
                                 "Hide this side window"
                                 #'my/side-window-minimize)
@@ -2121,8 +2080,7 @@ Revert buffers when the underlying file has changed
                                 "Close this side window and kill its buffers"
                                 #'my/side-window-kill))
                        'face face)))
-          ;; The blanks of the row are the panel's too, so the look goes
-          ;; on the faces themselves.
+          ;; The whole row is the panel's, so the faces carry the look.
           (unless my/header-line-faces-overloaded
             (setq-local my/header-line-faces-overloaded t)
             (dolist (name '(header-line header-line-active
@@ -2141,9 +2099,7 @@ Revert buffers when the underlying file has changed
            (propertize badge 'face (append '(:inverse-video t) face)
                        'local-map my/side-window-drag-map
                        'help-echo "Drag to another slot")
-           ;; The buffer's own header brings faces of its own —
-           ;; `magit-header-line' for one — which the remap does not
-           ;; reach: it names the header line faces, not theirs.
+           ;; The remap misses a buffer's own header faces (`magit-header-line').
            (propertize (concat " " own) 'face face)
            ;; window-box moves `right' past the buffer's margin.
            (propertize " " 'display `(space :align-to
@@ -2161,9 +2117,7 @@ Revert buffers when the underlying file has changed
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
-    ;; A jump shows its target through `display-buffer' under the
-    ;; `xref-jump' category.  The definition is what the jump is for, so it
-    ;; lands in an ordinary window and never in a panel.
+    ;; Xref targets go to an ordinary window, never to a panel.
     (display-buffer-alist
      '(((category . xref-jump)
         (display-buffer-reuse-window display-buffer-use-some-window)
@@ -2172,9 +2126,7 @@ Revert buffers when the underlying file has changed
     ;; Reuse on the left: dirvish kills the window of the old listing.
     (auto-side-windows-reuse-mode-window '((left . t)))
 
-    ;; The package ships no taste of its own, so the panels get theirs
-    ;; here: a side window is not a place to land in with `other-window',
-    ;; and it wears neither a tab line nor a mode line.
+    ;; Panels: no `other-window', no tab line, no mode line.
     (auto-side-windows-common-window-parameters '((no-other-window . t)
                                                   (tab-line-format . none)
                                                   (mode-line-format . none)))
@@ -2186,8 +2138,6 @@ Revert buffers when the underlying file has changed
     (auto-side-windows-right-width 80)
 
     ;; Top side window configurations
-    ;; The size of a side is its own option now; the alists carry the
-    ;; rest of the action.
     (auto-side-windows-top-height 15)
     (auto-side-windows-top-buffer-names
      '("^CAPTURE-.*\\.org$"
@@ -2534,10 +2484,7 @@ Enable repeat maps
            (put cmd 'repeat-map (unless unset keymap))))
        (symbol-value keymap)))
     :config
-    ;; `repeat-mode' offers the echo area or a mode-line indicator to say
-    ;; which keys repeat; a which-key popup says it better, and
-    ;; `repeat-echo-function' is where repeat.el asks for one.  It comes
-    ;; with the map while a chain is on and with nil once it ends.
+    ;; which-key shows the repeat keys via `repeat-echo-function'.
     (with-eval-after-load 'which-key
       (setopt repeat-echo-function
               (lambda (keymap)
@@ -2636,9 +2583,7 @@ rotates the windows through it.
     :custom
     (window-resize-pixelwise t)   ; Resize windows pixelwise
     (frame-resize-pixelwise t)    ; Resize frame pixelwise
-    ;; `kill-buffer' hands the window to `quit-restore-window', so killing
-    ;; a buffer undoes the display that showed it instead of leaving the
-    ;; window behind with something arbitrary in it.
+    ;; Killing a buffer restores the window from before it was shown.
     (kill-buffer-quit-windows t)
     ;; And `q' kills the buffers that are worth nothing once read.
     (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
@@ -2676,9 +2621,7 @@ the edges the window does not have.
   (use-package window-box
     :ensure (:host github :repo "MArpogaus/window-box")
     :custom
-    ;; The header line and the mode line inside the box, a tab line
-    ;; outside it: `window-box-encloses' was one set of rows and is now
-    ;; these two, so that the inside cannot be asked for in pieces.
+    ;; Header and mode line inside the box, tab line outside.
     (window-box-enclose-top 'header-line)
     (window-box-enclose-mode-line t)
     ;; Box side windows, whatever buffer they show.
@@ -3724,9 +3667,7 @@ Additional featureful completion commands.
            ("M-r"                                 . consult-history))            ;; orig. previous-matching-history-element
 
     :custom
-    ;; Optionally configure the register formatting. This improves the register
-    ;; preview for `consult-register', `consult-register-load',
-    ;; `consult-register-store' and the Emacs built-ins.
+    ;; Nicer register previews.
     (register-preview-delay 0.5)
     (register-preview-function #'consult-register-format)
 
@@ -3834,9 +3775,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      ("SPC"       . corfu-insert-separator)
      ("<escape>"  . corfu-quit))
     :hook
-    ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since Dabbrev can be used globally (M-/).
-    ;; See also `corfu-exclude-modes'.
+    ;; Corfu everywhere; see also `corfu-exclude-modes'.
     ((elpaca-after-init . global-corfu-mode)
      (elpaca-after-init . corfu-popupinfo-mode)
      (elpaca-after-init . corfu-echo-mode)
@@ -3882,9 +3821,8 @@ Embark makes it easy to choose a command to run based on what is near point, bot
     ;; Optionally replace the key help with a completing-read interface
     (prefix-help-command #'embark-prefix-help-command)
     :preface
-    ;; The built-in embark-verbose-indicator displays actions in a buffer along with their keybindings and the first line of their docstrings.
-    ;; Users desiring a more compact display can use which-key instead with the following configuration:
-    ;; ref.: https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
+    ;; which-key as action menu:
+    ;; https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
     (defun my/embark-which-key-indicator ()
       "An embark indicator that displays keymaps using which-key.
       The which-key help message will show the type and value of the
@@ -4021,13 +3959,7 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
     :preface
     ;; Setup completion at point
     (defun my/tempel-setup-capf ()
-      ;; Add the Tempel Capf to `completion-at-point-functions'.
-      ;; `tempel-expand' only triggers on exact matches. Alternatively use
-      ;; `tempel-complete' if you want to see all matches, but then you
-      ;; should also configure `tempel-trigger-prefix', such that Tempel
-      ;; does not trigger too often when you don't expect it. NOTE: We add
-      ;; `tempel-expand' *before* the main programming mode Capf, such
-      ;; that it will be tried first.
+      ;; `tempel-expand' before the mode's capf, so it is tried first.
       (setq-local completion-at-point-functions
                   (cons #'tempel-complete
                         completion-at-point-functions)))
@@ -4086,9 +4018,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     :config
     (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
     (require 'vertico-directory)
-    ;; NOTE: `<return>' in `vertico-map' is bound by embark to
-    ;; `my/embark-act-or-vertico-enter', which falls back to
-    ;; `vertico-directory-enter'.
+    ;; <return> in `vertico-map' is `my/embark-act-or-vertico-enter'.
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
      (elpaca-after-init . vertico-mode)))
@@ -4247,9 +4177,7 @@ Tab group based workflow isolation.
         . "denote")
        ((custom-buffer-create custom-buffer-create-other-window) . "customize")
        ((dirvish dirvish-fd) . "dirvish")))
-    ;; `:always-close' closes the group whatever the command answered;
-    ;; a create rule's flag is `:before-command', which is about when
-    ;; the group is made rather than about the answer.
+    ;; `:always-close': close whatever the command returns.
     (auto-tab-groups-close-commands
      '((dirvish-quit "dirvish" :always-close t)
        (my/kill-denote-buffers "denote" :always-close t)
@@ -4297,8 +4225,7 @@ Enhancements to Emacs' built in project library.
                  '(project-x-window-state-load "Restore windows" ?j) t)
     (add-hook 'project-find-functions 'project-x-try-local 90)
     :config
-    ;; Here and not in `:init': from there the hook loaded the package at
-    ;; quit, for a state it had never written.
+    ;; Not in `:init': there the hook loaded the package at quit.
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 #+end_src
 **** speedbar :build_in:
@@ -4534,10 +4461,7 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
     :init
     (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
     :config
-    ;; code-cells' own C-c % prefix map declares `:repeat t', claiming the
-    ;; repeat-map property of the very commands bound in our repeat map when
-    ;; the package loads.  Drop that prefix and re-assert our map, so the
-    ;; repeat chain and `SPC j' stay one and the same.
+    ;; code-cells' C-c % map claims the repeat-map of our commands.
     (keymap-unset code-cells-mode-map "C-c %" t)
     (my/repeatize-keymap 'code-cells--prefix-map t)
     (my/repeatize-keymap 'my/code-cells-repeat-map)
@@ -4552,10 +4476,7 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
           ;; navigation
           ("C-<up>"       . code-cells-backward-cell)
           ("C-<down>"     . code-cells-forward-cell)
-          ;; cell structure.  overblock-pycell's move and not code-cells' own:
-          ;; the latter transposes the two regions, and
-          ;; `transpose-regions' leaves an overlay where the text used
-          ;; to be, so the result of one cell lands under the other.
+          ;; cell structure; code-cells' move leaves results behind
           ("M-S-<up>"     . overblock-pycell-move-cell-up)
           ("M-S-<down>"   . overblock-pycell-move-cell-down)
           ;; outline
@@ -4563,13 +4484,9 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
           ("M-S-<left>"   . outline-promote)
           ("C-S-<tab>"    . outline-cycle-buffer)
           ("C-<backtab>"  . outline-cycle-buffer)
-          ;; interrupt, under the C-c prefix like in the REPL; reachable as
-          ;; C-p C-c through standard-keys' dynamic prefix, and as plain
-          ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
+          ;; interrupt; shadows `python-shell-send-buffer'
           ("C-c C-c"      . overblock-run-interrupt)
-          ;; "command mode" à la JupyterLab: any entry key activates the
-          ;; repeat map, single keys then chain until a foreign key exits.
-          ;; The same map hangs off the leader as `SPC j'.
+          ;; JupyterLab-like command mode, also on `SPC j'
           :map my/code-cells-repeat-map
           ("n" . code-cells-forward-cell)
           ("p" . code-cells-backward-cell)
@@ -4950,16 +4867,11 @@ Emacs Speaks Statistics: ESS.
            ("\\.[rR]nw\\'" . Rnw-mode)
            ("\\.jl\\'" . julia-mode))
     :custom
-    ;; Start R where the file is.  Asking for a directory every time is
-    ;; a question with one sensible answer, and it comes up again on
-    ;; every restart — including the ones a notebook asks for.
+    ;; Start R in the file's directory without asking.
     (ess-ask-for-ess-directory nil)
-    ;; Show what is sent, but do not wait for the echo: a long
-    ;; evaluation with this at t holds Emacs until R has printed every
-    ;; line of it.
+    ;; Do not wait for the echo: a long evaluation would block Emacs.
     (ess-eval-visibly 'nowait)
-    ;; No workspace written on exit and none read on start, so a session
-    ;; begins with what the file says and nothing else.
+    ;; No workspace written on exit or read on start.
     (inferior-R-args "--no-save --no-restore-data")
     :config
     (require 'ess-site))
@@ -4983,13 +4895,10 @@ by [[https://github.com/MArpogaus/overblock][overblock-rmd]], further down.
     :after (ess markdown-mode)
     :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
     :custom
-    ;; A chunk's own process buffer is worth seeing when it errors; the
-    ;; output *file* of a weave is not — it opens in the browser or the
-    ;; PDF viewer on its own.
+    ;; Show a chunk's process buffer on error, not the woven file.
     (polymode-display-output-file nil)
     (polymode-display-process-buffers t)
-    ;; An unmodified chunk is not re-exported: a weave of a long document
-    ;; is minutes, and most of it has not changed.
+    ;; Do not re-export unmodified chunks.
     (polymode-skip-processing-when-unmodified t))
 #+end_src
 **** [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
@@ -5023,14 +4932,12 @@ folding needs no package of its own.
   (use-package hideshow
     :ensure nil
     :custom
-    ;; Say how much a fold swallowed.  The indicators stay off: they draw
-    ;; in the fringe, where diff-hl already draws.
+    ;; Show the size of a fold; no fringe indicators, diff-hl is there.
     (hs-display-lines-hidden t)
     :bind
     (:map hs-minor-mode-map
           ("<backtab>" . hs-cycle))
-    ;; YAML folds by indentation with `outline-indent', which is the one
-    ;; folding UI that buffer needs.
+    ;; YAML folds with `outline-indent'.
     :hook
     ((prog-mode conf-mode) . hs-minor-mode))
 #+end_src
@@ -5215,9 +5122,7 @@ and takes precedence over the choice made with the command.
           ("C-c V" . my/python-env-deactivate))
     :init
     (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
-    ;; The directory-local variables are read after the major mode is set, so
-    ;; this is the first point at which `my/python-env-path' can be seen.  The
-    ;; mode function applies again where it is already on.
+    ;; Directory-local variables are read after the major mode is set.
     (add-hook 'hack-local-variables-hook #'my/python-env-mode)
     ;; These start their processes in a temp buffer, which inherits none of the
     ;; environment of the buffer the command was called from.
@@ -5225,9 +5130,7 @@ and takes precedence over the choice made with the command.
                                      compile org-babel-eval))
       (advice-add command :around #'inheritenv-apply))
     :config
-    ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
-    ;; only becomes project-local at the latter point.  `ben' skips its hook in
-    ;; buffers without an `.envrc', hence both.
+    ;; Also after `ben' applies a direnv: only then is `exec-path' local.
     (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
     (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 #+end_src
@@ -5311,9 +5214,7 @@ Meow is yet another modal editing mode for Emacs.
             (append meow-mode-state-list '((comint-mode . insert)
                                            (eshell-mode . insert)
                                            (vterm-mode  . insert))))
-    ;; HACK: meow disables `delete-active-region' for some reasons i dont konw
-    ;;       about. we restore its value immediately after that hoping to not get
-    ;;       any major issues.
+    ;; HACK: meow disables `delete-active-region'; restore it.
     (advice-add #'meow--enable-shims :after
                 (lambda nil (setq delete-active-region meow--backup-var-delete-activate-region)))
     :bind

@@ -29,9 +29,7 @@
       . "denote")
      ((custom-buffer-create custom-buffer-create-other-window) . "customize")
      ((dirvish dirvish-fd) . "dirvish")))
-  ;; `:always-close' closes the group whatever the command answered;
-  ;; a create rule's flag is `:before-command', which is about when
-  ;; the group is made rather than about the answer.
+  ;; `:always-close': close whatever the command returns.
   (auto-tab-groups-close-commands
    '((dirvish-quit "dirvish" :always-close t)
      (my/kill-denote-buffers "denote" :always-close t)
@@ -79,8 +77,7 @@
                '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
   :config
-  ;; Here and not in `:init': from there the hook loaded the package at
-  ;; quit, for a state it had never written.
+  ;; Not in `:init': there the hook loaded the package at quit.
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:

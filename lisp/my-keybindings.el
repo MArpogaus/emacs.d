@@ -33,9 +33,7 @@
           (append meow-mode-state-list '((comint-mode . insert)
                                          (eshell-mode . insert)
                                          (vterm-mode  . insert))))
-  ;; HACK: meow disables `delete-active-region' for some reasons i dont konw
-  ;;       about. we restore its value immediately after that hoping to not get
-  ;;       any major issues.
+  ;; HACK: meow disables `delete-active-region'; restore it.
   (advice-add #'meow--enable-shims :after
               (lambda nil (setq delete-active-region meow--backup-var-delete-activate-region)))
   :bind

@@ -139,10 +139,7 @@
   :init
   (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
   :config
-  ;; code-cells' own C-c % prefix map declares `:repeat t', claiming the
-  ;; repeat-map property of the very commands bound in our repeat map when
-  ;; the package loads.  Drop that prefix and re-assert our map, so the
-  ;; repeat chain and `SPC j' stay one and the same.
+  ;; code-cells' C-c % map claims the repeat-map of our commands.
   (keymap-unset code-cells-mode-map "C-c %" t)
   (my/repeatize-keymap 'code-cells--prefix-map t)
   (my/repeatize-keymap 'my/code-cells-repeat-map)
@@ -157,10 +154,7 @@
         ;; navigation
         ("C-<up>"       . code-cells-backward-cell)
         ("C-<down>"     . code-cells-forward-cell)
-        ;; cell structure.  overblock-pycell's move and not code-cells' own:
-        ;; the latter transposes the two regions, and
-        ;; `transpose-regions' leaves an overlay where the text used
-        ;; to be, so the result of one cell lands under the other.
+        ;; cell structure; code-cells' move leaves results behind
         ("M-S-<up>"     . overblock-pycell-move-cell-up)
         ("M-S-<down>"   . overblock-pycell-move-cell-down)
         ;; outline
@@ -168,13 +162,9 @@
         ("M-S-<left>"   . outline-promote)
         ("C-S-<tab>"    . outline-cycle-buffer)
         ("C-<backtab>"  . outline-cycle-buffer)
-        ;; interrupt, under the C-c prefix like in the REPL; reachable as
-        ;; C-p C-c through standard-keys' dynamic prefix, and as plain
-        ;; C-c C-c without it.  Shadows python-shell-send-buffer here.
+        ;; interrupt; shadows `python-shell-send-buffer'
         ("C-c C-c"      . overblock-run-interrupt)
-        ;; "command mode" à la JupyterLab: any entry key activates the
-        ;; repeat map, single keys then chain until a foreign key exits.
-        ;; The same map hangs off the leader as `SPC j'.
+        ;; JupyterLab-like command mode, also on `SPC j'
         :map my/code-cells-repeat-map
         ("n" . code-cells-forward-cell)
         ("p" . code-cells-backward-cell)
@@ -555,16 +545,11 @@ globalized minor mode stays off in the buffer."
          ("\\.[rR]nw\\'" . Rnw-mode)
          ("\\.jl\\'" . julia-mode))
   :custom
-  ;; Start R where the file is.  Asking for a directory every time is
-  ;; a question with one sensible answer, and it comes up again on
-  ;; every restart — including the ones a notebook asks for.
+  ;; Start R in the file's directory without asking.
   (ess-ask-for-ess-directory nil)
-  ;; Show what is sent, but do not wait for the echo: a long
-  ;; evaluation with this at t holds Emacs until R has printed every
-  ;; line of it.
+  ;; Do not wait for the echo: a long evaluation would block Emacs.
   (ess-eval-visibly 'nowait)
-  ;; No workspace written on exit and none read on start, so a session
-  ;; begins with what the file says and nothing else.
+  ;; No workspace written on exit or read on start.
   (inferior-R-args "--no-save --no-restore-data")
   :config
   (require 'ess-site))
@@ -588,13 +573,10 @@ globalized minor mode stays off in the buffer."
   :after (ess markdown-mode)
   :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
   :custom
-  ;; A chunk's own process buffer is worth seeing when it errors; the
-  ;; output *file* of a weave is not — it opens in the browser or the
-  ;; PDF viewer on its own.
+  ;; Show a chunk's process buffer on error, not the woven file.
   (polymode-display-output-file nil)
   (polymode-display-process-buffers t)
-  ;; An unmodified chunk is not re-exported: a weave of a long document
-  ;; is minutes, and most of it has not changed.
+  ;; Do not re-export unmodified chunks.
   (polymode-skip-processing-when-unmodified t))
 
 ;; [[https://github.com/emacs-straight/flymake.git][flymake]] :build_in:
@@ -628,14 +610,12 @@ globalized minor mode stays off in the buffer."
 (use-package hideshow
   :ensure nil
   :custom
-  ;; Say how much a fold swallowed.  The indicators stay off: they draw
-  ;; in the fringe, where diff-hl already draws.
+  ;; Show the size of a fold; no fringe indicators, diff-hl is there.
   (hs-display-lines-hidden t)
   :bind
   (:map hs-minor-mode-map
         ("<backtab>" . hs-cycle))
-  ;; YAML folds by indentation with `outline-indent', which is the one
-  ;; folding UI that buffer needs.
+  ;; YAML folds with `outline-indent'.
   :hook
   ((prog-mode conf-mode) . hs-minor-mode))
 
@@ -820,9 +800,7 @@ ENV nil drops the choice again, which is `my/python-env-deactivate'."
         ("C-c V" . my/python-env-deactivate))
   :init
   (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
-  ;; The directory-local variables are read after the major mode is set, so
-  ;; this is the first point at which `my/python-env-path' can be seen.  The
-  ;; mode function applies again where it is already on.
+  ;; Directory-local variables are read after the major mode is set.
   (add-hook 'hack-local-variables-hook #'my/python-env-mode)
   ;; These start their processes in a temp buffer, which inherits none of the
   ;; environment of the buffer the command was called from.
@@ -830,9 +808,7 @@ ENV nil drops the choice again, which is `my/python-env-deactivate'."
                                    compile org-babel-eval))
     (advice-add command :around #'inheritenv-apply))
   :config
-  ;; Run on mode start *and* after `ben' applies a direnv, because `exec-path'
-  ;; only becomes project-local at the latter point.  `ben' skips its hook in
-  ;; buffers without an `.envrc', hence both.
+  ;; Also after `ben' applies a direnv: only then is `exec-path' local.
   (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
   (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 
