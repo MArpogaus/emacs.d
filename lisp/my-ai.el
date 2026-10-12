@@ -36,7 +36,7 @@
       (let ((previous-dir default-directory)
             (denote-use-title (buffer-name))
             (denote-use-keywords '("gptel" "ai"))
-            (denote-use-directory (expand-file-name "gptel/" denote-directory)))
+            (denote-use-directory (expand-file-name "gptel/" (car (denote-directories)))))
         (call-interactively #'my/denote-save-buffer)
         (setq-local default-directory previous-dir)
         (add-file-local-variable 'default-directory previous-dir t)

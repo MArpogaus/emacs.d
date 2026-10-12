@@ -122,8 +122,8 @@ See also `org-save-all-org-buffers'."
        (setq org-map-continue-from (org-element-property :begin (org-element-at-point))))
      "/DONE" 'tree))
   :init
-  (setopt org-directory (expand-file-name "Notes/org/" (getenv "HOME"))
-          org-cite-global-bibliography (file-expand-wildcards (expand-file-name "bib/*.bib" org-directory)))
+  (setopt org-directory (expand-file-name "Notes/" (getenv "HOME"))
+          org-cite-global-bibliography (list (expand-file-name "denote/bib/references.bib" org-directory)))
   :custom
   (org-ellipsis "…")
   (org-fontify-quote-and-verse-blocks t)
@@ -171,9 +171,8 @@ See also `org-save-all-org-buffers'."
       ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 
   ;; org-agenda
-  (org-agenda-files
-   (mapcar 'file-truename
-           (file-expand-wildcards (concat org-directory "agenda/*.org"))))
+  ;; A directory, so Org also finds files created after startup
+  (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
 
   ;; Refile and Archive
   (org-refile-use-outline-path 'file)

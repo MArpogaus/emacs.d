@@ -47,7 +47,7 @@
   (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
   (citar-bibliography org-cite-global-bibliography)
   (citar-at-point-function 'embark-act)
-  (citar-notes-paths (list (concat denote-directory "bib_notes/")))
+  (citar-notes-paths (mapcar (lambda (silo) (expand-file-name "bib_notes/" silo)) denote-directory))
   (citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
                      (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
                      (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")

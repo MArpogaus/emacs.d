@@ -41,10 +41,13 @@
 
 (use-package denote
   :custom
-  ;; Configure the directory where your notes will be stored.
-  (denote-directory (expand-file-name "denote/" org-directory))
+  ;; Silos set their own value in .dir-locals.el; the list is for
+  ;; everything outside them and for Org export, which ignores dir-locals.
+  (denote-directory (list (expand-file-name "denote/work/" org-directory)
+                          (expand-file-name "denote/private/" org-directory)))
+  (denote-prompts '(title keywords subdirectory))
   ;; If you want a controlled vocabulary of keywords, specify them here.
-  (denote-known-keywords '("ENERGY" "STATS" "CS" "AI"))
+  (denote-known-keywords '("ai" "cs" "energy" "stats"))
   ;; If you want Denote to infer keywords from your note titles, set this to t.
   (denote-infer-keywords t)
   ;; If you want to sort keywords alphabetically, set this to t.
@@ -126,6 +129,19 @@ Prompts for metadata only if the file is not already a Denote file."
   ((text-mode . denote-fontify-links-mode)
    (dired-mode . denote-dired-mode)
    (elpaca-after-init . denote-rename-buffer-mode)))
+
+;; [[https://github.com/protesilaos/denote-silo][denote-silo]]
+;; Commands that ask for a silo first.
+
+(use-package denote-silo
+  :custom
+  ;; The global value: the package may load in a silo buffer.
+  (denote-silo-directories (default-value 'denote-directory))
+  :bind
+  (:map my/denote-map
+        ("c" . denote-silo-create-note)
+        ("o" . denote-silo-open-or-create)
+        ("D" . denote-silo-dired)))
 
 ;; [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 
