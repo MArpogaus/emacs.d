@@ -853,13 +853,6 @@ window it already made, so a key bound to it cannot put the panel away."
   :bind
   (:map my/toggle-map
         ("o" . my/symbols-outline-toggle))
-  ;; `symbols-outline-show' calls `display-buffer-in-side-window' itself
-  ;; rather than `display-buffer', so `display-buffer-alist' never sees
-  ;; it: auto-side-windows does not dress this panel and
-  ;; `auto-side-windows-after-display-hook' does not run for it.  The
-  ;; mode is the buffer's, so the buffer asks for it here, and
-  ;; `window-box-window-predicate' still decides the place.
-  :hook (symbols-outline-mode . window-box-mode)
   :custom
   (symbols-outline-window-position 'left)
   :config

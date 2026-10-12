@@ -201,12 +201,9 @@
          ;; `magit-header-line' for one — which the remap does not
          ;; reach: it names the header line faces, not theirs.
          (propertize (concat " " own) 'face face)
-         ;; `right-fringe', not `right': the right margin a buffer
-         ;; sets (magit-log's 30, for one) sits between them, and the
-         ;; buttons would trail the box's line by exactly that.
+         ;; window-box moves `right' past the buffer's margin.
          (propertize " " 'display `(space :align-to
-                                          (- right-fringe
-                                             ,(string-width buttons))))
+                                          (- right ,(string-width buttons))))
          buttons))))
 
   :custom
@@ -332,14 +329,6 @@
                                               (header-line-format . ,my/header-line-format-top)))
   (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
                                                 (header-line-format . ,my/header-line-format-top)))
-  ;; The box goes on the buffer once it appears on a side, and
-  ;; `window-box-window-predicate' keeps it to the side windows from
-  ;; there: detaching the buffer into an ordinary window takes the box
-  ;; away by itself, and putting it back on a side brings it back.  No
-  ;; hook has to take the mode off again.
-  (auto-side-windows-after-display-hook '((lambda (buffer &rest _)
-                                            (with-current-buffer buffer
-                                              (window-box-mode 1)))))
   (window-combination-resize t)
   (window-sides-vertical t)
   (window-sides-slots '(2 1 5 2)) ; maximum number of side windows on the left, top, right and bottom
@@ -734,12 +723,12 @@ buffer's text scale."
   ;; these two, so that the inside cannot be asked for in pieces.
   (window-box-enclose-top 'header-line)
   (window-box-enclose-mode-line t)
-  ;; The mode belongs to the buffer, and Emacs can show one buffer in a
-  ;; panel and in an ordinary window at the same time.  A box belongs to
-  ;; the place: the side windows wear it and the ordinary windows do not.
+  ;; Box side windows, whatever buffer they show.
   (window-box-window-predicate
    (lambda (window)
-     (window-parameter window 'window-side))))
+     (window-parameter window 'window-side)))
+  :hook
+  (elpaca-after-init . global-window-box-mode))
 
 ;; [[https://github.com/joostkremers/writeroom-mode.git][writeroom-mode]]
 ;; Distraction-free writing for Emacs.
