@@ -246,7 +246,8 @@
   ;; rest of the action.
   (auto-side-windows-top-height 15)
   (auto-side-windows-top-buffer-names
-   '("^COMMIT_EDITMSG$"
+   '("^CAPTURE-.*\\.org$"
+     "^COMMIT_EDITMSG$"
      "^\\*Agenda Commands\\*$"
      "^\\*Async-native-compile-log\\*$"
      "^\\*Backtrace\\*$"
