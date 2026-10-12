@@ -1740,7 +1740,7 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
     (elpaca-after-init . my/setup-ligatures))
 #+end_src
 **** [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package mixed-pitch
     :custom
     (mixed-pitch-variable-pitch-cursor nil)
