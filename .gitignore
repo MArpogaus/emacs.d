@@ -443,3 +443,6 @@ custom.el
 
 # local checkouts of the sibling package repositories
 /packages/
+
+# Claude Code
+/.claude/
