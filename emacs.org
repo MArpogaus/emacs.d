@@ -1022,8 +1022,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     ;; org capture
     (org-capture-templates
      `(("i" "Inbox" entry  (file "agenda/inbox.org")
-        ,(concat "* TODO %?\n"
-                 "/Entered on/ %U"))
+        "* TODO %?\n")
        ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
         ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 

@@ -166,8 +166,7 @@ See also `org-save-all-org-buffers'."
   ;; org capture
   (org-capture-templates
    `(("i" "Inbox" entry  (file "agenda/inbox.org")
-      ,(concat "* TODO %?\n"
-               "/Entered on/ %U"))
+      "* TODO %?\n")
      ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
       ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 
