@@ -559,14 +559,19 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (set-terminal-coding-system 'utf-8)  ; Set coding system of terminal output
     (set-keyboard-coding-system 'utf-8)  ; Set coding system for keyboard input on TERMINAL
     (set-language-environment "English") ; Set up multilingual environment
+    :preface
+    (defun my/whitespace-cleanup-unless-idle ()
+      "Run `whitespace-cleanup' unless Emacs is idle.
+  An idle save comes from `auto-save-visited-mode', not from a command."
+      (unless (current-idle-time)
+        (whitespace-cleanup)))
     :hook
     ;; Enable word wrapping in prose modes
     (((org-mode markdown-mode text-mode message-mode) . visual-line-mode)
      ;; Enable automatic line breaks before `fill-column' is exceeded, in
      ;; comments only: prose above is soft-wrapped instead
      ((prog-mode conf-mode) . auto-fill-mode)
-     ;; cleanup unnecessary white spaces before saving a buffer
-     (before-save . whitespace-cleanup)))
+     (before-save . my/whitespace-cleanup-unless-idle)))
 #+end_src
 *** Configure Elpaca
 #+begin_src emacs-lisp
