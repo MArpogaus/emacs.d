@@ -225,8 +225,8 @@
       (display-buffer-reuse-window display-buffer-use-some-window)
       (some-window . mru))))
 
-  ;; Dont resue sidewindows if there are still free slots
-  (auto-side-windows-reuse-mode-window nil)
+  ;; Reuse on the left: dirvish kills the window of the old listing.
+  (auto-side-windows-reuse-mode-window '((left . t)))
 
   ;; The package ships no taste of its own, so the panels get theirs
   ;; here: a side window is not a place to land in with `other-window',

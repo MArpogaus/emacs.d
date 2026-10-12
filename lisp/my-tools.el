@@ -93,22 +93,22 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
-  ;; `dirvish-side' displays its buffer itself, so the parameters a
-  ;; panel is given never reach it: that window wore dirvish's own
-  ;; header, without the icon or the buttons every other panel has.
-  (dirvish-side-window-parameters
-   `((no-delete-other-windows . t)
-     (no-other-window . t)
-     (mode-line-format . none)
-     (header-line-format . ,my/header-line-format-top)))
-
   :init
   (dirvish-override-dired-mode)
   ;; (dirvish-peek-mode) ; Preview files in minibuffer
   :config
   (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
   ;; Prevent dirvish from closing its buffers after a file has been opened
-  (advice-add 'dirvish--find-entry :override (lambda (find-fn entry) (funcall find-fn entry)))
+  (advice-add 'dirvish--find-entry :around
+              (lambda (fn find-fn entry)
+                (if (file-directory-p entry)
+                    (funcall fn find-fn entry)
+                  (funcall find-fn entry))))
+  ;; No tab line in a full-frame session.
+  (advice-add 'dirvish--build-layout :after
+              (lambda (dv)
+                (when (bound-and-true-p global-tab-line-mode)
+                  (tab-line-mode (if (dv-curr-layout dv) -1 1)))))
   :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
   (("C-c f" . dirvish-fd)
    :map my/open-map
@@ -119,7 +119,7 @@
    ("<mouse-1>" . dirvish-subtree-toggle-or-open)
    ("<mouse-2>" . dired-mouse-find-file-other-window)
    ("<mouse-3>" . dired-mouse-find-file)
-   ("F"         . dirvish-toggle-fullscreen)
+   ("F"         . dirvish-layout-toggle)
    ("M-b"       . dirvish-history-go-backward)
    ("M-e"       . dirvish-emerge-menu)
    ("M-f"       . dirvish-history-go-forward)
@@ -127,7 +127,6 @@
    ("M-l"       . dirvish-ls-switches-menu)
    ("M-m"       . dirvish-mark-menu)
    ("M-s"       . dirvish-setup-menu)
-   ("M-t"       . dirvish-layout-toggle)
    ("N"         . dirvish-narrow)
    ("<tab>"     . dirvish-subtree-toggle)
    ("^"         . dirvish-history-last)
