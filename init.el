@@ -66,6 +66,7 @@
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
   (auto-hscroll-mode nil)                            ; disable automatic horizontal scrolling
+  (mouse-wheel-tilt-scroll t)                        ; Enable horizontal scrolling with touchpad
   (scroll-error-top-bottom t)                        ; Page to the buffer edge instead of signalling an error
 
   ;; Cursor
