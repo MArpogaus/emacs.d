@@ -270,15 +270,13 @@
      "^\\*.*vterm\\*"))
   (auto-side-windows-bottom-buffer-modes
    '(eshell-mode
-     shell-mode
      term-mode
      vterm-mode
      comint-mode))
 
   ;; Left side window configurations
   (auto-side-windows-left-buffer-names
-   '("^\\*toc*\\*$"
-     "^ \\*SIDE ::"))
+   '("^ \\*SIDE ::"))
   (auto-side-windows-left-buffer-modes
    '(reftex-toc-mode
      symbols-outline-mode))
@@ -288,10 +286,7 @@
    '("^\\*Org Agenda\\*$"
      "^\\*Outline .+\.pdf\\*$"
      "^\\*eldoc.*\\*$"
-     "^\\*info\\*$"
      "^\\*Org Src.*\\*"
-     "^magit-diff:.*$"
-     "^magit-process:.*$"
      "^\\*Metahelp\\*$"))
   (auto-side-windows-right-buffer-modes
    '(Info-mode
