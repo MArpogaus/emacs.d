@@ -410,12 +410,13 @@ rest of the major mode setup, globalized minor modes included."
   (defvar-local my/eglot-super-capf nil
     "The capf `my/eglot-capf' added in this buffer.")
   (defun my/eglot-capf ()
-    "Put files, eglot and tempel into one capf while eglot manages the buffer."
+    "Add eglot's capf, with tempel's templates, while eglot manages the buffer.
+Tempel comes after :with, so the capf answers only when eglot does."
     (setq-local completion-at-point-functions
                 (remq my/eglot-super-capf completion-at-point-functions))
     (when (eglot-managed-p)
       (setq my/eglot-super-capf
-            (cape-capf-super #'cape-file #'eglot-completion-at-point #'tempel-complete))
+            (cape-capf-super #'eglot-completion-at-point :with #'tempel-complete))
       (push my/eglot-super-capf completion-at-point-functions)))
   :bind
   (:map my/lsp-map
