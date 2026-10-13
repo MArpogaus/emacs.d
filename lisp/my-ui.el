@@ -96,10 +96,11 @@ the clock of `tab-bar-format-global', and any segment beside it."
 (use-package hl-todo
   :preface
   (defun my/hl-todo-register-flymake-report-fn ()
-    (add-hook #'flymake-diagnostic-functions #'hl-todo-flymake))
+    "Report the keywords to flymake in this buffer."
+    (add-hook 'flymake-diagnostic-functions #'hl-todo-flymake nil t))
   :hook
   (((prog-mode conf-mode LaTeX-mode yaml-ts-mode) . hl-todo-mode)
-   (flymake-mode . my/hl-todo-register-flymake-report-fn)))
+   (hl-todo-mode . my/hl-todo-register-flymake-report-fn)))
 
 ;; [[https://github.com/jdtsmith/indent-bars.git][indent-bars]]
 ;; Fast, configurable indentation guide-bars for Emacs.
