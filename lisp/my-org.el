@@ -151,9 +151,9 @@ context.  When called with an argument, unconditionally call
    '(("g" "Get Things Done (GTD)"
       ((agenda "" ((org-agenda-span 'day)
                    (org-deadline-warning-days 7)))
+       (tags-todo "inbox" ((org-agenda-overriding-header "\nInbox")))
        (todo "NEXT" ((org-agenda-overriding-header "\nNext")))
-       (todo "WAIT" ((org-agenda-overriding-header "\nWaiting")))
-       (tags-todo "inbox" ((org-agenda-overriding-header "\nInbox"))))
+       (todo "WAIT" ((org-agenda-overriding-header "\nWaiting"))))
       ((org-agenda-tag-filter-preset '("-literature"))
        (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
        (org-agenda-prefix-format "  %i %-12:c ")))
