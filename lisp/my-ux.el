@@ -274,8 +274,7 @@
      shell-mode
      term-mode
      vterm-mode
-     comint-mode
-     debugger-mode))
+     comint-mode))
 
   ;; Left side window configurations
   (auto-side-windows-left-buffer-names
