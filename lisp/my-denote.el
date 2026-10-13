@@ -116,7 +116,7 @@ Prompts for metadata only if the file is not already a Denote file."
         ("i" . denote-link-dired-marked-notes)
         ("r" . denote-dired-rename-marked-files)
         ("k" . denote-dired-rename-marked-files-with-keywords)
-        ("f" . denote-dired-rename-marked-files-using-front-matter))
+        ("M-r" . denote-dired-rename-marked-files-using-front-matter))
   :config
   (with-eval-after-load 'org-capture
     (add-to-list 'org-capture-templates
