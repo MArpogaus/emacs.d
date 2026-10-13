@@ -21,8 +21,7 @@
   (citar-denote-template 'biblio)
   ;; Absolute: outside a silo `denote-directory' is a list.
   (citar-denote-subdir (expand-file-name "bib_notes/" (car (default-value 'denote-directory))))
-  :hook
-  (elpaca-after-init . citar-denote-mode))
+  :hook elpaca-after-init)
 
 ;; [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 
@@ -31,8 +30,7 @@
   (:map my/denote-map
         ("f" . consult-denote-find)
         ("g" . consult-denote-grep))
-  :hook
-  (elpaca-after-init . consult-denote-mode))
+  :hook elpaca-after-init)
 
 ;; [[https://github.com/protesilaos/denote.git][denote]]
 ;; Simple note taking and file naming.

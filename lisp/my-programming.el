@@ -720,10 +720,11 @@ If ENV is nil, drop the choice."
   (:map python-base-mode-map
         ("C-c v" . my/python-env-activate)
         ("C-c V" . my/python-env-deactivate))
+  :hook
+  ((elpaca-after-init . my/python-env-global-mode)
+   ;; Directory-local variables are read after the major mode is set.
+   (hack-local-variables . my/python-env-mode))
   :init
-  (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
-  ;; Directory-local variables are read after the major mode is set.
-  (add-hook 'hack-local-variables-hook #'my/python-env-mode)
   ;; These start their processes in a temp buffer, which inherits none of the
   ;; environment of the buffer the command was called from.
   (dolist (command '(shell-command shell-command-to-string async-shell-command

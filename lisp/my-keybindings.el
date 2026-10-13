@@ -170,8 +170,7 @@
   (which-key-separator "  ")
   :config
   (which-key-setup-minibuffer)
-  :hook
-  (elpaca-after-init . which-key-mode))
+  :hook elpaca-after-init)
 
 ;; ZZ Library Footer
 

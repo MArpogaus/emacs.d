@@ -38,7 +38,7 @@
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
   :hook
-  ((elpaca-after-init . auto-tab-groups-mode)
+  (elpaca-after-init
    (elpaca-after-init . auto-tab-groups-project-mode)))
 
 ;; project :build_in:

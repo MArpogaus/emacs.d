@@ -329,8 +329,7 @@ A relative remap stacks, and redisplay runs again and again.")
         :repeat-map my/window-map
         ("N" . auto-side-windows-move-to-next-slot)
         ("P" . auto-side-windows-move-to-previous-slot))
-  :hook
-  (elpaca-after-init . auto-side-windows-mode))
+  :hook elpaca-after-init)
 
 ;; bookmark :build_in:
 
@@ -575,7 +574,7 @@ A relative remap stacks, and redisplay runs again and again.")
   (put 'bookmark-history           'history-length 250)
   :hook
   ;; Start history mode.
-  (elpaca-after-init . savehist-mode))
+  elpaca-after-init)
 
 ;; saveplace :build_in:
 ;; Record cursor position from one session to the other.
@@ -607,8 +606,7 @@ A relative remap stacks, and redisplay runs again and again.")
 (use-package ultra-scroll
   :custom
   (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes weird jumps)
-  :hook
-  (elpaca-after-init . ultra-scroll-mode))
+  :hook elpaca-after-init)
 
 ;; [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
 ;; Edit grep buffers and apply the changes to files.

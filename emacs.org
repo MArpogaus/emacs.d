@@ -546,7 +546,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
 *** Configure use-package
 Every package loads lazily. A =use-package= block follows these rules:
 
-1. A global mode starts with =:hook (elpaca-after-init . MODE)=.
+1. A global mode starts with =:hook elpaca-after-init=, or =(elpaca-after-init . MODE)= when MODE is not named after the package. A hook with a depth uses =add-hook= in =:init=.
 2. A mode for some buffers starts from the hook of their mode.
 3. An add-on that must be active with package X: =:after X :demand t=, its mode in =:config=.
 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.
@@ -1599,7 +1599,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
      ("k"                 . tab-close-group))
     :hook
     ((elpaca-after-init . tab-bar-history-mode)
-     (elpaca-after-init . tab-bar-mode)))
+     elpaca-after-init))
 #+end_src
 **** [[https://github.com/MArpogaus/modern-tab][modern-tab]]
 The look of both tab rows: the tab bar with one tab per tab group, and the tab line with one tab per buffer of a window.
@@ -2000,8 +2000,7 @@ Revert buffers when the underlying file has changed.
           :repeat-map my/window-map
           ("N" . auto-side-windows-move-to-next-slot)
           ("P" . auto-side-windows-move-to-previous-slot))
-    :hook
-    (elpaca-after-init . auto-side-windows-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** bookmark :build_in:
 #+begin_src emacs-lisp
@@ -2246,7 +2245,7 @@ Enable repeat maps.
     (put 'bookmark-history           'history-length 250)
     :hook
     ;; Start history mode.
-    (elpaca-after-init . savehist-mode))
+    elpaca-after-init)
 #+end_src
 **** saveplace :build_in:
 Record cursor position from one session to the other.
@@ -2278,8 +2277,7 @@ Automatically update file timestamps when file is saved.
   (use-package ultra-scroll
     :custom
     (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes weird jumps)
-    :hook
-    (elpaca-after-init . ultra-scroll-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
 Edit grep buffers and apply the changes to files.
@@ -2373,8 +2371,7 @@ Distraction-free writing for Emacs.
     (citar-denote-template 'biblio)
     ;; Absolute: outside a silo `denote-directory' is a list.
     (citar-denote-subdir (expand-file-name "bib_notes/" (car (default-value 'denote-directory))))
-    :hook
-    (elpaca-after-init . citar-denote-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 #+begin_src emacs-lisp
@@ -2383,8 +2380,7 @@ Distraction-free writing for Emacs.
     (:map my/denote-map
           ("f" . consult-denote-find)
           ("g" . consult-denote-grep))
-    :hook
-    (elpaca-after-init . consult-denote-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/protesilaos/denote.git][denote]]
 Simple note taking and file naming.
@@ -3453,7 +3449,7 @@ Marginalia in the minibuffer.
 #+begin_src emacs-lisp
   (use-package nerd-icons-completion
     :hook
-    ((elpaca-after-init . nerd-icons-completion-mode)
+    (elpaca-after-init
      (marginalia-mode . nerd-icons-completion-marginalia-setup)))
 #+end_src
 **** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
@@ -3535,7 +3531,7 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
           ("<return>" . my/embark-act-or-vertico-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
-     (elpaca-after-init . vertico-mode)
+     elpaca-after-init
      (elpaca-after-init . vertico-mouse-mode)))
 #+end_src
 **** ZZ Library Footer
@@ -3723,7 +3719,7 @@ Tab group based workflow isolation.
     (:map my/workspace-map
           ("w" . auto-tab-groups-new-group))
     :hook
-    ((elpaca-after-init . auto-tab-groups-mode)
+    (elpaca-after-init
      (elpaca-after-init . auto-tab-groups-project-mode)))
 #+end_src
 **** project :build_in:
@@ -4509,10 +4505,11 @@ It is a globalized mode: =python.el= loads inside the mode setup of the first Py
     (:map python-base-mode-map
           ("C-c v" . my/python-env-activate)
           ("C-c V" . my/python-env-deactivate))
+    :hook
+    ((elpaca-after-init . my/python-env-global-mode)
+     ;; Directory-local variables are read after the major mode is set.
+     (hack-local-variables . my/python-env-mode))
     :init
-    (add-hook 'elpaca-after-init-hook #'my/python-env-global-mode)
-    ;; Directory-local variables are read after the major mode is set.
-    (add-hook 'hack-local-variables-hook #'my/python-env-mode)
     ;; These start their processes in a temp buffer, which inherits none of the
     ;; environment of the buffer the command was called from.
     (dolist (command '(shell-command shell-command-to-string async-shell-command
@@ -4734,8 +4731,7 @@ Show the key bindings that follow an incomplete command in a popup.
     (which-key-separator "  ")
     :config
     (which-key-setup-minibuffer)
-    :hook
-    (elpaca-after-init . which-key-mode))
+    :hook elpaca-after-init)
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp

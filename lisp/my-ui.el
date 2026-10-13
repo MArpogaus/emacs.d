@@ -280,7 +280,7 @@ hides the clock of `tab-bar-format-global'."
    ("k"                 . tab-close-group))
   :hook
   ((elpaca-after-init . tab-bar-history-mode)
-   (elpaca-after-init . tab-bar-mode)))
+   elpaca-after-init))
 
 ;; [[https://github.com/MArpogaus/modern-tab][modern-tab]]
 ;; The look of both tab rows: the tab bar with one tab per tab group, and the tab line with one tab per buffer of a window.

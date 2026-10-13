@@ -337,7 +337,7 @@ target, followed by an ellipsis if there are further targets."
 
 (use-package nerd-icons-completion
   :hook
-  ((elpaca-after-init . nerd-icons-completion-mode)
+  (elpaca-after-init
    (marginalia-mode . nerd-icons-completion-marginalia-setup)))
 
 ;; [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
@@ -419,7 +419,7 @@ target, followed by an ellipsis if there are further targets."
         ("<return>" . my/embark-act-or-vertico-enter))
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
-   (elpaca-after-init . vertico-mode)
+   elpaca-after-init
    (elpaca-after-init . vertico-mouse-mode)))
 
 ;; ZZ Library Footer
