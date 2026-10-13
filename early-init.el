@@ -15,15 +15,15 @@
 ;;; Code:
 
 ;; Configuration Directory
-;; =no-littering= repoints =user-emacs-directory= at =~/.cache/emacs/= later on, so we capture the directory this configuration actually lives in while it is still correct.
-;; It has to happen here rather than in =init.el=, because =no-littering= is an =elpaca= package: its =:init= block only runs once the package queue is processed, which is *after* =init.el= has finished loading and needs this value to locate the =lisp/= modules.
+;; =no-littering= points =user-emacs-directory= at =~/.cache/emacs/=, so this keeps the directory the configuration lives in.
+;; It must be set here: the =:init= block of =no-littering= runs after =init.el= has loaded, and =init.el= needs this value to find the =lisp/= modules.
 
 (defvar emacs-config-directory user-emacs-directory
   "Directory this configuration lives in, unaffected by `no-littering'.")
 
 ;; Configure Byte Compile
 
-;; Prefer sources when noninteractive; skip mtime checks otherwise.
+;; Load the newer of the .el and .elc files.
 (setq load-prefer-newer t)
 
 ;; Disable certain byte compiler warnings to cut down on the noise.
@@ -34,7 +34,7 @@
 (setq native-comp-async-query-on-exit t)
 
 ;; DOOM runtime optimizations
-;; The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
+;; These optimizations come from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
 
 ;; PERF: A second, case-insensitive pass over `auto-mode-alist' is time wasted.
 (setq auto-mode-case-fold nil)
@@ -59,8 +59,7 @@
 (when (boundp 'pgtk-wait-for-event-timeout)
   (setq pgtk-wait-for-event-timeout 0.001))
 
-;; Introduced in Emacs HEAD (b2f8c9f), this inhibits fontification while
-;; receiving input, which should help a little with scrolling performance.
+;; Skip fontification while input is pending, for faster scrolling.
 (setq redisplay-skip-fontification-on-input t)
 
 ;; Hide initial frame until all packages are loaded
@@ -76,7 +75,7 @@
                                     (make-frame-visible))))))
 
 ;; Install Elpaca
-;; This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
+;; This clones =Elpaca= into the =elpaca= subdirectory of =user-emacs-directory=, then builds and activates it.
 
 (defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -135,14 +134,13 @@
 ;; - https://github.com/nilcons/emacs-use-package-fast#a-trick-less-gc-during-startup
 
 
-;; We're going to increase the gc-cons-threshold to a very high number to decrease the load time and add a hook to measure Emacs startup time.
+;; No garbage collection during startup.
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
 
-;; Let's lower our GC thresholds back down to a sane level.
+;; Restore normal GC thresholds after startup.
 (add-hook 'elpaca-after-init-hook
           (lambda ()
-            ;; restore after startup
             (setq gc-cons-threshold (* 16 1024 1024)
                   gc-cons-percentage 0.1)) 97)
 
@@ -176,14 +174,13 @@
 ;; X resources would conflict with this configuration.
 (advice-add #'x-apply-session-resources :override #'ignore)
 
-;; remove "for information about gnu emacs..." message at startup
+;; Remove the "For information about GNU Emacs..." startup message.
 (advice-add #'display-startup-echo-area-message :override #'ignore)
 
-;; suppress the vanilla startup screen completely. we've disabled it with
-;; `inhibit-startup-screen', but it would still initialize anyway.
+;; `inhibit-startup-screen' alone still initializes the startup screen.
 (advice-add #'display-startup-screen :override #'ignore)
 
-;; never show the hello file
+;; Never show the hello file.
 (defalias #'view-hello-file #'ignore)
 
 ;; Disable warnings from the legacy advice API. They aren't useful.
@@ -206,26 +203,15 @@
 ;; :PROPERTIES:
 ;; :ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29
 ;; :END:
-;; The font waits for =window-setup-hook=: a family the system does not have
-;; makes every frame creation fail, and the frame that fails at startup takes
-;; Emacs down with it, so the name may only reach =default-frame-alist= once
-;; the display is up and can be asked whether the font is there.
-
-;; A terminal has no fonts to be asked about at all: =find-font= answers nil
-;; there and =font-family-list= is empty, whatever the terminal itself draws
-;; with, so a terminal frame is left alone rather than told the font is
-;; missing.  The question comes back on =server-after-make-frame-hook=,
-;; because the first frame of a terminal session or of the daemon settles
-;; nothing for the graphic frame an =emacsclient -c= brings later.
+;; The font is set on =window-setup-hook=, after the display can tell whether the font exists: a missing family in =default-frame-alist= makes frame creation fail and kills Emacs at startup.
+;; A terminal frame has no font to set; =server-after-make-frame-hook= sets the font for the first graphic frame of the daemon.
 
 (add-to-list 'default-frame-alist '(width . 100))
 (add-to-list 'default-frame-alist '(height . 25))
 
 (defun my/set-my-frame-font ()
-  "Use FiraCode Nerd Font in this frame and in the frames to come.
-A terminal draws with the font of the terminal and has none of its own
-to set, so nothing happens there.  A graphic display that has no such
-family keeps its default font and says so."
+  "Use FiraCode Nerd Font in this frame and in new frames.
+Do nothing in a terminal.  Warn if a graphic display lacks the font."
   (when (and (display-graphic-p)
              ;; Asked once per session.
              (not (assq 'font default-frame-alist)))
@@ -242,27 +228,19 @@ family keeps its default font and says so."
 
 
 
-;; The other half of the same question: which glyphs a display draws.  A
-;; graphic frame can be asked, character by character; a terminal cannot be
-;; asked at all, so it is told.  Everything that picks an icon reads this —
-;; the panel header below, and the two packages of my own that draw one.
+;; =my/glyph= picks the first icon a display can draw.
+;; A graphic frame is asked per character; a terminal cannot be asked, so =my/terminal-glyphs= tells it.
 
 (defvar my/terminal-glyphs t
   "Whether this terminal draws the glyphs a graphic frame draws.
-    Emacs can ask a font what it holds and a terminal nothing: the
-    terminal picks the font and draws the characters, and
-    `char-displayable-p' answers for the coding system alone, so a glyph
-    the font lacks arrives as an empty box rather than being refused.
-    This terminal carries the nerd font, which is a word from me and not
-    a question Emacs can answer; the packages below are told the same.")
+Emacs cannot ask a terminal font what it holds, and
+`char-displayable-p' checks only the coding system.")
 
 (defun my/glyph (&rest candidates)
   "Return the first of CANDIDATES this display can draw.
-    A graphic frame is asked about every character of a candidate, since
-    one of them is a space and a space is always there.  A terminal is
-    asked about the coding system, and only where `my/terminal-glyphs'
-    says its font carries the glyphs; without that it takes the last
-    candidate, so keep a word there."
+A graphic frame checks every character of a candidate.  A terminal
+checks only if `my/terminal-glyphs' is non-nil; else the last
+candidate wins, so make it plain text."
   (or (and (or (display-graphic-p) my/terminal-glyphs)
            (seq-find (lambda (candidate)
                        (seq-every-p (if (display-graphic-p)

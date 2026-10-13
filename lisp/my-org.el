@@ -76,7 +76,7 @@
   (org-metareturn . my/org-metareturn-src-block))
 
 ;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
-;; Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
+;; Agenda view and task management follow https://github.com/rougier/emacs-gtd
 
 
 (use-package org
@@ -117,7 +117,7 @@
    '(("WAIT" . my/org-todo-onhold-face)
      ("PROJ" . my/org-todo-project-face)))
 
-  ;; Add timstamp to items when done
+  ;; Add timestamp to items when done
   (org-log-done 'time)
   (org-log-into-drawer t)
 
@@ -168,14 +168,14 @@
   :hook (org-mode . org-appear-mode))
 
 ;; [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
-;; A simple emacs package to allow org file tangling upon save.
+;; Tangle Org files on save.
 
 (use-package org-auto-tangle
   :after org
   :hook (org-mode . org-auto-tangle-mode))
 
 ;; [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
-;; A simple command that takes a URL from the clipboard and inserts an org-mode link with a title of a page found by the URL into the current buffer.
+;; Insert an Org link to the URL in the clipboard, with the page title as description.
 
 (use-package org-cliplink
   :after org)
@@ -188,7 +188,7 @@
   (prog-mode . orglink-mode))
 
 ;; [[https://github.com/minad/org-modern.git][org-modern]]
-;; This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks.
+;; Give Org headlines, keywords, tables and source blocks a modern style.
 
 (use-package org-modern
   :custom-face
@@ -205,12 +205,12 @@
   (org-level-1 ((t (:inherit org-level-8 :height 1.728)))) ;\LARGE))
   ;; Document Title, (\huge)
   (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
-  ;; Esure org modern labels use fixed pitch font
+  ;; Ensure org modern labels use fixed pitch font
   (org-modern-label ((t (:height 1.0 :inherit fixed-pitch))))
   (org-modern-todo ((t (:inherit (org-modern-label org-todo org-level-8)))))
   (org-modern-priority ((t (:inherit (org-priority org-modern-label org-level-8)))))
   (org-modern-tag ((t (:inherit (secondary-selection org-modern-label org-level-8)))))
-  ;; Fix indention issues when variable pich fonts are used
+  ;; Fix indentation when variable pitch fonts are used
   (org-hide ((t (:inherit fixed-pitch))))
   :custom
   (org-cycle-level-faces nil)
@@ -268,7 +268,7 @@
      ("latex_header_extra" . "𝑳⁺")
      ("latex_compiler" . "𝑳")
 
-     ;; Beamer (projector icon + superscripts)
+     ;; Beamer (superscripts)
      ("beamer" . "𝑩")
      ("beamer_header" . "𝑩ʰ")
      ("beamer_theme" . "𝑩ᵗ")
@@ -279,7 +279,7 @@
      ("html_head" . "𝑯ʰ")
      ("html_head_extra" . "𝑯⁺")
 
-     ;; Attributes (circled letters for consistency)
+     ;; Attributes
      ("attr_html" . "𝑯ᵃ")
      ("attr_latex" . "𝑳ᵃ")
      ("attr_beamer" . "𝑩ᵃ")
@@ -339,8 +339,7 @@
   ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
   (org-noter-highlight-selected-text t)
   :hook
-  ;; Org-noter’s purpose is to let you create notes that are kept in sync when
-  ;; you scroll through the [PDF etc] document
+  ;; Give each note heading an ID
   (org-noter-insert-heading . org-id-get-create))
 
 ;; [[https://github.com/rlister/org-present.git][org-present]]
@@ -386,11 +385,8 @@
     ;; Center the presentation and wrap lines
     (visual-fill-column-mode 1)
 
-    ;; Swicth to minimal ui mode
-    (my/minimal-ui-mode 1)
-
-    ;; Increase font size
-    )
+    ;; Switch to minimal ui mode
+    (my/minimal-ui-mode 1))
   (defun my/org-present-quit ()
     (org-link-preview-clear)
 
@@ -415,10 +411,7 @@
     (visual-fill-column-mode 0)
 
     ;; Disable minimal ui mode
-    (my/minimal-ui-mode -1)
-
-    ;; Restore font size
-    )
+    (my/minimal-ui-mode -1))
   (defun my/org-present-prepare-slide (buffer-name heading)
     ;; Show only top-level headlines
     (org-overview)
@@ -513,7 +506,7 @@
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
 
 ;; [[https://github.com/emacsorphanage/ox-pandoc.git][ox-pandoc]]
-;; org-mode exporter via pandoc.
+;; Export Org files with pandoc.
 
 (use-package ox-pandoc
   :if (executable-find "pandoc")
@@ -526,7 +519,7 @@
      (variable . "revealjs-url=https://revealjs.com"))))
 
 ;; [[https://github.com/snosov1/toc-org.git][toc-org]]
-;; Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
+;; Keep an up-to-date table of contents in Org files without export, for READMEs on GitHub.
 
 
 (use-package toc-org

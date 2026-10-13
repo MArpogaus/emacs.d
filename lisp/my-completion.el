@@ -15,7 +15,7 @@
 ;;; Code:
 
 ;; [[https://github.com/minad/cape.git][cape]]
-;; Cape provides Completion At Point Extensions which can be used in combination with Corfu, Company or the default completion UI. The completion backends used by completion-at-point are so called completion-at-point-functions (Capfs).
+;; Cape provides completion-at-point extensions (Capfs) for Corfu or the default completion UI.
 
 (use-package cape
   :init
@@ -189,13 +189,13 @@
   (corfu-auto-trigger ".([{+-*/=,$")  ;; Custom trigger characters
   (corfu-auto-prefix 2)               ;; Complete with less prefix keys
   (corfu-preview-current nil)         ;; Disable current candidate preview
-  (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
-  (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
+  (corfu-preselect 'directory)        ;; Preselect the first candidate; for directories the prompt
+  (corfu-on-exact-match 'show)        ;; Don't insert candidate automatically, just show them
   (corfu-popupinfo-delay '(1.0 . 0.0));; Initial and subsequent delay for info popup in seconds
   :preface
   ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
   (defun my/corfu-insert-separator-advice (orig-func &rest args)
-    "Quit completion if there exist no candiates"
+    "Insert a separator if there are candidates, else quit and insert a space."
     (interactive)
     (if (and (cdr corfu--candidates)
              ;; next char is not letter or number
@@ -225,7 +225,7 @@
    (elpaca-after-init . corfu-popupinfo-mode)
    (elpaca-after-init . corfu-echo-mode)
    (elpaca-after-init . corfu-history-mode)
-   ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
+   ;; No auto completion in eshell, as in other shells.
    (eshell-mode . (lambda ()
                     (setq-local corfu-auto nil)
                     (corfu-mode)))))
@@ -254,7 +254,7 @@
 (use-package embark
   :after which-key vertico
   :bind
-  (("C-." . my/embark-act-maybe-all) ;; pick some com fortable binding
+  (("C-." . my/embark-act-maybe-all)
    ("C-:" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
    :map vertico-map
@@ -267,10 +267,9 @@
   ;; which-key as action menu:
   ;; https://github.com/oantolin/embark/wiki/Additional-Configuration#use-which-key-like-a-key-menu-prompt
   (defun my/embark-which-key-indicator ()
-    "An embark indicator that displays keymaps using which-key.
-    The which-key help message will show the type and value of the
-    current target followed by an ellipsis if there are further
-    targets."
+    "Return an embark indicator that displays keymaps using which-key.
+The which-key help message shows the type and value of the current
+target, followed by an ellipsis if there are further targets."
     (lambda (&optional keymap targets prefix)
       (if (null keymap)
           (which-key--hide-popup-ignore-command)
@@ -295,7 +294,7 @@
            (remq #'my/embark-which-key-indicator embark-indicators)))
       (apply fn args)))
   (defun my/embark-act-all-noconfirm ()
-    "`embark-act' but never ask for confirmation."
+    "Call `embark-act-all' without asking for confirmation."
     (interactive)
     (let (embark-confirm-act-all)
       (embark-act-all)))
@@ -326,7 +325,7 @@
               :around #'my/embark-hide-which-key-indicator))
 
 ;; [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
-;; Consult users will also want the embark-consult package.
+;; Embark actions and export for Consult commands.
 
 (use-package embark-consult
   :after embark)
@@ -357,7 +356,7 @@
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; [[https://github.com/oantolin/orderless.git][orderless]]
-;; Emacs completion style that matches multiple regexps in any order
+;; Emacs completion style that matches multiple regexps in any order.
 
 (use-package orderless
   :custom
@@ -366,7 +365,7 @@
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 ;; [[https://github.com/minad/tempel.git][tempel]]
-;; Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs Tempo library. Tempo is an ancient temple of the church of Emacs. It is 27 years old, but still in good shape since it successfully resisted change over the decades. However it may look a bit dusty here and there. Therefore we present Tempel, a new implementation of Tempo with inline expansion and integration with recent Emacs facilities. Tempel takes advantage of the standard completion-at-point-functions mechanism which is used by Emacs for in-buffer completion.
+;; Tempel is a tiny template package with the syntax of the Emacs Tempo library and inline expansion through completion-at-point-functions.
 
 (use-package tempel
   :custom
@@ -381,7 +380,7 @@
   :preface
   ;; Setup completion at point
   (defun my/tempel-setup-capf ()
-    ;; `tempel-expand' before the mode's capf, so it is tried first.
+    ;; `tempel-complete' before the mode's capf, so it is tried first.
     (setq-local completion-at-point-functions
                 (cons #'tempel-complete
                       completion-at-point-functions)))
@@ -392,7 +391,6 @@
 
 ;; [[https://github.com/Crandel/tempel-collection.git][tempel-collection]]
 ;; Collection of tempel templates.
-;; The package is young and doesn't have comprehensive coverage.
 
 (use-package tempel-collection
   :demand t
@@ -417,7 +415,7 @@
   (minibuffer-prompt-properties
    '(read-only t cursor-intangible t face minibuffer-prompt))
 
-  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Hide commands in M-x which do not work in the current mode.
   ;; Vertico commands are hidden in normal buffers.
   (read-extended-command-predicate
    #'command-completion-default-include-p)

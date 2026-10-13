@@ -21,7 +21,7 @@
   :ensure (:host github :repo "MArpogaus/auto-tab-groups")
   :after tab-bar mood-line project nerd-icons
   :custom
-  ;; the following functions trigger the creation of a new tab assigned to group with the name of the given string, or returned by a provided function
+  ;; These commands open their buffer in a tab of the named group.
   (auto-tab-groups-create-commands
    '(((denote--prepare-note denote-open-or-create denote-silo-open-or-create
        denote-silo-dired denote-dired denote-sequence-find denote-sequence-dired
@@ -60,7 +60,7 @@
   (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 
 ;; [[https://github.com/karthink/project-x.git][project-x]]
-;; Enhancements to Emacs' built in project library.
+;; Enhancements to the built-in project library.
 
 (use-package project-x
   :ensure (:host github :repo "karthink/project-x")
@@ -74,7 +74,7 @@
                '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
   :config
-  ;; Not in `:init': there the hook loaded the package at quit.
+  ;; Not in `:init': there the hook would load the package at quit.
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))
 
 ;; speedbar :build_in:
@@ -84,9 +84,9 @@
 (use-package speedbar
   :ensure nil
   :custom
-  ;; Increase the indentation for better useability.
+  ;; Increase the indentation for better usability.
   (speedbar-indentation-width 3)
-  ;; make speedbar update automaticaly, and dont use ugly icons(images)
+  ;; Update automatically, and use text instead of images.
   (speedbar-update-flag t)
   (speedbar-use-images nil)
   ;; Every file, not only those it can tag.
@@ -98,9 +98,9 @@
 
   :hook
   ((speedbar-mode . (lambda()
-                      ;; Disable word wrapping in speedbar if you always enable it globally.
+                      ;; No word wrapping in speedbar.
                       (visual-line-mode 0)
-                      ;; Change speedbar's text size.  May need to alter the icon size if you change size.
+                      ;; Smaller text in speedbar.
                       (text-scale-adjust -1)))))
 
 ;; ZZ Library Footer

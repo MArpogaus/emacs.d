@@ -27,7 +27,7 @@
   (emacs-lisp-mode . auto-compile-on-save-mode))
 
 ;; autorevert :build_in:
-;; Revert buffers when the underlying file has changed
+;; Revert buffers when the underlying file has changed.
 
 (use-package autorevert
   :ensure nil
@@ -84,10 +84,7 @@
                   #'auto-side-windows-drag-slot)
       map)
     "Keymap that turns part of a header line into a drag handle.
-      Emacs binds a press on a header line to `mouse-drag-header-line', which
-      resizes the window, so the press is the event to take: a keymap on the
-      text takes it first, and `auto-side-windows-drag-slot' follows the mouse
-      from there.")
+A keymap on the text takes the press before `mouse-drag-header-line'.")
   (defun my/side-window-button (label help command)
     "Return LABEL as a header-line button running COMMAND on mouse-1."
     (propertize label 'mouse-face 'highlight 'help-echo help
@@ -112,19 +109,14 @@
         (delete-window win))))
   (defface my/panel-header-line
     '((t :inherit bold :underline nil))
-    "The look of a side window's header row.
-    `my/header-line-format-top' remaps it over the header line faces, so
-    the whole row wears it and a mode's own header colours do not.  It
-    names as little as it can: window-box remaps those faces too, and what
-    is named here outranks its overline.")
+    "Face of the header row of a side window.
+`my/header-line-format-top' remaps the header line faces to it.  Keep
+it small: its attributes outrank the overline of window-box.")
 
   (defun my/panel-label ()
-    "Return what a panel header calls the current buffer.
-    A dired or dirvish buffer is named by its directory: their own header
-    lines carry a stretch to the window's right edge, which took the whole
-    row and pushed the panel's buttons out of it.  The project's crumbs
-    where the directory is inside a project — the same ones the mode line
-    shows — and the path itself where it is not."
+    "Return the name a panel header shows for the current buffer.
+A dired buffer shows its directory, relative to the project root if
+any; its own header line stretches to the right edge of the window."
     (if (not (derived-mode-p 'dired-mode))
         (format-mode-line (or header-line-format "%b") nil nil
                           (current-buffer))
@@ -140,8 +132,8 @@
                          (file-relative-name here root)))))))
 
   (defvar-local my/header-line-faces-overloaded nil
-    "Whether the remap below has been added to this buffer already.
-    A relative remap stacks, and redisplay comes round again.")
+    "Whether this buffer has the header line face remap already.
+A relative remap stacks, and redisplay runs again and again.")
 
   (defvar my/header-line-format-top
     '(:eval
@@ -201,7 +193,7 @@
          buttons))))
 
   :custom
-  ;; If non of our rules apply try the following strategies to dispaly new buffers
+  ;; If no rule applies, try these strategies to display new buffers
   (display-buffer-base-action '((display-buffer-in-previous-window
                                  display-buffer-reuse-mode-window
                                  display-buffer-use-some-window
@@ -354,15 +346,14 @@
   (bookmark-save-flag 1))
 
 ;; [[https://github.com/emacs-straight/comint-mime.git][comint-mime]]
-;; Mirror of the comint-mime package from GNU ELPA, current as of 2024-01-18.
-;; Provides a mechanism for REPLs (or comint buffers, in Emacs parlance) to display graphics and other types of special content.
+;; Display graphics and other special content in REPLs (comint buffers).
 
 (use-package comint-mime
   :hook
   (inferior-python-mode . comint-mime-setup))
 
 ;; delsel :build_in:
-;; Replace selected text when typing
+;; Replace selected text when typing.
 
 (use-package delsel
   :ensure nil
@@ -388,8 +379,7 @@
   (defvar my/buffer-scale-map (make-sparse-keymap) "key-map for buffer text scale commands")
 
   (defun my/text-scale-adjust-latex-previews ()
-    "Adjust the size of latex preview fragments when changing the
-buffer's text scale."
+    "Scale the LaTeX previews of the buffer with its text scale."
     (pcase major-mode
       ((guard (derived-mode-p 'LaTeX-mode))
        (dolist (ov (overlays-in (point-min) (point-max)))
@@ -454,7 +444,7 @@ buffer's text scale."
   (advice-add 'mouse-set-point :after (lambda (&rest _) (mc/disable-multiple-cursors-mode))))
 
 ;; outline :build_in:
-;; Outline-mode helps to fold and transform headers. Org-mode itself uses outline-mode for its headlines.
+;; Fold and transform headings. Org mode uses outline for its headlines.
 
 (use-package outline
   :ensure nil
@@ -501,7 +491,7 @@ buffer's text scale."
   ((yaml-ts-mode) . outline-indent-minor-mode))
 
 ;; paren :build_in:
-;; Paren mode for highlighting matcing paranthesis
+;; Highlight matching parentheses.
 
 
 (use-package paren
@@ -511,7 +501,7 @@ buffer's text scale."
 
 ;; recentf :build_in:
 
-;; 50 Recents files with some exclusion (regex patterns).
+;; Keep a list of recently opened files.
 
 
 (use-package recentf
@@ -532,7 +522,7 @@ buffer's text scale."
   :hook elpaca-after-init)
 
 ;; repeat :build_in:
-;; Enable repeat maps
+;; Enable repeat maps.
 
 (use-package repeat
   :ensure nil
@@ -543,7 +533,7 @@ buffer's text scale."
     (map-keymap
      (lambda (_key cmd)
        (when (symbolp cmd)
-         (put cmd 'repeat-map (unless unset keymap))))
+         (put cmd 'repeat-map (unless unset (or via keymap)))))
      (symbol-value keymap)))
   :config
   ;; which-key shows the repeat keys via `repeat-echo-function'.
@@ -581,11 +571,11 @@ buffer's text scale."
   (put 'face-name-history          'history-length 250)
   (put 'bookmark-history           'history-length 250)
   :hook
-  ;;Start history mode.
+  ;; Start history mode.
   (elpaca-after-init . savehist-mode))
 
 ;; saveplace :build_in:
-;; Record cursor position from one session to the other
+;; Record cursor position from one session to the other.
 
 (use-package saveplace
   :ensure nil
@@ -600,7 +590,7 @@ buffer's text scale."
    (save-place-after-find-file . my/saveplace-recenter)))
 
 ;; time-stamp :build_in:
-;; Automatically update file timestamps when file is saved
+;; Automatically update file timestamps when file is saved.
 
 (use-package time-stamp
   :ensure nil
@@ -613,12 +603,12 @@ buffer's text scale."
 
 (use-package ultra-scroll
   :custom
-  (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes wired jumps)
+  (pixel-scroll-precision-interpolate-mice nil) ; Disable interpolation (causes weird jumps)
   :hook
   (elpaca-after-init . ultra-scroll-mode))
 
 ;; [[https://github.com/mhayashi1120/Emacs-wgrep.git][wgrep]]
-;; Writable grep buffer and apply the changes to files.
+;; Edit grep buffers and apply the changes to files.
 
 (use-package wgrep
   :demand t
@@ -663,9 +653,8 @@ buffer's text scale."
    ("=" . balance-windows)))
 
 ;; [[https://github.com/MArpogaus/window-box][window-box]] :own:
-;; A rectangular box around a window: side windows read as panels.  The
-;; mode line and the header line stay as configured; the box only adds
-;; the edges the window does not have.
+;; Draw a box around side windows, so they read as panels.
+;; The box adds only the edges the window does not have.
 
 (use-package window-box
   :ensure (:host github :repo "MArpogaus/window-box")

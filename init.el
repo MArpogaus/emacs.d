@@ -35,7 +35,7 @@
   (auto-save-visited-interval 1)                     ; save every second
 
   ;; Backups
-  (backup-by-copying t)                              ; Backs up by moving the actual file
+  (backup-by-copying t)                              ; Back up by copying, not renaming
 
   ;; Dialogs
   (use-dialog-box nil)                               ; Don't pop up UI dialogs when prompting
@@ -45,7 +45,7 @@
 
   ;; Regions
   (delete-active-region 'kill)                       ; Make single-char deletion commands kill an active region
-  (use-empty-active-region t)                        ; Whether "region-aware" commands should act on empty regions .
+  (use-empty-active-region t)                        ; Region-aware commands act on empty regions
 
   ;; Mouse
   (context-menu-mode t)                              ; Enable context menu on right click
@@ -53,7 +53,7 @@
   (save-interprogram-paste-before-kill t)            ; save existing clipboard text into kill ring before replacing it
   (kill-do-not-save-duplicates t)                    ; No duplicates in the kill ring
   (browse-url-browser-function #'browse-url-xdg-open) ; pgtk's GTK launcher opens nothing in a distrobox
-  (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
+  (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode
 
   ;; Smoother scrolling
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
@@ -74,7 +74,7 @@
   (truncate-string-ellipsis "…")                     ; Nicer ellipsis
 
   ;; Default mode
-  (initial-major-mode 'fundamental-mode)             ; Initial mode is text
+  (initial-major-mode 'fundamental-mode)             ; Initial mode is fundamental
 
   ;; Tabulations
   (indent-tabs-mode nil)                             ; Stop using tabs to indent
@@ -87,15 +87,15 @@
 
   ;; Performance
   ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init                                 . el
-  (read-process-output-max (* 4 1024 1024))          ; Increase how much is read from processes in a single chunk   .
-  (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings .
+  (read-process-output-max (* 4 1024 1024))          ; Read more process output per chunk
+  (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings
   (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
 
   ;; Miscellaneous
   (comment-auto-fill-only-comments t)                ; Use auto fill mode only in comments
   (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
   (custom-buffer-done-kill t)                        ; Kill custom buffer when done
-  (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer .
+  (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer
   (help-window-select t)                             ; Select help windows when they open
   (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
   (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
@@ -133,7 +133,7 @@ An idle save comes from `auto-save-visited-mode', not from a command."
 ;; Use elpaca lockfile
 (setq elpaca-lock-file (expand-file-name "elpaca.lock" user-emacs-directory))
 
-;; Allow automatic upgrade of build-in transient
+;; Allow automatic upgrade of built-in transient
 ;; https://github.com/progfolio/elpaca/issues/272#issuecomment-2298727726
 (setq elpaca-ignored-dependencies
       (delq 'transient elpaca-ignored-dependencies))
@@ -149,7 +149,7 @@ An idle save comes from `auto-save-visited-mode', not from a command."
 (setq use-package-always-defer t
       use-package-always-ensure t)
 
-;; make use-package more verbose when ´‘--debug-init´ is passed
+;; Make use-package more verbose when `--debug-init' is passed
 ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
 (when init-file-debug
   (setq use-package-verbose t
@@ -264,7 +264,7 @@ The DWIM behaviour of this command is as follows:
    ("v"                   . visual-line-mode)))
 
 ;; no-littering
-;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=..
+;; Use no-littering to automatically set common paths to the new user-emacs-directory =~/.cache/emacs=.
 
 (use-package no-littering
   :demand t
@@ -380,8 +380,8 @@ The DWIM behaviour of this command is as follows:
         (set-fringe-style nil)))))
 
 ;; Configure Packages
-;; We save the following package declaration into separate files in the =modules= directory.
-;; To load the we have to add this directory to the =load-path=.
+;; The package declarations below are tangled into separate files in the =lisp/= directory.
+;; This directory is added to the =load-path=.
 
 (add-to-list 'load-path (expand-file-name "lisp/" emacs-config-directory))
 

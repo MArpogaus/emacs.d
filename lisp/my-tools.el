@@ -27,9 +27,9 @@
   (dired-auto-revert-buffer #'dired-buffer-stale-p)
   ;; Always copy recursively
   (dired-recursive-copies 'always)
-  ;; Ask whether destination dirs should get created when copying/removing files.
+  ;; Ask whether destination dirs should get created when copying/renaming files.
   (dired-create-destination-dirs 'ask)
-  ;; Screens are larger nowadays, we can afford slightly larger thumbnails
+  ;; Slightly larger thumbnails
   (image-dired-thumb-size 150)
   (delete-by-moving-to-trash t)
   (dired-listing-switches
@@ -39,7 +39,7 @@
   ;; Don't drown me in dired buffers
   (dired-kill-when-opening-new-dired-buffer t)
   ;; Enable mouse drag-and-drop support
-  (dired-mouse-drag-files t)                   ; added in Emacs 29
+  (dired-mouse-drag-files t)
   :config
   ;; HACK: Disable weird click behavior
   (define-key dired-mode-map (kbd "<follow-link>") nil t)
@@ -105,7 +105,7 @@
               (lambda (dv)
                 (when (bound-and-true-p global-tab-line-mode)
                   (tab-line-mode (if (dv-curr-layout dv) -1 1)))))
-  :bind ; Bind `dirvish|dirvish-side|dirvish-dwim' as you see fit
+  :bind
   (("C-c f" . dirvish-fd)
    :map my/open-map
    ("D" . dirvish)
@@ -133,8 +133,7 @@
    ("y"         . dirvish-yank-menu)))
 
 ;; ediff :build_in:
-;; The ediff package is utilized to handle file differences in emacs.
-;; We will tweak the Emacs built-in ediff configuration a bit.
+;; Compare files with the built-in ediff, and restore the window layout when ediff quits.
 ;; [[https://panadestein.github.io/emacsd/#org5917c00][Emacs literate configuration]]
 
 
@@ -143,10 +142,10 @@
   :preface
   (defvar my/ediff-original-windows nil)
   (defun my/store-pre-ediff-winconfig ()
-    "This function stores the current window configuration before opening ediff."
+    "Store the current window configuration before ediff opens."
     (setq my/ediff-original-windows (current-window-configuration)))
   (defun my/restore-pre-ediff-winconfig ()
-    "This function resets the original window arrangement."
+    "Restore the window configuration from before ediff."
     (set-window-configuration my/ediff-original-windows))
   :custom
   (ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -192,7 +191,7 @@
    ((prog-mode conf-mode) . flyspell-prog-mode)))
 
 ;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
-;; Distraction-free words correction with flyspell via selected interface.
+;; Correct words with flyspell through the completion interface.
 
 (use-package flyspell-correct
   :after flyspell
@@ -202,7 +201,6 @@
 
 ;; [[https://github.com/Wilfred/helpful.git][helpful]]
 ;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
-;; It is a bit slow to load so we do need load it explicitely.
 
 
 (use-package helpful
@@ -263,7 +261,7 @@
   (pdf-view-mode . pdf-view-themed-minor-mode))
 
 ;; re-builder :build_in:
-;; Change re-builder syntax
+;; Use the string syntax in re-builder.
 
 ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 (use-package re-builder
@@ -274,7 +272,7 @@
 
 ;; server :build_in:
 
-;; Server start.
+;; Start the Emacs server unless one is running.
 
 
 (use-package server
@@ -288,7 +286,7 @@
   (elpaca-after-init . my/server-start))
 
 ;; term :build_in:
-;; Major mode for interacting with a terminal
+;; Major mode for interacting with a terminal.
 
 (use-package term
   :ensure nil
@@ -299,7 +297,7 @@
   (explicit-shell-file-name "/bin/zsh"))
 
 ;; tramp :build_in:
-;; remote file editing through ssh/scp.
+;; Edit remote files through ssh and scp.
 
 ;; Optimizations from: https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 
@@ -350,8 +348,8 @@
         (setq my/vc-git-root-cache (cdr my/vc-git-root-cache)))
       value))
   :config
-  ;; ;; Enable full-featured Dirvish over TRAMP on certain connections
-  ;; ;; https://www.gnu.org/software/tramp/#Improving-performance-of-asynchronous-remote-processes-1.
+  ;; Direct async processes for ssh, scp and sshx connections
+  ;; https://www.gnu.org/software/tramp/#Improving-performance-of-asynchronous-remote-processes-1.
   (connection-local-set-profile-variables
    'remote-direct-async-process
    '((tramp-direct-async-process . t)))

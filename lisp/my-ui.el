@@ -15,7 +15,7 @@
 ;;; Code:
 
 ;; [[https://github.com/LionyxML/auto-dark-emacs.git][auto-dark]]
-;; Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS, Linux or Windows Dark Mode settings.
+;; Switch between a dark and a light theme with the dark mode setting of the system.
 
 (use-package auto-dark
   :custom
@@ -31,12 +31,12 @@
   (breadcrumb-imenu-crumb-separator "  "))
 
 ;; display-line-numbers :build_in:
-;; Enable line numbers for some modes
+;; Enable line numbers for some modes.
 
 (use-package display-line-numbers
   :ensure nil
   :custom
-  ;; Count total number of line on startup for correct width
+  ;; Count total number of lines on startup for correct width
   (display-line-numbers-width-start t)
   :hook
   (((prog-mode conf-mode text-mode) . display-line-numbers-mode)
@@ -48,11 +48,9 @@
 (use-package doom-themes
   :preface
   (defun my/patch-doom-themes (&rest args)
-    "Give the tab bar a foreground it can be read in.
-A doom theme leaves `tab-bar' with the foreground of its own
-background — measured, #f0f0f0 on #f0f0f0 under doom-one-light — so
-everything the row shows that is not a tab is drawn and invisible:
-the clock of `tab-bar-format-global', and any segment beside it."
+    "Give the tab bar a readable foreground.
+A doom theme gives `tab-bar' the foreground of its background, which
+hides the clock of `tab-bar-format-global'."
     (ignore args)
     (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
   :init
@@ -61,8 +59,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
   (add-hook 'enable-theme-functions #'my/patch-doom-themes))
 
 ;; mode-line-invisible :build_in:
-;; Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
-;; whole-session switch is a globalized mode of its own.
+;; Hide the mode line of a buffer; the globalized mode hides it in all buffers.
 
 (define-globalized-minor-mode my/global-mode-line-invisible-mode
   mode-line-invisible-mode
@@ -70,7 +67,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
 
 ;; hl-line :build_in:
 
-;; Highlighting of the current line (native mode)
+;; Highlight the current line.
 
 
 (use-package hl-line
@@ -185,8 +182,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
      '(prog-mode)
      ;; *> */ *)  ** *** ****
      '(("*" (rx (or ">" "/" ")" (+ "*"))))))
-    ;; Enables ligature checks globally in all buffers. You can also do it
-    ;; per mode with `ligature-mode'.
+    ;; Enable ligatures in all buffers.
     (global-ligature-mode))
   :hook
   (elpaca-after-init . my/setup-ligatures))
@@ -222,12 +218,12 @@ the clock of `tab-bar-format-global', and any segment beside it."
   :hook elpaca-after-init)
 
 ;; [[https://github.com/rainstormstudio/nerd-icons.el.git][nerd-icons]]
-;; A Library for Nerd Font icons. Required for modline icons.
+;; A library for Nerd Font icons, used by the mode line.
 
 (use-package nerd-icons)
 
 ;; [[https://github.com/haji-ali/procress.git][procress]]
-;; display LaTeX compilation information in the mode line
+;; Display LaTeX compilation information in the mode line.
 
 (use-package procress
   :ensure (:host github :repo "haji-ali/procress")
@@ -287,12 +283,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
    (elpaca-after-init . tab-bar-mode)))
 
 ;; [[https://github.com/MArpogaus/modern-tab][modern-tab]]
-;; The look of both rows of tabs: the tab bar, one tab per tab group, and
-;; the tab line, one tab per buffer of a window.  This used to be
-;; =auto-tab-groups-eyecandy= and the =tab-line= block below it.
-
-;; One declaration, because it is one package: elpaca queues an id once,
-;; and a second =:ensure= of the same id is a duplicate it warns about.
+;; The look of both tab rows: the tab bar with one tab per tab group, and the tab line with one tab per buffer of a window.
 
 (use-package modern-tab
   :ensure (modern-tab :host github :repo "MArpogaus/modern-tab")
@@ -322,17 +313,13 @@ the clock of `tab-bar-format-global', and any segment beside it."
   (modern-tab-line-inactive-indicator-color nil)
   (modern-tab-line-indicator-height my/tabline-height)
   :hook
-  ;; The rows are mine to turn on; each mode only dresses its row.
+  ;; Each mode only styles its row; the host modes turn the rows on.
   ((global-tab-line-mode . modern-tab-line-mode)
    (tab-bar-mode . modern-tab-bar-mode)))
 
 ;; tab-line :build_in:
-;; Configure the build in =tab-line-mode= to display and switch between windows buffers via tabs.
-
-;; The look and the behaviour of the tabs are [[https://github.com/MArpogaus/modern-tab][modern-tab]], configured
-;; above: the icon per buffer, the close button that buries or kills, and
-;; the row that hides itself where a window shows one buffer.  What stays
-;; here is which buffers get a tab line at all.
+;; Show the buffers of a window as tabs with the built-in =tab-line-mode=.
+;; [[https://github.com/MArpogaus/modern-tab][modern-tab]] above draws the tabs; this block selects which buffers get a tab line.
 
 
 (use-package tab-line

@@ -15,7 +15,7 @@
 ;;; Code:
 
 ;; [[https://github.com/emacs-straight/auctex.git][auctex]]
-;; Integrated environment for *TeX*
+;; Integrated environment for *TeX*.
 
 (use-package auctex
   :preface
@@ -331,10 +331,8 @@
   :preface
   (defun my/combobulate-mode-maybe ()
     "Turn `combobulate-mode' on in a buffer that tree-sitter has parsed.
-The mode errors where the language has no grammar, and `set-auto-mode'
-reports that error rather than raising it: the rest of the major mode
-setup is dropped, `after-change-major-mode-hook' included, and every
-globalized minor mode stays off in the buffer."
+Without a grammar the mode errors, and `set-auto-mode' then drops the
+rest of the major mode setup, globalized minor modes included."
     (when (treesit-parser-list) (combobulate-mode 1)))
   :config
   (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
@@ -390,7 +388,7 @@ globalized minor mode stays off in the buffer."
   ;; Save buffers on startup, useful for interpreted languages
   (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
   :hook
-  ;; Set breakpints via fringe or margin mouse clicks
+  ;; Set breakpoints via fringe or margin mouse clicks
   (prog-mode . dape-breakpoint-global-mode))
 
 ;; [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
@@ -452,7 +450,7 @@ globalized minor mode stays off in the buffer."
   :init (eglot-booster-mode))
 
 ;; [[https://github.com/emacs-straight/eldoc.git][eldoc]] :build_in:
-;; Configure emacs documentation support.
+;; Configure Emacs documentation support.
 
 (use-package eldoc
   :ensure nil
@@ -481,8 +479,7 @@ globalized minor mode stays off in the buffer."
     (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
 
 ;; elisp-mode :build_in:
-;; Font lock for Emacs Lisp from a code analysis rather than from the symbol
-;; alone: a let-bound variable no longer reads as a function call.
+;; Font lock for Emacs Lisp from code analysis rather than from the symbol alone, so a let-bound variable does not read as a function call.
 
 (use-package elisp-mode
   :ensure nil
@@ -522,18 +519,8 @@ globalized minor mode stays off in the buffer."
   (require 'ess-site))
 
 ;; [[https://github.com/polymode/poly-R][poly-R]]
-;; One buffer, two major modes: markdown for the prose of an =.Rmd= file and
-;; =ess-r-mode= inside every =```{r}= chunk, so the chunks are fontified and
-;; indented as R.  polymode does that with an indirect buffer per chunk,
-;; and would switch to it when the point enters one; =overblock-rmd= below
-;; keeps the buffer in its host mode instead, since the switch carried its
-;; bars and results along and drew them twice.  Evaluation is the
-;; notebook's, on the keys of =overblock-rmd-mode-map=.
-
-;; =poly-markdown+r-mode= is what an =.Rmd= file wants; the =gfm= variant
-;; reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=.
-;; The results of a chunk are shown inline
-;; by [[https://github.com/MArpogaus/overblock][overblock-rmd]], further down.
+;; Markdown for the prose of an =.Rmd= file and =ess-r-mode= in every =```{r}= chunk, through an indirect buffer per chunk.
+;; [[https://github.com/MArpogaus/overblock][overblock-rmd]] keeps the buffer in its host mode, shows chunk results inline and evaluates on the keys of =overblock-rmd-mode-map=.
 
 (use-package poly-R
   :ensure (poly-R :host github :repo "polymode/poly-R")
@@ -568,9 +555,7 @@ globalized minor mode stays off in the buffer."
         ("f" . format-all-buffer)))
 
 ;; hideshow :build_in:
-;; Code folding.  Hideshow reads tree-sitter's =list= thing where the mode
-;; defines one, so a parsed buffer folds the same way as an unparsed one and
-;; folding needs no package of its own.
+;; Code folding. Hideshow uses the tree-sitter =list= thing where the mode defines one, so no extra folding package is needed.
 
 (use-package hideshow
   :ensure nil
@@ -601,39 +586,20 @@ globalized minor mode stays off in the buffer."
   :after python)
 
 ;; [[https://github.com/purcell/inheritenv][inheritenv]]
-;; Carry a buffer's environment into the temp buffers that commands make: a
-;; buffer-local =process-environment= is invisible to =shell-command= and its
-;; like without help.  =ben= brings the package along for the buffers direnv
-;; owns; =my/python-env-mode= below uses it for the buffers it owns itself.
+;; Carry the environment of a buffer into the temp buffers that commands make: =shell-command= and similar commands do not see a buffer-local =process-environment=.
 
 (use-package inheritenv)
 
 ;; python :build_in:
-;; Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
-;; environment.  =executable-find= is evaluated per buffer, so it picks up a
-;; project-local IPython installed by =uv= or exported by =ben=, and the result is
-;; stored as an absolute path so the REPL keeps using that interpreter.
+;; Use IPython as the REPL when one is on the =PATH= of the buffer's environment, stored as an absolute path.
 
-;; A project without an =.envrc= gets its environment from =C-c v= (=C-p v= with
-;; =standard-keys-mode=); =C-c V= drops it again.  An environment is any
-;; directory with a =bin/python= inside, so a venv and a conda prefix are the
-;; same thing here, and the presence of =conda-meta= says which variable to
-;; export.  The command looks in the project root first: it takes the only
-;; environment it finds there, asks which one where there are several, and
-;; falls back to the environments of =my/python-env-parents= (conda, mamba,
-;; =virtualenvwrapper=) where the project holds none.
+;; =C-c v= (=C-p v= with =standard-keys-mode=) picks a Python environment for a project without an =.envrc=; =C-c V= drops it.
+;; An environment is any directory with a =bin/python=; =conda-meta= selects =CONDA_PREFIX= over =VIRTUAL_ENV=.
+;; The command takes the only environment in the project root, asks if there are several, and else offers those under =my/python-env-parents=.
 
-;; =my/python-env-mode= carries the choice, one buffer at a time, so two
-;; projects can use two environments in one session.  It is a globalized mode
-;; after the manner of =ben-global-mode=: the mode goes on in every buffer and
-;; does nothing until the buffer's project has a choice to apply, which is
-;; also what lets a buffer opened later pick the choice up.  A per-major-mode
-;; hook cannot do this job, because =python.el= loads inside the first Python
-;; buffer's own mode setup, too late for that buffer.
-
-;; To activate an environment without being asked at all, put
-;; =my/python-env-path= in a =.dir-locals.el=: the variable is read per buffer
-;; and takes precedence over the choice made with the command.
+;; =my/python-env-mode= applies the choice per buffer, so two projects can use two environments.
+;; It is a globalized mode: =python.el= loads inside the mode setup of the first Python buffer, too late for a major mode hook.
+;; =my/python-env-path= in a =.dir-locals.el= sets an environment without asking and takes precedence.
 
 (use-package python
   :ensure nil
@@ -656,8 +622,7 @@ precedence over anything `my/python-env-activate' chose.")
 
   (defvar-local my/python-env--applied nil
     "Environment `my/python-env-mode' put into this buffer.
-It also says the environment here is ours, so clearing one never takes
-away what `ben' exported.")
+Clearing removes only this, never what `ben' exported.")
 
   (defun my/python-env-dir ()
     "Return the directory an environment is keyed on: the project root, or this one."
@@ -671,9 +636,8 @@ away what `ben' exported.")
                      (directory-files parent t directory-files-no-dot-files-regexp))))
 
   (defun my/python-env-read ()
-    "Return the environment of this project, asking where the answer is open.
-The single environment of the project root needs no question; several of
-them, or none there at all, do."
+    "Return the environment of this project, asking if needed.
+Ask unless the project root holds exactly one environment."
     (let ((local (my/python-env--in (my/python-env-dir))))
       (if (and local (not (cdr local)))
           (car local)
@@ -690,10 +654,8 @@ them, or none there at all, do."
 
   (defun my/python-env--set ()
     "Put the environment chosen for this buffer into this buffer.
-Whatever an earlier call gave it goes first, so a new choice replaces the
-old one instead of stacking on it.  Buffers under an `.envrc' get nothing
-from us: `ben' exports an environment there already, and direnv is the
-one that says what it holds."
+Clear the previous one first.  Do nothing under an `.envrc', where
+`ben' exports the environment."
     (my/python-env--clear)
     (when-let* (((not (eq (bound-and-true-p ben--status) 'on)))
                 (env (or my/python-env-path
@@ -726,7 +688,7 @@ buffer alone."
     :predicate t)
 
   (defun my/python-env--refresh (dir)
-    "Give every buffer that DIR keys its environment again."
+    "Set the environment again in every buffer keyed on DIR."
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
         (when (and my/python-env-mode (equal dir (my/python-env-dir)))
@@ -734,7 +696,7 @@ buffer alone."
 
   (defun my/python-env-activate (env)
     "Use ENV in every buffer of this buffer's project, and in the ones to come.
-ENV nil drops the choice again, which is `my/python-env-deactivate'."
+If ENV is nil, drop the choice."
     (interactive (list (my/python-env-read)))
     (let ((dir (my/python-env-dir)))
       (setf (alist-get dir my/python-env-alist nil (null env) #'equal) env)
@@ -779,8 +741,7 @@ ENV nil drops the choice again, which is `my/python-env-deactivate'."
   :preface
   (defun my/symbols-outline-toggle ()
     "Show the symbols outline, or close its window when it is up.
-`symbols-outline-show' only ever shows: called again it selects the
-window it already made, so a key bound to it cannot put the panel away."
+`symbols-outline-show' never closes the window."
     (interactive)
     (if-let* ((window (and
                        (bound-and-true-p symbols-outline-buffer-name)

@@ -48,8 +48,8 @@ pick PROMPT, which also goes to an agent that runs already."
            (shell (seq-find (lambda (buffer)
                               (file-equal-p (buffer-local-value 'default-directory buffer) dir))
                             (agent-shell-buffers))))
-      ;; In a main window: shown the usual way, auto-side-windows puts
-      ;; the agenda in a panel.
+      ;; In a main window: shown the usual way, auto-side-windows would
+      ;; put the agenda in a panel.
       (save-window-excursion (org-agenda nil "g"))
       (let ((main (seq-find (lambda (window) (not (window-parameter window 'window-side)))
                             (window-list nil 'no-mini))))

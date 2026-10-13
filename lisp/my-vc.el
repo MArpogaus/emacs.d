@@ -31,7 +31,7 @@
     (setcar (nthcdr 2 args) "")
     (apply orig-func args))
   (defun my/diff-hl-fix-face-colors (&rest _)
-    "Set foreground to background color for diff-hl faces"
+    "Set foreground to background color for diff-hl faces."
     (seq-do (lambda (face)
               (if-let* ((color (face-background face)))
                   (progn (set-face-foreground face color)

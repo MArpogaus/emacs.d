@@ -160,8 +160,7 @@
         ("<return>"   . y-or-n-p-insert-y)))
 
 ;; which-key :build_in:
-;; The mode displays the key bindings following your currently entered incomplete command (a ;; prefix) in a popup.
-;; Built into Emacs since 30.1, so no package is needed.
+;; Show the key bindings that follow an incomplete command in a popup.
 
 (use-package which-key
   :ensure nil
