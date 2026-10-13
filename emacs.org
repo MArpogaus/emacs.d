@@ -962,7 +962,7 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     (org-capture-templates
      `(("i" "Inbox" entry  (file "agenda/inbox.org")
         "* TODO %?\n")
-       ("m" "Meeting" entry  (file+headline "agenda/agenda.org" "Future")
+       ("m" "Meeting" entry  (file+headline "agenda/gtd.org" "Termine")
         ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
 
     ;; org-agenda
@@ -972,54 +972,17 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     ;; Refile and Archive
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
-    (org-refile-targets `((,(expand-file-name  "agenda/agenda.org" org-directory) :maxlevel . 3)
-                          (,(expand-file-name  "agenda/projects.org" org-directory) :regexp . "\\(?:\\(?:Note\\|Task\\)s\\)")
-                          (,(expand-file-name  "agenda/literature.org" org-directory) :maxlevel . 2)
-                          (,(expand-file-name  "agenda/scheduled.org" org-directory) :maxlevel . 2)))
+    (org-refile-targets '((org-agenda-files :maxlevel . 3)))
     (org-agenda-custom-commands
      '(("g" "Get Things Done (GTD)"
-        ((agenda ""
-                 ((org-agenda-span 'day)
-                  (org-agenda-start-day "today")
-                  (org-agenda-skip-function
-                   '(org-agenda-skip-entry-if 'deadline))
-                  (org-deadline-warning-days 0)))
-         (todo "PROJ"
-               ((org-agenda-skip-function
-                 '(org-agenda-skip-subtree-if 'nottodo '("NEXT" "STRT")))
-                (org-agenda-overriding-header "Active Projects:")))
-         (todo "STRT"
-               ((org-agenda-skip-function
-                 '(org-agenda-skip-entry-if 'deadline))
-                (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                (org-agenda-overriding-header "\nActive Tasks\n")
-                ))  ; Exclude entries with LITERATURE category
-         (todo "NEXT"
-               ((org-agenda-skip-function
-                 '(org-agenda-skip-entry-if 'deadline))
-                (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                (org-agenda-overriding-header "\nNext Tasks\n")))
-         (agenda nil
-                 ((org-agenda-entry-types '(:deadline))
-                  (org-agenda-format-date "")
-                  (org-deadline-warning-days 7)
-                  (org-agenda-skip-function
-                   '(org-agenda-skip-entry-if 'notregexp "\\* NEXT"))
-                  (org-agenda-overriding-header "\nDeadlines")))
-         (tags-todo "inbox"
-                    ((org-agenda-prefix-format "  %?-12t% s")
-                     (org-agenda-overriding-header "\nInbox\n")))
-         (todo "HOLD|WAIT"
-               ((org-agenda-skip-function
-                 '(org-agenda-skip-entry-if 'deadline))
-                (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-                (org-agenda-prefix-format "  %i %-12:c [%e] ")
-                (org-agenda-overriding-header "\nPaused Tasks\n")))
-         (tags "CLOSED>=\"<today>\""
-               ((org-agenda-overriding-header "\nCompleted today\n"))))
-        ((org-agenda-category-filter-preset '("-LITERATURE"))))
+        ((agenda "" ((org-agenda-span 'day)
+                     (org-deadline-warning-days 7)))
+         (todo "NEXT" ((org-agenda-overriding-header "\nNext")))
+         (todo "WAIT" ((org-agenda-overriding-header "\nWaiting")))
+         (tags-todo "inbox" ((org-agenda-overriding-header "\nInbox"))))
+        ((org-agenda-tag-filter-preset '("-literature"))
+         (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
+         (org-agenda-prefix-format "  %i %-12:c [%e] ")))
        ("l" "Literature" tags-todo "literature"
         ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
          (org-agenda-prefix-format "  %i %-12:c [%e] ")))))
