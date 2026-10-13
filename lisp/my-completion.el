@@ -502,18 +502,7 @@
 
   ;; Enable Mouse support
   (vertico-mouse-mode t)
-  :preface
-  ;; Add prompt indicator to `completing-read-multiple'.
-  ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-  (defun crm-indicator (args)
-    (cons (format "[CRM%s] %s"
-                  (replace-regexp-in-string
-                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-                   crm-separator)
-                  (car args))
-          (cdr args)))
   :config
-  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
   (require 'vertico-directory)
   ;; <return> in `vertico-map' is `my/embark-act-or-vertico-enter'.
   :hook
