@@ -815,6 +815,7 @@ This directory is added to the =load-path=.
   (use-package ob
     :ensure nil
     :after org
+    :demand t
     :custom
     (org-babel-load-languages
      '((emacs-lisp . t)
@@ -3712,7 +3713,9 @@ Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
 #+begin_src emacs-lisp
   (use-package magit-todos
     :after magit
-    :init (magit-todos-mode))
+    :demand t
+    :config
+    (magit-todos-mode))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
@@ -4264,9 +4267,11 @@ A client for Language Server Protocol servers.
 Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 #+begin_src emacs-lisp
   (use-package eglot-booster
-    :after eglot
     :ensure (:host github :repo "jdtsmith/eglot-booster")
-    :init (eglot-booster-mode))
+    :after eglot
+    :demand t
+    :config
+    (eglot-booster-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/eldoc.git][eldoc]] :build_in:
 Configure Emacs documentation support.

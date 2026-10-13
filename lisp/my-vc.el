@@ -111,7 +111,9 @@
 
 (use-package magit-todos
   :after magit
-  :init (magit-todos-mode))
+  :demand t
+  :config
+  (magit-todos-mode))
 
 ;; ZZ Library Footer
 

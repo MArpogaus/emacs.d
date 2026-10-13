@@ -19,6 +19,7 @@
 (use-package ob
   :ensure nil
   :after org
+  :demand t
   :custom
   (org-babel-load-languages
    '((emacs-lisp . t)

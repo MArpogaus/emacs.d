@@ -446,9 +446,11 @@ Tempel comes after :with, so the capf answers only when eglot does."
 ;; Boost eglot using [[https://github.com/blahgeek/emacs-lsp-booster][lsp-booster]].
 
 (use-package eglot-booster
-  :after eglot
   :ensure (:host github :repo "jdtsmith/eglot-booster")
-  :init (eglot-booster-mode))
+  :after eglot
+  :demand t
+  :config
+  (eglot-booster-mode))
 
 ;; [[https://github.com/emacs-straight/eldoc.git][eldoc]] :build_in:
 ;; Configure Emacs documentation support.
