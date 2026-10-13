@@ -73,11 +73,6 @@ pick PROMPT, which also goes to an agent that runs already."
   :autoload agent-shell-buffers
   :custom
   (agent-shell-header-style 'text)
-  (agent-shell-display-action
-   '((auto-side-windows--display-buffer)
-     .
-     ((auto-side-windows-side . right)
-      (body-function . select-window))))
   :bind
   (:map my/ai-map
         ("s" . agent-shell)
@@ -119,10 +114,6 @@ Triggered after the first response is received in a new buffer."
   (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
   :custom
   (gptel-default-mode 'org-mode)
-  (gptel-display-buffer-action
-   '(auto-side-windows--display-buffer
-     (auto-side-windows-side . right)
-     (body-function . select-window)))
   :config
   (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
   (gptel-make-openai "OpenRouter"

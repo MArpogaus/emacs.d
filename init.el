@@ -149,7 +149,7 @@ An idle save comes from `auto-save-visited-mode', not from a command."
 ;; 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.
 ;; 5. A package with only commands needs no =:after=: its autoloads load it.
 ;; 6. A block with =:config= needs a trigger: =:hook=, =:bind=, =:mode=, =:commands=, =:demand=, or a load by Emacs or another package.
-;; 7. A setting and a key go into the block of the package that owns the variable or the keymap.
+;; 7. A setting and a key go into the block of the package that owns the variable or the keymap. Window rules all stay in the auto-side-windows block.
 ;; 8. Advice goes into =:config=, or into =:init= when it must work before the package loads.
 ;; 9. A block without keywords only installs the package.
 ;; 10. No =require= and no =with-eval-after-load= in a block.

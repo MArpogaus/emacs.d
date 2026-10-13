@@ -75,17 +75,6 @@
   (:map my/version-control-map
         ("t" . git-timemachine)))
 
-;; transient :build_in:
-;; Menus of magit, gptel and others. elpaca installs it as a dependency of magit.
-
-(use-package transient
-  :ensure nil
-  :custom
-  (transient-display-buffer-action
-   '(auto-side-windows--display-buffer
-     (auto-side-windows-side . top)))
-  (transient-mode-line-format nil))
-
 ;; [[https://github.com/magit/magit.git][magit]]
 ;; The magical git client.
 
@@ -93,8 +82,6 @@
 (use-package magit
   :custom
   (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
-  (magit-display-buffer-function #'display-buffer)
-  (magit-commit-diff-inhibit-same-window t)
   (magit-tramp-pipe-stty-settings 'pty)
   :preface
   ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./

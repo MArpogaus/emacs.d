@@ -303,6 +303,21 @@ A relative remap stacks, and redisplay runs again and again.")
              (header-line-format . t)
              (mode-line-format . t))))
   (org-src-window-setup 'plain)
+  (magit-display-buffer-function #'display-buffer)
+  (magit-commit-diff-inhibit-same-window t)
+  (transient-display-buffer-action
+   '(auto-side-windows--display-buffer
+     (auto-side-windows-side . top)))
+  (transient-mode-line-format nil)
+  (gptel-display-buffer-action
+   '(auto-side-windows--display-buffer
+     (auto-side-windows-side . right)
+     (body-function . select-window)))
+  (agent-shell-display-action
+   '((auto-side-windows--display-buffer)
+     .
+     ((auto-side-windows-side . right)
+      (body-function . select-window))))
   :bind
   (:map my/toggle-map
         ("w" .  window-toggle-side-windows)

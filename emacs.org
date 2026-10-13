@@ -552,7 +552,7 @@ Every package loads lazily. A =use-package= block follows these rules:
 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.
 5. A package with only commands needs no =:after=: its autoloads load it.
 6. A block with =:config= needs a trigger: =:hook=, =:bind=, =:mode=, =:commands=, =:demand=, or a load by Emacs or another package.
-7. A setting and a key go into the block of the package that owns the variable or the keymap.
+7. A setting and a key go into the block of the package that owns the variable or the keymap. Window rules all stay in the auto-side-windows block.
 8. Advice goes into =:config=, or into =:init= when it must work before the package loads.
 9. A block without keywords only installs the package.
 10. No =require= and no =with-eval-after-load= in a block.
@@ -1974,6 +1974,21 @@ Revert buffers when the underlying file has changed.
                (header-line-format . t)
                (mode-line-format . t))))
     (org-src-window-setup 'plain)
+    (magit-display-buffer-function #'display-buffer)
+    (magit-commit-diff-inhibit-same-window t)
+    (transient-display-buffer-action
+     '(auto-side-windows--display-buffer
+       (auto-side-windows-side . top)))
+    (transient-mode-line-format nil)
+    (gptel-display-buffer-action
+     '(auto-side-windows--display-buffer
+       (auto-side-windows-side . right)
+       (body-function . select-window)))
+    (agent-shell-display-action
+     '((auto-side-windows--display-buffer)
+       .
+       ((auto-side-windows-side . right)
+        (body-function . select-window))))
     :bind
     (:map my/toggle-map
           ("w" .  window-toggle-side-windows)
@@ -2950,11 +2965,6 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
     :autoload agent-shell-buffers
     :custom
     (agent-shell-header-style 'text)
-    (agent-shell-display-action
-     '((auto-side-windows--display-buffer)
-       .
-       ((auto-side-windows-side . right)
-        (body-function . select-window))))
     :bind
     (:map my/ai-map
           ("s" . agent-shell)
@@ -2996,10 +3006,6 @@ A simple LLM client for Emacs.
     (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
     :custom
     (gptel-default-mode 'org-mode)
-    (gptel-display-buffer-action
-     '(auto-side-windows--display-buffer
-       (auto-side-windows-side . right)
-       (body-function . select-window)))
     :config
     (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
     (gptel-make-openai "OpenRouter"
@@ -3609,17 +3615,6 @@ Emacs package for highlighting uncommitted changes.
     (:map my/version-control-map
           ("t" . git-timemachine)))
 #+end_src
-**** transient :build_in:
-Menus of magit, gptel and others. elpaca installs it as a dependency of magit.
-#+begin_src emacs-lisp
-  (use-package transient
-    :ensure nil
-    :custom
-    (transient-display-buffer-action
-     '(auto-side-windows--display-buffer
-       (auto-side-windows-side . top)))
-    (transient-mode-line-format nil))
-#+end_src
 **** [[https://github.com/magit/magit.git][magit]]
 The magical git client.
 
@@ -3627,8 +3622,6 @@ The magical git client.
   (use-package magit
     :custom
     (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
-    (magit-display-buffer-function #'display-buffer)
-    (magit-commit-diff-inhibit-same-window t)
     (magit-tramp-pipe-stty-settings 'pty)
     :preface
     ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
