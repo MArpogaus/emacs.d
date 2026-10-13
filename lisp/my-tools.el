@@ -123,7 +123,6 @@
    ("M-b"       . dirvish-history-go-backward)
    ("M-e"       . dirvish-emerge-menu)
    ("M-f"       . dirvish-history-go-forward)
-   ("M-j"       . dirvish-fd-jump)
    ("M-l"       . dirvish-ls-switches-menu)
    ("M-m"       . dirvish-mark-menu)
    ("M-s"       . dirvish-setup-menu)
@@ -131,13 +130,11 @@
    ("<tab>"     . dirvish-subtree-toggle)
    ("^"         . dirvish-history-last)
    ("a"         . dirvish-quick-access)
-   ("b"         . dirvish-goto-bookmark)
    ("f"         . dirvish-file-info-menu)
    ("h"         . dirvish-history-jump) ; remapped `describe-mode'
    ("s"         . dirvish-quicksort)    ; remapped `dired-sort-toggle-or-edit'
    ("v"         . dirvish-vc-menu)      ; remapped `dired-view-file'
-   ("y"         . dirvish-yank-menu)
-   ("z"         . dirvish-show-history)))
+   ("y"         . dirvish-yank-menu)))
 
 ;; ediff :build_in:
 ;; The ediff package is utilized to handle file differences in emacs.
