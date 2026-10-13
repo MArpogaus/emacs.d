@@ -3382,12 +3382,6 @@ Additional featureful completion commands.
      consult-source-recent-file consult-source-project-recent-file
      :preview-key '(:debounce 0.4 any)))
 #+end_src
-**** [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
-Searching and jumping to TODO keywords using consult.
-#+begin_src emacs-lisp
-  (use-package consult-todo
-    :after consult hl-todo)
-#+end_src
 **** [[https://github.com/emacs-straight/corfu.git][corfu]]
 Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibuffer UI.
 #+begin_src emacs-lisp
