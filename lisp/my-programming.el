@@ -613,9 +613,8 @@ globalized minor mode stays off in the buffer."
   :custom
   ;; Show the size of a fold; no fringe indicators, diff-hl is there.
   (hs-display-lines-hidden t)
-  :bind
-  (:map hs-minor-mode-map
-        ("<backtab>" . hs-cycle))
+  ;; TAB at the start of a block line cycles it; <backtab> stays the mode's.
+  (hs-cycle-filter #'bolp)
   ;; YAML folds with `outline-indent'.
   :hook
   ((prog-mode conf-mode) . hs-minor-mode))
