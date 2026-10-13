@@ -954,7 +954,9 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
           ("i" . my/org-capture-inbox)
           ("I" . my/org-capture-note)
           :map my/open-map
-          ("a" . org-agenda)))
+          ("a" . org-agenda)
+          :map org-mode-map
+          ("C-c P" . org-present)))
 #+end_src
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
@@ -1219,9 +1221,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       ;; Show only direct subheadings of the slide but don't expand them
       (org-fold-show-children))
     :bind
-    (:map org-mode-map
-          ("C-c P"         . org-present)
-          :map org-present-mode-keymap
+    (:map org-present-mode-keymap
           ("q"         . org-present-quit)
           ("C-<left>"  . org-present-prev)
           ("C-<right>" . org-present-next))
@@ -2707,6 +2707,12 @@ Make Emacs use the $PATH set up by the user's shell.
     :config
     ;; `ispell-change-dictionary' is a command, not a hook
     (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
+    :bind
+    (:map flyspell-mode-map
+          ("C-;" . flyspell-correct-wrapper)
+          :map flyspell-mouse-map
+          ("RET" . flyspell-correct-at-point)
+          ([mouse-1] . flyspell-correct-at-point))
     :hook
     ((text-mode . flyspell-mode)
      ((prog-mode conf-mode) . flyspell-prog-mode)))
@@ -2714,11 +2720,7 @@ Make Emacs use the $PATH set up by the user's shell.
 **** [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
 Correct words with flyspell through the completion interface.
 #+begin_src emacs-lisp
-  (use-package flyspell-correct
-    :after flyspell
-    :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-                :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-                ([mouse-1] . flyspell-correct-at-point)))
+  (use-package flyspell-correct)
 #+end_src
 **** [[https://github.com/Wilfred/helpful.git][helpful]]
 [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.
@@ -3421,14 +3423,10 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 #+begin_src emacs-lisp
   (use-package embark
-    :after which-key vertico
     :bind
     (("C-." . my/embark-act-maybe-all)
      ("C-:" . embark-dwim)        ;; good alternative: M-.
-     ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
-     :map vertico-map
-     ("C-SPC" . my/embark-select-vertico)
-     ("<return>" . my/embark-act-or-vertico-enter))
+     ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
     :custom
     ;; Optionally replace the key help with a completing-read interface
     (prefix-help-command #'embark-prefix-help-command)
@@ -3591,14 +3589,14 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ;; Enable recursive minibuffers
     (enable-recursive-minibuffers t)
 
-    ;; Enable Mouse support
-    (vertico-mouse-mode t)
-    :config
-    (require 'vertico-directory)
-    ;; <return> in `vertico-map' is `my/embark-act-or-vertico-enter'.
+    :bind
+    (:map vertico-map
+          ("C-SPC" . my/embark-select-vertico)
+          ("<return>" . my/embark-act-or-vertico-enter))
     :hook
     ((minibuffer-setup . cursor-intangible-mode)
-     (elpaca-after-init . vertico-mode)))
+     (elpaca-after-init . vertico-mode)
+     (elpaca-after-init . vertico-mouse-mode)))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp

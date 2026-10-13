@@ -158,7 +158,9 @@
         ("i" . my/org-capture-inbox)
         ("I" . my/org-capture-note)
         :map my/open-map
-        ("a" . org-agenda)))
+        ("a" . org-agenda)
+        :map org-mode-map
+        ("C-c P" . org-present)))
 
 ;; [[https://github.com/awth13/org-appear.git][org-appear]]
 ;; Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
@@ -423,9 +425,7 @@
     ;; Show only direct subheadings of the slide but don't expand them
     (org-fold-show-children))
   :bind
-  (:map org-mode-map
-        ("C-c P"         . org-present)
-        :map org-present-mode-keymap
+  (:map org-present-mode-keymap
         ("q"         . org-present-quit)
         ("C-<left>"  . org-present-prev)
         ("C-<right>" . org-present-next))

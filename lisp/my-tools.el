@@ -184,6 +184,12 @@
   :config
   ;; `ispell-change-dictionary' is a command, not a hook
   (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
+  :bind
+  (:map flyspell-mode-map
+        ("C-;" . flyspell-correct-wrapper)
+        :map flyspell-mouse-map
+        ("RET" . flyspell-correct-at-point)
+        ([mouse-1] . flyspell-correct-at-point))
   :hook
   ((text-mode . flyspell-mode)
    ((prog-mode conf-mode) . flyspell-prog-mode)))
@@ -191,11 +197,7 @@
 ;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
 ;; Correct words with flyspell through the completion interface.
 
-(use-package flyspell-correct
-  :after flyspell
-  :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)
-              :map flyspell-mouse-map ("RET" . flyspell-correct-at-point)
-              ([mouse-1] . flyspell-correct-at-point)))
+(use-package flyspell-correct)
 
 ;; [[https://github.com/Wilfred/helpful.git][helpful]]
 ;; [[https://github.com/Wilfred/helpful][Helpful]] is an alternative to the built-in Emacs help that provides much more contextual information.

@@ -252,14 +252,10 @@
 ;; Embark makes it easy to choose a command to run based on what is near point, both during a minibuffer completion session (in a way familiar to Helm or Counsel users) and in normal buffers.
 
 (use-package embark
-  :after which-key vertico
   :bind
   (("C-." . my/embark-act-maybe-all)
    ("C-:" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)  ;; alternative for `describe-bindings'
-   :map vertico-map
-   ("C-SPC" . my/embark-select-vertico)
-   ("<return>" . my/embark-act-or-vertico-enter))
+   ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
   :custom
   ;; Optionally replace the key help with a completing-read interface
   (prefix-help-command #'embark-prefix-help-command)
@@ -422,14 +418,14 @@ target, followed by an ellipsis if there are further targets."
   ;; Enable recursive minibuffers
   (enable-recursive-minibuffers t)
 
-  ;; Enable Mouse support
-  (vertico-mouse-mode t)
-  :config
-  (require 'vertico-directory)
-  ;; <return> in `vertico-map' is `my/embark-act-or-vertico-enter'.
+  :bind
+  (:map vertico-map
+        ("C-SPC" . my/embark-select-vertico)
+        ("<return>" . my/embark-act-or-vertico-enter))
   :hook
   ((minibuffer-setup . cursor-intangible-mode)
-   (elpaca-after-init . vertico-mode)))
+   (elpaca-after-init . vertico-mode)
+   (elpaca-after-init . vertico-mouse-mode)))
 
 ;; ZZ Library Footer
 
