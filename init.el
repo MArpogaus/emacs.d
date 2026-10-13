@@ -141,6 +141,19 @@ An idle save comes from `auto-save-visited-mode', not from a command."
   (elpaca-use-package-mode))
 
 ;; Configure use-package
+;; Every package loads lazily. A =use-package= block follows these rules:
+
+;; 1. A global mode starts with =:hook (elpaca-after-init . MODE)=.
+;; 2. A mode for some buffers starts from the hook of their mode.
+;; 3. An add-on that must be active with package X: =:after X :demand t=, its mode in =:config=.
+;; 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.
+;; 5. A package with only commands needs no =:after=: its autoloads load it.
+;; 6. A block with =:config= needs a trigger: =:hook=, =:bind=, =:mode=, =:commands=, =:demand=, or a load by Emacs or another package.
+;; 7. A setting and a key go into the block of the package that owns the variable or the keymap.
+;; 8. Advice goes into =:config=, or into =:init= when it must work before the package loads.
+;; 9. A block without keywords only installs the package.
+;; 10. No =require= and no =with-eval-after-load= in a block.
+
 
 ;; Enable lazy loading per default
 (setq use-package-always-defer t
