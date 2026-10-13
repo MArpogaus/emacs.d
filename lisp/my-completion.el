@@ -182,6 +182,15 @@
 
 (use-package corfu
   :custom
+  ;; In every minibuffer but Vertico's and a password prompt, without
+  ;; automatic echo and popup.
+  (global-corfu-minibuffer
+   (lambda ()
+     (unless (or (bound-and-true-p vertico--input)
+                 (eq (current-local-map) read-passwd-map))
+       (setq-local corfu-echo-delay nil
+                   corfu-popupinfo-delay nil)
+       t)))
 
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
@@ -197,15 +206,6 @@
   (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
   (corfu-popupinfo-delay '(1.0 . 0.0));; Initial and subsequent delay for info popup in seconds
   :preface
-  ;; Completing in the minibuffer
-  (defun my/corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico is not active."
-    (unless (or (bound-and-true-p vertico--input)
-                (eq (current-local-map) read-passwd-map))
-      (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
-                  corfu-popupinfo-delay nil)
-      (corfu-mode 1)))
-
   ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
   (defun my/corfu-insert-separator-advice (orig-func &rest args)
     "Quit completion if there exist no candiates"
@@ -221,9 +221,6 @@
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
-  (require 'corfu-echo)
-  (require 'corfu-history)
-  (require 'corfu-popupinfo)
   (eldoc-add-command #'corfu-insert)
   (advice-add 'corfu-insert-separator :around #'my/corfu-insert-separator-advice)
   :bind
@@ -244,9 +241,7 @@
    ;; disable auto completion for eshell, such that the completion behavior is similar to widely used shells like Bash, Zsh or Fish.
    (eshell-mode . (lambda ()
                     (setq-local corfu-auto nil)
-                    (corfu-mode)))
-   ;; Enable minibuffer completion
-   (minibuffer-setup . my/corfu-enable-always-in-minibuffer)))
+                    (corfu-mode)))))
 
 ;; dabbrev :build_in:
 
@@ -380,12 +375,9 @@
 ;; Icons for corfu via nerd-icons.
 
 (use-package nerd-icons-corfu
-  :after nerd-icons
-  :preface
-  (defun my/add-nerd-icons-formatter nil
-    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-  :hook
-  (corfu-mode . my/add-nerd-icons-formatter))
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; [[https://github.com/oantolin/orderless.git][orderless]]
 ;; Emacs completion style that matches multiple regexps in any order
