@@ -43,46 +43,39 @@
                      (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")))
   (citar-symbol-separator "  ")
   :config
-  (defvar citar-indicator-files-icons
-    (citar-indicator-create
-     :symbol (nerd-icons-faicon
-              "nf-fa-file_o"
-              :face 'nerd-icons-green
-              :v-adjust -0.1)
-     :function #'citar-has-files
-     :padding "  " ; need this because the default padding is too low for these icons
-     :tag "has:files"))
-  (defvar citar-indicator-links-icons
-    (citar-indicator-create
-     :symbol (nerd-icons-octicon
-              "nf-oct-link"
-              :face 'nerd-icons-orange
-              :v-adjust 0.01)
-     :function #'citar-has-links
-     :padding "  "
-     :tag "has:links"))
-  (defvar citar-indicator-notes-icons
-    (citar-indicator-create
-     :symbol (nerd-icons-mdicon
-              "nf-md-pencil"
-              :face 'nerd-icons-blue
-              :v-adjust 0.01)
-     :function #'citar-has-notes
-     :padding "  "
-     :tag "has:notes"))
-  (defvar citar-indicator-cited-icons
-    (citar-indicator-create
-     :symbol (nerd-icons-faicon
-              "nf-fa-circle_o"
-              :face 'nerd-icons-green)
-     :function #'citar-is-cited
-     :padding "  "
-     :tag "is:cited"))
   (setq citar-indicators
-        (list citar-indicator-files-icons
-              citar-indicator-links-icons
-              citar-indicator-notes-icons
-              citar-indicator-cited-icons))
+        (list
+         (citar-indicator-create
+          :symbol (nerd-icons-faicon
+                   "nf-fa-file_o"
+                   :face 'nerd-icons-green
+                   :v-adjust -0.1)
+          :function #'citar-has-files
+          :padding "  " ; need this because the default padding is too low for these icons
+          :tag "has:files")
+         (citar-indicator-create
+          :symbol (nerd-icons-octicon
+                   "nf-oct-link"
+                   :face 'nerd-icons-orange
+                   :v-adjust 0.01)
+          :function #'citar-has-links
+          :padding "  "
+          :tag "has:links")
+         (citar-indicator-create
+          :symbol (nerd-icons-mdicon
+                   "nf-md-pencil"
+                   :face 'nerd-icons-blue
+                   :v-adjust 0.01)
+          :function #'citar-has-notes
+          :padding "  "
+          :tag "has:notes")
+         (citar-indicator-create
+          :symbol (nerd-icons-faicon
+                   "nf-fa-circle_o"
+                   :face 'nerd-icons-green)
+          :function #'citar-is-cited
+          :padding "  "
+          :tag "is:cited")))
   :hook
   ((LaTeX-mode . citar-capf-setup)
    (org-mode . citar-capf-setup)))
