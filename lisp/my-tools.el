@@ -252,14 +252,17 @@
   :magic ("%PDF" . pdf-view-mode)
   :functions (pdf-view-refresh-themed-buffer)
   :preface
-  (defun my/pdf-tools-themed-update-advice (&rest app)
-    (when pdf-view-themed-minor-mode
-      (pdf-view-refresh-themed-buffer t)))
+  (defun my/pdf-tools-refresh-themed-buffers (&rest _)
+    "Refresh every themed PDF buffer to the current theme."
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (bound-and-true-p pdf-view-themed-minor-mode)
+          (pdf-view-refresh-themed-buffer t)))))
   :custom
   (pdf-view-use-scaling t)
   :config
   (pdf-tools-install :no-query)
-  (advice-add #'enable-theme :after #'my/pdf-tools-themed-update-advice)
+  (add-hook 'enable-theme-functions #'my/pdf-tools-refresh-themed-buffers)
   :hook
   ((pdf-view-mode . pdf-view-themed-minor-mode)
    (pdf-view-mode . pdf-isearch-minor-mode)))
