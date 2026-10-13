@@ -59,7 +59,6 @@
 
   ;; Smoother scrolling
   ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
-  ;; Not 101: above 100, blocks taller than the window make redisplay loop.
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
