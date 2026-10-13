@@ -68,11 +68,6 @@ the clock of `tab-bar-format-global', and any segment beside it."
   mode-line-invisible-mode
   (lambda () (mode-line-invisible-mode 1)))
 
-(use-package emacs
-  :ensure nil
-  :hook
-  (symbols-outline-mode . mode-line-invisible-mode))
-
 ;; hl-line :build_in:
 
 ;; Highlighting of the current line (native mode)
@@ -81,7 +76,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
 (use-package hl-line
   :ensure nil
   :hook
-  ((prog-mode org-mode text-mode tabulated-list-mode) . hl-line-mode))
+  ((prog-mode text-mode tabulated-list-mode) . hl-line-mode))
 
 ;; [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 ;; Highlight TODO keywords.

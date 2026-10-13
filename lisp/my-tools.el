@@ -188,7 +188,7 @@
   ;; `ispell-change-dictionary' is a command, not a hook
   (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
   :hook
-  (((text-mode org-mode LaTeX-mode) . flyspell-mode)
+  ((text-mode . flyspell-mode)
    ((prog-mode conf-mode) . flyspell-prog-mode)))
 
 ;; [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
@@ -260,8 +260,7 @@
   (pdf-tools-install :no-query)
   (add-hook 'enable-theme-functions #'my/pdf-tools-refresh-themed-buffers)
   :hook
-  ((pdf-view-mode . pdf-view-themed-minor-mode)
-   (pdf-view-mode . pdf-isearch-minor-mode)))
+  (pdf-view-mode . pdf-view-themed-minor-mode))
 
 ;; re-builder :build_in:
 ;; Change re-builder syntax

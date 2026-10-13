@@ -389,13 +389,9 @@
     ;; Swicth to minimal ui mode
     (my/minimal-ui-mode 1)
 
-    ;; disable fringes
-    (set-fringe-mode 0)
-
     ;; Increase font size
     )
   (defun my/org-present-quit ()
-    (org-present-read-write)
     (org-link-preview-clear)
 
     ;; Show Property drawers
@@ -420,9 +416,6 @@
 
     ;; Disable minimal ui mode
     (my/minimal-ui-mode -1)
-
-    ;; reset fringes to default style
-    (set-fringe-mode nil)
 
     ;; Restore font size
     )
@@ -530,9 +523,7 @@
   (org-pandoc-options
    '((standalone . t)
      (mathjax . t)
-     (variable . "revealjs-url=https://revealjs.com")))
-  :config
-  (add-to-list 'org-export-backends 'pandoc))
+     (variable . "revealjs-url=https://revealjs.com"))))
 
 ;; [[https://github.com/snosov1/toc-org.git][toc-org]]
 ;; Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).

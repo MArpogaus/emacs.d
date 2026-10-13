@@ -1200,13 +1200,9 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       ;; Swicth to minimal ui mode
       (my/minimal-ui-mode 1)
 
-      ;; disable fringes
-      (set-fringe-mode 0)
-
       ;; Increase font size
       )
     (defun my/org-present-quit ()
-      (org-present-read-write)
       (org-link-preview-clear)
 
       ;; Show Property drawers
@@ -1231,9 +1227,6 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
 
       ;; Disable minimal ui mode
       (my/minimal-ui-mode -1)
-
-      ;; reset fringes to default style
-      (set-fringe-mode nil)
 
       ;; Restore font size
       )
@@ -1342,9 +1335,7 @@ org-mode exporter via pandoc.
     (org-pandoc-options
      '((standalone . t)
        (mathjax . t)
-       (variable . "revealjs-url=https://revealjs.com")))
-    :config
-    (add-to-list 'org-export-backends 'pandoc))
+       (variable . "revealjs-url=https://revealjs.com"))))
 #+end_src
 **** [[https://github.com/snosov1/toc-org.git][toc-org]]
 Toc-org is an Emacs utility to have an up-to-date table of contents in the org files without exporting (useful primarily for readme files on GitHub).
@@ -1425,10 +1416,6 @@ whole-session switch is a globalized mode of its own.
     mode-line-invisible-mode
     (lambda () (mode-line-invisible-mode 1)))
 
-  (use-package emacs
-    :ensure nil
-    :hook
-    (symbols-outline-mode . mode-line-invisible-mode))
 #+end_src
 **** hl-line :build_in:
 
@@ -1438,7 +1425,7 @@ Highlighting of the current line (native mode)
   (use-package hl-line
     :ensure nil
     :hook
-    ((prog-mode org-mode text-mode tabulated-list-mode) . hl-line-mode))
+    ((prog-mode text-mode tabulated-list-mode) . hl-line-mode))
 #+end_src
 **** [[https://github.com/tarsius/hl-todo.git][hl-todo]]
 Highlight TODO keywords.
@@ -2473,7 +2460,7 @@ Simple note taking and file naming.
       "Kill all denote buffers."
       (interactive)
       (dolist (buf (buffer-list))
-        (when (or (string-prefix-p "[D]" (buffer-name buf))
+        (when (or (string-prefix-p denote-buffer-name-prefix (buffer-name buf))
                   (string-prefix-p "*Denote" (buffer-name buf)))
           (kill-buffer buf))))
     (defun my/denote-save-buffer (&optional title keywords file-type directory date template signature identifier)
@@ -2774,7 +2761,7 @@ Make Emacs use the $PATH set up by the user's shell.
     ;; `ispell-change-dictionary' is a command, not a hook
     (advice-add 'ispell-change-dictionary :after #'my/restart-flyspell-mode)
     :hook
-    (((text-mode org-mode LaTeX-mode) . flyspell-mode)
+    ((text-mode . flyspell-mode)
      ((prog-mode conf-mode) . flyspell-prog-mode)))
 #+end_src
 **** [[https://github.com/d12frosted/flyspell-correct.git][flyspell-correct]]
@@ -2846,8 +2833,7 @@ Emacs support library for PDF files.
     (pdf-tools-install :no-query)
     (add-hook 'enable-theme-functions #'my/pdf-tools-refresh-themed-buffers)
     :hook
-    ((pdf-view-mode . pdf-view-themed-minor-mode)
-     (pdf-view-mode . pdf-isearch-minor-mode)))
+    (pdf-view-mode . pdf-view-themed-minor-mode))
 #+end_src
 **** re-builder :build_in:
 Change re-builder syntax
@@ -3099,16 +3085,15 @@ A simple LLM client for Emacs.
     (defun my/gptel-save-to-denote ()
       "Save the current gptel buffer as a Denote note in the gptel/ subdirectory."
       (interactive)
-      (with-current-buffer (current-buffer)
-        (let ((previous-dir default-directory)
-              (denote-use-title (buffer-name))
-              (denote-use-keywords '("gptel" "ai"))
-              (denote-use-directory (expand-file-name "gptel/" (car (denote-directories)))))
-          (add-file-local-variable 'default-directory previous-dir t)
-          (add-file-local-variable 'auto-side-windows-side 'right t)
-          (add-file-local-variable 'eval '(gptel-mode) t)
-          (call-interactively #'my/denote-save-buffer)
-          (setq-local default-directory previous-dir))))
+      (let ((previous-dir default-directory)
+            (denote-use-title (buffer-name))
+            (denote-use-keywords '("gptel" "ai"))
+            (denote-use-directory (expand-file-name "gptel/" (car (denote-directories)))))
+        (add-file-local-variable 'default-directory previous-dir t)
+        (add-file-local-variable 'auto-side-windows-side 'right t)
+        (add-file-local-variable 'eval '(gptel-mode) t)
+        (call-interactively #'my/denote-save-buffer)
+        (setq-local default-directory previous-dir)))
     (defun my/gptel-auto-save-to-denote-h (&rest _)
       "Hook to automatically save gptel buffers to Denote.
   Triggered after the first response is received in a new buffer."

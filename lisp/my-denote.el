@@ -54,7 +54,7 @@
     "Kill all denote buffers."
     (interactive)
     (dolist (buf (buffer-list))
-      (when (or (string-prefix-p "[D]" (buffer-name buf))
+      (when (or (string-prefix-p denote-buffer-name-prefix (buffer-name buf))
                 (string-prefix-p "*Denote" (buffer-name buf)))
         (kill-buffer buf))))
   (defun my/denote-save-buffer (&optional title keywords file-type directory date template signature identifier)
