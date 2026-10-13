@@ -1651,10 +1651,8 @@ Increase the padding/spacing of GNU Emacs frames and windows.
                                :tab-line-width 2
                                :tab-width 2
                                :right-divider-width 10
-                               ;; :scroll-bar-width 2
-                               :fringe-width 8
-                               ))
-    (spacious-padding-subtle-mode-line t)
+                               :fringe-width 8))
+    (spacious-padding-subtle-frame-lines t)
     :hook elpaca-after-init)
 #+end_src
 **** tab-bar :build_in:

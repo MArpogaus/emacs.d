@@ -258,10 +258,8 @@ the clock of `tab-bar-format-global', and any segment beside it."
                              :tab-line-width 2
                              :tab-width 2
                              :right-divider-width 10
-                             ;; :scroll-bar-width 2
-                             :fringe-width 8
-                             ))
-  (spacious-padding-subtle-mode-line t)
+                             :fringe-width 8))
+  (spacious-padding-subtle-frame-lines t)
   :hook elpaca-after-init)
 
 ;; tab-bar :build_in:
