@@ -51,7 +51,7 @@
   (use-empty-active-region t)                        ; Whether "region-aware" commands should act on empty regions .
 
   ;; Mouse
-  (context-menu-mode (display-graphic-p))            ; Enable context menu on right click
+  (context-menu-mode t)                              ; Enable context menu on right click
   (mouse-yank-at-point t)                            ; Yank at point rather than pointer
   (save-interprogram-paste-before-kill t)            ; save existing clipboard text into kill ring before replacing it
   (kill-do-not-save-duplicates t)                    ; No duplicates in the kill ring
