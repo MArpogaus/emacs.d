@@ -963,21 +963,18 @@ Toggle visibility of hidden Org mode element parts upon entering and leaving an 
 
 #+begin_src emacs-lisp
   (use-package org-appear
-    :after org
     :hook (org-mode . org-appear-mode))
 #+end_src
 **** [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
 Tangle Org files on save.
 #+begin_src emacs-lisp
   (use-package org-auto-tangle
-    :after org
     :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 **** [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 Insert an Org link to the URL in the clipboard, with the page title as description.
 #+begin_src emacs-lisp
-  (use-package org-cliplink
-    :after org)
+  (use-package org-cliplink)
 #+end_src
 **** [[https://github.com/tarsius/orglink.git][orglink]]
 Use Org Mode links in other modes.
@@ -1126,7 +1123,6 @@ Modern block styling with org-indent.
 Emacs document annotator, using Org-mode.
 #+begin_src emacs-lisp
   (use-package org-noter
-    :after org
     :custom
     ;; The WM can handle splits
     ;; org-noter-notes-window-location 'other-frame
@@ -1146,7 +1142,6 @@ Ultra-minimalist presentation minor-mode for Emacs org-mode.
 Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-present/
 #+begin_src emacs-lisp
   (use-package org-present
-    :after org
     :preface
     (defun my/org-present-start ()
       (org-present-read-only)
@@ -1243,14 +1238,12 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
 **** [[https://github.com/jxq0/org-tidy.git][org-tidy]]
 An Emacs minor mode to automatically tidy org-mode property drawers.
 #+begin_src emacs-lisp
-  (use-package org-tidy
-    :after org)
+  (use-package org-tidy)
 #+end_src
 **** ox :build_in:
 #+begin_src emacs-lisp
   (use-package ox
     :ensure nil
-    :after org
     :custom
     (org-export-backends '(md beamer odt latex icalendar html ascii)))
 #+end_src
@@ -1259,7 +1252,6 @@ An Emacs minor mode to automatically tidy org-mode property drawers.
 
   (use-package ox-beamer
     :ensure nil
-    :after ox
     :config
     (add-to-list 'org-beamer-environments-extra
                  '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
@@ -1277,7 +1269,6 @@ Github Flavored Markdown Back-End for Org Export Engine.
 #+begin_src emacs-lisp
   (use-package ox-latex
     :ensure nil
-    :after ox
     :config
     ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
     (add-to-list 'org-latex-packages-alist
@@ -1321,7 +1312,6 @@ Keep an up-to-date table of contents in Org files without export, for READMEs on
 
 #+begin_src emacs-lisp
   (use-package toc-org
-    :after org
     :hook
     (org-mode . toc-org-enable))
 #+end_src
@@ -2290,7 +2280,6 @@ Automatically update file timestamps when file is saved.
 Edit grep buffers and apply the changes to files.
 #+begin_src emacs-lisp
   (use-package wgrep
-    :demand t
     :custom
     (wgrep-auto-save-buffer t))
 #+end_src
@@ -2492,7 +2481,6 @@ Commands that ask for a silo first.
 **** [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 #+begin_src emacs-lisp
   (use-package denote-menu
-    :after denote
     :custom
     (denote-menu-initial-regex (rx "." (or "org" "pdf" "svg" "png" "jpg") line-end))
     :bind
@@ -2741,7 +2729,6 @@ Correct words with flyspell through the completion interface.
 #+begin_src emacs-lisp
   (use-package ispell
     :ensure nil
-    :after flyspell
     :if (executable-find "hunspell")
     :custom
     (ispell-program-name "hunspell")
@@ -3494,14 +3481,12 @@ Embark makes it easy to choose a command to run based on what is near point, bot
 **** [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 Embark actions and export for Consult commands.
 #+begin_src emacs-lisp
-  (use-package embark-consult
-    :after embark)
+  (use-package embark-consult)
 #+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 Marginalia in the minibuffer.
 #+begin_src emacs-lisp
   (use-package marginalia
-    :after vertico
     :hook
     (vertico-mode . marginalia-mode))
 #+end_src
@@ -3778,7 +3763,6 @@ Enhancements to the built-in project library.
 #+begin_src emacs-lisp
   (use-package project-x
     :ensure (:host github :repo "karthink/project-x")
-    :after project
     :bind (:map project-prefix-map
                 ("S" . project-x-window-state-save)
                 ("l" . project-x-window-state-load))
@@ -4290,7 +4274,6 @@ Configure Emacs documentation support.
 Childframe doc for eglot and anything that uses eldoc.
 #+begin_src emacs-lisp
   (use-package eldoc-box
-    :after eglot
     :bind
     (:map my/lsp-map
           ("M" . eldoc-box-mouse-mode)
@@ -4346,7 +4329,6 @@ Markdown for the prose of an =.Rmd= file and =ess-r-mode= in every =```{r}= chun
 #+begin_src emacs-lisp
   (use-package poly-R
     :ensure (poly-R :host github :repo "polymode/poly-R")
-    :after (ess markdown-mode)
     :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
     :custom
     ;; Show a chunk's process buffer on error, not the woven file.
@@ -4404,8 +4386,7 @@ Emacs Markdown Mode.
 **** [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
 Insert NumPy style docstrings in Python functions.
 #+begin_src emacs-lisp
-  (use-package numpydoc
-    :after python)
+  (use-package numpydoc)
 #+end_src
 **** [[https://github.com/purcell/inheritenv][inheritenv]]
 Carry the environment of a buffer into the temp buffers that commands make: =shell-command= and similar commands do not see a buffer-local =process-environment=.

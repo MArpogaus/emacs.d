@@ -323,14 +323,12 @@ target, followed by an ellipsis if there are further targets."
 ;; [[https://github.com/oantolin/embark/blob/master/embark-consult.el][embark-consult]]
 ;; Embark actions and export for Consult commands.
 
-(use-package embark-consult
-  :after embark)
+(use-package embark-consult)
 
 ;; [[https://github.com/minad/marginalia.git][marginalia]]
 ;; Marginalia in the minibuffer.
 
 (use-package marginalia
-  :after vertico
   :hook
   (vertico-mode . marginalia-mode))
 

@@ -471,7 +471,6 @@ Tempel comes after :with, so the capf answers only when eglot does."
 ;; Childframe doc for eglot and anything that uses eldoc.
 
 (use-package eldoc-box
-  :after eglot
   :bind
   (:map my/lsp-map
         ("M" . eldoc-box-mouse-mode)
@@ -527,7 +526,6 @@ Tempel comes after :with, so the capf answers only when eglot does."
 
 (use-package poly-R
   :ensure (poly-R :host github :repo "polymode/poly-R")
-  :after (ess markdown-mode)
   :mode ("\\.[rR]md\\'" . poly-markdown+r-mode)
   :custom
   ;; Show a chunk's process buffer on error, not the woven file.
@@ -585,8 +583,7 @@ Tempel comes after :with, so the capf answers only when eglot does."
 ;; [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
 ;; Insert NumPy style docstrings in Python functions.
 
-(use-package numpydoc
-  :after python)
+(use-package numpydoc)
 
 ;; [[https://github.com/purcell/inheritenv][inheritenv]]
 ;; Carry the environment of a buffer into the temp buffers that commands make: =shell-command= and similar commands do not see a buffer-local =process-environment=.

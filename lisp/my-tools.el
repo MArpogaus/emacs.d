@@ -218,7 +218,6 @@
 
 (use-package ispell
   :ensure nil
-  :after flyspell
   :if (executable-find "hunspell")
   :custom
   (ispell-program-name "hunspell")

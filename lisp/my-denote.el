@@ -134,7 +134,6 @@ Prompts for metadata only if the file is not already a Denote file."
 ;; [[https://github.com/emacs-straight/denote-menu.git][denote-menu]]
 
 (use-package denote-menu
-  :after denote
   :custom
   (denote-menu-initial-regex (rx "." (or "org" "pdf" "svg" "png" "jpg") line-end))
   :bind

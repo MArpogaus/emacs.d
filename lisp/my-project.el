@@ -61,7 +61,6 @@
 
 (use-package project-x
   :ensure (:host github :repo "karthink/project-x")
-  :after project
   :bind (:map project-prefix-map
               ("S" . project-x-window-state-save)
               ("l" . project-x-window-state-load))

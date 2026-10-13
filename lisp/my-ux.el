@@ -610,7 +610,6 @@ A relative remap stacks, and redisplay runs again and again.")
 ;; Edit grep buffers and apply the changes to files.
 
 (use-package wgrep
-  :demand t
   :custom
   (wgrep-auto-save-buffer t))
 

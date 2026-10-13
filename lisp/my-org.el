@@ -167,21 +167,18 @@
 
 
 (use-package org-appear
-  :after org
   :hook (org-mode . org-appear-mode))
 
 ;; [[https://github.com/yilkalargaw/org-auto-tangle.git][org-auto-tangle]]
 ;; Tangle Org files on save.
 
 (use-package org-auto-tangle
-  :after org
   :hook (org-mode . org-auto-tangle-mode))
 
 ;; [[https://github.com/rexim/org-cliplink.git][org-cliplink]]
 ;; Insert an Org link to the URL in the clipboard, with the page title as description.
 
-(use-package org-cliplink
-  :after org)
+(use-package org-cliplink)
 
 ;; [[https://github.com/tarsius/orglink.git][orglink]]
 ;; Use Org Mode links in other modes.
@@ -330,7 +327,6 @@
 ;; Emacs document annotator, using Org-mode.
 
 (use-package org-noter
-  :after org
   :custom
   ;; The WM can handle splits
   ;; org-noter-notes-window-location 'other-frame
@@ -350,7 +346,6 @@
 ;; Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-present/
 
 (use-package org-present
-  :after org
   :preface
   (defun my/org-present-start ()
     (org-present-read-only)
@@ -447,14 +442,12 @@
 ;; [[https://github.com/jxq0/org-tidy.git][org-tidy]]
 ;; An Emacs minor mode to automatically tidy org-mode property drawers.
 
-(use-package org-tidy
-  :after org)
+(use-package org-tidy)
 
 ;; ox :build_in:
 
 (use-package ox
   :ensure nil
-  :after org
   :custom
   (org-export-backends '(md beamer odt latex icalendar html ascii)))
 
@@ -462,7 +455,6 @@
 
 (use-package ox-beamer
   :ensure nil
-  :after ox
   :config
   (add-to-list 'org-beamer-environments-extra
                '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
@@ -480,7 +472,6 @@
 
 (use-package ox-latex
   :ensure nil
-  :after ox
   :config
   ;; https://orgmode.org/manual/LaTeX-specific-export-settings.html
   (add-to-list 'org-latex-packages-alist
@@ -524,7 +515,6 @@
 
 
 (use-package toc-org
-  :after org
   :hook
   (org-mode . toc-org-enable))
 
