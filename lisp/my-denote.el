@@ -73,28 +73,31 @@
     "Save the current buffer as a Denote note or just save if already denoted.
 Prompts for metadata only if the file is not already a Denote file."
     (interactive)
-    (unless (and buffer-file-name (denote-file-has-denoted-filename-p buffer-file-name))
-      ;; If not denoted, get data (prompts user if called interactively)
-      (pcase-let* ((`(,title ,keywords ,file-type ,directory ,date ,identifier ,template ,signature)
-                    (if (called-interactively-p 'any)
-                        (denote--creation-get-note-data-from-prompts)
-                      (list title keywords file-type directory date identifier template signature))))
-        ;; Proceed with Denote creation logic
-        (let* ((data (denote--creation-prepare-note-data
-                      title keywords file-type directory date identifier template signature))
-               (extension (denote--file-extension (nth 2 data)))
-               (path (denote-format-file-name (nth 3 data) (nth 5 data) (nth 1 data) (nth 0 data) extension (nth 7 data)))
-               (header (denote--format-front-matter (nth 0 data) (nth 4 data) (nth 1 data) (nth 5 data) (nth 7 data) (nth 2 data))))
-          (save-excursion
-            (save-restriction
-              (widen)
-              (goto-char (point-min))
-              (insert header)
-              (insert (cond ((stringp (nth 6 data)) (nth 6 data))
-                            ((functionp (nth 6 data)) (funcall (nth 6 data)))
-                            (t "")))))
-          (set-visited-file-name path))))
-    (save-buffer))
+    (if (and buffer-file-name (not (denote-file-has-denoted-filename-p buffer-file-name)))
+        ;; A file of its own: rename it rather than write a copy.
+        (progn (save-buffer) (call-interactively #'denote-rename-file))
+      (unless buffer-file-name
+        ;; If not denoted, get data (prompts user if called interactively)
+        (pcase-let* ((`(,title ,keywords ,file-type ,directory ,date ,identifier ,template ,signature)
+                      (if (called-interactively-p 'any)
+                          (denote--creation-get-note-data-from-prompts)
+                        (list title keywords file-type directory date identifier template signature))))
+          ;; Proceed with Denote creation logic
+          (let* ((data (denote--creation-prepare-note-data
+                        title keywords file-type directory date identifier template signature))
+                 (extension (denote--file-extension (nth 2 data)))
+                 (path (denote-format-file-name (nth 3 data) (nth 5 data) (nth 1 data) (nth 0 data) extension (nth 7 data)))
+                 (header (denote--format-front-matter (nth 0 data) (nth 4 data) (nth 1 data) (nth 5 data) (nth 7 data) (nth 2 data))))
+            (save-excursion
+              (save-restriction
+                (widen)
+                (goto-char (point-min))
+                (insert header)
+                (insert (cond ((stringp (nth 6 data)) (nth 6 data))
+                              ((functionp (nth 6 data)) (funcall (nth 6 data)))
+                              (t "")))))
+            (set-visited-file-name path))))
+      (save-buffer)))
   :bind
   (:map my/denote-map
         ("L" . denote-add-links)
