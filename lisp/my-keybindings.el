@@ -115,7 +115,6 @@
   :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
   ;; Enable standard-keys-mode after initializing the Emacs session.
   :hook elpaca-after-init
-  :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
   :preface
   (defvar-keymap my/standard-keys-keymap
     :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")

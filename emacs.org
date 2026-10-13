@@ -1416,8 +1416,6 @@ Auto-Dark-Emacs is an auto changer between 2 themes, dark/light, following MacOS
   (use-package auto-dark
     :custom
     (auto-dark-themes '((doom-one) (doom-one-light)))
-    ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
-    ;; (auto-dark-themes '((modus-vivendi) (modus-operandi)))
     :hook elpaca-after-init)
 #+end_src
 **** [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -1444,8 +1442,6 @@ Enable line numbers for some modes
 **** [[https://github.com/doomemacs/themes][doom-themes]]
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :custom
-    (doom-ayu-light-brighter-comments t)
     :preface
     (defun my/patch-doom-themes (&rest args)
       "Give the tab bar a foreground it can be read in.
@@ -1459,9 +1455,6 @@ Enable line numbers for some modes
     ;; On the hook, not on `load-theme': restored and auto-dark themes
     ;; are only enabled.
     (add-hook 'enable-theme-functions #'my/patch-doom-themes))
-  (use-package ember-theme
-    :ensure (:host github :repo "ember-theme/emacs")
-    :after doom-themes)
 #+end_src
 **** mode-line-invisible :build_in:
 Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
@@ -1680,9 +1673,7 @@ Increase the padding/spacing of GNU Emacs frames and windows.
     (define-key tab-bar-map (kbd "<wheel-up>") nil t)
     (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
     :bind
-    (([remap winner-undo] . tab-bar-history-back)
-     ([remap winner-redo] . tab-bar-history-forward)
-     :map my/toggle-map
+    (:map my/toggle-map
      ("t"                 . tab-bar-mode)
      :map my/leader-map
      ("<backtab>"         . tab-switcher)
@@ -2078,7 +2069,6 @@ Revert buffers when the underlying file has changed
      '(Info-mode
        TeX-output-mode
        pdf-view-mode
-       eldoc-mode
        elpaca-info-mode
        elpaca-log-mode
        help-mode
@@ -3571,9 +3561,8 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :preface
     ;; Completing in the minibuffer
     (defun my/corfu-enable-always-in-minibuffer ()
-      "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-      (unless (or (bound-and-true-p mct--active)
-                  (bound-and-true-p vertico--input)
+      "Enable Corfu in the minibuffer if Vertico is not active."
+      (unless (or (bound-and-true-p vertico--input)
                   (eq (current-local-map) read-passwd-map))
         ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
         (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
@@ -3929,7 +3918,6 @@ functions we invoke regularly outside of magit is called.
 #+begin_src emacs-lisp
   (use-package magit
     :commands (magit-status magit-log-buffer-file magit-log-all)
-    :autoload magit-git-repo-p
     :custom
     (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
     :preface
@@ -4018,7 +4006,6 @@ Tab group based workflow isolation.
 #+begin_src emacs-lisp
   (use-package project
     :ensure nil
-    :autoload project-prefix-map
     :bind
     (:map my/leader-map
           ("SPC" . project-list-buffers))
@@ -4058,22 +4045,11 @@ this frame rather than a frame of its own.
   (use-package speedbar
     :ensure nil
     :custom
-    (speedbar-frame-parameters
-     '((name . "speedbar")
-       (title . "speedbar")
-       (minibuffer . nil)
-       (border-width . 2)
-       (menu-bar-lines . 0)
-       (tool-bar-lines . 0)
-       (unsplittable . t)
-       (left-fringe . 10)))
     ;; Increase the indentation for better useability.
     (speedbar-indentation-width 3)
     ;; make speedbar update automaticaly, and dont use ugly icons(images)
     (speedbar-update-flag t)
     (speedbar-use-images nil)
-    ;; A window of this frame, not a frame of its own.
-    (speedbar-prefer-window t)
 
     :bind
     (:map my/toggle-map
@@ -5119,7 +5095,6 @@ Emulate standard keybindings from modern editors.
     :ensure (:host github :repo "DevelopmentCool2449/standard-keys-mode")
     ;; Enable standard-keys-mode after initializing the Emacs session.
     :hook elpaca-after-init
-    :autoload standard-keys-C-x-dynamic-prefix standard-keys-C-c-dynamic-prefix
     :preface
     (defvar-keymap my/standard-keys-keymap
       :doc "Minimal and basic CUA-like keymap for `standard-keys-map-style'.")

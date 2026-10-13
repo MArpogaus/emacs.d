@@ -298,7 +298,6 @@
    '(Info-mode
      TeX-output-mode
      pdf-view-mode
-     eldoc-mode
      elpaca-info-mode
      elpaca-log-mode
      help-mode

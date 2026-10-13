@@ -48,7 +48,6 @@
 
 (use-package project
   :ensure nil
-  :autoload project-prefix-map
   :bind
   (:map my/leader-map
         ("SPC" . project-list-buffers))
@@ -88,22 +87,11 @@
 (use-package speedbar
   :ensure nil
   :custom
-  (speedbar-frame-parameters
-   '((name . "speedbar")
-     (title . "speedbar")
-     (minibuffer . nil)
-     (border-width . 2)
-     (menu-bar-lines . 0)
-     (tool-bar-lines . 0)
-     (unsplittable . t)
-     (left-fringe . 10)))
   ;; Increase the indentation for better useability.
   (speedbar-indentation-width 3)
   ;; make speedbar update automaticaly, and dont use ugly icons(images)
   (speedbar-update-flag t)
   (speedbar-use-images nil)
-  ;; A window of this frame, not a frame of its own.
-  (speedbar-prefer-window t)
 
   :bind
   (:map my/toggle-map

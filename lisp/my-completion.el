@@ -235,9 +235,8 @@
   :preface
   ;; Completing in the minibuffer
   (defun my/corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active)
-                (bound-and-true-p vertico--input)
+    "Enable Corfu in the minibuffer if Vertico is not active."
+    (unless (or (bound-and-true-p vertico--input)
                 (eq (current-local-map) read-passwd-map))
       ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
       (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup

@@ -20,8 +20,6 @@
 (use-package auto-dark
   :custom
   (auto-dark-themes '((doom-one) (doom-one-light)))
-  ;; (auto-dark-themes '((doom-ayu-mirage) (doom-ayu-light)))
-  ;; (auto-dark-themes '((modus-vivendi) (modus-operandi)))
   :hook elpaca-after-init)
 
 ;; [[https://github.com/joaotavora/breadcrumb][breadcrumb]]
@@ -48,8 +46,6 @@
 ;; [[https://github.com/doomemacs/themes][doom-themes]]
 
 (use-package doom-themes
-  :custom
-  (doom-ayu-light-brighter-comments t)
   :preface
   (defun my/patch-doom-themes (&rest args)
     "Give the tab bar a foreground it can be read in.
@@ -63,9 +59,6 @@ the clock of `tab-bar-format-global', and any segment beside it."
   ;; On the hook, not on `load-theme': restored and auto-dark themes
   ;; are only enabled.
   (add-hook 'enable-theme-functions #'my/patch-doom-themes))
-(use-package ember-theme
-  :ensure (:host github :repo "ember-theme/emacs")
-  :after doom-themes)
 
 ;; mode-line-invisible :build_in:
 ;; Hide the mode line of a buffer.  Emacs has the buffer-local mode, and the
@@ -284,9 +277,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
   (define-key tab-bar-map (kbd "<wheel-up>") nil t)
   (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
   :bind
-  (([remap winner-undo] . tab-bar-history-back)
-   ([remap winner-redo] . tab-bar-history-forward)
-   :map my/toggle-map
+  (:map my/toggle-map
    ("t"                 . tab-bar-mode)
    :map my/leader-map
    ("<backtab>"         . tab-switcher)

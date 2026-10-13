@@ -82,7 +82,6 @@
 
 (use-package magit
   :commands (magit-status magit-log-buffer-file magit-log-all)
-  :autoload magit-git-repo-p
   :custom
   (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
   :preface
