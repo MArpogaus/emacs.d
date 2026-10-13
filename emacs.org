@@ -3184,11 +3184,12 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
       "Prompts for `my/gtd'; the first one starts a new session.
   The rules of each review are in the AGENTS.md of the agenda.")
     (defun my/gtd-refresh-agenda (&rest _)
-      "Revert the agenda files the agent changed and redo the agenda."
+      "Revert the agenda files the agent changed and redo the agenda.
+  A buffer with unsaved edits is left alone."
       (dolist (file (org-agenda-files))
         (when-let* ((buffer (find-buffer-visiting file)))
           (with-current-buffer buffer
-            (unless (verify-visited-file-modtime buffer)
+            (unless (or (buffer-modified-p) (verify-visited-file-modtime buffer))
               (revert-buffer t t t)))))
       (when-let* ((window (get-buffer-window org-agenda-buffer-name t)))
         (with-selected-window window (org-agenda-redo-all))))
