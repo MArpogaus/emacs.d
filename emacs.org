@@ -3798,8 +3798,6 @@ Marginalia in the minibuffer.
 #+begin_src emacs-lisp
   (use-package marginalia
     :after vertico
-    :custom
-    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
     :hook
     (vertico-mode . marginalia-mode))
 #+end_src

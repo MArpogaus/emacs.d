@@ -406,8 +406,6 @@
 
 (use-package marginalia
   :after vertico
-  :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :hook
   (vertico-mode . marginalia-mode))
 
