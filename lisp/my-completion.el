@@ -351,9 +351,10 @@ target, followed by an ellipsis if there are further targets."
 ;; Icons for corfu via nerd-icons.
 
 (use-package nerd-icons-corfu
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+  :init
+  ;; The formatter is autoloaded; nothing else loads this package.
+  (with-eval-after-load 'corfu
+    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)))
 
 ;; [[https://github.com/oantolin/orderless.git][orderless]]
 ;; Emacs completion style that matches multiple regexps in any order.
