@@ -4366,6 +4366,10 @@ A client for Language Server Protocol servers.
     (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
     :custom
     (eglot-send-changes-idle-time 0.1)
+    ;; No events buffer: a massive speed-up.
+    (eglot-events-buffer-config '(:size 0 :format full))
+    ;; Hover docs with tables, code and formulas rendered.
+    (eglot-documentation-renderer #'overblock-md-eglot-renderer)
     :preface
     (defvar-local my/eglot-super-capf nil
       "The capf `my/eglot-capf' added in this buffer.")
@@ -4394,12 +4398,9 @@ A client for Language Server Protocol servers.
     ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
     (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
     (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
-    ;; https://github.com/doomemacs/doomemacs/blob/a90c06dc6b104afbe0c93f0107df5c42b8137b5e/modules/tools/lsp/%2Beglot.el#L36
-    (plist-put eglot-events-buffer-config :size 0)
 
     ;; Continuously update the candidates using cape cache buster
     (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-    (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
     :hook
     ((python-base-mode . eglot-ensure)
      (eglot-managed-mode . my/eglot-capf)))
