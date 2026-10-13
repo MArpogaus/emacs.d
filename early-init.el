@@ -212,9 +212,6 @@
                   (delete-dups (append file-name-handler-alist
                                        file-name-handler-alist-old)))))
 
-;; Remove irreleant command line options for faster startup
-(setq command-line-x-option-alist nil)
-
 ;; Set default frame size and font
 ;; :PROPERTIES:
 ;; :ID:       5eb92f35-9f4c-436f-864f-c270dc2f1f29

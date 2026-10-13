@@ -363,8 +363,6 @@ The following optimizations have been inspired by:
                     (delete-dups (append file-name-handler-alist
                                          file-name-handler-alist-old)))))
 
-  ;; Remove irreleant command line options for faster startup
-  (setq command-line-x-option-alist nil)
 #+end_src
 *** Set default frame size and font
 :PROPERTIES:
