@@ -3858,67 +3858,12 @@ this frame rather than a frame of its own.
     ;; make speedbar update automaticaly, and dont use ugly icons(images)
     (speedbar-update-flag t)
     (speedbar-use-images nil)
+    ;; Every file, not only those it can tag.
+    (speedbar-show-unknown-files t)
 
     :bind
     (:map my/toggle-map
           ("s" . speedbar-window-mode))
-
-    :config
-    ;; list of supported file-extensions
-    ;; feel free to add to this list
-    (speedbar-add-supported-extension
-     (list
-      ;; lua and fennel(lisp that transpiles to lua)
-      ".lua"
-      ".fnl"
-      ".fennel"
-      ;; shellscript
-      ".sh"
-      ".bash";;is this ever used?
-      ;; web languages
-      ;; Hyper-Text-markup-language(html) and php
-      ".php"
-      ".html"
-      ".htm"
-      ;; ecma(java/type)-script
-      ".js"
-      ".json"
-      ".ts"
-      ;; stylasheets
-      ".css"
-      ".less"
-      ".scss"
-      ".sass"
-      ;; c/c++ and makefiles
-      ".c"
-      ".cpp"
-      ".h"
-      "makefile"
-      "MAKEFILE"
-      "Makefile"
-      ;; runs on JVM, java,kotlin etc
-      ".java"
-      ".kt";;this is for kotlin
-      ".mvn"
-      ".gradle" ".properties";; this is for gradle-projects
-      ".clj";;lisp on the JVM
-      ;; lisps
-      ".cl"
-      ".el"
-      ".scm"
-      ".lisp"
-      ;; configuration
-      ".yaml"
-      ".toml"
-      ;; json is already in this list
-      ;; notes,markup and orgmode
-      ".md"
-      ".markdown"
-      ".org"
-      ".txt"
-      "README"
-      ;; Jupyter Notebooks
-      ".ipynb"))
 
     :hook
     ((speedbar-mode . (lambda()
