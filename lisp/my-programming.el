@@ -656,8 +656,6 @@ globalized minor mode stays off in the buffer."
 (use-package python
   :ensure nil
   :custom
-  ;; Let Emacs guess Python indent silently
-  (python-indent-guess-indent-offset t)
   (python-indent-guess-indent-offset-verbose nil)
   (python-shell-dedicated 'project)
   :preface
@@ -827,8 +825,7 @@ window it already made, so a key bound to it cannot put the panel away."
 (use-package treesit
   :ensure nil
   :custom
-  (treesit-enabled-modes t)
-  (treesit-auto-install-grammar 'ask))
+  (treesit-enabled-modes t))
 
 ;; yaml-ts-mode :build_in:
 ;; The emacs major mode for editing files in the YAML data serialization format.

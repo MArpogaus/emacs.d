@@ -26,17 +26,12 @@
 ;; Prefer sources when noninteractive; skip mtime checks otherwise.
 (setq load-prefer-newer t)
 
-;; Ensure JIT compilation is enabled for improved performance by
-;; native-compiling loaded .elc files asynchronously
-(setq native-comp-jit-compilation t)
-
 ;; Disable certain byte compiler warnings to cut down on the noise.
 (setq byte-compile-warnings '(not unresolved noruntime lexical make-local))
 
 ;; Ensure that quitting only occurs once Emacs finishes native compiling,
 ;; preventing incomplete or leftover compilation files in `/tmp`.
 (setq native-comp-async-query-on-exit t)
-(setq confirm-kill-processes t)
 
 ;; DOOM runtime optimizations
 ;; The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
@@ -45,8 +40,7 @@
 (setq auto-mode-case-fold nil)
 
 ;; PERF: no bidirectional text scanning.
-(setq-default bidi-display-reordering 'left-to-right
-              bidi-paragraph-direction 'left-to-right)
+(setq-default bidi-paragraph-direction 'left-to-right)
 
 ;; PERF: faster redisplay, bidi text in brackets may reorder wrongly.
 (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
@@ -54,7 +48,6 @@
 ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
 ;; in non-focused windows.
 (setq-default cursor-in-non-selected-windows nil)
-(setq highlight-nonselected-windows nil)
 
 ;; Don't ping things that look like domain names.
 (setq ffap-machine-p-known 'reject)

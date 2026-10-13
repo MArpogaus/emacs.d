@@ -109,12 +109,9 @@ context.  When called with an argument, unconditionally call
   :custom
   (org-ellipsis "…")
   (org-fontify-quote-and-verse-blocks t)
-  (org-hide-block-startup nil)
   ;; Return or left-click with mouse follows link
   (org-return-follows-link t)
   (org-mouse-1-follows-link t)
-  ;; Display links as the description provided
-  (org-link-descriptive t)
 
   ;; Todo
   (org-todo-keywords

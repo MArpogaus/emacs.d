@@ -21,14 +21,11 @@
   :custom
   ;; Startup
   ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-  (inhibit-splash-screen t)                          ; disable startup screens and messages
   (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
-  (inhibit-startup-message t)                        ; Disable startup message
   (inhibit-startup-screen t)                         ; Disable start-up screen
   (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
 
   ;; Recover files when emacs crashes
-  (auto-save-default t)                              ; Auto-save every buffer that visits a file
   (auto-save-timeout 10)                             ; Number of seconds between auto-save
   (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
   (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
@@ -68,7 +65,6 @@
 
   ;; Cursor
   (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
-  (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
   (blink-cursor-mode nil)                            ; Still cursor
 
   ;; Typography
@@ -157,13 +153,9 @@ An idle save comes from `auto-save-visited-mode', not from a command."
 ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
 (when init-file-debug
   (setq use-package-verbose t
-        use-package-expand-minimally nil
         use-package-compute-statistics t
-        jka-compr-verbose t
-        warning-minimum-level :warning
         byte-compile-warnings t
         byte-compile-verbose t
-        native-comp-warning-on-missing-source t
         debug-on-error t))
 
 ;; Keymaps

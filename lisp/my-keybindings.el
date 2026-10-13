@@ -22,7 +22,6 @@
   :custom
   ;; use system clipboard
   (meow-use-clipboard t)
-  (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
   :config
   (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
@@ -121,8 +120,6 @@
   ;; select keymap theme to use
   (standard-keys-map-style 'my/standard-keys-keymap)
 
-  ;; Make the C-x and C-c bindings are properly overriden (this is optional)
-  (standard-keys-override-new-C-x-and-C-c-commands nil)
 
   ;; Enable hungry deletion in programming modes
   (backward-delete-char-untabify-method 'all)
@@ -173,7 +170,6 @@
   :custom
   (which-key-idle-delay 0.1)
   (which-key-compute-remaps t)
-  (which-key-prefix-prefix "+")
   (which-key-separator "  ")
   :config
   (which-key-setup-minibuffer)

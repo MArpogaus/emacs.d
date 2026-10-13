@@ -47,14 +47,6 @@
   (denote-directory (list (expand-file-name "denote/work/" org-directory)
                           (expand-file-name "denote/private/" org-directory)))
   (denote-prompts '(title keywords subdirectory))
-  ;; If you want Denote to infer keywords from your note titles, set this to t.
-  (denote-infer-keywords t)
-  ;; If you want to sort keywords alphabetically, set this to t.
-  (denote-sort-keywords t)
-  ;; Specify a regular expression to exclude directories from being searched for notes.
-  (denote-excluded-directories-regexp nil)
-  ;; Specify a regular expression to exclude keywords from being searched for notes.
-  (denote-excluded-keywords-regexp nil)
   ;; Pick dates, where relevant, with Org's advanced interface:
   (denote-date-prompt-use-org-read-date t)
   :preface

@@ -177,17 +177,12 @@ It has to happen here rather than in =init.el=, because =no-littering= is an =el
   ;; Prefer sources when noninteractive; skip mtime checks otherwise.
   (setq load-prefer-newer t)
 
-  ;; Ensure JIT compilation is enabled for improved performance by
-  ;; native-compiling loaded .elc files asynchronously
-  (setq native-comp-jit-compilation t)
-
   ;; Disable certain byte compiler warnings to cut down on the noise.
   (setq byte-compile-warnings '(not unresolved noruntime lexical make-local))
 
   ;; Ensure that quitting only occurs once Emacs finishes native compiling,
   ;; preventing incomplete or leftover compilation files in `/tmp`.
   (setq native-comp-async-query-on-exit t)
-  (setq confirm-kill-processes t)
 #+end_src
 *** DOOM runtime optimizations
 The following optimizations have been taken from [[https://github.com/doomemacs/doomemacs/blob/da3d0687c5008edbbe5575ac1077798553549a6a/lisp/doom-start.el#L30][here]].
@@ -196,8 +191,7 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   (setq auto-mode-case-fold nil)
 
   ;; PERF: no bidirectional text scanning.
-  (setq-default bidi-display-reordering 'left-to-right
-                bidi-paragraph-direction 'left-to-right)
+  (setq-default bidi-paragraph-direction 'left-to-right)
 
   ;; PERF: faster redisplay, bidi text in brackets may reorder wrongly.
   (setq bidi-inhibit-bpa t)  ; Emacs 27+ only
@@ -205,7 +199,6 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
   ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
   ;; in non-focused windows.
   (setq-default cursor-in-non-selected-windows nil)
-  (setq highlight-nonselected-windows nil)
 
   ;; Don't ping things that look like domain names.
   (setq ffap-machine-p-known 'reject)
@@ -456,14 +449,11 @@ The main initialization file, =init.el=, is responsible for defining essential c
     :custom
     ;; Startup
     ;; Emacs does a lot of things at startup and here, we disable pretty much everything.
-    (inhibit-splash-screen t)                          ; disable startup screens and messages
     (inhibit-startup-buffer-menu t)                    ; Disable display of buffer list when more than 2 files are loaded
-    (inhibit-startup-message t)                        ; Disable startup message
     (inhibit-startup-screen t)                         ; Disable start-up screen
     (initial-scratch-message "")                       ; Empty the initial *scratch* buffer
 
     ;; Recover files when emacs crashes
-    (auto-save-default t)                              ; Auto-save every buffer that visits a file
     (auto-save-timeout 10)                             ; Number of seconds between auto-save
     (auto-save-interval 200)                           ; Number of keystrokes between auto-saves
     (kill-buffer-delete-auto-save-files t)             ; Drop the auto-save file when its buffer is killed
@@ -503,7 +493,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
 
     ;; Cursor
     (cursor-type '(hbar . 2))                          ; Underline-shaped cursor
-    (x-stretch-cursor nil)                             ; Don't stretch cursor to the glyph width
     (blink-cursor-mode nil)                            ; Still cursor
 
     ;; Typography
@@ -592,13 +581,9 @@ The main initialization file, =init.el=, is responsible for defining essential c
   ;; https://www.gnu.org/software/emacs/manual/html_node/use-package/Troubleshooting.html
   (when init-file-debug
     (setq use-package-verbose t
-          use-package-expand-minimally nil
           use-package-compute-statistics t
-          jka-compr-verbose t
-          warning-minimum-level :warning
           byte-compile-warnings t
           byte-compile-verbose t
-          native-comp-warning-on-missing-source t
           debug-on-error t))
 #+end_src
 *** Keymaps
@@ -935,12 +920,9 @@ Agenda view and task management has been inspired by https://github.com/rougier/
     :custom
     (org-ellipsis "…")
     (org-fontify-quote-and-verse-blocks t)
-    (org-hide-block-startup nil)
     ;; Return or left-click with mouse follows link
     (org-return-follows-link t)
     (org-mouse-1-follows-link t)
-    ;; Display links as the description provided
-    (org-link-descriptive t)
 
     ;; Todo
     (org-todo-keywords
@@ -1787,11 +1769,9 @@ Revert buffers when the underlying file has changed
   (use-package autorevert
     :ensure nil
     :custom
-    (auto-revert-verbose t)
     ;; Revert Dired and other buffers
     (global-auto-revert-non-file-buffers t)
-    ;; Avoid polling for changes and rathe get notified by the system
-    (auto-revert-use-notify t)
+    ;; Get notified by the system instead of polling.
     (auto-revert-avoid-polling t)
     ;; Only prompts for confirmation when buffer is unsaved.
     (revert-without-query (list "."))
@@ -2277,9 +2257,7 @@ Paren mode for highlighting matcing paranthesis
   (use-package paren
     :ensure nil
     :custom
-    (show-paren-style 'parenthesis)
-    (show-paren-when-point-in-periphery t)
-    (show-paren-when-point-inside-paren nil))
+    (show-paren-when-point-in-periphery t))
 #+end_src
 **** recentf :build_in:
 
@@ -2387,7 +2365,6 @@ Automatically update file timestamps when file is saved
   (use-package time-stamp
     :ensure nil
     :custom
-    (time-stamp-active t)
     (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%L)")
     :hook
     (before-save . time-stamp))
@@ -2522,14 +2499,6 @@ Simple note taking and file naming.
     (denote-directory (list (expand-file-name "denote/work/" org-directory)
                             (expand-file-name "denote/private/" org-directory)))
     (denote-prompts '(title keywords subdirectory))
-    ;; If you want Denote to infer keywords from your note titles, set this to t.
-    (denote-infer-keywords t)
-    ;; If you want to sort keywords alphabetically, set this to t.
-    (denote-sort-keywords t)
-    ;; Specify a regular expression to exclude directories from being searched for notes.
-    (denote-excluded-directories-regexp nil)
-    ;; Specify a regular expression to exclude keywords from being searched for notes.
-    (denote-excluded-keywords-regexp nil)
     ;; Pick dates, where relevant, with Org's advanced interface:
     (denote-date-prompt-use-org-read-date t)
     :preface
@@ -2675,9 +2644,8 @@ Commands that ask for a silo first.
     (dired-hide-details-hide-symlink-targets nil)
     ;; don't prompt to revert, just do it
     (dired-auto-revert-buffer #'dired-buffer-stale-p)
-    ;; Always copy/delete recursively
-    (dired-recursive-copies  'always)
-    (dired-recursive-deletes 'top)
+    ;; Always copy recursively
+    (dired-recursive-copies 'always)
     ;; Ask whether destination dirs should get created when copying/removing files.
     (dired-create-destination-dirs 'ask)
     ;; Screens are larger nowadays, we can afford slightly larger thumbnails
@@ -3485,8 +3453,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
 #+begin_src emacs-lisp
   (use-package corfu
     :custom
-    ;; TAB cycle if there are only few candidates
-    (completion-cycle-threshold nil)
 
     ;; Enable indentation+completion using the TAB key.
     ;; `completion-at-point' is often bound to M-TAB.
@@ -3497,8 +3463,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     (corfu-auto t)                      ;; Enable auto completion
     (corfu-auto-trigger ".([{+-*/=,$")  ;; Custom trigger characters
     (corfu-auto-prefix 2)               ;; Complete with less prefix keys
-    (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
-    (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
     (corfu-preview-current nil)         ;; Disable current candidate preview
     (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
     (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
@@ -4712,8 +4676,6 @@ and takes precedence over the choice made with the command.
   (use-package python
     :ensure nil
     :custom
-    ;; Let Emacs guess Python indent silently
-    (python-indent-guess-indent-offset t)
     (python-indent-guess-indent-offset-verbose nil)
     (python-shell-dedicated 'project)
     :preface
@@ -4883,8 +4845,7 @@ remapping and =treesit-auto-install-grammar= the fetching.
   (use-package treesit
     :ensure nil
     :custom
-    (treesit-enabled-modes t)
-    (treesit-auto-install-grammar 'ask))
+    (treesit-enabled-modes t))
 #+end_src
 **** yaml-ts-mode :build_in:
 The emacs major mode for editing files in the YAML data serialization format.
@@ -4917,7 +4878,6 @@ Meow is yet another modal editing mode for Emacs.
     :custom
     ;; use system clipboard
     (meow-use-clipboard t)
-    (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
     :config
     (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
     (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
@@ -5016,8 +4976,6 @@ Emulate standard keybindings from modern editors.
     ;; select keymap theme to use
     (standard-keys-map-style 'my/standard-keys-keymap)
 
-    ;; Make the C-x and C-c bindings are properly overriden (this is optional)
-    (standard-keys-override-new-C-x-and-C-c-commands nil)
 
     ;; Enable hungry deletion in programming modes
     (backward-delete-char-untabify-method 'all)
@@ -5068,7 +5026,6 @@ Built into Emacs since 30.1, so no package is needed.
     :custom
     (which-key-idle-delay 0.1)
     (which-key-compute-remaps t)
-    (which-key-prefix-prefix "+")
     (which-key-separator "  ")
     :config
     (which-key-setup-minibuffer)

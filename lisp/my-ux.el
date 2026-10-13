@@ -32,11 +32,9 @@
 (use-package autorevert
   :ensure nil
   :custom
-  (auto-revert-verbose t)
   ;; Revert Dired and other buffers
   (global-auto-revert-non-file-buffers t)
-  ;; Avoid polling for changes and rathe get notified by the system
-  (auto-revert-use-notify t)
+  ;; Get notified by the system instead of polling.
   (auto-revert-avoid-polling t)
   ;; Only prompts for confirmation when buffer is unsaved.
   (revert-without-query (list "."))
@@ -522,9 +520,7 @@ buffer's text scale."
 (use-package paren
   :ensure nil
   :custom
-  (show-paren-style 'parenthesis)
-  (show-paren-when-point-in-periphery t)
-  (show-paren-when-point-inside-paren nil))
+  (show-paren-when-point-in-periphery t))
 
 ;; recentf :build_in:
 
@@ -632,7 +628,6 @@ buffer's text scale."
 (use-package time-stamp
   :ensure nil
   :custom
-  (time-stamp-active t)
   (time-stamp-format "%04Y-%02m-%02d %02H:%02M:%02S (%L)")
   :hook
   (before-save . time-stamp))

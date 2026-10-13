@@ -182,8 +182,6 @@
 
 (use-package corfu
   :custom
-  ;; TAB cycle if there are only few candidates
-  (completion-cycle-threshold nil)
 
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
@@ -194,8 +192,6 @@
   (corfu-auto t)                      ;; Enable auto completion
   (corfu-auto-trigger ".([{+-*/=,$")  ;; Custom trigger characters
   (corfu-auto-prefix 2)               ;; Complete with less prefix keys
-  (corfu-quit-no-match 'separator)    ;; Quit auto complete if there is no match
-  (corfu-quit-at-boundary 'separator) ;; Never quit at completion boundary
   (corfu-preview-current nil)         ;; Disable current candidate preview
   (corfu-preselect 'directory)        ;; Preselect the fisrt canidate exept for directories select the prompt
   (corfu-on-exact-match 'show)        ;; Dont insert candidate automatically, just show them
