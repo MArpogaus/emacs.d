@@ -95,6 +95,14 @@ context.  When called with an argument, unconditionally call
     "Face for todo keywords of paused or blocked tasks.")
   (defface my/org-todo-project-face '((t :inherit (bold font-lock-doc-face org-todo)))
     "Face for the PROJ todo keyword.")
+  (defun my/org-capture-inbox ()
+    "Capture a task into the inbox."
+    (interactive)
+    (org-capture nil "i"))
+  (defun my/org-capture-note ()
+    "Capture a new Denote note."
+    (interactive)
+    (org-capture nil "n"))
   :init
   (setopt org-directory (expand-file-name "Notes/" (getenv "HOME"))
           org-cite-global-bibliography (list (expand-file-name "denote/bib/references.bib" org-directory)))
@@ -128,10 +136,8 @@ context.  When called with an argument, unconditionally call
 
   ;; org capture
   (org-capture-templates
-   `(("i" "Inbox" entry  (file "agenda/inbox.org")
-      "* TODO %?\n")
-     ("m" "Meeting" entry  (file+headline "agenda/gtd.org" "Termine")
-      ,(concat "* <%<%Y-%m-%d %a %H:00>> %? :meeting:\n"))))
+   '(("i" "Inbox" entry (file "agenda/inbox.org")
+      "* TODO %?\n")))
 
   ;; org-agenda
   ;; A directory, so Org also finds files created after startup
@@ -160,8 +166,9 @@ context.  When called with an argument, unconditionally call
   :hook
   (org-mode . reveal-mode)
   :bind
-  (:map my/toggle-map
-        ("c" . org-capture)
+  (:map my/leader-map
+        ("i" . my/org-capture-inbox)
+        ("I" . my/org-capture-note)
         :map my/open-map
         ("a" . org-agenda)))
 
