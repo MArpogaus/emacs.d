@@ -28,6 +28,7 @@
        denote-menu-list-notes consult-denote-find consult-denote-grep)
       . "denote")
      ((custom-buffer-create custom-buffer-create-other-window) . "customize")
+     ((my/gtd) . "GTD")
      ((dirvish dirvish-fd) . "dirvish")))
   ;; `:always-close': close whatever the command returns.
   (auto-tab-groups-close-commands

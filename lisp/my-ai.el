@@ -18,11 +18,58 @@
 ;; A native Emacs buffer to interact with LLM agents powered by ACP.
 
 (use-package agent-shell
+  :preface
+  (defvar my/gtd-prompts
+    '(("Tag"   . "Tagesreview nach AGENTS.md.")
+      ("Inbox" . "Inbox-Review nach AGENTS.md.")
+      ("Woche" . "Wochenreview nach AGENTS.md."))
+    "Prompts for `my/gtd'; the first one starts a new session.
+The rules of each review are in the AGENTS.md of the agenda.")
+  (defun my/gtd-refresh-agenda (&rest _)
+    "Revert the agenda files the agent changed and redo the agenda."
+    (dolist (file (org-agenda-files))
+      (when-let* ((buffer (find-buffer-visiting file)))
+        (with-current-buffer buffer
+          (unless (verify-visited-file-modtime buffer)
+            (revert-buffer t t t)))))
+    (when-let* ((window (get-buffer-window org-agenda-buffer-name t)))
+      (with-selected-window window (org-agenda-redo-all))))
+  (defun my/gtd (&optional prompt)
+    "Show the GTD agenda beside a Claude agent in the agenda directory.
+A new agent gets the first of `my/gtd-prompts'; with a prefix argument,
+pick PROMPT, which also goes to an agent that runs already."
+    (interactive
+     (list (when current-prefix-arg
+             (cdr (assoc (completing-read "Review: " my/gtd-prompts nil t)
+                         my/gtd-prompts)))))
+    (let* ((dir (expand-file-name "agenda/" org-directory))
+           (shell (seq-find (lambda (buffer)
+                              (file-equal-p (buffer-local-value 'default-directory buffer) dir))
+                            (agent-shell-buffers))))
+      ;; In a main window: shown the usual way, auto-side-windows puts
+      ;; the agenda in a panel.
+      (save-window-excursion (org-agenda nil "g"))
+      (let ((main (seq-find (lambda (window) (not (window-parameter window 'window-side)))
+                            (window-list nil 'no-mini))))
+        (set-window-buffer main org-agenda-buffer-name)
+        (select-window main))
+      (if shell
+          (pop-to-buffer shell agent-shell-display-action)
+        (let ((default-directory dir)
+              (agent-shell-cwd-function (lambda () dir)))
+          (setq shell (agent-shell-start :config (agent-shell-anthropic-make-claude-code-config))))
+        (agent-shell-subscribe-to :shell-buffer shell :event 'turn-complete
+                                  :on-event #'my/gtd-refresh-agenda)
+        (setq prompt (or prompt (cdar my/gtd-prompts))))
+      (when prompt
+        (agent-shell-insert :text prompt :submit t :shell-buffer shell))))
   :custom
   (agent-shell-header-style 'text)
   :bind
   (:map my/ai-map
-        ("s" . agent-shell)))
+        ("s" . agent-shell)
+        :map my/open-map
+        ("g" . my/gtd)))
 
 ;; [[https://github.com/karthink/gptel.git][gptel]]
 ;; A simple LLM client for Emacs.
