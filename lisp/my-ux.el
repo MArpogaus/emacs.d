@@ -221,9 +221,10 @@
   (auto-side-windows-reuse-mode-window '((left . t)))
 
   ;; Panels: no `other-window', no tab line, no mode line.
-  (auto-side-windows-common-window-parameters '((no-other-window . t)
+  (auto-side-windows-common-window-parameters `((no-other-window . t)
                                                 (tab-line-format . none)
-                                                (mode-line-format . none)))
+                                                (mode-line-format . none)
+                                                (header-line-format . ,my/header-line-format-top)))
 
   ;; A side keeps the size I give it, per tab.
   (auto-side-windows-remember-sizes t)
@@ -307,15 +308,6 @@
      pdf-outline-buffer-mode
      shortdoc-mode))
 
-  ;; Window parameters
-  (auto-side-windows-top-window-parameters `((mode-line-format . none)
-                                             (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-right-window-parameters `((mode-line-format . none)
-                                               (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-left-window-parameters `((mode-line-format . none)
-                                              (header-line-format . ,my/header-line-format-top)))
-  (auto-side-windows-bottom-window-parameters `((mode-line-format . none)
-                                                (header-line-format . ,my/header-line-format-top)))
   (window-combination-resize t)
   (window-sides-vertical t)
   (window-sides-slots '(2 1 5 2)) ; maximum number of side windows on the left, top, right and bottom
