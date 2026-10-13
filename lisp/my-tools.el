@@ -87,15 +87,12 @@
                             (format "  %s " (nerd-icons-codicon "nf-cod-home"))
                             (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
                             (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
-  ;; (dirvish-use-header-line nil)
-  ;; (dirvish-use-mode-line nil)
   ;; kill all session buffers on quit
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
   :init
   (dirvish-override-dired-mode)
-  ;; (dirvish-peek-mode) ; Preview files in minibuffer
   :config
   (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
   ;; Prevent dirvish from closing its buffers after a file has been opened

@@ -359,8 +359,6 @@ globalized minor mode stays off in the buffer."
   (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
   :init
   (define-key my/leader-map (kbd "d") (cons "debug" my/debug-map))
-  ;; To use window configuration like gud (gdb-mi)
-  ;; (setq dape-buffer-window-arrangement 'gud)
   :bind
   (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
    :repeat-map my/debug-map
@@ -389,26 +387,9 @@ globalized minor mode stays off in the buffer."
   ;; Info buffers to the right
   (setq dape-buffer-window-arrangement 'right)
 
-  ;; To not display info and/or buffers on startup
-  ;; (remove-hook 'dape-start-hook 'dape-info)
-  ;; (remove-hook 'dape-start-hook 'dape-repl)
-
-  ;; To display info and/or repl buffers on stopped
-  ;; (add-hook 'dape-stopped-hook 'dape-info)
-  ;; (add-hook 'dape-stopped-hook 'dape-repl)
-
-  ;; By default dape uses gdb keybinding prefix
-  ;; If you do not want to use any prefix, set it to nil.
-  ;; (setq dape-key-prefix "\C-x\C-a")
-
-  ;; Projectile users
-  ;; (setq dape-cwd-fn 'projectile-project-root)
-
   ;; Save buffers on startup, useful for interpreted languages
   (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
   :hook
-  ;; Kill compile buffer on build success
-  ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
   ;; Set breakpints via fringe or margin mouse clicks
   (prog-mode . dape-breakpoint-global-mode))
 
@@ -598,7 +579,6 @@ globalized minor mode stays off in the buffer."
 ;; Auto-format source code in many languages with one command.
 
 (use-package format-all
-  ;;:hook (prog-mode . format-all-mode)
   :bind
   (:map my/toggle-map
         ("f" . format-all-buffer)))

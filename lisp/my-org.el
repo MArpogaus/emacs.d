@@ -175,7 +175,6 @@ context.  When called with an argument, unconditionally call
 ;; [[https://github.com/awth13/org-appear.git][org-appear]]
 ;; Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
 
-;; *test* /aaa/ =babab=
 
 (use-package org-appear
   :after org
@@ -207,7 +206,7 @@ context.  When called with an argument, unconditionally call
 (use-package org-modern
   :custom-face
   ;; set basic title font
-  (org-level-8 ((t (:weight bold :inherit variable-pitch)))) ;; :box (:line-width (1 . 5) :color ,(face-background 'default))))))
+  (org-level-8 ((t (:weight bold :inherit variable-pitch))))
   ;; Low levels are unimportant => no scaling
   (org-level-7 ((t (:inherit org-level-8))))
   (org-level-6 ((t (:inherit org-level-8))))
@@ -241,7 +240,6 @@ context.  When called with an argument, unconditionally call
      ("example" "»" "«")
      ("quote" "❝" "❞")
      ("export" "" "")))
-  ;; (org-modern-star 'fold)
 
   (org-modern-keyword
    '((t . t)
@@ -386,10 +384,7 @@ context.  When called with an argument, unconditionally call
                                        (org-default (:inherit variable-pitch) org-default)
                                        (org-table (:inherit fixed-pitch) org-table)
                                        (org-code (:inherit fixed-pitch) org-code)
-                                       (org-verbatim (:inherit fixed-pitch) org-verbatim)
-                                       ;; (org-hide (:inherit fixed-pitch) org-hide)
-                                       ;; (default (:inherit variable-pitch))
-                                       ))
+                                       (org-verbatim (:inherit fixed-pitch) org-verbatim)))
 
     ;; Set a blank header line string to create blank space at the top
     (setq-local header-line-format " ")
@@ -411,7 +406,6 @@ context.  When called with an argument, unconditionally call
     (set-fringe-mode 0)
 
     ;; Increase font size
-    ;;(org-present-big)
     )
   (defun my/org-present-quit ()
     (org-present-read-write)
@@ -444,7 +438,6 @@ context.  When called with an argument, unconditionally call
     (set-fringe-mode nil)
 
     ;; Restore font size
-    ;;(org-present-small)
     )
   (defun my/org-present-prepare-slide (buffer-name heading)
     ;; Show only top-level headlines

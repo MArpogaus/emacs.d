@@ -118,9 +118,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
   ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 
 ;; [[https://github.com/mickeynp/ligature.el.git][ligature]]
-;; Display typographical ligatures in Emacs. -> -+
-;; =Display typographical ligatures in Emacs.-> -+=
-;; www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
+;; Display typographical ligatures in Emacs.
 
 ;; *Note:* Fira Code is loaded [[id:5eb92f35-9f4c-436f-864f-c270dc2f1f29][here.]]
 
@@ -216,7 +214,6 @@ the clock of `tab-bar-format-global', and any segment beside it."
     :right
     (((mood-line-segment-process)                                               . " ")
      ((mood-line-segment-buffer-status)                                         . " ")
-     ;; ((mood-line-segment-misc-info)                                             . " ")
      ;; Misc info is shown in the tab bar.
      ((mood-line-segment-major-mode)                                            . " ")
      ((mood-line-segment-vc)                                                    . " ")

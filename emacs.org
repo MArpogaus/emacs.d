@@ -494,7 +494,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
     ;; Smoother scrolling
-    ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
     (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
     (scroll-preserve-screen-position t)                ; Don't move point when scrolling
     (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
@@ -1002,7 +1001,6 @@ Agenda view and task management has been inspired by https://github.com/rougier/
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
 
-*test* /aaa/ =babab=
 #+begin_src emacs-lisp
   (use-package org-appear
     :after org
@@ -1034,7 +1032,7 @@ This package implements a modern style for your Org buffers using font locking a
   (use-package org-modern
     :custom-face
     ;; set basic title font
-    (org-level-8 ((t (:weight bold :inherit variable-pitch)))) ;; :box (:line-width (1 . 5) :color ,(face-background 'default))))))
+    (org-level-8 ((t (:weight bold :inherit variable-pitch))))
     ;; Low levels are unimportant => no scaling
     (org-level-7 ((t (:inherit org-level-8))))
     (org-level-6 ((t (:inherit org-level-8))))
@@ -1068,7 +1066,6 @@ This package implements a modern style for your Org buffers using font locking a
        ("example" "»" "«")
        ("quote" "❝" "❞")
        ("export" "" "")))
-    ;; (org-modern-star 'fold)
 
     (org-modern-keyword
      '((t . t)
@@ -1213,10 +1210,7 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
                                          (org-default (:inherit variable-pitch) org-default)
                                          (org-table (:inherit fixed-pitch) org-table)
                                          (org-code (:inherit fixed-pitch) org-code)
-                                         (org-verbatim (:inherit fixed-pitch) org-verbatim)
-                                         ;; (org-hide (:inherit fixed-pitch) org-hide)
-                                         ;; (default (:inherit variable-pitch))
-                                         ))
+                                         (org-verbatim (:inherit fixed-pitch) org-verbatim)))
 
       ;; Set a blank header line string to create blank space at the top
       (setq-local header-line-format " ")
@@ -1238,7 +1232,6 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (set-fringe-mode 0)
 
       ;; Increase font size
-      ;;(org-present-big)
       )
     (defun my/org-present-quit ()
       (org-present-read-write)
@@ -1271,7 +1264,6 @@ Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-presen
       (set-fringe-mode nil)
 
       ;; Restore font size
-      ;;(org-present-small)
       )
     (defun my/org-present-prepare-slide (buffer-name heading)
       ;; Show only top-level headlines
@@ -1511,9 +1503,7 @@ Fast, configurable indentation guide-bars for Emacs.
     ((python-base-mode yaml-ts-mode emacs-lisp-mode) . indent-bars-mode))
 #+end_src
 **** [[https://github.com/mickeynp/ligature.el.git][ligature]]
-Display typographical ligatures in Emacs. -> -+
-=Display typographical ligatures in Emacs.-> -+=
-www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
+Display typographical ligatures in Emacs.
 
 *Note:* Fira Code is loaded [[id:5eb92f35-9f4c-436f-864f-c270dc2f1f29][here.]]
 #+begin_src emacs-lisp
@@ -1609,7 +1599,6 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
       :right
       (((mood-line-segment-process)                                               . " ")
        ((mood-line-segment-buffer-status)                                         . " ")
-       ;; ((mood-line-segment-misc-info)                                             . " ")
        ;; Misc info is shown in the tab bar.
        ((mood-line-segment-major-mode)                                            . " ")
        ((mood-line-segment-vc)                                                    . " ")
@@ -2748,15 +2737,12 @@ A polished Dired with batteries included.
                               (format "  %s " (nerd-icons-codicon "nf-cod-home"))
                               (format "  %s " (nerd-icons-codicon "nf-cod-root_folder"))
                               (format " %s " (nerd-icons-faicon "nf-fa-angle_right"))))
-    ;; (dirvish-use-header-line nil)
-    ;; (dirvish-use-mode-line nil)
     ;; kill all session buffers on quit
     (dirvish-reuse-session nil)
     (dirvish-mode-line-height my/modeline-height)
     (dirvish-header-line-height my/modeline-height)
     :init
     (dirvish-override-dired-mode)
-    ;; (dirvish-peek-mode) ; Preview files in minibuffer
     :config
     (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
     ;; Prevent dirvish from closing its buffers after a file has been opened
@@ -3342,16 +3328,7 @@ Cape provides Completion At Point Extensions which can be used in combination wi
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
     (add-to-list 'completion-at-point-functions #'cape-elisp-block)
     (add-to-list 'completion-at-point-functions #'cape-history)
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-    ;;(add-to-list 'completion-at-point-functions #'cape-tex)
-    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-    ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
-    ;;(add-to-list 'completion-at-point-functions #'cape-line)
-    )
+    (add-to-list 'completion-at-point-functions #'cape-file))
 #+end_src
 **** [[https://github.com/emacs-citar/citar.git][citar]]
 Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -3409,9 +3386,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
                 citar-indicator-links-icons
                 citar-indicator-notes-icons
                 citar-indicator-cited-icons))
-    ;; optional: org-cite-insert is also bound to C-c C-x C-@
-    ;;:bind
-    ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
     :hook
     ((LaTeX-mode . citar-capf-setup)
      (org-mode . citar-capf-setup)))
@@ -3492,26 +3466,13 @@ Additional featureful completion commands.
     ;; This adds thin lines, sorting and hides the mode line of the window.
     (advice-add #'register-preview :override #'consult-register-window)
 
-    ;; Optionally configure preview. The default value
-    ;; is 'any, such that any key triggers the preview.
-    ;; (setq consult-preview-key 'any)
-    ;; (setq consult-preview-key "M-.")
-    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-    ;; For some commands and buffer sources it is useful to configure the
-    ;; :preview-key on a per-command basis using the `consult-customize' macro.
     (consult-customize
      consult-theme :preview-key '(:debounce 0.2 any)
      consult-ripgrep consult-git-grep consult-grep consult-man
      consult-bookmark consult-recent-file
      consult-source-bookmark consult-source-file-register
      consult-source-recent-file consult-source-project-recent-file
-     ;; :preview-key "M-."
-     :preview-key '(:debounce 0.4 any))
-
-    ;; Optionally make narrowing help available in the minibuffer.
-    ;; You may want to use `embark-prefix-help-command' or which-key instead.
-    ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-    )
+     :preview-key '(:debounce 0.4 any)))
 #+end_src
 **** [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
 Searching and jumping to TODO keywords using consult.
@@ -3548,7 +3509,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
       "Enable Corfu in the minibuffer if Vertico is not active."
       (unless (or (bound-and-true-p vertico--input)
                   (eq (current-local-map) read-passwd-map))
-        ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
         (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
                     corfu-popupinfo-delay nil)
         (corfu-mode 1)))
@@ -3682,10 +3642,6 @@ Embark makes it easy to choose a command to run based on what is near point, bot
       (call-interactively #'embark-select)
       (vertico-next 1))
     :config
-    ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-    ;; strategy, if you want to see the documentation from multiple providers.
-    ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-
     (setopt embark-indicators
             '(my/embark-which-key-indicator
               embark-highlight-indicator
@@ -3752,8 +3708,6 @@ Tempel is a tiny template package for Emacs, which uses the syntax of the Emacs 
 #+begin_src emacs-lisp
   (use-package tempel
     :custom
-    ;; Require trigger prefix before template name when completing.
-    ;; (tempel-trigger-prefix ">")
     (tempel-path (expand-file-name "templates.eld" emacs-config-directory))
 
     :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
@@ -3997,10 +3951,7 @@ Tab group based workflow isolation.
     (project-vc-extra-root-markers '(".project"))
     (project-switch-commands '((project-find-file "Find file")
                                (project-find-regexp "Find regexp")
-                               (project-find-dir "Find directory")
-                               ;; (project-vc-dir "VC-Dir")
-                               ;; (project-eshell "Eshell")
-                               ))
+                               (project-find-dir "Find directory")))
     :init
     (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 #+end_src
@@ -4464,8 +4415,6 @@ Debug Adapter Protocol for Emacs.
     (defvar my/debug-map (make-sparse-keymap) "key-map for debug commands")
     :init
     (define-key my/leader-map (kbd "d") (cons "debug" my/debug-map))
-    ;; To use window configuration like gud (gdb-mi)
-    ;; (setq dape-buffer-window-arrangement 'gud)
     :bind
     (("<left-fringe> C-<mouse-1>" . dape-mouse-breakpoint-toggle)
      :repeat-map my/debug-map
@@ -4494,26 +4443,9 @@ Debug Adapter Protocol for Emacs.
     ;; Info buffers to the right
     (setq dape-buffer-window-arrangement 'right)
 
-    ;; To not display info and/or buffers on startup
-    ;; (remove-hook 'dape-start-hook 'dape-info)
-    ;; (remove-hook 'dape-start-hook 'dape-repl)
-
-    ;; To display info and/or repl buffers on stopped
-    ;; (add-hook 'dape-stopped-hook 'dape-info)
-    ;; (add-hook 'dape-stopped-hook 'dape-repl)
-
-    ;; By default dape uses gdb keybinding prefix
-    ;; If you do not want to use any prefix, set it to nil.
-    ;; (setq dape-key-prefix "\C-x\C-a")
-
-    ;; Projectile users
-    ;; (setq dape-cwd-fn 'projectile-project-root)
-
     ;; Save buffers on startup, useful for interpreted languages
     (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
     :hook
-    ;; Kill compile buffer on build success
-    ;; (add-hook 'dape-compile-compile-hooks 'kill-buffer)
     ;; Set breakpints via fringe or margin mouse clicks
     (prog-mode . dape-breakpoint-global-mode))
 #+end_src
@@ -4703,7 +4635,6 @@ Universal on-the-fly syntax checker for Emacs.
 Auto-format source code in many languages with one command.
 #+begin_src emacs-lisp
   (use-package format-all
-    ;;:hook (prog-mode . format-all-mode)
     :bind
     (:map my/toggle-map
           ("f" . format-all-buffer)))
@@ -4982,7 +4913,6 @@ The emacs major mode for editing files in the YAML data serialization format.
 Meow is yet another modal editing mode for Emacs.
 #+begin_src emacs-lisp
   (use-package meow
-    ;; :ensure (:build (:not autoloads))
     :demand t
     :custom
     ;; use system clipboard
@@ -5099,7 +5029,6 @@ Emulate standard keybindings from modern editors.
     :bind
     (:map my/standard-keys-keymap
           ("C-o"        . find-file)
-          ;; ("C-w"     . kill-current-buffer)
           ("C-q"        . save-buffers-kill-terminal)
           ("C-x"        . standard-keys-cut-region-or-line)
           ("C-c"        . standard-keys-copy-region-or-line)

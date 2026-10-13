@@ -25,16 +25,7 @@
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-history)
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
-  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-  ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
-  ;;(add-to-list 'completion-at-point-functions #'cape-line)
-  )
+  (add-to-list 'completion-at-point-functions #'cape-file))
 
 ;; [[https://github.com/emacs-citar/citar.git][citar]]
 ;; Citar provides a highly-configurable completing-read front-end to browse and act on BibTeX, BibLaTeX, and CSL JSON bibliographic data, and LaTeX, markdown, and org-cite editing support.
@@ -92,9 +83,6 @@
               citar-indicator-links-icons
               citar-indicator-notes-icons
               citar-indicator-cited-icons))
-  ;; optional: org-cite-insert is also bound to C-c C-x C-@
-  ;;:bind
-  ;;(:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
   :hook
   ((LaTeX-mode . citar-capf-setup)
    (org-mode . citar-capf-setup)))
@@ -175,26 +163,13 @@
   ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
 
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key "M-.")
-  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep consult-man
    consult-bookmark consult-recent-file
    consult-source-bookmark consult-source-file-register
    consult-source-recent-file consult-source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-
-  ;; Optionally make narrowing help available in the minibuffer.
-  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
-  )
+   :preview-key '(:debounce 0.4 any)))
 
 ;; [[https://github.com/liuyinz/consult-todo.git][consult-todo]]
 ;; Searching and jumping to TODO keywords using consult.
@@ -231,7 +206,6 @@
     "Enable Corfu in the minibuffer if Vertico is not active."
     (unless (or (bound-and-true-p vertico--input)
                 (eq (current-local-map) read-passwd-map))
-      ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
       (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
                   corfu-popupinfo-delay nil)
       (corfu-mode 1)))
@@ -365,10 +339,6 @@
     (call-interactively #'embark-select)
     (vertico-next 1))
   :config
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-
   (setopt embark-indicators
           '(my/embark-which-key-indicator
             embark-highlight-indicator
@@ -435,8 +405,6 @@
 
 (use-package tempel
   :custom
-  ;; Require trigger prefix before template name when completing.
-  ;; (tempel-trigger-prefix ">")
   (tempel-path (expand-file-name "templates.eld" emacs-config-directory))
 
   :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand

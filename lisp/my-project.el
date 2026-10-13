@@ -55,10 +55,7 @@
   (project-vc-extra-root-markers '(".project"))
   (project-switch-commands '((project-find-file "Find file")
                              (project-find-regexp "Find regexp")
-                             (project-find-dir "Find directory")
-                             ;; (project-vc-dir "VC-Dir")
-                             ;; (project-eshell "Eshell")
-                             ))
+                             (project-find-dir "Find directory")))
   :init
   (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 

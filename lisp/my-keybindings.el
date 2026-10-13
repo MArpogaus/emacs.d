@@ -18,7 +18,6 @@
 ;; Meow is yet another modal editing mode for Emacs.
 
 (use-package meow
-  ;; :ensure (:build (:not autoloads))
   :demand t
   :custom
   ;; use system clipboard
@@ -135,7 +134,6 @@
   :bind
   (:map my/standard-keys-keymap
         ("C-o"        . find-file)
-        ;; ("C-w"     . kill-current-buffer)
         ("C-q"        . save-buffers-kill-terminal)
         ("C-x"        . standard-keys-cut-region-or-line)
         ("C-c"        . standard-keys-copy-region-or-line)

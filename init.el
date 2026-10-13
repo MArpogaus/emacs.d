@@ -59,7 +59,6 @@
   (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
   ;; Smoother scrolling
-  ;; (scroll-margin 0)                                  ; Reduce margin triggering automatic scrolling
   (scroll-conservatively 101)                        ; Avoid recentering when scrolling far
   (scroll-preserve-screen-position t)                ; Don't move point when scrolling
   (fast-but-imprecise-scrolling t)                   ; More performant rapid scrolling over unfontified regions
