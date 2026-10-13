@@ -85,16 +85,19 @@ pick PROMPT, which also goes to an agent that runs already."
             (denote-use-title (buffer-name))
             (denote-use-keywords '("gptel" "ai"))
             (denote-use-directory (expand-file-name "gptel/" (car (denote-directories)))))
-        (call-interactively #'my/denote-save-buffer)
-        (setq-local default-directory previous-dir)
         (add-file-local-variable 'default-directory previous-dir t)
         (add-file-local-variable 'auto-side-windows-side 'right t)
-        (add-file-local-variable 'eval '(gptel-mode) t))))
+        (add-file-local-variable 'eval '(gptel-mode) t)
+        (call-interactively #'my/denote-save-buffer)
+        (setq-local default-directory previous-dir))))
   (defun my/gptel-auto-save-to-denote-h (&rest _)
     "Hook to automatically save gptel buffers to Denote.
 Triggered after the first response is received in a new buffer."
     (my/gptel-save-to-denote)
     (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
+  :init
+  ;; Saved chats turn `gptel-mode' on through an `eval' local variable.
+  (add-to-list 'safe-local-eval-forms '(gptel-mode))
   :commands (gptel gptel-send)
   :bind
   (:map my/ai-map
