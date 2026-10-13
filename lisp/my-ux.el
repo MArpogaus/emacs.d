@@ -653,8 +653,6 @@ buffer's text scale."
    ("-" . shrink-window)
    ("*" . enlarge-window-horizontally)
    ("_" . shrink-window-horizontally)
-   ("r" . split-window-right)
-   ("b" . split-window-below)
    ("v" . split-window-vertically)
    ("h" . split-window-horizontally)
    ("m" . delete-other-windows)
