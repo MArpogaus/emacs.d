@@ -4019,9 +4019,9 @@ Integrated environment for *TeX*
      '(open-file kill-buffer save-buffer separator undo
                  separator cut copy paste separator search-forward
                  separator latex next-error view bibtex spell))
-    :mode
-    ;; Ensure auctex is preferred over the build in `latex-mode`
-    ("\\.tex\\'" . LaTeX-mode)
+    ;; Without it AUCTeX guesses, and a chapter file without
+    ;; \documentclass opens in plain TeX.
+    :mode ("\\.tex\\'" . LaTeX-mode)
     :hook
     ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
     ((LaTeX-mode . LaTeX-preview-setup)
@@ -4360,7 +4360,6 @@ A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
   (use-package eglot
     :ensure nil
-    :after project
     :preface
     (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
     :init
@@ -4473,7 +4472,6 @@ Asynchronous fork of envrc: https://github.com/purcell/envrc
 Emacs Speaks Statistics: ESS.
 #+begin_src emacs-lisp
   (use-package ess
-    :mode ("\\.[rR]\\'" . R-mode)
     :custom
     ;; Start R in the file's directory without asking.
     (ess-ask-for-ess-directory nil)
@@ -4514,7 +4512,6 @@ Universal on-the-fly syntax checker for Emacs.
 #+begin_src emacs-lisp
   (use-package flymake
     :ensure nil
-    :after project
     :custom
     ;; Let git gutter have left fringe, flymake can have right fringe
     (flymake-fringe-indicator-position 'right-fringe)
@@ -4550,8 +4547,7 @@ folding needs no package of its own.
 **** [[https://github.com/immerrr/lua-mode.git][lua]]
 Emacs major mode for editing Lua.
 #+begin_src emacs-lisp
-  (use-package lua-mode
-    :mode "\\.lua\\'")
+  (use-package lua-mode)
 #+end_src
 **** [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 Emacs Markdown Mode.
@@ -4571,8 +4567,7 @@ buffer-local =process-environment= is invisible to =shell-command= and its
 like without help.  =ben= brings the package along for the buffers direnv
 owns; =my/python-env-mode= below uses it for the buffers it owns itself.
 #+begin_src emacs-lisp
-  (use-package inheritenv
-    :demand t)
+  (use-package inheritenv)
 #+end_src
 **** python :build_in:
 Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
@@ -4774,13 +4769,6 @@ remapping and =treesit-auto-install-grammar= the fetching.
     :ensure nil
     :custom
     (treesit-enabled-modes t))
-#+end_src
-**** yaml-ts-mode :build_in:
-The emacs major mode for editing files in the YAML data serialization format.
-#+begin_src emacs-lisp
-  (use-package yaml-ts-mode
-    :ensure nil
-    :mode "\\.ya?ml\\'")
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp

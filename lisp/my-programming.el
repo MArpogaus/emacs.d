@@ -57,9 +57,9 @@
    '(open-file kill-buffer save-buffer separator undo
                separator cut copy paste separator search-forward
                separator latex next-error view bibtex spell))
-  :mode
-  ;; Ensure auctex is preferred over the build in `latex-mode`
-  ("\\.tex\\'" . LaTeX-mode)
+  ;; Without it AUCTeX guesses, and a chapter file without
+  ;; \documentclass opens in plain TeX.
+  :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
   ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
   ((LaTeX-mode . LaTeX-preview-setup)
@@ -398,7 +398,6 @@ globalized minor mode stays off in the buffer."
 
 (use-package eglot
   :ensure nil
-  :after project
   :preface
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
   :init
@@ -511,7 +510,6 @@ globalized minor mode stays off in the buffer."
 ;; Emacs Speaks Statistics: ESS.
 
 (use-package ess
-  :mode ("\\.[rR]\\'" . R-mode)
   :custom
   ;; Start R in the file's directory without asking.
   (ess-ask-for-ess-directory nil)
@@ -552,7 +550,6 @@ globalized minor mode stays off in the buffer."
 
 (use-package flymake
   :ensure nil
-  :after project
   :custom
   ;; Let git gutter have left fringe, flymake can have right fringe
   (flymake-fringe-indicator-position 'right-fringe)
@@ -588,8 +585,7 @@ globalized minor mode stays off in the buffer."
 ;; [[https://github.com/immerrr/lua-mode.git][lua]]
 ;; Emacs major mode for editing Lua.
 
-(use-package lua-mode
-  :mode "\\.lua\\'")
+(use-package lua-mode)
 
 ;; [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 ;; Emacs Markdown Mode.
@@ -609,8 +605,7 @@ globalized minor mode stays off in the buffer."
 ;; like without help.  =ben= brings the package along for the buffers direnv
 ;; owns; =my/python-env-mode= below uses it for the buffers it owns itself.
 
-(use-package inheritenv
-  :demand t)
+(use-package inheritenv)
 
 ;; python :build_in:
 ;; Prefer IPython as the REPL whenever one is on the =PATH= of the buffer's
@@ -812,13 +807,6 @@ window it already made, so a key bound to it cannot put the panel away."
   :ensure nil
   :custom
   (treesit-enabled-modes t))
-
-;; yaml-ts-mode :build_in:
-;; The emacs major mode for editing files in the YAML data serialization format.
-
-(use-package yaml-ts-mode
-  :ensure nil
-  :mode "\\.ya?ml\\'")
 
 ;; ZZ Library Footer
 
