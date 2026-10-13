@@ -75,6 +75,17 @@
   (:map my/version-control-map
         ("t" . git-timemachine)))
 
+;; transient :build_in:
+;; Menus of magit, gptel and others. elpaca installs it as a dependency of magit.
+
+(use-package transient
+  :ensure nil
+  :custom
+  (transient-display-buffer-action
+   '(auto-side-windows--display-buffer
+     (auto-side-windows-side . top)))
+  (transient-mode-line-format nil))
+
 ;; [[https://github.com/magit/magit.git][magit]]
 ;; The magical git client.
 
@@ -82,10 +93,40 @@
 (use-package magit
   :custom
   (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
-  :init
-  (with-eval-after-load 'project
-    (add-to-list 'project-switch-commands
-                 '(magit-project-status "Version Control" ?v) t))
+  (magit-display-buffer-function #'display-buffer)
+  (magit-commit-diff-inhibit-same-window t)
+  (magit-tramp-pipe-stty-settings 'pty)
+  :preface
+  ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+  (defun my/memoize-remote (key cache orig-fn &rest args)
+    "Memoize a value if the key is a remote path."
+    (if (and key
+             (file-remote-p key))
+        (if-let* ((current (assoc key (symbol-value cache))))
+            (cdr current)
+          (let ((current (apply orig-fn args)))
+            (set cache (cons (cons key current) (symbol-value cache)))
+            current))
+      (apply orig-fn args)))
+
+  ;; Memoize magit top level
+  (defvar my/magit-toplevel-cache nil)
+  (defun my/memoize-magit-toplevel (orig &optional directory)
+    (my/memoize-remote (or directory default-directory)
+                       'my/magit-toplevel-cache orig directory))
+
+  ;; memoize vc-git-root
+  (defvar my/vc-git-root-cache nil)
+  (defun my/memoize-vc-git-root (orig file)
+    (let ((value (my/memoize-remote (file-name-directory file)
+                                    'my/vc-git-root-cache orig file)))
+      ;; sometimes vc-git-root returns nil even when there is a root there
+      (unless (cdar my/vc-git-root-cache)
+        (setq my/vc-git-root-cache (cdr my/vc-git-root-cache)))
+      value))
+  :config
+  (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)
+  (advice-add 'magit-toplevel :around #'my/memoize-magit-toplevel)
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)

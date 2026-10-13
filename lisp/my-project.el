@@ -52,7 +52,12 @@
   (project-vc-extra-root-markers '(".project"))
   (project-switch-commands '((project-find-file "Find file")
                              (project-find-regexp "Find regexp")
-                             (project-find-dir "Find directory")))
+                             (project-find-dir "Find directory")
+                             (my/project-vterm "Vterm")
+                             (magit-project-status "Version Control" ?v)
+                             (project-x-window-state-load "Restore windows" ?j)))
+  :config
+  (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode))
   :init
   (define-key my/leader-map (kbd "p") (cons "project" project-prefix-map)))
 
@@ -66,8 +71,6 @@
               ("l" . project-x-window-state-load))
   :commands project-x-try-local project-x--window-state-write
   :init
-  (add-to-list 'project-switch-commands
-               '(project-x-window-state-load "Restore windows" ?j) t)
   (add-hook 'project-find-functions 'project-x-try-local 90)
   :config
   ;; Not in `:init': there the hook would load the package at quit.

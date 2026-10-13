@@ -192,6 +192,7 @@
   (corfu-preselect 'directory)        ;; Preselect the first candidate; for directories the prompt
   (corfu-on-exact-match 'show)        ;; Don't insert candidate automatically, just show them
   (corfu-popupinfo-delay '(1.0 . 0.0));; Initial and subsequent delay for info popup in seconds
+  (corfu-margin-formatters '(nerd-icons-corfu-formatter))
   :preface
   ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
   (defun my/corfu-insert-separator-advice (orig-func &rest args)
@@ -342,11 +343,7 @@ target, followed by an ellipsis if there are further targets."
 ;; [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 ;; Icons for corfu via nerd-icons.
 
-(use-package nerd-icons-corfu
-  :init
-  ;; The formatter is autoloaded; nothing else loads this package.
-  (with-eval-after-load 'corfu
-    (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)))
+(use-package nerd-icons-corfu)
 
 ;; [[https://github.com/oantolin/orderless.git][orderless]]
 ;; Emacs completion style that matches multiple regexps in any order.

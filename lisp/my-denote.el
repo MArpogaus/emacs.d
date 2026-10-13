@@ -103,16 +103,6 @@ Prompts for metadata only if the file is not already a Denote file."
         ("r" . denote-dired-rename-marked-files)
         ("k" . denote-dired-rename-marked-files-with-keywords)
         ("M-r" . denote-dired-rename-marked-files-using-front-matter))
-  :config
-  (with-eval-after-load 'org-capture
-    (add-to-list 'org-capture-templates
-                 '("n" "New note (with Denote)" plain
-                   (file denote-last-path)
-                   #'denote-org-capture
-                   :no-save t
-                   :immediate-finish nil
-                   :kill-buffer t
-                   :jump-to-captured t)))
   :hook
   ((text-mode . denote-fontify-links-mode)
    (dired-mode . denote-dired-mode)

@@ -318,34 +318,6 @@
   (tramp-verbose 0)
   (tramp-chunksize 2000)
   (tramp-ssh-controlmaster-options nil)
-  :preface
-  ;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
-  (defun my/memoize-remote (key cache orig-fn &rest args)
-    "Memoize a value if the key is a remote path."
-    (if (and key
-             (file-remote-p key))
-        (if-let* ((current (assoc key (symbol-value cache))))
-            (cdr current)
-          (let ((current (apply orig-fn args)))
-            (set cache (cons (cons key current) (symbol-value cache)))
-            current))
-      (apply orig-fn args)))
-
-  ;; Memoize magit top level
-  (defvar my/magit-toplevel-cache nil)
-  (defun my/memoize-magit-toplevel (orig &optional directory)
-    (my/memoize-remote (or directory default-directory)
-                       'my/magit-toplevel-cache orig directory))
-
-  ;; memoize vc-git-root
-  (defvar my/vc-git-root-cache nil)
-  (defun my/memoize-vc-git-root (orig file)
-    (let ((value (my/memoize-remote (file-name-directory file)
-                                    'my/vc-git-root-cache orig file)))
-      ;; sometimes vc-git-root returns nil even when there is a root there
-      (unless (cdar my/vc-git-root-cache)
-        (setq my/vc-git-root-cache (cdr my/vc-git-root-cache)))
-      value))
   :config
   ;; Direct async processes for ssh, scp and sshx connections
   ;; https://www.gnu.org/software/tramp/#Improving-performance-of-asynchronous-remote-processes-1.
@@ -360,12 +332,7 @@
    'remote-direct-async-process)
   (connection-local-set-profiles
    '(:application tramp :protocol "sshx")
-   'remote-direct-async-process)
-
-  (with-eval-after-load 'magit
-    (setq magit-tramp-pipe-stty-settings 'pty)
-    (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)
-    (advice-add 'magit-toplevel :around #'my/memoize-magit-toplevel)))
+   'remote-direct-async-process))
 
 ;; [[https://github.com/akermu/emacs-libvterm.git][vterm]]
 ;; Emacs libvterm integration.
@@ -396,10 +363,7 @@
              (not (string-match-p "'.*'" vterm-shell)))
         (format "'%s'" vterm-shell)
       vterm-shell))
-  :init
-  (with-eval-after-load 'project
-    (add-to-list 'project-switch-commands '(my/project-vterm "Vterm") t)
-    (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode)))
+  :config
   (advice-add #'vterm--get-shell :filter-return #'my/vterm--get-shell-adv)
   :custom
   (vterm-copy-exclude-prompt t)

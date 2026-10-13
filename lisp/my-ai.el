@@ -43,7 +43,6 @@ pick PROMPT, which also goes to an agent that runs already."
      (list (when current-prefix-arg
              (cdr (assoc (completing-read "Review: " my/gtd-prompts nil t)
                          my/gtd-prompts)))))
-    (require 'agent-shell)
     (let* ((dir (expand-file-name "agenda/" org-directory))
            (shell (seq-find (lambda (buffer)
                               (file-equal-p (buffer-local-value 'default-directory buffer) dir))
@@ -71,8 +70,14 @@ pick PROMPT, which also goes to an agent that runs already."
         (setq prompt (or prompt (cdar my/gtd-prompts))))
       (when prompt
         (agent-shell-insert :text prompt :submit t :shell-buffer shell))))
+  :autoload agent-shell-buffers
   :custom
   (agent-shell-header-style 'text)
+  (agent-shell-display-action
+   '((auto-side-windows--display-buffer)
+     .
+     ((auto-side-windows-side . right)
+      (body-function . select-window))))
   :bind
   (:map my/ai-map
         ("s" . agent-shell)
@@ -114,6 +119,10 @@ Triggered after the first response is received in a new buffer."
   (gptel-mode . (lambda () (add-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h nil t)))
   :custom
   (gptel-default-mode 'org-mode)
+  (gptel-display-buffer-action
+   '(auto-side-windows--display-buffer
+     (auto-side-windows-side . right)
+     (body-function . select-window)))
   :config
   (gptel-make-gemini "Gemini" :key #'gptel-api-key-from-auth-source :stream t)
   (gptel-make-openai "OpenRouter"
@@ -218,10 +227,9 @@ Triggered after the first response is received in a new buffer."
   :bind
   (:map my/ai-map
         ("A". gptel-agent))
+  :config
   ;; Read files from agents directories
-  :preface
-  (with-eval-after-load 'gptel
-    (gptel-agent-update)))
+  (gptel-agent-update))
 
 ;; ZZ Library Footer
 

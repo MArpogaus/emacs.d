@@ -336,6 +336,7 @@ rest of the major mode setup, globalized minor modes included."
     (when (treesit-parser-list) (combobulate-mode 1)))
   :config
   (define-key my/open-map (kbd "c") (cons "combobulate" combobulate-options-key-map))
+  (eldoc-add-command-completions "combobulate-")
   :bind
   (:map combobulate-key-map
         ("S-<left>"  . combobulate-navigate-previous)
@@ -462,10 +463,7 @@ Tempel comes after :with, so the capf answers only when eglot does."
   (eldoc-echo-area-use-multiline-p nil)
   :bind
   (:map my/lsp-map
-        ("d" . eldoc-doc-buffer))
-  :config
-  (with-eval-after-load 'combobulate
-    (eldoc-add-command-completions "combobulate-")))
+        ("d" . eldoc-doc-buffer)))
 
 ;; [[https://github.com/casouri/eldoc-box.git][eldoc-box]]
 ;; Childframe doc for eglot and anything that uses eldoc.
@@ -476,9 +474,8 @@ Tempel comes after :with, so the capf answers only when eglot does."
         ("M" . eldoc-box-mouse-mode)
         ("D" . eldoc-box-hover-at-point-mode))
   :config
-  (with-eval-after-load 'pixel-scroll
-    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
-    (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum)))
+  (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-precision)
+  (add-to-list 'eldoc-box-self-insert-command-list #'pixel-scroll-start-momentum))
 
 ;; elisp-mode :build_in:
 ;; Font lock for Emacs Lisp from code analysis rather than from the symbol alone, so a let-bound variable does not read as a function call.
@@ -516,9 +513,12 @@ Tempel comes after :with, so the capf answers only when eglot does."
   ;; Do not wait for the echo: a long evaluation would block Emacs.
   (ess-eval-visibly 'nowait)
   ;; No workspace written on exit or read on start.
-  (inferior-R-args "--no-save --no-restore-data")
-  :config
-  (require 'ess-site))
+  (inferior-R-args "--no-save --no-restore-data"))
+
+(use-package ess-site
+  :ensure nil
+  :after ess
+  :demand t)
 
 ;; [[https://github.com/polymode/poly-R][poly-R]]
 ;; Markdown for the prose of an =.Rmd= file and =ess-r-mode= in every =```{r}= chunk, through an indirect buffer per chunk.

@@ -288,12 +288,6 @@ The DWIM behaviour of this command is as follows:
   :config
   ;; store backup and auto-save files in =no-littering-var-directory=
   (no-littering-theme-backups)
-  ;; Here and not in `recentf', which loads before these paths exist.
-  (with-eval-after-load 'recentf
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-var-directory))
-    (add-to-list 'recentf-exclude
-                 (recentf-expand-file-name no-littering-etc-directory)))
   ;; Load customization File
   (add-hook 'elpaca-after-init-hook (lambda () (load custom-file 'noerror 'nomessage)) -99))
 

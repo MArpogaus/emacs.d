@@ -125,7 +125,14 @@
   ;; org capture
   (org-capture-templates
    '(("i" "Inbox" entry (file "agenda/inbox.org")
-      "* TODO %?\n")))
+      "* TODO %?\n")
+     ("n" "New note (with Denote)" plain
+      (file denote-last-path)
+      #'denote-org-capture
+      :no-save t
+      :immediate-finish nil
+      :kill-buffer t
+      :jump-to-captured t)))
 
   ;; org-agenda
   ;; A directory, so Org also finds files created after startup
