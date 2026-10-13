@@ -393,20 +393,6 @@ globalized minor mode stays off in the buffer."
   ;; Set breakpints via fringe or margin mouse clicks
   (prog-mode . dape-breakpoint-global-mode))
 
-;; [[https://github.com/spotify/dockerfile-mode.git][docker]]
-;; An emacs mode for handling Dockerfiles.
-
-(use-package docker
-  :commands docker)
-(use-package dockerfile-mode
-  :mode "/Dockerfile\\'"
-  :mode "/Containerfile\\'"
-  :mode "\\.dockerfile\\'"
-  :mode "\\.containerfile\\'")
-(use-package tramp-container
-  :ensure nil
-  :after docker)
-
 ;; [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 ;; A client for Language Server Protocol servers.
 

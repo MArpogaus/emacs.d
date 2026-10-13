@@ -4355,20 +4355,6 @@ Debug Adapter Protocol for Emacs.
     ;; Set breakpints via fringe or margin mouse clicks
     (prog-mode . dape-breakpoint-global-mode))
 #+end_src
-**** [[https://github.com/spotify/dockerfile-mode.git][docker]]
-An emacs mode for handling Dockerfiles.
-#+begin_src emacs-lisp
-  (use-package docker
-    :commands docker)
-  (use-package dockerfile-mode
-    :mode "/Dockerfile\\'"
-    :mode "/Containerfile\\'"
-    :mode "\\.dockerfile\\'"
-    :mode "\\.containerfile\\'")
-  (use-package tramp-container
-    :ensure nil
-    :after docker)
-#+end_src
 **** [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 A client for Language Server Protocol servers.
 #+begin_src emacs-lisp
