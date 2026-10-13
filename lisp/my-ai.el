@@ -42,6 +42,7 @@ pick PROMPT, which also goes to an agent that runs already."
      (list (when current-prefix-arg
              (cdr (assoc (completing-read "Review: " my/gtd-prompts nil t)
                          my/gtd-prompts)))))
+    (require 'agent-shell)
     (let* ((dir (expand-file-name "agenda/" org-directory))
            (shell (seq-find (lambda (buffer)
                               (file-equal-p (buffer-local-value 'default-directory buffer) dir))
