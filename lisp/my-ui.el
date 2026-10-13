@@ -325,6 +325,7 @@ the clock of `tab-bar-format-global', and any segment beside it."
    '(("HOME"       . (:style "suc" :icon "custom-emacs"))
      ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
      ("denote"     . (:style "md"  :icon "notebook_edit"))
+     ("GTD"        . (:style "md"  :icon "checkbox_marked_circle_outline"))
      ("customize"  . (:style "cod" :icon "settings"))
      ("^\\[P\\] *" . (:style "oct" :icon "repo"))
      ("^\\[T\\] *" . (:style "cod" :icon "remote"))))

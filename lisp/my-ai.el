@@ -54,11 +54,18 @@ pick PROMPT, which also goes to an agent that runs already."
                             (window-list nil 'no-mini))))
         (set-window-buffer main org-agenda-buffer-name)
         (select-window main))
+      ;; Project commands from the agenda work in the agenda repository.
+      (with-current-buffer org-agenda-buffer-name
+        (setq-local default-directory dir))
       (if shell
           (pop-to-buffer shell agent-shell-display-action)
+        ;; The last GTD session, in the auto permission mode.
         (let ((default-directory dir)
-              (agent-shell-cwd-function (lambda () dir)))
-          (setq shell (agent-shell-start :config (agent-shell-anthropic-make-claude-code-config))))
+              (agent-shell-cwd-function (lambda () dir))
+              (agent-shell-session-strategy 'latest))
+          (setq shell (agent-shell-start
+                       :config (cons '(:default-session-mode-id . (lambda () "auto"))
+                                     (agent-shell-anthropic-make-claude-code-config)))))
         (agent-shell-subscribe-to :shell-buffer shell :event 'turn-complete
                                   :on-event #'my/gtd-refresh-agenda)
         (setq prompt (or prompt (cdar my/gtd-prompts))))

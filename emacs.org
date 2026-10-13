@@ -1741,6 +1741,7 @@ and a second =:ensure= of the same id is a duplicate it warns about.
      '(("HOME"       . (:style "suc" :icon "custom-emacs"))
        ("dirvish"    . (:style "suc" :icon "custom-folder_oct"))
        ("denote"     . (:style "md"  :icon "notebook_edit"))
+       ("GTD"        . (:style "md"  :icon "checkbox_marked_circle_outline"))
        ("customize"  . (:style "cod" :icon "settings"))
        ("^\\[P\\] *" . (:style "oct" :icon "repo"))
        ("^\\[T\\] *" . (:style "cod" :icon "remote"))))
@@ -3211,11 +3212,18 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
                               (window-list nil 'no-mini))))
           (set-window-buffer main org-agenda-buffer-name)
           (select-window main))
+        ;; Project commands from the agenda work in the agenda repository.
+        (with-current-buffer org-agenda-buffer-name
+          (setq-local default-directory dir))
         (if shell
             (pop-to-buffer shell agent-shell-display-action)
+          ;; The last GTD session, in the auto permission mode.
           (let ((default-directory dir)
-                (agent-shell-cwd-function (lambda () dir)))
-            (setq shell (agent-shell-start :config (agent-shell-anthropic-make-claude-code-config))))
+                (agent-shell-cwd-function (lambda () dir))
+                (agent-shell-session-strategy 'latest))
+            (setq shell (agent-shell-start
+                         :config (cons '(:default-session-mode-id . (lambda () "auto"))
+                                       (agent-shell-anthropic-make-claude-code-config)))))
           (agent-shell-subscribe-to :shell-buffer shell :event 'turn-complete
                                     :on-event #'my/gtd-refresh-agenda)
           (setq prompt (or prompt (cdar my/gtd-prompts))))
