@@ -384,7 +384,7 @@
 (use-package delsel
   :ensure nil
   :hook
-  ((prog-mode conf-mode text-mode) . delete-selection-mode))
+  ((prog-mode conf-mode text-mode) . delete-selection-local-mode))
 
 ;; elec-pair :build_in:
 ;; Automatically add closing parentheses, quotes, etc.
@@ -392,7 +392,7 @@
 (use-package elec-pair
   :ensure nil
   :hook
-  ((prog-mode conf-mode) . electric-pair-mode))
+  ((prog-mode conf-mode) . electric-pair-local-mode))
 
 ;; face-remap :build_in:
 ;; Keybindings and optimizations for text-scale-mode.
@@ -526,9 +526,7 @@ buffer's text scale."
   :custom
   (show-paren-style 'parenthesis)
   (show-paren-when-point-in-periphery t)
-  (show-paren-when-point-inside-paren nil)
-  :hook
-  (prog-mode . show-paren-mode))
+  (show-paren-when-point-inside-paren nil))
 
 ;; recentf :build_in:
 

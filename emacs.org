@@ -2182,7 +2182,7 @@ Replace selected text when typing
   (use-package delsel
     :ensure nil
     :hook
-    ((prog-mode conf-mode text-mode) . delete-selection-mode))
+    ((prog-mode conf-mode text-mode) . delete-selection-local-mode))
 #+end_src
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
@@ -2190,7 +2190,7 @@ Automatically add closing parentheses, quotes, etc.
   (use-package elec-pair
     :ensure nil
     :hook
-    ((prog-mode conf-mode) . electric-pair-mode))
+    ((prog-mode conf-mode) . electric-pair-local-mode))
 #+end_src
 **** face-remap :build_in:
 Keybindings and optimizations for text-scale-mode.
@@ -2337,9 +2337,7 @@ Paren mode for highlighting matcing paranthesis
     :custom
     (show-paren-style 'parenthesis)
     (show-paren-when-point-in-periphery t)
-    (show-paren-when-point-inside-paren nil)
-    :hook
-    (prog-mode . show-paren-mode))
+    (show-paren-when-point-inside-paren nil))
 #+end_src
 **** recentf :build_in:
 
