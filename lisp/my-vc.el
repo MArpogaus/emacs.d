@@ -40,7 +40,7 @@
               diff-hl-delete
               diff-hl-change)))
   :config
-  (advice-add #'diff-hl-inline-popup-show :around #'my/diff-hl-inline-popup-show-adv)
+  (advice-add #'diff-hl-show-hunk-inline-show :around #'my/diff-hl-inline-popup-show-adv)
   ;; UI: minimal fringe indicators
   ;; https://github.com/dgutov/diff-hl/issues/116#issuecomment-1573253134
   (let* ((width 2)
