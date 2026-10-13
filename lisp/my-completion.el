@@ -341,11 +341,9 @@ target, followed by an ellipsis if there are further targets."
 ;; [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 
 (use-package nerd-icons-completion
-  :after marginalia vertico
-  :config
-  (nerd-icons-completion-mode)
   :hook
-  (marginalia-mode . nerd-icons-completion-marginalia-setup))
+  ((elpaca-after-init . nerd-icons-completion-mode)
+   (marginalia-mode . nerd-icons-completion-marginalia-setup)))
 
 ;; [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 ;; Icons for corfu via nerd-icons.

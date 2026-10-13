@@ -21,10 +21,9 @@
   :custom
   (auto-compile-display-buffer nil)
   (auto-compile-mode-line-counter t)
-  :init
-  (auto-compile-on-load-mode)
   :hook
-  (emacs-lisp-mode . auto-compile-on-save-mode))
+  ((elpaca-after-init . auto-compile-on-load-mode)
+   (emacs-lisp-mode . auto-compile-on-save-mode)))
 
 ;; autorevert :build_in:
 ;; Revert buffers when the underlying file has changed.

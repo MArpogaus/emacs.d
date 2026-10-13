@@ -17,15 +17,12 @@
 ;; [[https://github.com/pprevos/citar-denote.git][citar-denote]]
 
 (use-package citar-denote
-  :after denote citar
   :custom
   (citar-denote-template 'biblio)
   ;; Absolute: outside a silo `denote-directory' is a list.
   (citar-denote-subdir (expand-file-name "bib_notes/" (car (default-value 'denote-directory))))
-  :config
-  (add-to-list 'denote-templates `(biblio . ,(my/bib-note-template)))
-  :init
-  (citar-denote-mode))
+  :hook
+  (elpaca-after-init . citar-denote-mode))
 
 ;; [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 
@@ -34,8 +31,8 @@
   (:map my/denote-map
         ("f" . consult-denote-find)
         ("g" . consult-denote-grep))
-  :config
-  (consult-denote-mode))
+  :hook
+  (elpaca-after-init . consult-denote-mode))
 
 ;; [[https://github.com/protesilaos/denote.git][denote]]
 ;; Simple note taking and file naming.
@@ -49,6 +46,7 @@
   (denote-prompts '(title keywords subdirectory))
   ;; Pick dates, where relevant, with Org's advanced interface:
   (denote-date-prompt-use-org-read-date t)
+  (denote-templates '((biblio . my/bib-note-template)))
   :preface
   (defun my/kill-denote-buffers ()
     "Kill all denote buffers."

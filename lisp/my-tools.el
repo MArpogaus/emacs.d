@@ -68,8 +68,6 @@
 ;; A polished Dired with batteries included.
 
 (use-package dirvish
-  :after dired mood-line
-  :preface
   :custom
   (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
    '(("h" "~/"                          "Home")
@@ -90,10 +88,10 @@
   (dirvish-reuse-session nil)
   (dirvish-mode-line-height my/modeline-height)
   (dirvish-header-line-height my/modeline-height)
-  :init
-  (dirvish-override-dired-mode)
+  :hook
+  ((elpaca-after-init . dirvish-override-dired-mode)
+   (elpaca-after-init . dirvish-side-follow-mode))
   :config
-  (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
   ;; Prevent dirvish from closing its buffers after a file has been opened
   (advice-add 'dirvish--find-entry :around
               (lambda (fn find-fn entry)

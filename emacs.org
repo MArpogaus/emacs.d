@@ -1700,10 +1700,9 @@ Automatically compile outdated Emacs Lisp libraries.
     :custom
     (auto-compile-display-buffer nil)
     (auto-compile-mode-line-counter t)
-    :init
-    (auto-compile-on-load-mode)
     :hook
-    (emacs-lisp-mode . auto-compile-on-save-mode))
+    ((elpaca-after-init . auto-compile-on-load-mode)
+     (emacs-lisp-mode . auto-compile-on-save-mode)))
 #+end_src
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed.
@@ -2375,15 +2374,12 @@ Distraction-free writing for Emacs.
 **** [[https://github.com/pprevos/citar-denote.git][citar-denote]]
 #+begin_src emacs-lisp
   (use-package citar-denote
-    :after denote citar
     :custom
     (citar-denote-template 'biblio)
     ;; Absolute: outside a silo `denote-directory' is a list.
     (citar-denote-subdir (expand-file-name "bib_notes/" (car (default-value 'denote-directory))))
-    :config
-    (add-to-list 'denote-templates `(biblio . ,(my/bib-note-template)))
-    :init
-    (citar-denote-mode))
+    :hook
+    (elpaca-after-init . citar-denote-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/consult-denote.git][consult-denote]]
 #+begin_src emacs-lisp
@@ -2392,8 +2388,8 @@ Distraction-free writing for Emacs.
     (:map my/denote-map
           ("f" . consult-denote-find)
           ("g" . consult-denote-grep))
-    :config
-    (consult-denote-mode))
+    :hook
+    (elpaca-after-init . consult-denote-mode))
 #+end_src
 **** [[https://github.com/protesilaos/denote.git][denote]]
 Simple note taking and file naming.
@@ -2407,6 +2403,7 @@ Simple note taking and file naming.
     (denote-prompts '(title keywords subdirectory))
     ;; Pick dates, where relevant, with Org's advanced interface:
     (denote-date-prompt-use-org-read-date t)
+    (denote-templates '((biblio . my/bib-note-template)))
     :preface
     (defun my/kill-denote-buffers ()
       "Kill all denote buffers."
@@ -2593,8 +2590,6 @@ Extra Emacs font lock rules for a more colourful dired.
 A polished Dired with batteries included.
 #+begin_src emacs-lisp
   (use-package dirvish
-    :after dired mood-line
-    :preface
     :custom
     (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
      '(("h" "~/"                          "Home")
@@ -2615,10 +2610,10 @@ A polished Dired with batteries included.
     (dirvish-reuse-session nil)
     (dirvish-mode-line-height my/modeline-height)
     (dirvish-header-line-height my/modeline-height)
-    :init
-    (dirvish-override-dired-mode)
+    :hook
+    ((elpaca-after-init . dirvish-override-dired-mode)
+     (elpaca-after-init . dirvish-side-follow-mode))
     :config
-    (dirvish-side-follow-mode) ; similar to `treemacs-follow-mode'
     ;; Prevent dirvish from closing its buffers after a file has been opened
     (advice-add 'dirvish--find-entry :around
                 (lambda (fn find-fn entry)
@@ -3514,11 +3509,9 @@ Marginalia in the minibuffer.
 **** [[https://github.com/rainstormstudio/nerd-icons-completion.git][nerd-icons-completion]]
 #+begin_src emacs-lisp
   (use-package nerd-icons-completion
-    :after marginalia vertico
-    :config
-    (nerd-icons-completion-mode)
     :hook
-    (marginalia-mode . nerd-icons-completion-marginalia-setup))
+    ((elpaca-after-init . nerd-icons-completion-mode)
+     (marginalia-mode . nerd-icons-completion-marginalia-setup)))
 #+end_src
 **** [[https://github.com/LuigiPiucco/nerd-icons-corfu.git][nerd-icons-corfu]]
 Icons for corfu via nerd-icons.
@@ -3742,7 +3735,6 @@ Tab group based workflow isolation.
 #+begin_src emacs-lisp
   (use-package auto-tab-groups
     :ensure (:host github :repo "MArpogaus/auto-tab-groups")
-    :after tab-bar mood-line project nerd-icons
     :custom
     ;; These commands open their buffer in a tab of the named group.
     (auto-tab-groups-create-commands
@@ -3761,11 +3753,9 @@ Tab group based workflow isolation.
     :bind
     (:map my/workspace-map
           ("w" . auto-tab-groups-new-group))
-    :init
-    ;; automatically assign projects to groups
-    (auto-tab-groups-project-mode)
-    ;; Enable automatic tab group management based on the rules defined above
-    (auto-tab-groups-mode))
+    :hook
+    ((elpaca-after-init . auto-tab-groups-mode)
+     (elpaca-after-init . auto-tab-groups-project-mode)))
 #+end_src
 **** project :build_in:
 #+begin_src emacs-lisp
@@ -4582,15 +4572,15 @@ Display symbols (functions, variables, etc) in a side window.
           ("o" . my/symbols-outline-toggle))
     ;; It makes its side window itself, past auto-side-windows' parameters.
     :hook
-    (symbols-outline-mode . mode-line-invisible-mode)
+    ((symbols-outline-mode . mode-line-invisible-mode)
+     (symbols-outline-mode . symbols-outline-follow-mode))
     :custom
     (symbols-outline-window-position 'left)
     :config
     ;; By default the ctags backend is selected
     (unless (executable-find "ctags")
       ;; Use lsp-mode or eglot as backend
-      (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
-    (symbols-outline-follow-mode))
+      (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)))
 #+end_src
 **** treesit :build_in:
 The tree-sitter modes in place of their classic counterparts, with the

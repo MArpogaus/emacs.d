@@ -19,7 +19,6 @@
 
 (use-package auto-tab-groups
   :ensure (:host github :repo "MArpogaus/auto-tab-groups")
-  :after tab-bar mood-line project nerd-icons
   :custom
   ;; These commands open their buffer in a tab of the named group.
   (auto-tab-groups-create-commands
@@ -38,11 +37,9 @@
   :bind
   (:map my/workspace-map
         ("w" . auto-tab-groups-new-group))
-  :init
-  ;; automatically assign projects to groups
-  (auto-tab-groups-project-mode)
-  ;; Enable automatic tab group management based on the rules defined above
-  (auto-tab-groups-mode))
+  :hook
+  ((elpaca-after-init . auto-tab-groups-mode)
+   (elpaca-after-init . auto-tab-groups-project-mode)))
 
 ;; project :build_in:
 
