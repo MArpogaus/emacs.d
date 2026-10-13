@@ -125,7 +125,7 @@ Triggered after the first response is received in a new buffer."
                :input-cost 5.00
                :output-cost 25.00
                :context-window 1000)
-              (anthropic/claude-sonnet-4-6
+              (anthropic/claude-sonnet-4.6
                :description "Balanced for enterprise AI deployments."
                :input-cost 3.00
                :output-cost 15.00
@@ -160,16 +160,6 @@ Triggered after the first response is received in a new buffer."
                :input-cost 2.00
                :output-cost 12.00
                :context-window 1048)
-              (google/gemini-flash-1.5
-               :description "Best price/performance, well-rounded capabilities."
-               :input-cost 0.30
-               :output-cost 2.50
-               :context-window 1048)
-              (google/gemini-pro-1.5
-               :description "Most powerful Gemini thinking model, always points to latest version."
-               :input-cost 1.25
-               :output-cost 10.00
-               :context-window 1048)
               (openai/gpt-4.1
                :description "Flagship model for complex tasks."
                :input-cost 2.00
@@ -185,11 +175,6 @@ Triggered after the first response is received in a new buffer."
                :input-cost 0.10
                :output-cost 0.40
                :context-window 1024)
-              (openai/gpt-5.3-chat
-               :description "Flagship for coding, reasoning, agentic tasks."
-               :input-cost 1.25
-               :output-cost 10.00
-               :context-window 400)
               (openai/gpt-5.3-codex
                :description "Flagship for coding, reasoning, agentic tasks."
                :input-cost 1.25
@@ -197,11 +182,6 @@ Triggered after the first response is received in a new buffer."
                :context-window 400)
               (openai/o3
                :description "Well-rounded and powerful across domains."
-               :input-cost 2.00
-               :output-cost 8.00
-               :context-window 200)
-              (openai/o3-deep-research
-               :description "Well-rounded and powerful, optimized for deep research."
                :input-cost 2.00
                :output-cost 8.00
                :context-window 200)
@@ -214,48 +194,16 @@ Triggered after the first response is received in a new buffer."
                :description "Fast, effective reasoning for coding and visual tasks."
                :input-cost 1.10
                :output-cost 4.40
-               :context-window 200)
-              (openai/o4-mini-deep-research
-               :description "Fast, effective reasoning for coding and visual tasks, optimized for deep research."
-               :input-cost 1.10
-               :output-cost 4.40
                :context-window 200)))
-  (setq gptel-model 'arcee-ai/trinity-large-preview:free ;; default model to select
+  (setq gptel-model 'google/gemma-4-31b-it:free
         gptel-backend (gptel-make-openai "OpenRouter (free)"
                         :host "openrouter.ai"
                         :endpoint "/api/v1/chat/completions"
                         :stream t
                         :key #'gptel-api-key-from-auth-source
-                        :models '((arcee-ai/trinity-large-preview:free
-                                   :description "Free, large, and powerful Arcee AI model."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 131)
-                                  (google/gemma-3-27b-it:free
-                                   :description "Free instruction-tuned Gemma model (27B parameters)."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 131)
-                                  (google/gemma-3-12b-it:free
-                                   :description "Free instruction-tuned Gemma model (12B parameters)."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 33)
-                                  (qwen/qwen3-coder:free
-                                   :description "Free Qwen3 model optimized for coding."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 262)
-                                  (qwen/qwen3-next-80b-a3b-instruct:free
-                                   :description "Free, large instruction-tuned Qwen3 model (80B parameters)."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 262)
-                                  (stepfun/step-3.5-flash:free
-                                   :description "Free Stepfun 3.5 Flash model."
-                                   :input-cost 0.00
-                                   :output-cost 0.00
-                                   :context-window 256)))))
+                        :models '(google/gemma-4-31b-it:free
+                                  google/gemma-4-26b-a4b-it:free
+                                  nvidia/nemotron-3-super-120b-a12b:free))))
 
 ;; [[https://github.com/karthink/gptel-agent.git][gptel-agent]]
 ;; Agent mode for gptel.
