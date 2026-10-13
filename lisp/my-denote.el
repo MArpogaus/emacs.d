@@ -46,8 +46,6 @@
   (denote-directory (list (expand-file-name "denote/work/" org-directory)
                           (expand-file-name "denote/private/" org-directory)))
   (denote-prompts '(title keywords subdirectory))
-  ;; If you want a controlled vocabulary of keywords, specify them here.
-  (denote-known-keywords '("ai" "cs" "energy" "stats"))
   ;; If you want Denote to infer keywords from your note titles, set this to t.
   (denote-infer-keywords t)
   ;; If you want to sort keywords alphabetically, set this to t.
