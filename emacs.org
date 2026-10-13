@@ -237,9 +237,6 @@ The following optimizations have been taken from [[https://github.com/doomemacs/
 This will clone =Elpaca= into the =elpaca= subdirectory under =user-emacs-directory= and then builds and activate it.
 #+begin_src emacs-lisp
   (defvar elpaca-installer-version 0.12)
-  ;; This build has no `emacs-build-time', so elpaca cannot date its
-  ;; built-in packages.  31.1 was released on 2026-08-24.
-  (defvar elpaca-core-date '(20260824))
   (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
