@@ -3582,16 +3582,6 @@ Consult users will also want the embark-consult package.
   (use-package embark-consult
     :after embark)
 #+end_src
-**** [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
-#+begin_src emacs-lisp
-  (use-package lsp-snippet
-    :ensure (:host github :repo "svaante/lsp-snippet")
-    :demand t
-    :after tempel eglot
-    :config
-    ;; Initialize lsp-snippet -> tempel in eglot
-    (lsp-snippet-tempel-eglot-init))
-#+end_src
 **** [[https://github.com/minad/marginalia.git][marginalia]]
 Marginalia in the minibuffer.
 #+begin_src emacs-lisp

@@ -344,16 +344,6 @@
 (use-package embark-consult
   :after embark)
 
-;; [[https://github.com/svaante/lsp-snippet.git][lsp-snippet]]
-
-(use-package lsp-snippet
-  :ensure (:host github :repo "svaante/lsp-snippet")
-  :demand t
-  :after tempel eglot
-  :config
-  ;; Initialize lsp-snippet -> tempel in eglot
-  (lsp-snippet-tempel-eglot-init))
-
 ;; [[https://github.com/minad/marginalia.git][marginalia]]
 ;; Marginalia in the minibuffer.
 
