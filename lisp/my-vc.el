@@ -76,23 +76,16 @@
         ("t" . git-timemachine)))
 
 ;; [[https://github.com/magit/magit.git][magit]]
-;; The magical git client. Let's load magit only when one of the several entry pont
-;; functions we invoke regularly outside of magit is called.
+;; The magical git client.
 
 
 (use-package magit
-  :commands (magit-status magit-log-buffer-file magit-log-all)
   :custom
   (magit-section-visibility-indicators '((?⯈ . ?⯆) ("…" . t)))
-  :preface
-  (defun my/project-magit-status ()
-    (interactive)
-    (let* ((project-directory (project-root (project-current t))))
-      (magit-status-setup-buffer project-directory)))
   :init
   (with-eval-after-load 'project
     (add-to-list 'project-switch-commands
-                 '(my/project-magit-status "Version Control" ?v) t))
+                 '(magit-project-status "Version Control" ?v) t))
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
@@ -108,7 +101,7 @@
         ("v"  . magit-status)
         ("r"  . magit-rebase)
         :map project-prefix-map
-        ("v"  . my/project-magit-status))
+        ("v"  . magit-project-status))
   :hook
   ;; Automatic Refreshing of Magit Buffers
   (after-save . magit-after-save-refresh-status))
