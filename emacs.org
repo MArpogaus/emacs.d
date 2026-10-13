@@ -4774,8 +4774,6 @@ Meow is yet another modal editing mode for Emacs.
     :config
     (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
     (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
-    (with-eval-after-load 'modern-tab-line
-      (advice-add #'meow-quit :override #'modern-tab-line-close-tab))
     (setopt meow-mode-state-list
             (append meow-mode-state-list '((comint-mode . insert)
                                            (eshell-mode . insert)
@@ -4841,7 +4839,7 @@ Meow is yet another modal editing mode for Emacs.
           ("n" . meow-search)
           ("o" . meow-block)
           ("p" . meow-yank)
-          ("q" . meow-quit)
+          ("q" . modern-tab-line-close-tab)
           ("r" . meow-replace)
           ("s" . meow-kill)
           ("t" . meow-till)
@@ -4923,7 +4921,7 @@ Built into Emacs since 30.1, so no package is needed.
     :config
     (which-key-setup-minibuffer)
     :hook
-    (meow-mode . which-key-mode))
+    (elpaca-after-init . which-key-mode))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp

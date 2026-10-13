@@ -25,8 +25,6 @@
   :config
   (define-key meow-normal-state-keymap (kbd "SPC") my/leader-map)
   (define-key meow-motion-state-keymap (kbd "SPC") my/leader-map)
-  (with-eval-after-load 'modern-tab-line
-    (advice-add #'meow-quit :override #'modern-tab-line-close-tab))
   (setopt meow-mode-state-list
           (append meow-mode-state-list '((comint-mode . insert)
                                          (eshell-mode . insert)
@@ -92,7 +90,7 @@
         ("n" . meow-search)
         ("o" . meow-block)
         ("p" . meow-yank)
-        ("q" . meow-quit)
+        ("q" . modern-tab-line-close-tab)
         ("r" . meow-replace)
         ("s" . meow-kill)
         ("t" . meow-till)
@@ -174,7 +172,7 @@
   :config
   (which-key-setup-minibuffer)
   :hook
-  (meow-mode . which-key-mode))
+  (elpaca-after-init . which-key-mode))
 
 ;; ZZ Library Footer
 
