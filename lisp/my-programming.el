@@ -544,9 +544,7 @@ globalized minor mode stays off in the buffer."
 ;; Emacs Speaks Statistics: ESS.
 
 (use-package ess
-  :mode (("\\.[rR]\\'" . R-mode)
-         ("\\.[rR]nw\\'" . Rnw-mode)
-         ("\\.jl\\'" . julia-mode))
+  :mode ("\\.[rR]\\'" . R-mode)
   :custom
   ;; Start R in the file's directory without asking.
   (ess-ask-for-ess-directory nil)
@@ -567,8 +565,8 @@ globalized minor mode stays off in the buffer."
 ;; notebook's, on the keys of =overblock-rmd-mode-map=.
 
 ;; =poly-markdown+r-mode= is what an =.Rmd= file wants; the =gfm= variant
-;; reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=,
-;; which ESS already claims above.  The results of a chunk are shown inline
+;; reads GitHub's flavour of markdown, and the noweb one is for =.Rnw=.
+;; The results of a chunk are shown inline
 ;; by [[https://github.com/MArpogaus/overblock][overblock-rmd]], further down.
 
 (use-package poly-R
