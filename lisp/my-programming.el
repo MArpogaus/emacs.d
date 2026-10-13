@@ -752,6 +752,9 @@ If ENV is nil, drop the choice."
   :bind
   (:map my/toggle-map
         ("o" . my/symbols-outline-toggle))
+  ;; It makes its side window itself, past auto-side-windows' parameters.
+  :hook
+  (symbols-outline-mode . mode-line-invisible-mode)
   :custom
   (symbols-outline-window-position 'left)
   :config
