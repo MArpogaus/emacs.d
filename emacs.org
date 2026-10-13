@@ -2548,10 +2548,6 @@ Simple note taking and file naming.
     (denote-excluded-keywords-regexp nil)
     ;; Pick dates, where relevant, with Org's advanced interface:
     (denote-date-prompt-use-org-read-date t)
-    ;; Define templates for notes
-    (denote-templates
-     '((minutes . "minutes")
-       (plain . nil)))
     :preface
     (defun my/kill-denote-buffers ()
       "Kill all denote buffers."
@@ -3373,16 +3369,9 @@ Citar provides a highly-configurable completing-read front-end to browse and act
     (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
     (citar-bibliography org-cite-global-bibliography)
     (citar-at-point-function 'embark-act)
-    (citar-notes-paths (mapcar (lambda (silo) (expand-file-name "bib_notes/" silo)) denote-directory))
-    (citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+    (citar-templates '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
                        (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
-                       (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-                       (note . ,(concat "${title}\n"
-                                        "#+AUTHOR: ${author editor}\n"
-                                        "#+DATE: ${date}\n"
-                                        "#+SOURCE: ${doi url}\n"
-                                        "#+CUSTOM_ID: ${=key= id}\n"
-                                        (my/bib-note-template)))))
+                       (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")))
     (citar-symbol-separator "  ")
     :config
     (defvar citar-indicator-files-icons

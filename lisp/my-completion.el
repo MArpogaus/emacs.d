@@ -47,16 +47,9 @@
   (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
   (citar-bibliography org-cite-global-bibliography)
   (citar-at-point-function 'embark-act)
-  (citar-notes-paths (mapcar (lambda (silo) (expand-file-name "bib_notes/" silo)) denote-directory))
-  (citar-templates `((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
+  (citar-templates '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
                      (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords:*}")
-                     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
-                     (note . ,(concat "${title}\n"
-                                      "#+AUTHOR: ${author editor}\n"
-                                      "#+DATE: ${date}\n"
-                                      "#+SOURCE: ${doi url}\n"
-                                      "#+CUSTOM_ID: ${=key= id}\n"
-                                      (my/bib-note-template)))))
+                     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")))
   (citar-symbol-separator "  ")
   :config
   (defvar citar-indicator-files-icons

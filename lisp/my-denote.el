@@ -57,10 +57,6 @@
   (denote-excluded-keywords-regexp nil)
   ;; Pick dates, where relevant, with Org's advanced interface:
   (denote-date-prompt-use-org-read-date t)
-  ;; Define templates for notes
-  (denote-templates
-   '((minutes . "minutes")
-     (plain . nil)))
   :preface
   (defun my/kill-denote-buffers ()
     "Kill all denote buffers."
