@@ -55,6 +55,7 @@
   (mouse-yank-at-point t)                            ; Yank at point rather than pointer
   (save-interprogram-paste-before-kill t)            ; save existing clipboard text into kill ring before replacing it
   (kill-do-not-save-duplicates t)                    ; No duplicates in the kill ring
+  (browse-url-browser-function #'browse-url-xdg-open) ; pgtk's GTK launcher opens nothing in a distrobox
   (xterm-mouse-mode (not (display-graphic-p)))       ; Mouse active in tty mode .
 
   ;; Smoother scrolling
