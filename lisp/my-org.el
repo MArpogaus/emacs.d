@@ -351,30 +351,6 @@ context.  When called with an argument, unconditionally call
   ;; you scroll through the [PDF etc] document
   (org-noter-insert-heading . org-id-get-create))
 
-;; [[https://github.com/marcinkoziej/org-pomodoro.git][org-pomodoro]]
-;; Pomodoro technique for org-mode.
-
-(use-package org-pomodoro
-  :custom
-  (org-pomodoro-audio-player (or (executable-find "paplay")
-                                 org-pomodoro-audio-player))
-  :config
-  (use-package alert
-    :config
-    (alert-add-rule :category "org-pomodoro"
-                    :style (cond (alert-growl-command
-                                  'growl)
-                                 (alert-notifier-command
-                                  'notifier)
-                                 (alert-libnotify-command
-                                  'libnotify)
-                                 (alert-default-style))))
-  :bind
-  (:map org-mode-map
-        ("C-c p" . org-pomodoro)
-        :map org-agenda-keymap
-        ("p" . org-pomodoro)))
-
 ;; [[https://github.com/rlister/org-present.git][org-present]]
 ;; Ultra-minimalist presentation minor-mode for Emacs org-mode.
 ;; Inspired by: https://systemcrafters.net/emacs-tips/presentations-with-org-present/
