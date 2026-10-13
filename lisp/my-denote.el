@@ -20,7 +20,8 @@
   :after denote citar
   :custom
   (citar-denote-template 'biblio)
-  (citar-denote-subdir "bib_notes")
+  ;; Absolute: outside a silo `denote-directory' is a list.
+  (citar-denote-subdir (expand-file-name "bib_notes/" (car (default-value 'denote-directory))))
   :config
   (add-to-list 'denote-templates `(biblio . ,(my/bib-note-template)))
   :init
