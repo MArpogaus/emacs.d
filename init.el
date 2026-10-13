@@ -109,11 +109,8 @@
   (window-divider-mode t)
   :config
   ;; We tell emacs to use UTF-8 encoding as much as possible.
-  (set-default-coding-systems 'utf-8)  ; Default to utf-8 encoding
-  (prefer-coding-system       'utf-8)  ; Add utf-8 at the front for automatic detection.
-  (set-terminal-coding-system 'utf-8)  ; Set coding system of terminal output
-  (set-keyboard-coding-system 'utf-8)  ; Set coding system for keyboard input on TERMINAL
-  (set-language-environment "English") ; Set up multilingual environment
+  ;; UTF-8 everywhere; a later "English" would reset the file defaults.
+  (set-language-environment "UTF-8")
   :preface
   (defun my/whitespace-cleanup-unless-idle ()
     "Run `whitespace-cleanup' unless Emacs is idle.
