@@ -502,14 +502,6 @@ context.  When called with an argument, unconditionally call
   (add-to-list 'org-beamer-environments-extra
                '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
 
-;; ox-extra :build_in:
-
-(use-package ox-extra
-  :ensure nil
-  :after ox
-  :config
-  (ox-extras-activate '(ignore-headlines)))
-
 ;; [[https://github.com/larstvei/ox-gfm.git][ox-gfm]]
 ;; Github Flavored Markdown Back-End for Org Export Engine.
 

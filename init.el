@@ -308,13 +308,13 @@ The DWIM behaviour of this command is as follows:
     "Return the body of a bibliography note, for citar and citar-denote."
     (concat "#+cite_export: biblatex ieee\n"
             "#+bibliography: " (car citar-bibliography) "\n\n"
-            "* Notes :ignore:\n"
+            "* Notes\n"
             ":PROPERTIES:\n"
             ":NOTER_DOCUMENT: ${file} \n"
             ":END:\n\n"
             "* Summary :childless:showchildren:export:\n"
             "This is a summary of [cite/t:@${=key=}].\n"
-            "** Bibliography :ignore:\n"))
+            "** Bibliography\n"))
   (defun my/extract-username-repo ()
     "Extract the username and repository name from a GitHub repository link at point."
     (interactive)

@@ -747,13 +747,13 @@ In this section, I define some custom Lisp functions.
       "Return the body of a bibliography note, for citar and citar-denote."
       (concat "#+cite_export: biblatex ieee\n"
               "#+bibliography: " (car citar-bibliography) "\n\n"
-              "* Notes :ignore:\n"
+              "* Notes\n"
               ":PROPERTIES:\n"
               ":NOTER_DOCUMENT: ${file} \n"
               ":END:\n\n"
               "* Summary :childless:showchildren:export:\n"
               "This is a summary of [cite/t:@${=key=}].\n"
-              "** Bibliography :ignore:\n"))
+              "** Bibliography\n"))
     (defun my/extract-username-repo ()
       "Extract the username and repository name from a GitHub repository link at point."
       (interactive)
@@ -1331,15 +1331,6 @@ An Emacs minor mode to automatically tidy org-mode property drawers.
                  '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}"))
     (add-to-list 'org-beamer-environments-extra
                  '("overprint" "P" "\\begin{overprint}%a" "\\end{overprint}")))
-#+end_src
-**** ox-extra :build_in:
-#+begin_src emacs-lisp
-
-  (use-package ox-extra
-    :ensure nil
-    :after ox
-    :config
-    (ox-extras-activate '(ignore-headlines)))
 #+end_src
 **** [[https://github.com/larstvei/ox-gfm.git][ox-gfm]]
 Github Flavored Markdown Back-End for Org Export Engine.
