@@ -150,10 +150,10 @@ context.  When called with an argument, unconditionally call
        (tags-todo "inbox" ((org-agenda-overriding-header "\nInbox"))))
       ((org-agenda-tag-filter-preset '("-literature"))
        (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-       (org-agenda-prefix-format "  %i %-12:c [%e] ")))
+       (org-agenda-prefix-format "  %i %-12:c ")))
      ("l" "Literature" tags-todo "literature"
       ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-       (org-agenda-prefix-format "  %i %-12:c [%e] ")))))
+       (org-agenda-prefix-format "  %i %-12:c ")))))
 
   ;; Use SVGs for latex previews -> No blur when scaling
   (org-preview-latex-default-process 'dvisvgm)
