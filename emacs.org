@@ -3181,7 +3181,7 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
       '(("Tag"   . "Tagesreview nach AGENTS.md.")
         ("Inbox" . "Inbox-Review nach AGENTS.md.")
         ("Woche" . "Wochenreview nach AGENTS.md."))
-      "Prompts for `my/gtd'; the first one starts a new session.
+      "Prompts for `my/gtd'; the first one goes to a new agent.
   The rules of each review are in the AGENTS.md of the agenda.")
     (defun my/gtd-refresh-agenda (&rest _)
       "Revert the agenda files the agent changed and redo the agenda.
@@ -3220,7 +3220,6 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
             (pop-to-buffer shell agent-shell-display-action)
           ;; The last GTD session, in the auto permission mode.
           (let ((default-directory dir)
-                (agent-shell-cwd-function (lambda () dir))
                 (agent-shell-session-strategy 'latest))
             (setq shell (agent-shell-start
                          :config (cons '(:default-session-mode-id . (lambda () "auto"))
