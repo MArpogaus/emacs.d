@@ -373,24 +373,21 @@ nothing for the graphic frame an =emacsclient -c= brings later.
   (add-to-list 'default-frame-alist '(width . 100))
   (add-to-list 'default-frame-alist '(height . 25))
 
-  (defun my/set-frame-font (family)
-    "Use FAMILY in this frame and in the frames to come.
+  (defun my/set-my-frame-font ()
+    "Use FiraCode Nerd Font in this frame and in the frames to come.
   A terminal draws with the font of the terminal and has none of its own
   to set, so nothing happens there.  A graphic display that has no such
   family keeps its default font and says so."
     (when (and (display-graphic-p)
                ;; Asked once per session.
                (not (assq 'font default-frame-alist)))
-      (if (find-font (font-spec :family family))
-          (progn
-            (add-to-list 'default-frame-alist (cons 'font family))
-            (set-frame-font family nil t))
-        (warn "Font `%s' is not installed, frames keep the default font"
-              family))))
-
-  (defun my/set-my-frame-font ()
-    "Use the font this configuration asks for."
-    (my/set-frame-font "FiraCode Nerd Font"))
+      (let ((family "FiraCode Nerd Font"))
+        (if (find-font (font-spec :family family))
+            (progn
+              (add-to-list 'default-frame-alist (cons 'font family))
+              (set-frame-font family nil t))
+          (warn "Font `%s' is not installed, frames keep the default font"
+                family)))))
 
   (add-hook 'window-setup-hook #'my/set-my-frame-font)
   (add-hook 'server-after-make-frame-hook #'my/set-my-frame-font)
