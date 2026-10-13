@@ -54,7 +54,7 @@
   :bind
   (:map my/version-control-map
         ("g" . diff-hl-show-hunk)
-        :repeat-map diff-hl-show-hunk-map
+        :repeat-map my/diff-hl-repeat-map
         ("n" . diff-hl-show-hunk-next)
         ("p" . diff-hl-show-hunk-previous)
         ("r" . diff-hl-revert-hunk)
