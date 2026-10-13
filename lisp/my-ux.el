@@ -565,24 +565,14 @@ buffer's text scale."
   (kill-ring-max 500)
   (history-length 500)
   (savehist-additional-variables
-   '(bookmark-history
-     command-history
-     custom-variable-history
-     face-name-history
-     file-name-history
+   ;; Minibuffer histories are saved anyway.
+   '(command-history
      kill-ring
-     minibuffer-history
-     query-replace-history
-     read-char-history
-     read-expression-history
      regexp-search-ring
-     search-ring
-     set-variable-value-history))
+     search-ring))
   ;; No duplicates in history
   (history-delete-duplicates t)
   :config
-  (put 'minibuffer-history         'history-length 500)
-  (put 'file-name-history          'history-length 500)
   (put 'set-variable-value-history 'history-length 250)
   (put 'custom-variable-history    'history-length 250)
   (put 'query-replace-history      'history-length 250)
