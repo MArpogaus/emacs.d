@@ -58,32 +58,22 @@
       (message "Point is not in an Org block")))
 
   (defun my/org-babel-execute-and-goto-next-src nil
-    "Execute current block or babel call and the proceed to the next src block"
+    "Execute the current block or babel call, then go to the next src block."
     (interactive)
     (let ((org-confirm-babel-evaluate nil))
       (when (org-babel-execute-maybe)
         (org-babel-next-src-block))))
 
-  (defun my/org-meta-return (&optional arg)
-    "Insert a new heading or wrap a region in a table.
-
-Calls `org-insert-heading', `org-insert-item',
-`org-table-wrap-region', or `my/org-split-block' depending on
-context.  When called with an argument, unconditionally call
-`org-insert-heading'."
-    (interactive "P")
-    (org-fold-check-before-invisible-edit 'insert)
-    (or (run-hook-with-args-until-success 'org-metareturn-hook)
-        (call-interactively (cond (arg #'org-insert-heading)
-                                  ((org-at-table-p) #'org-table-wrap-region)
-                                  ((org-in-item-p) #'org-insert-item)
-                                  ((org-in-src-block-p) #'my/org-babel-execute-and-goto-next-src)
-                                  (t #'org-insert-heading)))))
+  (defun my/org-metareturn-src-block ()
+    "In a src block, execute it and go to the next one."
+    (when (and (not current-prefix-arg) (org-in-src-block-p))
+      (my/org-babel-execute-and-goto-next-src)
+      t))
   :bind
   (:map org-mode-map
         ("M-_" . my/org-split-block))
-  :config
-  (advice-add 'org-meta-return :override #'my/org-meta-return))
+  :hook
+  (org-metareturn . my/org-metareturn-src-block))
 
 ;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
 ;; Agenda view and task management has been inspired by https://github.com/rougier/emacs-gtd
