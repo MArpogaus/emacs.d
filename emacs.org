@@ -1601,26 +1601,6 @@ www Fl  Tl ff fi  fj  fl  ft ffi ffj ffl
     :hook
     (elpaca-after-init . my/setup-ligatures))
 #+end_src
-**** [[https://gitlab.com/jabranham/mixed-pitch.git][mixed-pitch]]
-#+begin_src emacs-lisp :tangle no
-  (use-package mixed-pitch
-    :custom
-    (mixed-pitch-variable-pitch-cursor nil)
-    :config
-    (setq mixed-pitch-fixed-pitch-faces (append mixed-pitch-fixed-pitch-faces
-                                                '(corfu-default
-                                                  corfu-current
-                                                  org-hide
-                                                  org-inline-src-block
-                                                  org-modern-label)))
-    :custom-face
-    (variable-pitch ((t (:family "Adwaita Sans"))))
-    ;; (variable-pitch ((t (:family "Iwona"))))
-    ;; (variable-pitch ((t (:family "Bookman Old Style"))))
-    ;; (variable-pitch ((t (:family "ETBookOT" :weight thin))))
-    :hook
-    ((org-mode markdown-mode help-mode helpful-mode messages-buffer-mode Custom-mode) . mixed-pitch-mode))
-#+end_src
 **** [[https://gitlab.com/jessieh/mood-line.git][mood-line]]
 #+begin_src emacs-lisp
   (use-package mood-line
@@ -2249,19 +2229,6 @@ Sidebar showing a "mini-map" of a buffer.
     (:map my/toggle-map
           ("m" . minimap-mode)))
 #+end_src
-**** [[https://github.com/hkjels/mini-ontop.el.git][mini-ontop]]
-Prevent windows from jumping on minibuffer activation.
-#+begin_src emacs-lisp :tangle no
-  (use-package mini-ontop
-    :ensure (:host github :repo "hkjels/mini-ontop.el")
-    :custom
-    (mini-ontop-lines 22)
-    :config
-    (with-eval-after-load 'embark
-      (add-to-list 'mini-ontop-ignore-predicates (lambda nil (eq this-command #'embark-act))))
-    :hook
-    (elpaca-after-init . mini-ontop-mode))
-#+end_src
 **** [[https://github.com/magnars/multiple-cursors.el.git][multiple-cursors]]
 #+begin_src emacs-lisp
   (use-package multiple-cursors
@@ -2872,21 +2839,6 @@ We will tweak the Emacs built-in ediff configuration a bit.
     ((ediff-before-setup . my/store-pre-ediff-winconfig)
      (ediff-quit . my/restore-pre-ediff-winconfig)))
 #+end_src
-**** [[https://github.com/skeeto/elfeed.git][elfeed]]
-An Emacs web feeds client.
-#+begin_src emacs-lisp :tangle no
-  (use-package elfeed
-    :bind
-    (:map my/open-map
-          ("f" . elfeed))
-    :config
-    (setq elfeed-feeds
-          (split-string (shell-command-to-string
-                         (concat "for d in ~/.emacs.d/elpaca/repos/*; do"
-                                 "  git -C $d remote get-url origin;"
-                                 "done | grep -P '(github)' "
-                                 "     | sed 's:\\.git:/releases.atom:'")))))
-#+end_src
 **** [[https://github.com/purcell/exec-path-from-shell.git][exec-path-from-shell]]
 Make Emacs use the $PATH set up by the user's shell.
 #+begin_src emacs-lisp
@@ -3381,23 +3333,6 @@ Agent mode for gptel.
     :preface
     (with-eval-after-load 'gptel
       (gptel-agent-update)))
-#+end_src
-**** [[https://github.com/kmontag/macher.git][macher]]
-#+begin_src emacs-lisp :tangle no
-  (use-package macher
-    :ensure (:host github :repo "kmontag/macher")
-    :demand t
-    :after gptel
-    :custom
-    ;; The org UI has structured navigation and nice content folding.
-    (macher-action-buffer-ui 'org)
-    :config
-    ;; Adjust buffer positioning to taste.
-    (with-eval-after-load 'auto-side-windows
-      (add-to-list 'auto-side-windows-top-buffer-names "\\*macher:.*\\*")
-      (add-to-list 'auto-side-windows-right-buffer-names "\\*macher-patch:.*\\*"))
-    :init
-    (macher-install))
 #+end_src
 **** ZZ Library Footer
 #+begin_src emacs-lisp
