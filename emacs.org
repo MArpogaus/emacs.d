@@ -4640,13 +4640,16 @@ A client for Language Server Protocol servers.
     :custom
     (eglot-send-changes-idle-time 0.1)
     :preface
+    (defvar-local my/eglot-super-capf nil
+      "The capf `my/eglot-capf' added in this buffer.")
     (defun my/eglot-capf ()
+      "Put files, eglot and tempel into one capf while eglot manages the buffer."
       (setq-local completion-at-point-functions
-                  (cons (cape-capf-super
-                         #'cape-file
-                         #'eglot-completion-at-point
-                         #'tempel-complete)
-                        completion-at-point-functions)))
+                  (remq my/eglot-super-capf completion-at-point-functions))
+      (when (eglot-managed-p)
+        (setq my/eglot-super-capf
+              (cape-capf-super #'cape-file #'eglot-completion-at-point #'tempel-complete))
+        (push my/eglot-super-capf completion-at-point-functions)))
     :bind
     (:map my/lsp-map
           ("l" . eglot)
