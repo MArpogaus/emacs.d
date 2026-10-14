@@ -82,6 +82,11 @@
 
 (use-package org
   :preface
+  (defun my/org-agenda-big-headers ()
+    "Show the block headers of the agenda large and in variable pitch.
+A remap, because the theme sets `org-agenda-structure'."
+    (face-remap-add-relative 'org-agenda-structure
+                             '(:inherit variable-pitch :height 1.2 :weight bold)))
   (defface my/org-todo-onhold-face '((t :inherit (bold warning org-todo)))
     "Face for todo keywords of paused or blocked tasks.")
   (defface my/org-todo-project-face '((t :inherit (bold font-lock-doc-face org-todo)))
@@ -165,7 +170,7 @@
       ((org-agenda-span 'day)
        (org-agenda-tag-filter-preset '("-literature"))
        (org-agenda-sorting-strategy '(priority-down category-keep effort-up))
-       (org-agenda-prefix-format "  %i %-12:c%s")))
+       (org-agenda-prefix-format "  %i %s")))
      ("l" "Literature" tags-todo "literature"
       ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
        (org-agenda-prefix-format "  %i %-12:c ")))))
@@ -173,7 +178,8 @@
   ;; Use SVGs for latex previews -> No blur when scaling
   (org-preview-latex-default-process 'dvisvgm)
   :hook
-  (org-mode . reveal-mode)
+  ((org-mode . reveal-mode)
+   (org-agenda-mode . my/org-agenda-big-headers))
   :bind
   (:map my/leader-map
         ("i" . my/org-capture-inbox)
@@ -337,7 +343,7 @@
      ("CHORA" (,(nerd-icons-mdicon "nf-md-home_outline")))
      ("VIBE CODING" (,(nerd-icons-mdicon "nf-md-robot_outline")))
      (".*" (,(nerd-icons-mdicon "nf-md-checkbox_blank_circle_outline")))))
-  (org-agenda-block-separator ?─)
+  (org-agenda-block-separator nil)
   (org-agenda-time-grid
    '((daily today require-timed)
      (800 1000 1200 1400 1600 1800 2000)
