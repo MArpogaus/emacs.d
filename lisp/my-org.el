@@ -145,7 +145,9 @@
   (org-agenda-custom-commands
    '(("g" "Get Things Done (GTD)"
       ((agenda "" ((org-agenda-span 'day)
-                   (org-deadline-warning-days 7)))
+                   (org-deadline-warning-days 7)
+                   (org-agenda-sorting-strategy '(time-up priority-down category-keep))
+                   (org-agenda-prefix-format "  %i %-12:c%?-12t% s")))
        (tags-todo "inbox" ((org-agenda-overriding-header "\nInbox")))
        (todo "NEXT" ((org-agenda-overriding-header "\nNext")))
        (todo "WAIT" ((org-agenda-overriding-header "\nWaiting"))))
