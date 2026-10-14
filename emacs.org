@@ -4064,17 +4064,9 @@ for itself.
                           :repo ("MArpogaus/overblock" . "overblock-md")
                           :branch "dev"
                           :files ("overblock-md.el" "overblock-md-preview.el"))
-    :preface
-    (defun my/overblock-md-preview-maybe ()
-      "Turn on `overblock-md-preview-mode', unless this is an Rmd file."
-      (unless (and buffer-file-name
-                   (string-match-p "\\.[rR]md\\'" buffer-file-name))
-        (overblock-md-preview-mode)))
-    :hook (markdown-mode . my/overblock-md-preview-maybe))
+    :hook (markdown-mode . overblock-md-preview-mode))
 
-  ;; Python doc strings rendered where they are written, with a bar of
-  ;; their own.  On in every Python buffer; the doc string point is in
-  ;; shows its source, so writing one is writing plain text.
+  ;; Python doc strings rendered in place.
   (use-package overblock-pydoc
     :ensure (overblock-pydoc :host github
                              :repo ("MArpogaus/overblock" . "overblock-pydoc")
