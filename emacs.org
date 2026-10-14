@@ -31,6 +31,7 @@ Here are some notable features:
 - *Modal Editing with Meow:* [[https://github.com/meow-edit/meow][Meow]] introduces modal editing to Emacs, similar to Vim, for efficient text manipulation and navigation. The modal experience is further enhanced by [[https://github.com/justbur/emacs-which-key][which-key]], providing a helpful popup of available keybindings.
 
 * Table of Contents :TOC_3_gh:noexport:
+- [[#my-packages][My packages]]
 - [[#installation][Installation]]
 - [[#references][References]]
 - [[#notes][Notes]]
@@ -69,6 +70,19 @@ Here are some notable features:
     - [[#programming][Programming]]
     - [[#keybindings][Keybindings]]
   - [[#conventional-library-footer-for-initel][Conventional Library Footer for =init.el=]]
+
+* My packages
+This configuration uses these packages of mine.
+overblock loads from its =dev= branch, the others from their default branch.
+
+| Package                | What it does                                       | Status                                 |
+|------------------------+----------------------------------------------------+----------------------------------------|
+| [[https://github.com/MArpogaus/auto-side-windows][auto-side-windows]]      | puts each buffer on the side it belongs to         | 1.1, on MELPA                          |
+| [[https://github.com/MArpogaus/auto-tab-groups][auto-tab-groups]]        | a tab group per project or command                 | 1.0.2, on MELPA                        |
+| [[https://github.com/MArpogaus/modern-tab][modern-tab]]             | the look of the tab bar and the tab line           | 1.1, MELPA review open                 |
+| [[https://github.com/MArpogaus/window-box][window-box]]             | draws the side windows as panels                   | 1.2.0, released on GitHub              |
+| [[https://github.com/MArpogaus/overblock][overblock]]              | Python and Rmd notebooks, markdown and doc strings | alpha, work in progress, not on MELPA  |
+| [[https://github.com/MArpogaus/emacs-pre-commit-hooks][emacs-pre-commit-hooks]] | pre-commit hooks for Emacs Lisp                    | 0.2.0, used by the repositories above  |
 
 * Installation
 
