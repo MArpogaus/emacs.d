@@ -528,8 +528,10 @@ A relative remap stacks, and redisplay runs again and again.")
   :ensure nil
   :preface
   ;; https://karthinks.com/software/it-bears-repeating/#adding-repeat-mode-support-to-keymaps
-  (defun my/repeatize-keymap (keymap &optional unset)
-    "Add `repeat-mode' support to a KEYMAP. If UNSET is true remove repeat property"
+  (defun my/repeatize-keymap (keymap &optional unset via)
+    "Add `repeat-mode' support to a KEYMAP. If UNSET is true remove repeat property.
+With VIA, the commands name the variable VIA instead of KEYMAP, so a
+buffer-local VIA picks the map per buffer."
     (map-keymap
      (lambda (_key cmd)
        (when (symbolp cmd)

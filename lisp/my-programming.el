@@ -105,6 +105,9 @@
     (interactive)
     (unless (bolp) (insert "\n"))
     (insert "# %%\n"))
+  (defun my/code-cells-set-repeat-map ()
+    "Make `my/code-cells-repeat-map' the notebook repeat map here."
+    (setq-local my/notebook-repeat-map my/code-cells-repeat-map))
   (defun my/code-cells-merge-above ()
     "Merge the current cell with the one above (JupyterLab: S-m)."
     (interactive)
@@ -142,7 +145,8 @@
   ;; code-cells' C-c % map claims the repeat-map of our commands.
   (keymap-unset code-cells-mode-map "C-c %" t)
   (my/repeatize-keymap 'code-cells--prefix-map t)
-  (my/repeatize-keymap 'my/code-cells-repeat-map)
+  (my/repeatize-keymap 'my/code-cells-repeat-map nil 'my/notebook-repeat-map)
+  (add-hook 'code-cells-mode-hook #'my/code-cells-set-repeat-map)
   :bind
   (:map code-cells-mode-map
         ;; evaluation
@@ -293,8 +297,12 @@
   ;; written by hand between its fences.
   (defvar my/overblock-rmd-repeat-map (make-sparse-keymap)
     "Repeat map for chunk commands; mirrors `my/code-cells-repeat-map'.")
+  (defun my/overblock-rmd-set-repeat-map ()
+    "Make `my/overblock-rmd-repeat-map' the notebook repeat map here."
+    (setq-local my/notebook-repeat-map my/overblock-rmd-repeat-map))
   :config
-  (my/repeatize-keymap 'my/overblock-rmd-repeat-map)
+  (my/repeatize-keymap 'my/overblock-rmd-repeat-map nil 'my/notebook-repeat-map)
+  (add-hook 'overblock-rmd-mode-hook #'my/overblock-rmd-set-repeat-map)
   :bind
   ;; The keys of the Python notebook, one for one.
   (:map overblock-rmd-mode-map
