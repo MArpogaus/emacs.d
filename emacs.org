@@ -3973,7 +3973,7 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
           ("S-<return>"   . code-cells-eval-and-step)
           ("C-S-<return>" . code-cells-eval-and-step)
           ("M-<return>"   . my/code-cells-eval-and-insert-below)
-          ("C-M-<return>" . overblock-pycell-restart-and-run-all)
+          ("C-M-<return>" . overblock-run-restart-and-run-all)
           ;; navigation
           ("C-<up>"       . code-cells-backward-cell)
           ("C-<down>"     . code-cells-forward-cell)
@@ -4001,9 +4001,9 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
           ("i" . overblock-run-interrupt)
           ("o" . overblock-run-toggle-output)
           ("O" . overblock-run-discard-output)
-          ("0" . overblock-pycell-restart)
+          ("0" . overblock-run-restart)
           ("A" . overblock-run-above)
-          ("R" . overblock-pycell-restart-and-run-all))
+          ("R" . overblock-run-restart-and-run-all))
     :hook
     (python-base-mode . code-cells-mode-maybe))
 #+end_src
@@ -4121,27 +4121,27 @@ for itself.
     :bind
     ;; The keys of the Python notebook, one for one.
     (:map overblock-rmd-mode-map
-          ("C-<return>"   . overblock-rmd-run-chunk)
-          ("S-<return>"   . overblock-rmd-run-chunk-and-step)
-          ("C-S-<return>" . overblock-rmd-run-chunk-and-step)
-          ("C-M-<return>" . overblock-rmd-restart-and-run-all)
-          ("C-<up>"       . overblock-rmd-backward-chunk)
-          ("C-<down>"     . overblock-rmd-forward-chunk)
+          ("C-<return>"   . overblock-run-this)
+          ("S-<return>"   . overblock-run-and-step)
+          ("C-S-<return>" . overblock-run-and-step)
+          ("C-M-<return>" . overblock-run-restart-and-run-all)
+          ("C-<up>"       . overblock-run-backward)
+          ("C-<down>"     . overblock-run-forward)
           ("C-c C-c"      . overblock-run-interrupt)
           :map my/overblock-rmd-repeat-map
-          ("n" . overblock-rmd-forward-chunk)
-          ("p" . overblock-rmd-backward-chunk)
-          ("j" . overblock-rmd-forward-chunk)
-          ("k" . overblock-rmd-backward-chunk)
-          ("e" . overblock-rmd-run-chunk)
-          ("r" . overblock-rmd-run-chunk-and-step)
+          ("n" . overblock-run-forward)
+          ("p" . overblock-run-backward)
+          ("j" . overblock-run-forward)
+          ("k" . overblock-run-backward)
+          ("e" . overblock-run-this)
+          ("r" . overblock-run-and-step)
           ("c" . overblock-run-copy-output)
           ("i" . overblock-run-interrupt)
           ("o" . overblock-run-toggle-output)
           ("O" . overblock-run-discard-output)
-          ("0" . overblock-rmd-restart)
+          ("0" . overblock-run-restart)
           ("A" . overblock-run-above)
-          ("R" . overblock-rmd-restart-and-run-all)))
+          ("R" . overblock-run-restart-and-run-all)))
 #+end_src
 **** [[https://github.com/mickeynp/combobulate.git][combobulate]]
 Structured Editing and Navigation in Emacs.
