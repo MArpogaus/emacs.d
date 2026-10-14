@@ -382,15 +382,6 @@ rest of the major mode setup, globalized minor modes included."
   :ensure nil
   :preface
   (defvar my/lsp-map (make-sparse-keymap) "key-map for lsp commands")
-  :init
-  (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
-  :custom
-  (eglot-send-changes-idle-time 0.1)
-  ;; No events buffer: a massive speed-up.
-  (eglot-events-buffer-config '(:size 0 :format full))
-  ;; Hover docs with tables, code and formulas rendered.
-  (eglot-documentation-renderer #'overblock-md-eglot-renderer)
-  :preface
   (defvar-local my/eglot-super-capf nil
     "The capf `my/eglot-capf' added in this buffer.")
   (defun my/eglot-capf ()
@@ -402,6 +393,14 @@ Tempel comes after :with, so the capf answers only when eglot does."
       (setq my/eglot-super-capf
             (cape-capf-super #'eglot-completion-at-point :with #'tempel-complete))
       (push my/eglot-super-capf completion-at-point-functions)))
+  :init
+  (define-key my/leader-map (kbd "l") (cons "lsp" my/lsp-map))
+  :custom
+  (eglot-send-changes-idle-time 0.1)
+  ;; No events buffer: a massive speed-up.
+  (eglot-events-buffer-config '(:size 0 :format full))
+  ;; Hover docs with tables, code and formulas rendered.
+  (eglot-documentation-renderer #'overblock-md-eglot-renderer)
   :bind
   (:map my/lsp-map
         ("l" . eglot)
