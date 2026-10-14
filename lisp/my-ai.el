@@ -68,8 +68,10 @@ pick PROMPT, which also goes to an agent that runs already."
         (agent-shell-subscribe-to :shell-buffer shell :event 'turn-complete
                                   :on-event #'my/gtd-refresh-agenda)
         (setq prompt (or prompt (cdar my/gtd-prompts))))
+      ;; A new agent takes the prompt only when it is ready; without
+      ;; :no-focus it then shows itself in whatever tab is current.
       (when prompt
-        (agent-shell-insert :text prompt :submit t :shell-buffer shell))))
+        (agent-shell-insert :text prompt :submit t :no-focus t :shell-buffer shell))))
   :autoload agent-shell-buffers
   :custom
   (agent-shell-header-style 'text)
