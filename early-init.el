@@ -10,7 +10,7 @@
 
 ;;; Commentary:
 
-;; This file has been generated from emacs.org file. DO NOT EDIT.
+;; This file has been generated from emacs.org file.  DO NOT EDIT.
 
 ;;; Code:
 

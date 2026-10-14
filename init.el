@@ -10,7 +10,7 @@
 
 ;;; Commentary:
 
-;; This file has been generated from emacs.org file. DO NOT EDIT.
+;; This file has been generated from emacs.org file.  DO NOT EDIT.
 
 ;;; Code:
 
@@ -324,7 +324,7 @@ The DWIM behaviour of this command is as follows:
         ;; With or without the `.git': both spellings are in this file.
         (if (and url (string-match "github\\.com/\\([[:alnum:]._-]+\\)/\\([[:alnum:]._-]+?\\)\\(?:\\.git\\)?/?\\'" url))
             (list (match-string 1 url) (match-string 2 url))
-          (error "No GitHub link found at point.")))))
+          (error "No GitHub link found at point")))))
   (defun my/insert-github-repo-description ()
     "Retrieve and insert the short description of a GitHub repository at point."
     (interactive)
@@ -348,7 +348,7 @@ The DWIM behaviour of this command is as follows:
                 (unless (string-suffix-p "." description)
                   (setq description (concat description ".")))
                 (insert description))
-            (error "No description, website, or topics provided."))))))
+            (error "No description, website, or topics provided"))))))
 
   ;; Thanks doom-modeline: https://github.com/seagle0128/doom-modeline/blob/ec6bc00ac035e75ad10b52e516ea5d95cc9e0bd9/doom-modeline-core.el#L1454C8-L1454C39
   (defun my/get-bar-image (height width color)
