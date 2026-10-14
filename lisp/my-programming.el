@@ -245,7 +245,18 @@
                            :repo ("MArpogaus/overblock" . "overblock-pydoc")
                            :branch "dev"
                            :files ("overblock-pydoc.el"))
-  :hook (python-base-mode . overblock-pydoc-mode))
+  :preface
+  (defun my/overblock-pydoc-blank-bars ()
+    "Draw no indent bars on blank lines while doc strings are rendered.
+A blank line of a rendered doc string stays in view as a gap, and the
+bar indent-bars puts there would cut through the prose."
+    (if overblock-pydoc-mode
+        (setq-local indent-bars-display-on-blank-lines nil)
+      (kill-local-variable 'indent-bars-display-on-blank-lines))
+    (when (bound-and-true-p indent-bars-mode) (indent-bars-reset)))
+  :hook
+  ((python-base-mode . overblock-pydoc-mode)
+   (overblock-pydoc-mode . my/overblock-pydoc-blank-bars)))
 
 (use-package overblock-pycell
   ;; Five packages live in that repository — the layer, the markup
