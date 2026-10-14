@@ -1985,7 +1985,9 @@ Revert buffers when the underlying file has changed.
        "^\\*Outline .+\.pdf\\*$"
        "^\\*eldoc.*\\*$"
        "^\\*Org Src.*\\*"
-       "^\\*Metahelp\\*$"))
+       "^\\*Metahelp\\*$"
+       ;; overblock's pop-out and edit buffers
+       "^\\*overblock-[a-z]+\\(?: md\\)?: .*\\*$"))
     (auto-side-windows-right-buffer-modes
      '(Info-mode
        TeX-output-mode
@@ -4029,27 +4031,12 @@ for itself.
                        :files ("overblock.el" "overblock-repl.el"
                                "overblock-run.el"))
     :custom
-    ;; The same word the panel header goes by: without it every bar of
-    ;; every package here falls back to its plain candidates in a
-    ;; terminal.
-    (overblock-terminal-glyphs my/terminal-glyphs)
-    :config
-    ;; Every buffer the family opens beside a file goes to the right:
-    ;; a result popped out (*overblock-pycell: f:12*, *overblock-rmd: …*),
-    ;; a markdown cell being edited (*overblock-pycell md: …*), a doc
-    ;; string being edited (*overblock-pydoc: …*).  The shells go to
-    ;; the bottom with every other comint buffer.
-    (with-eval-after-load 'auto-side-windows
-      (add-to-list 'auto-side-windows-right-buffer-names
-                   "^\\*overblock-[a-z]+\\(?: md\\)?: .*\\*$")))
+    ;; Without it, bars use plain glyphs in a terminal.
+    (overblock-terminal-glyphs my/terminal-glyphs))
 
-  ;; The runner is a file of the layer, and the map of a result popped
-  ;; out into its own buffer lives there: bound once that file loads,
-  ;; from any notebook.  A pop-out remembers the shell it came from, so
-  ;; the interrupt works where a long run is watched.
+  ;; The pop-out map lives in the layer's runner.
   (use-package overblock-run
     :ensure nil
-    :after overblock
     :bind
     (:map overblock-run-pop-map
           ("C-c C-c" . overblock-run-interrupt)))
@@ -4115,7 +4102,9 @@ for itself.
                            :repo ("MArpogaus/overblock" . "overblock-rmd")
                            :branch "dev"
                            :files ("overblock-rmd.el"))
+    ;; Its hook loads it, and with it ESS, in every Markdown buffer.
     :after ess
+    :demand t
     :hook (markdown-mode . overblock-rmd-mode-maybe)
     :preface
     ;; The same "command mode" as the Python notebook's: the same letters

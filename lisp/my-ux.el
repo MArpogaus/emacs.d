@@ -278,7 +278,9 @@ A relative remap stacks, and redisplay runs again and again.")
      "^\\*Outline .+\.pdf\\*$"
      "^\\*eldoc.*\\*$"
      "^\\*Org Src.*\\*"
-     "^\\*Metahelp\\*$"))
+     "^\\*Metahelp\\*$"
+     ;; overblock's pop-out and edit buffers
+     "^\\*overblock-[a-z]+\\(?: md\\)?: .*\\*$"))
   (auto-side-windows-right-buffer-modes
    '(Info-mode
      TeX-output-mode
