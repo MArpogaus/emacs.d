@@ -221,7 +221,7 @@ Do nothing in a terminal.  Warn if a graphic display lacks the font."
             (add-to-list 'default-frame-alist (cons 'font family))
             (set-frame-font family nil t)
             ;; Material Design icons also in fonts without them.
-            (set-fontset-font t '(#xf0001 . #xf1af0) "Symbols Nerd Font Mono" nil 'append))
+            (set-fontset-font t '(#xf0001 . #xf1af0) "Symbols Nerd Font" nil 'append))
         (warn "Font `%s' is not installed, frames keep the default font"
               family)))))
 
