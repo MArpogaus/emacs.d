@@ -4068,13 +4068,13 @@ for itself.
     :ensure (latex-to-svg-backend
              :host github :repo "alberti42/latex-to-svg-backend"))
 
-  ;; Markup rendered to text: a converter and shr, or a mode's font lock.
-  ;; `overblock-md-preview-mode' renders a markdown buffer block by block
-  ;; and gives the source back where you click.  On for every markdown
-  ;; file but an Rmd, whose prose the notebook below renders itself; the
-  ;; hook is what loads the package, so nothing here costs a start-up.
+  ;; One checkout per package: elpaca hangs when packages that are not
+  ;; built yet share a clone that is already on disk.
+
+  ;; Markdown rendered block by block.  The Rmd notebook turns it off.
   (use-package overblock-md
-    :ensure (overblock-md :host github :repo "MArpogaus/overblock"
+    :ensure (overblock-md :host github
+                          :repo ("MArpogaus/overblock" . "overblock-md")
                           :branch "dev"
                           :files ("overblock-md.el" "overblock-md-preview.el"))
     :preface
@@ -4089,7 +4089,8 @@ for itself.
   ;; their own.  On in every Python buffer; the doc string point is in
   ;; shows its source, so writing one is writing plain text.
   (use-package overblock-pydoc
-    :ensure (overblock-pydoc :host github :repo "MArpogaus/overblock"
+    :ensure (overblock-pydoc :host github
+                             :repo ("MArpogaus/overblock" . "overblock-pydoc")
                              :branch "dev"
                              :files ("overblock-pydoc.el"))
     :hook (python-base-mode . overblock-pydoc-mode))
@@ -4110,7 +4111,8 @@ for itself.
   ;; renders as markdown.  The keys are the notebook's, so a hand that
   ;; knows one knows the other.
   (use-package overblock-rmd
-    :ensure (overblock-rmd :host github :repo "MArpogaus/overblock"
+    :ensure (overblock-rmd :host github
+                           :repo ("MArpogaus/overblock" . "overblock-rmd")
                            :branch "dev"
                            :files ("overblock-rmd.el"))
     :after ess
