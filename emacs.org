@@ -4023,8 +4023,7 @@ are specific to this configuration remain — among them that the terminal
 here draws the icon font, which is the one thing Emacs cannot find out
 for itself.
 #+begin_src emacs-lisp
-  ;; The layer the three below are built on: text blocks over a region of
-  ;; a buffer.  It draws nothing by itself.
+  ;; The layer below the three packages; it draws nothing itself.
   (use-package overblock
     :ensure (overblock :host github :repo "MArpogaus/overblock"
                        :branch "dev"
@@ -4041,16 +4040,8 @@ for itself.
     (:map overblock-run-pop-map
           ("C-c C-c" . overblock-run-interrupt)))
 
-  ;; What draws a LaTeX fragment in a rendering: `latex' and `dvisvgm'
-  ;; in a process of its own, one compile per equation, and an SVG that
-  ;; carries neither the colour nor the size — both are given to it when
-  ;; it is drawn, so a theme change and a `text-scale-adjust' cost no
-  ;; LaTeX.  `overblock-md' requires it.
-  ;;
-  ;; Declared with its URL, and before what needs it: the package is on
-  ;; MELPA, and elpaca can only resolve an id from a menu it has
-  ;; fetched — without this it answered "Unable to determine recipe
-  ;; URL", and took every package that requires it down with it.
+  ;; LaTeX fragments as SVG, coloured and scaled when drawn.  Declared
+  ;; with its URL: elpaca cannot resolve it from MELPA otherwise.
   (use-package latex-to-svg-backend
     :ensure (latex-to-svg-backend
              :host github :repo "alberti42/latex-to-svg-backend"))
@@ -4086,20 +4077,15 @@ for itself.
      (overblock-pydoc-mode . my/overblock-pydoc-blank-bars)))
 
   (use-package overblock-pycell
-    ;; Five packages live in that repository — the layer, the markup
-    ;; renderer, the doc string mode, this notebook and the one for R
-    ;; Markdown — so the recipe names the files of this one.  The layer and the renderer arrive as
-    ;; its dependencies, each with a recipe of its own below.
-    :ensure (overblock-pycell :host github :repo "MArpogaus/overblock"
+    ;; The repository holds five packages; this recipe names the notebook's.
+    :ensure (overblock-pycell :host github
+                              :repo ("MArpogaus/overblock" . "overblock-pycell")
                               :branch "dev"
                               :files ("overblock-pycell.el"))
     ;; The package installs no hook itself; this is where it turns on.
     :hook (code-cells-mode . overblock-pycell-mode-maybe))
 
-  ;; The same notebook for an =.Rmd= file: a chunk runs in the R that ESS
-  ;; started and its output shows under it, and the prose between chunks
-  ;; renders as markdown.  The keys are the notebook's, so a hand that
-  ;; knows one knows the other.
+  ;; The same notebook for .Rmd files, with the same keys.
   (use-package overblock-rmd
     :ensure (overblock-rmd :host github
                            :repo ("MArpogaus/overblock" . "overblock-rmd")
@@ -4110,10 +4096,7 @@ for itself.
     :demand t
     :hook (markdown-mode . overblock-rmd-mode-maybe)
     :preface
-    ;; The same "command mode" as the Python notebook's: the same letters
-    ;; do the same things, entered through any of them and chained until
-    ;; a foreign key exits.  No insert keys (a b), because a chunk is
-    ;; written by hand between its fences.
+    ;; The Python notebook's command mode, without insert keys.
     (defvar my/overblock-rmd-repeat-map (make-sparse-keymap)
       "Repeat map for chunk commands; mirrors `my/code-cells-repeat-map'.")
     (defun my/overblock-rmd-set-repeat-map ()
