@@ -75,6 +75,10 @@ pick PROMPT, which also goes to an agent that runs already."
   :autoload agent-shell-buffers
   :custom
   (agent-shell-header-style 'text)
+  ;; RET into a working agent steers its turn, M-RET queues; an agent
+  ;; that cannot steer queues either way.
+  (agent-shell-busy-submit-default-function #'agent-shell-busy-submit-steer)
+  (agent-shell-busy-submit-override-function #'agent-shell-busy-submit-queue)
   :bind
   (:map my/ai-map
         ("s" . agent-shell)
