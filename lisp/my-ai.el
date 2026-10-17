@@ -104,8 +104,10 @@ pick PROMPT, which also goes to an agent that runs already."
       (setq-local default-directory previous-dir)))
   (defun my/gptel-auto-save-to-denote-h (&rest _)
     "Hook to automatically save gptel buffers to Denote.
-Triggered after the first response is received in a new buffer."
-    (my/gptel-save-to-denote)
+Triggered after the first response is received in a new buffer.  A
+buffer that visits a file is left alone."
+    (unless buffer-file-name
+      (my/gptel-save-to-denote))
     (remove-hook 'gptel-post-response-functions #'my/gptel-auto-save-to-denote-h t))
   :init
   ;; Saved chats turn `gptel-mode' on through an `eval' local variable.
