@@ -380,12 +380,15 @@ any; its own header line stretches to the right edge of the window."
              (my/zoom-latex-preview ov))))))
 
   (defun my/zoom-latex-preview (ov)
-    (overlay-put
-     ov 'display
-     (cons 'image
-           (plist-put
-            (cdr (overlay-get ov 'display))
-            :scale (+ 1.0 (* 0.25 text-scale-mode-amount))))))
+    "Scale the image of preview overlay OV like the text.
+An opened preview shows its source and has no image to scale."
+    (when (eq (car-safe (overlay-get ov 'display)) 'image)
+      (overlay-put
+       ov 'display
+       (cons 'image
+             (plist-put
+              (cdr (overlay-get ov 'display))
+              :scale (expt text-scale-mode-step text-scale-mode-amount))))))
   :init
   (define-key my/buffer-map (kbd "z") (cons "scale" my/buffer-scale-map))
   :bind
