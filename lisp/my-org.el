@@ -404,6 +404,8 @@
 
 (use-package org-present
   :preface
+  (defvar-local my/org-present--remaps nil
+    "The face remaps of the presentation in this buffer.")
   (defun my/org-present-start ()
     (org-present-read-only)
     (org-link-preview-region)
@@ -411,21 +413,23 @@
     ;; Hide Property drawers
     (org-tidy-mode 1)
 
-    ;; Tweak font sizes
-    (setq-local face-remapping-alist '((header-line (:height 4.0) variable-pitch)
-                                       (org-document-title (:inherit variable-pitch :height 2.0) org-document-title)
-                                       (org-level-1 (:inherit variable-pitch :height 1.5) org-level-1)
-                                       (org-level-2 (:inherit variable-pitch :height 1.3) org-level-2)
-                                       (org-level-3 (:inherit variable-pitch :height 1.2) org-level-3)
-                                       (org-level-4 (:inherit variable-pitch :height 1.1) org-level-4)
-                                       (org-level-5 (:inherit variable-pitch :height 1.1) org-level-5)
-                                       (org-level-6 (:inherit variable-pitch :height 1.1) org-level-6)
-                                       (org-level-7 (:inherit variable-pitch :height 1.1) org-level-7)
-                                       (org-level-8 (:inherit variable-pitch :height 1.1) org-level-8)
-                                       (org-default (:inherit variable-pitch) org-default)
-                                       (org-table (:inherit fixed-pitch) org-table)
-                                       (org-code (:inherit fixed-pitch) org-code)
-                                       (org-verbatim (:inherit fixed-pitch) org-verbatim)))
+    ;; Tweak font sizes; added to the buffer's other remaps, not in place of them
+    (setq-local my/org-present--remaps
+                (mapcar (lambda (remap) (apply #'face-remap-add-relative remap))
+                        '((header-line (:height 4.0) variable-pitch)
+                          (org-document-title (:inherit variable-pitch :height 2.0))
+                          (org-level-1 (:inherit variable-pitch :height 1.5))
+                          (org-level-2 (:inherit variable-pitch :height 1.3))
+                          (org-level-3 (:inherit variable-pitch :height 1.2))
+                          (org-level-4 (:inherit variable-pitch :height 1.1))
+                          (org-level-5 (:inherit variable-pitch :height 1.1))
+                          (org-level-6 (:inherit variable-pitch :height 1.1))
+                          (org-level-7 (:inherit variable-pitch :height 1.1))
+                          (org-level-8 (:inherit variable-pitch :height 1.1))
+                          (org-default (:inherit variable-pitch))
+                          (org-table (:inherit fixed-pitch))
+                          (org-code (:inherit fixed-pitch))
+                          (org-verbatim (:inherit fixed-pitch)))))
 
     ;; Set a blank header line string to create blank space at the top
     (setq-local header-line-format " ")
@@ -433,9 +437,6 @@
     ;; Configure fill width
     (setq-local visual-fill-column-width 160
                 visual-fill-column-center-text t)
-
-    ;; Remove org modern borders from blocks
-    (setq-local org-modern-block-fringe nil)
 
     ;; Center the presentation and wrap lines
     (visual-fill-column-mode 1)
@@ -446,11 +447,14 @@
     (org-link-preview-clear)
 
     ;; Show Property drawers
-    (org-tidy-untidy-buffer)
     (org-tidy-mode 0)
 
     ;; Reset font customizations
-    (kill-local-variable 'face-remapping-alist)
+    (mapc #'face-remap-remove-relative my/org-present--remaps)
+    (kill-local-variable 'my/org-present--remaps)
+
+    ;; `org-present-read-only' hid the cursor
+    (org-present-show-cursor)
 
     ;; Clear the header line string so that it isn't displayed
     (kill-local-variable 'header-line-format)
@@ -458,9 +462,6 @@
     ;; Configure fill width
     (kill-local-variable 'visual-fill-column-width)
     (kill-local-variable 'visual-fill-column-center-text)
-
-    ;; Reset org modern borders from blocks
-    (kill-local-variable 'org-modern-block-fringe)
 
     ;; Stop centering the presentation and wrap lines
     (visual-fill-column-mode 0)
