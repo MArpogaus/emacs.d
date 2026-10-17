@@ -623,13 +623,16 @@ Ask unless the project root holds exactly one environment."
     (let ((local (my/python-env--in (my/python-env-dir))))
       (if (and local (not (cdr local)))
           (car local)
-        (completing-read "Environment: "
-                         (or local (mapcan #'my/python-env--in my/python-env-parents))
-                         nil t))))
+        (let ((env (completing-read "Environment: "
+                                    (or local (mapcan #'my/python-env--in my/python-env-parents))
+                                    nil t)))
+          (if (string-empty-p env) (user-error "No environment chosen") env)))))
 
   (defun my/python-env--clear ()
-    "Take back what `my/python-env--set' gave this buffer."
-    (when my/python-env--applied
+    "Take back what `my/python-env--set' gave this buffer.
+Not where `ben' applied a direnv afterwards: that environment is its."
+    (when (and my/python-env--applied
+               (not (eq (bound-and-true-p ben--status) 'on)))
       (kill-local-variable 'exec-path)
       (kill-local-variable 'process-environment)
       (kill-local-variable 'my/python-env--applied)))
@@ -703,9 +706,7 @@ If ENV is nil, drop the choice."
         ("C-c v" . my/python-env-activate)
         ("C-c V" . my/python-env-deactivate))
   :hook
-  ((elpaca-after-init . my/python-env-global-mode)
-   ;; Directory-local variables are read after the major mode is set.
-   (hack-local-variables . my/python-env-mode))
+  (elpaca-after-init . my/python-env-global-mode)
   :init
   ;; These start their processes in a temp buffer, which inherits none of the
   ;; environment of the buffer the command was called from.
