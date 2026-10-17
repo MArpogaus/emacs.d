@@ -583,12 +583,8 @@ buffer-local VIA picks the map per buffer."
   :custom
   ;; The places are saved on a timer, not only when Emacs exits.
   (save-place-autosave-interval 300)
-  :preface
-  (defun my/saveplace-recenter (&rest _)
-    (when buffer-file-name (ignore-errors (recenter))))
   :hook
-  ((elpaca-after-init . save-place-mode)
-   (save-place-after-find-file . my/saveplace-recenter)))
+  (elpaca-after-init . save-place-mode))
 
 ;; time-stamp :build_in:
 ;; Automatically update file timestamps when file is saved.
