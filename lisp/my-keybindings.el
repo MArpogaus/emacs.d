@@ -102,6 +102,7 @@
         ("z" . meow-pop-selection))
   :hook
   ((git-timemachine-mode . meow-motion-mode)
+   (org-capture-mode . meow-insert)
    (elpaca-after-init . meow-global-mode)))
 
 ;; [[https://github.com/DevelopmentCool2449/standard-keys-mode.git][standard-keys-mode]]
