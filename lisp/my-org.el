@@ -149,7 +149,11 @@ A remap, because the theme sets `org-agenda-structure'."
   ;; Refile and Archive
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
-  (org-refile-targets '((org-agenda-files :maxlevel . 3)))
+  ;; The Tasks heading of each project, Miscellaneous and the reading list
+  (org-refile-targets
+   `((org-agenda-files :tag . "tasks")
+     (org-agenda-files :tag . "misc")
+     (,(expand-file-name "agenda/literature.org" org-directory) :level . 1)))
   (org-agenda-custom-commands
    '(("g" "Get Things Done (GTD)"
       ((agenda "" ((org-agenda-overriding-header "󱨰   Heute")
