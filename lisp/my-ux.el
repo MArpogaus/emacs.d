@@ -130,9 +130,6 @@ any; its own header line stretches to the right edge of the window."
               (t (concat (project-name project) "/"
                          (file-relative-name here root)))))))
 
-  (defvar-local my/header-line-faces-overloaded nil
-    "Whether this buffer has the header line face remap already.
-A relative remap stacks, and redisplay runs again and again.")
 
   (defvar my/header-line-format-top
     '(:eval
@@ -166,18 +163,13 @@ A relative remap stacks, and redisplay runs again and again.")
                               #'my/side-window-kill))
                      'face face)))
         ;; The whole row is the panel's, so the faces carry the look.
-        (unless my/header-line-faces-overloaded
-          (setq-local my/header-line-faces-overloaded t)
+        ;; Asked of the remaps, not of a flag: an agenda redo kills
+        ;; local variables but keeps the remaps.
+        (unless (member '(:inherit my/panel-header-line)
+                        (assq 'header-line face-remapping-alist))
           (dolist (name '(header-line header-line-active
                                       header-line-inactive))
-            ;; A tty leaves these faces' colors unspecified, and a
-            ;; nil attribute in the remap warns on every redisplay.
-            (let ((bg (face-background name nil 'default))
-                  (fg (face-foreground name nil 'default)))
-              (face-remap-add-relative
-               name `( :inherit my/panel-header-line
-                       ,@(when bg (list :background bg))
-                       ,@(when fg (list :foreground fg)))))))
+            (face-remap-add-relative name '(:inherit my/panel-header-line))))
         (setq-local window-box-color (face-foreground icon))
         ;; Content only: window-box owns the ends of the row.
         (concat
