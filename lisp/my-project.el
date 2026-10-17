@@ -96,11 +96,8 @@
         ("s" . speedbar-window-mode))
 
   :hook
-  ((speedbar-mode . (lambda()
-                      ;; No word wrapping in speedbar.
-                      (visual-line-mode 0)
-                      ;; Smaller text in speedbar.
-                      (text-scale-adjust -1)))))
+  ;; Smaller text in speedbar.
+  (speedbar-mode . (lambda () (text-scale-set -1))))
 
 ;; ZZ Library Footer
 
