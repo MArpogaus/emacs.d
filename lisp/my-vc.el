@@ -91,8 +91,10 @@
              (file-remote-p key))
         (if-let* ((current (assoc key (symbol-value cache))))
             (cdr current)
+          ;; No answer is not kept: a directory may become a repository.
           (let ((current (apply orig-fn args)))
-            (set cache (cons (cons key current) (symbol-value cache)))
+            (when current
+              (set cache (cons (cons key current) (symbol-value cache))))
             current))
       (apply orig-fn args)))
 
@@ -105,12 +107,8 @@
   ;; memoize vc-git-root
   (defvar my/vc-git-root-cache nil)
   (defun my/memoize-vc-git-root (orig file)
-    (let ((value (my/memoize-remote (file-name-directory file)
-                                    'my/vc-git-root-cache orig file)))
-      ;; sometimes vc-git-root returns nil even when there is a root there
-      (unless (cdar my/vc-git-root-cache)
-        (setq my/vc-git-root-cache (cdr my/vc-git-root-cache)))
-      value))
+    (my/memoize-remote (file-name-directory file)
+                       'my/vc-git-root-cache orig file))
   :config
   (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)
   (advice-add 'magit-toplevel :around #'my/memoize-magit-toplevel)
