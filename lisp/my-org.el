@@ -82,11 +82,6 @@
 
 (use-package org
   :preface
-  (defun my/org-agenda-big-headers ()
-    "Show the block headers of the agenda large and in variable pitch.
-A remap, because the theme sets `org-agenda-structure'."
-    (face-remap-add-relative 'org-agenda-structure
-                             '(:inherit variable-pitch :height 1.2 :weight bold)))
   (defface my/org-todo-onhold-face '((t :inherit (bold warning org-todo)))
     "Face for todo keywords of paused or blocked tasks.")
   (defface my/org-todo-project-face '((t :inherit (bold font-lock-doc-face org-todo)))
@@ -185,8 +180,7 @@ A remap, because the theme sets `org-agenda-structure'."
   ;; Use SVGs for latex previews -> No blur when scaling
   (org-preview-latex-default-process 'dvisvgm)
   :hook
-  ((org-mode . reveal-mode)
-   (org-agenda-mode . my/org-agenda-big-headers))
+  (org-mode . reveal-mode)
   :bind
   (:map my/leader-map
         ("i" . my/org-capture-inbox)
@@ -206,7 +200,13 @@ A remap, because the theme sets `org-agenda-structure'."
         ("r" . org-agenda-refile)
         ("s" . org-agenda-schedule)
         ("d" . org-agenda-deadline)
-        ("c" . my/org-capture-inbox)))
+        ("c" . my/org-capture-inbox))
+  :config
+  ;; Block headers large and in variable pitch.  An override spec, because
+  ;; the theme sets this face and would win over a defface spec.
+  (face-spec-set 'org-agenda-structure
+                 '((t :inherit variable-pitch :height 1.2 :weight bold))
+                 'face-override-spec))
 
 ;; [[https://github.com/awth13/org-appear.git][org-appear]]
 ;; Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
