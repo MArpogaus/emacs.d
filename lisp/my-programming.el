@@ -736,15 +736,16 @@ If ENV is nil, drop the choice."
         ("o" . my/symbols-outline-toggle))
   ;; It makes its side window itself, past auto-side-windows' parameters.
   :hook
-  ((symbols-outline-mode . mode-line-invisible-mode)
-   (symbols-outline-mode . symbols-outline-follow-mode))
+  (symbols-outline-mode . mode-line-invisible-mode)
   :custom
   (symbols-outline-window-position 'left)
   :config
   ;; By default the ctags backend is selected
   (unless (executable-find "ctags")
     ;; Use lsp-mode or eglot as backend
-    (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch)))
+    (setq symbols-outline-fetch-fn #'symbols-outline-lsp-fetch))
+  ;; Once: each call starts another idle timer.
+  (symbols-outline-follow-mode 1))
 
 ;; treesit :build_in:
 ;; The tree-sitter modes in place of their classic counterparts, with the
