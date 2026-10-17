@@ -196,6 +196,18 @@ A remap, because the theme sets `org-agenda-structure'."
         :map org-mode-map
         ("C-c P" . org-present)))
 
+;; org-agenda :build_in:
+;; Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword.
+
+(use-package org-agenda
+  :ensure nil
+  :bind
+  (:map org-agenda-mode-map
+        ("r" . org-agenda-refile)
+        ("s" . org-agenda-schedule)
+        ("d" . org-agenda-deadline)
+        ("c" . my/org-capture-inbox)))
+
 ;; [[https://github.com/awth13/org-appear.git][org-appear]]
 ;; Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
 

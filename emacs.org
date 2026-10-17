@@ -1002,6 +1002,18 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
           :map org-mode-map
           ("C-c P" . org-present)))
 #+end_src
+**** org-agenda :build_in:
+Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword.
+#+begin_src emacs-lisp
+  (use-package org-agenda
+    :ensure nil
+    :bind
+    (:map org-agenda-mode-map
+          ("r" . org-agenda-refile)
+          ("s" . org-agenda-schedule)
+          ("d" . org-agenda-deadline)
+          ("c" . my/org-capture-inbox)))
+#+end_src
 **** [[https://github.com/awth13/org-appear.git][org-appear]]
 Toggle visibility of hidden Org mode element parts upon entering and leaving an element.
 
