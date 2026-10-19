@@ -165,6 +165,22 @@
 
 (use-package org-agenda
   :ensure nil
+  :preface
+  (defun my/org-agenda-forget-killed-file ()
+    "Rebuild the agenda once a buffer of one of its files is killed.
+Its entries point into that buffer: a click on one then showed some
+other buffer and failed.  An agenda out of view is killed instead."
+    (when-let* (((and buffer-file-name (featurep 'org-agenda)
+                      (derived-mode-p 'org-mode) (org-agenda-file-p)))
+                (agenda (get-buffer org-agenda-buffer-name)))
+      (run-at-time 0 nil
+                   (lambda ()
+                     (when (buffer-live-p agenda)
+                       (if-let* ((window (get-buffer-window agenda t)))
+                           (with-selected-window window (org-agenda-redo-all))
+                         (kill-buffer agenda)))))))
+  :hook
+  (kill-buffer . my/org-agenda-forget-killed-file)
   :bind
   (:map org-agenda-mode-map
         ("r" . org-agenda-refile)
