@@ -966,18 +966,14 @@ Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword.
     :ensure nil
     :preface
     (defun my/org-agenda-forget-killed-file ()
-      "Rebuild the agenda once a buffer of one of its files is killed.
-  Its entries point into that buffer: a click on one then showed some
-  other buffer and failed.  An agenda out of view is killed instead."
-      (when-let* (((and buffer-file-name (featurep 'org-agenda)
-                        (derived-mode-p 'org-mode) (org-agenda-file-p)))
-                  (agenda (get-buffer org-agenda-buffer-name)))
-        (run-at-time 0 nil
-                     (lambda ()
-                       (when (buffer-live-p agenda)
-                         (if-let* ((window (get-buffer-window agenda t)))
-                             (with-selected-window window (org-agenda-redo-all))
-                           (kill-buffer agenda)))))))
+      "Rebuild the agenda in view once a buffer of one of its files is killed.
+  Its entries point into that buffer: a click on one would fail."
+      (when-let* (((and (derived-mode-p 'org-mode) (org-agenda-file-p)))
+                  ((boundp 'org-agenda-buffer-name))
+                  (window (get-buffer-window org-agenda-buffer-name t)))
+        (run-at-time 0 nil (lambda ()
+                             (when (window-live-p window)
+                               (with-selected-window window (org-agenda-redo-all)))))))
     :hook
     (kill-buffer . my/org-agenda-forget-killed-file)
     :bind
