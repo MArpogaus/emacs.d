@@ -158,8 +158,7 @@
 (use-package exec-path-from-shell
   :preface
   (defun my/copy-ssh-env ()
-    (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-    (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
+    (exec-path-from-shell-copy-envs '("SSH_AGENT_PID" "SSH_AUTH_SOCK")))
   :hook
   ((elpaca-after-init . exec-path-from-shell-initialize)
    (magit-credential . my/copy-ssh-env)))
@@ -178,8 +177,8 @@
   :preface
   (defun my/restart-flyspell-mode (&rest _)
     (when flyspell-mode
-      (flyspell-mode-off)
-      (flyspell-mode-on)
+      (flyspell-mode -1)
+      (flyspell-mode 1)
       (flyspell-buffer)))
   :config
   ;; `ispell-change-dictionary' is a command, not a hook
@@ -348,14 +347,13 @@
         ("C-<escape>" . vterm-send-escape))
   :preface
   (defun my/project-vterm ()
+    "Show the vterm of the current project; a new one with a prefix argument.
+`vterm' reuses the buffer that has `vterm-buffer-name'."
     (interactive)
     (defvar vterm-buffer-name)
-    (let* ((default-directory (project-root (project-current t)))
-           (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
-           (vterm-buffer (get-buffer vterm-buffer-name)))
-      (if (and vterm-buffer (not current-prefix-arg))
-          (pop-to-buffer vterm-buffer '(nil (category . comint)))
-        (call-interactively #'vterm))))
+    (let ((default-directory (project-root (project-current t)))
+          (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
+      (call-interactively #'vterm)))
   ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
   (defun my/vterm--get-shell-adv (vterm-shell)
     "Quote VTERM-SHELL if it's a remote shell."

@@ -709,8 +709,8 @@ In this section, I define some custom Lisp functions.
   (use-package emacs
     :ensure nil
     :preface
-    (setq my/modeline-height 30)
-    (setq my/tabline-height 25)
+    (defvar my/modeline-height 30 "Height of the mode line in pixels.")
+    (defvar my/tabline-height 25 "Height of the tab line in pixels.")
     (defvar citar-bibliography)
     (defun my/bib-note-template ()
       "Return the body of a bibliography note, for citar and citar-denote."
@@ -1394,11 +1394,10 @@ Enable line numbers for some modes.
 #+begin_src emacs-lisp
   (use-package doom-themes
     :preface
-    (defun my/patch-doom-themes (&rest args)
+    (defun my/patch-doom-themes (&rest _)
       "Give the tab bar a readable foreground.
   A doom theme gives `tab-bar' the foreground of its background, which
   hides the clock of `tab-bar-format-global'."
-      (ignore args)
       (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
     :init
     ;; On the hook, not on `load-theme': restored and auto-dark themes
@@ -1691,9 +1690,9 @@ Show the buffers of a window as tabs with the built-in =tab-line-mode=.
     (display-time-24hr-format t)
     (display-time-day-and-date t)
     :preface
-    (defun my/toggle-display-time-mode (&rest args)
-      (ignore args)
-      (display-time-mode 'toggle))
+    (defun my/toggle-display-time-mode (&rest _)
+      "Show the time while the frame is full screen."
+      (display-time-mode (if (eq (frame-parameter nil 'fullscreen) 'fullboth) 1 -1)))
     :init
     (advice-add 'toggle-frame-fullscreen
                 :after #'my/toggle-display-time-mode))
@@ -2117,6 +2116,10 @@ Sidebar showing a "mini-map" of a buffer.
 #+begin_src emacs-lisp
   (use-package multiple-cursors
     :preface
+    (defun my/mc-quit-on-click (&rest _)
+      "Leave multiple cursors on a click, if they are on."
+      (when (bound-and-true-p multiple-cursors-mode)
+        (mc/disable-multiple-cursors-mode)))
     (defvar my/mc-map (make-sparse-keymap) "key-map for multiple cursor commands")
     :init
     (define-key my/leader-map (kbd "m") (cons "mc" my/mc-map))
@@ -2131,7 +2134,7 @@ Sidebar showing a "mini-map" of a buffer.
      ("a" . mc/mark-all-like-this)
      ("m" . mc/edit-lines))
     :config
-    (advice-add 'mouse-set-point :after (lambda (&rest _) (mc/disable-multiple-cursors-mode))))
+    (advice-add 'mouse-set-point :after #'my/mc-quit-on-click))
 #+end_src
 **** outline :build_in:
 Fold and transform headings. Org mode uses outline for its headlines.
@@ -2684,8 +2687,7 @@ Make Emacs use the $PATH set up by the user's shell.
   (use-package exec-path-from-shell
     :preface
     (defun my/copy-ssh-env ()
-      (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-      (exec-path-from-shell-copy-env "SSH_AUTH_SOCK"))
+      (exec-path-from-shell-copy-envs '("SSH_AGENT_PID" "SSH_AUTH_SOCK")))
     :hook
     ((elpaca-after-init . exec-path-from-shell-initialize)
      (magit-credential . my/copy-ssh-env)))
@@ -2704,8 +2706,8 @@ Make Emacs use the $PATH set up by the user's shell.
     :preface
     (defun my/restart-flyspell-mode (&rest _)
       (when flyspell-mode
-        (flyspell-mode-off)
-        (flyspell-mode-on)
+        (flyspell-mode -1)
+        (flyspell-mode 1)
         (flyspell-buffer)))
     :config
     ;; `ispell-change-dictionary' is a command, not a hook
@@ -2874,14 +2876,13 @@ Emacs libvterm integration.
           ("C-<escape>" . vterm-send-escape))
     :preface
     (defun my/project-vterm ()
+      "Show the vterm of the current project; a new one with a prefix argument.
+  `vterm' reuses the buffer that has `vterm-buffer-name'."
       (interactive)
       (defvar vterm-buffer-name)
-      (let* ((default-directory (project-root (project-current t)))
-             (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
-             (vterm-buffer (get-buffer vterm-buffer-name)))
-        (if (and vterm-buffer (not current-prefix-arg))
-            (pop-to-buffer vterm-buffer '(nil (category . comint)))
-          (call-interactively #'vterm))))
+      (let ((default-directory (project-root (project-current t)))
+            (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
+        (call-interactively #'vterm)))
     ;; https://github.com/akermu/emacs-libvterm/issues/569#issuecomment-2244574273
     (defun my/vterm--get-shell-adv (vterm-shell)
       "Quote VTERM-SHELL if it's a remote shell."
@@ -3295,10 +3296,10 @@ Additional featureful completion commands.
     ;; Optionally configure the narrowing key.
     ;; Both < and C-+ work reasonably well.
     (consult-narrow-key "<") ;; "C-+"
-    :config
-    ;; Optionally tweak the register preview window.
-    ;; This adds thin lines, sorting and hides the mode line of the window.
+    :init
+    ;; Thin lines, sorting and no mode line in the register preview.
     (advice-add #'register-preview :override #'consult-register-window)
+    :config
 
     (consult-customize
      consult-theme :preview-key '(:debounce 0.2 any)
@@ -3341,15 +3342,12 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
     (defun my/corfu-insert-separator-advice (orig-func &rest args)
       "Insert a separator if there are candidates, else quit and insert a space."
-      (interactive)
       (if (and (cdr corfu--candidates)
                ;; next char is not letter or number
                (not (string-match-p "[[:alnum:]]" (string (or (char-after) ?\n)))))
-          (progn
-            (apply orig-func args))
-        (progn
-          (corfu-quit)
-          (insert " "))))
+          (apply orig-func args)
+        (corfu-quit)
+        (insert " ")))
     :config
     ;; Free the RET key for less intrusive behavior.
     (keymap-unset corfu-map "RET")
@@ -3371,9 +3369,7 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
      (elpaca-after-init . corfu-echo-mode)
      (elpaca-after-init . corfu-history-mode)
      ;; No auto completion in eshell, as in other shells.
-     (eshell-mode . (lambda ()
-                      (setq-local corfu-auto nil)
-                      (corfu-mode)))))
+     (eshell-mode . (lambda () (setq-local corfu-auto nil)))))
 #+end_src
 **** dabbrev :build_in:
 #+begin_src emacs-lisp

@@ -295,8 +295,8 @@ The DWIM behaviour of this command is as follows:
 (use-package emacs
   :ensure nil
   :preface
-  (setq my/modeline-height 30)
-  (setq my/tabline-height 25)
+  (defvar my/modeline-height 30 "Height of the mode line in pixels.")
+  (defvar my/tabline-height 25 "Height of the tab line in pixels.")
   (defvar citar-bibliography)
   (defun my/bib-note-template ()
     "Return the body of a bibliography note, for citar and citar-denote."

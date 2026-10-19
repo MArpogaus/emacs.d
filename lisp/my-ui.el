@@ -47,11 +47,10 @@
 
 (use-package doom-themes
   :preface
-  (defun my/patch-doom-themes (&rest args)
+  (defun my/patch-doom-themes (&rest _)
     "Give the tab bar a readable foreground.
 A doom theme gives `tab-bar' the foreground of its background, which
 hides the clock of `tab-bar-format-global'."
-    (ignore args)
     (set-face-foreground 'tab-bar (face-foreground 'tab-bar-tab)))
   :init
   ;; On the hook, not on `load-theme': restored and auto-dark themes
@@ -343,9 +342,9 @@ hides the clock of `tab-bar-format-global'."
   (display-time-24hr-format t)
   (display-time-day-and-date t)
   :preface
-  (defun my/toggle-display-time-mode (&rest args)
-    (ignore args)
-    (display-time-mode 'toggle))
+  (defun my/toggle-display-time-mode (&rest _)
+    "Show the time while the frame is full screen."
+    (display-time-mode (if (eq (frame-parameter nil 'fullscreen) 'fullboth) 1 -1)))
   :init
   (advice-add 'toggle-frame-fullscreen
               :after #'my/toggle-display-time-mode))

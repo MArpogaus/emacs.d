@@ -417,6 +417,10 @@ An opened preview shows its source and has no image to scale."
 
 (use-package multiple-cursors
   :preface
+  (defun my/mc-quit-on-click (&rest _)
+    "Leave multiple cursors on a click, if they are on."
+    (when (bound-and-true-p multiple-cursors-mode)
+      (mc/disable-multiple-cursors-mode)))
   (defvar my/mc-map (make-sparse-keymap) "key-map for multiple cursor commands")
   :init
   (define-key my/leader-map (kbd "m") (cons "mc" my/mc-map))
@@ -431,7 +435,7 @@ An opened preview shows its source and has no image to scale."
    ("a" . mc/mark-all-like-this)
    ("m" . mc/edit-lines))
   :config
-  (advice-add 'mouse-set-point :after (lambda (&rest _) (mc/disable-multiple-cursors-mode))))
+  (advice-add 'mouse-set-point :after #'my/mc-quit-on-click))
 
 ;; outline :build_in:
 ;; Fold and transform headings. Org mode uses outline for its headlines.

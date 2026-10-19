@@ -151,10 +151,10 @@
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
   (consult-narrow-key "<") ;; "C-+"
-  :config
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
+  :init
+  ;; Thin lines, sorting and no mode line in the register preview.
   (advice-add #'register-preview :override #'consult-register-window)
+  :config
 
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
@@ -197,15 +197,12 @@
   ;; https://github.com/minad/corfu/wiki#same-key-used-for-both-the-separator-and-the-insertion
   (defun my/corfu-insert-separator-advice (orig-func &rest args)
     "Insert a separator if there are candidates, else quit and insert a space."
-    (interactive)
     (if (and (cdr corfu--candidates)
              ;; next char is not letter or number
              (not (string-match-p "[[:alnum:]]" (string (or (char-after) ?\n)))))
-        (progn
-          (apply orig-func args))
-      (progn
-        (corfu-quit)
-        (insert " "))))
+        (apply orig-func args)
+      (corfu-quit)
+      (insert " ")))
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
@@ -227,9 +224,7 @@
    (elpaca-after-init . corfu-echo-mode)
    (elpaca-after-init . corfu-history-mode)
    ;; No auto completion in eshell, as in other shells.
-   (eshell-mode . (lambda ()
-                    (setq-local corfu-auto nil)
-                    (corfu-mode)))))
+   (eshell-mode . (lambda () (setq-local corfu-auto nil)))))
 
 ;; dabbrev :build_in:
 
