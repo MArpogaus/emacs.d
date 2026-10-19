@@ -140,13 +140,14 @@
       (insert " [markdown]"))
     (insert "# "))
   :init
-  (define-key my/leader-map (kbd "j") (cons "cells" my/code-cells-repeat-map))
+  ;; The repeat map of the notebook in this buffer.
+  (define-key my/leader-map (kbd "j")
+              '(menu-item "cells" nil :filter (lambda (_) my/notebook-repeat-map)))
   :config
   ;; code-cells' C-c % map claims the repeat-map of our commands.
   (keymap-unset code-cells-mode-map "C-c %" t)
   (my/repeatize-keymap 'code-cells--prefix-map t)
   (my/repeatize-keymap 'my/code-cells-repeat-map nil 'my/notebook-repeat-map)
-  (add-hook 'code-cells-mode-hook #'my/code-cells-set-repeat-map)
   :bind
   (:map code-cells-mode-map
         ;; evaluation
@@ -186,7 +187,8 @@
         ("A" . overblock-run-above)
         ("R" . overblock-run-restart-and-run-all))
   :hook
-  (python-base-mode . code-cells-mode-maybe))
+  ((python-base-mode . code-cells-mode-maybe)
+   (code-cells-mode . my/code-cells-set-repeat-map)))
 
 ;; [[https://github.com/MArpogaus/overblock][overblock]] :own:
 ;; Notebook style results for Python code cells: the output of an evaluated
@@ -267,7 +269,9 @@ bar indent-bars puts there would cut through the prose."
   ;; Its hook loads it, and with it ESS, in every Markdown buffer.
   :after ess
   :demand t
-  :hook (markdown-mode . overblock-rmd-mode-maybe)
+  :hook
+  ((markdown-mode . overblock-rmd-mode-maybe)
+   (overblock-rmd-mode . my/overblock-rmd-set-repeat-map))
   :preface
   ;; The Python notebook's command mode, without insert keys.
   (defvar my/overblock-rmd-repeat-map (make-sparse-keymap)
@@ -277,7 +281,6 @@ bar indent-bars puts there would cut through the prose."
     (setq-local my/notebook-repeat-map my/overblock-rmd-repeat-map))
   :config
   (my/repeatize-keymap 'my/overblock-rmd-repeat-map nil 'my/notebook-repeat-map)
-  (add-hook 'overblock-rmd-mode-hook #'my/overblock-rmd-set-repeat-map)
   :bind
   ;; The keys of the Python notebook, one for one.
   (:map overblock-rmd-mode-map
