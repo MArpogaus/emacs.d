@@ -28,36 +28,6 @@
      (python . t)
      (shell . t)))
   :preface
-  ;; https://scripter.co/splitting-an-org-block-into-two/
-  (defun my/org-split-block ()
-    "Sensibly split the current Org block at point."
-    (interactive)
-    (if (org-in-src-block-p)
-        (save-match-data
-          (save-restriction
-            (widen)
-            (let ((case-fold-search t)
-                  (at-bol (bolp))
-                  block-start
-                  block-end)
-              (save-excursion
-                (re-search-backward "^\\(?1:[[:blank:]]*#\\+begin_.+?\\)\\(?: .*\\)*$" nil nil 1)
-                (setq block-start (match-string-no-properties 0))
-                (setq block-end (replace-regexp-in-string
-                                 "begin_" "end_" ;Replaces "begin_" with "end_", "BEGIN_" with "END_"
-                                 (match-string-no-properties 1))))
-              ;; Go to the end of current line, if not at the BOL
-              (unless at-bol
-                (end-of-line 1))
-              (insert (concat (if at-bol "" "\n")
-                              block-end
-                              "\n\n"
-                              block-start
-                              (if at-bol "\n" "")))
-              ;; Go to the line before the inserted "#+begin_ .." line
-              (beginning-of-line (if at-bol -1 0)))))
-      (message "Point is not in an Org block")))
-
   (defun my/org-babel-execute-and-goto-next-src nil
     "Execute the current block or babel call, then go to the next src block."
     (interactive)
@@ -72,7 +42,7 @@
       t))
   :bind
   (:map org-mode-map
-        ("M-_" . my/org-split-block))
+        ("M-_" . org-babel-demarcate-block))
   :hook
   (org-metareturn . my/org-metareturn-src-block))
 

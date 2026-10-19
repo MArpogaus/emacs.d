@@ -53,6 +53,8 @@
   (TeX-PDF-mode t)
   ;; Don't start server for inverse search (is already running)
   (TeX-source-correlate-start-server nil)
+  ;; Inverse search
+  (TeX-source-correlate-mode t)
   (TeX-bar-LaTeX-buttons
    '(open-file kill-buffer save-buffer separator undo
                separator cut copy paste separator search-forward
@@ -64,7 +66,6 @@
   ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
   ((LaTeX-mode . LaTeX-math-mode)
    (LaTeX-mode . LaTeX-install-toolbar)
-   (LaTeX-mode . TeX-source-correlate-mode)
    (LaTeX-mode . turn-on-reftex)))
 
 ;; [[https://github.com/astoff/code-cells.el.git][code-cells]]

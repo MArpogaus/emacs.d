@@ -826,36 +826,6 @@ This directory is added to the =load-path=.
        (python . t)
        (shell . t)))
     :preface
-    ;; https://scripter.co/splitting-an-org-block-into-two/
-    (defun my/org-split-block ()
-      "Sensibly split the current Org block at point."
-      (interactive)
-      (if (org-in-src-block-p)
-          (save-match-data
-            (save-restriction
-              (widen)
-              (let ((case-fold-search t)
-                    (at-bol (bolp))
-                    block-start
-                    block-end)
-                (save-excursion
-                  (re-search-backward "^\\(?1:[[:blank:]]*#\\+begin_.+?\\)\\(?: .*\\)*$" nil nil 1)
-                  (setq block-start (match-string-no-properties 0))
-                  (setq block-end (replace-regexp-in-string
-                                   "begin_" "end_" ;Replaces "begin_" with "end_", "BEGIN_" with "END_"
-                                   (match-string-no-properties 1))))
-                ;; Go to the end of current line, if not at the BOL
-                (unless at-bol
-                  (end-of-line 1))
-                (insert (concat (if at-bol "" "\n")
-                                block-end
-                                "\n\n"
-                                block-start
-                                (if at-bol "\n" "")))
-                ;; Go to the line before the inserted "#+begin_ .." line
-                (beginning-of-line (if at-bol -1 0)))))
-        (message "Point is not in an Org block")))
-
     (defun my/org-babel-execute-and-goto-next-src nil
       "Execute the current block or babel call, then go to the next src block."
       (interactive)
@@ -870,7 +840,7 @@ This directory is added to the =load-path=.
         t))
     :bind
     (:map org-mode-map
-          ("M-_" . my/org-split-block))
+          ("M-_" . org-babel-demarcate-block))
     :hook
     (org-metareturn . my/org-metareturn-src-block))
 #+end_src
@@ -3646,7 +3616,7 @@ Emacs package for highlighting uncommitted changes.
       (define-fringe-bitmap 'my/diff-hl-bitmap bitmap 1 width '(top t)))
     (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my/diff-hl-bitmap))
     (my/diff-hl-fix-face-colors)
-    (advice-add #'enable-theme :after #'my/diff-hl-fix-face-colors)
+    (add-hook 'enable-theme-functions #'my/diff-hl-fix-face-colors)
     (when (not (display-graphic-p))
       (diff-hl-margin-mode))
     :bind
@@ -3893,6 +3863,8 @@ Integrated environment for *TeX*.
     (TeX-PDF-mode t)
     ;; Don't start server for inverse search (is already running)
     (TeX-source-correlate-start-server nil)
+    ;; Inverse search
+    (TeX-source-correlate-mode t)
     (TeX-bar-LaTeX-buttons
      '(open-file kill-buffer save-buffer separator undo
                  separator cut copy paste separator search-forward
@@ -3904,7 +3876,6 @@ Integrated environment for *TeX*.
     ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
     ((LaTeX-mode . LaTeX-math-mode)
      (LaTeX-mode . LaTeX-install-toolbar)
-     (LaTeX-mode . TeX-source-correlate-mode)
      (LaTeX-mode . turn-on-reftex)))
 #+end_src
 **** [[https://github.com/astoff/code-cells.el.git][code-cells]]

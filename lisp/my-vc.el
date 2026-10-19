@@ -48,7 +48,7 @@
     (define-fringe-bitmap 'my/diff-hl-bitmap bitmap 1 width '(top t)))
   (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my/diff-hl-bitmap))
   (my/diff-hl-fix-face-colors)
-  (advice-add #'enable-theme :after #'my/diff-hl-fix-face-colors)
+  (add-hook 'enable-theme-functions #'my/diff-hl-fix-face-colors)
   (when (not (display-graphic-p))
     (diff-hl-margin-mode))
   :bind
