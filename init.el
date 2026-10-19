@@ -186,6 +186,7 @@ An idle save comes from `auto-save-visited-mode', not from a command."
   (defvar my/version-control-map (make-sparse-keymap) "key-map for version control commands")
   ;; Bound from other modules, so they exist before any module loads.
   (defvar my/window-map (make-sparse-keymap) "key-map for window commands")
+  (defvar my/navigation-map (make-sparse-keymap) "key-map for structural navigation")
   (defvar my/workspace-map (make-sparse-keymap) "key-map for workspace commands")
   ;;ref: https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
   (defun prot/keyboard-quit-dwim ()

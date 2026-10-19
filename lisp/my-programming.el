@@ -339,33 +339,24 @@ rest of the major mode setup, globalized minor modes included."
   :hook
   ((prog-mode yaml-ts-mode) . my/combobulate-mode-maybe))
 
-;; Structural editing :build_in:
-;; Emacs 31 moves by tree-sitter nodes with its own sexp and sentence commands.  The keys are the ones combobulate had.
+;; Structural navigation :build_in:
+;; Emacs 31 moves by tree-sitter nodes with its sexp, list and sentence commands, and by syntax where there is no parser.  =SPC e= (expression) holds them as a repeat map: =n=/=p= next and previous node, =u=/=d= up to the parent and down into a child, =a=/=e= start and end of the function, =f=/=b= next and previous statement, =t= transpose.  The outline keys of the map and =M-<arrows>= promote, demote and move a subtree as in Org; =outline-indent= makes that the indented block in Python and YAML.
 
-(use-package prog-mode
+(use-package emacs
   :ensure nil
-  :preface
-  (defun my/drag-sexp-down ()
-    "Move the node at point after the next one."
-    (interactive)
-    (forward-sexp)
-    (transpose-sexps 1)
-    (backward-sexp))
-  (defun my/drag-sexp-up ()
-    "Move the node at point before the previous one."
-    (interactive)
-    (transpose-sexps 1)
-    (backward-sexp 2))
+  :init
+  (define-key my/leader-map (kbd "e") (cons "expression" my/navigation-map))
   :bind
-  (:map prog-mode-map
-        ("S-<left>"  . backward-sexp)
-        ("S-<right>" . forward-sexp)
-        ("S-<up>"    . backward-up-list)
-        ("S-<down>"  . down-list)
-        ("M-<left>"  . backward-sentence)
-        ("M-<right>" . forward-sentence)
-        ("M-<up>"    . my/drag-sexp-up)
-        ("M-<down>"  . my/drag-sexp-down)))
+  (:repeat-map my/navigation-map
+               ("n" . forward-sexp)
+               ("p" . backward-sexp)
+               ("u" . backward-up-list)
+               ("d" . down-list)
+               ("a" . beginning-of-defun)
+               ("e" . end-of-defun)
+               ("f" . forward-sentence)
+               ("b" . backward-sentence)
+               ("t" . transpose-sexps)))
 
 ;; [[https://github.com/casouri/expreg][expreg]]
 ;; Expand the region by tree-sitter nodes, or by syntax where there is no parser.
@@ -373,7 +364,10 @@ rest of the major mode setup, globalized minor modes included."
 (use-package expreg
   :bind
   (("C-M-SPC"   . expreg-expand)
-   ("C-M-S-SPC" . expreg-contract)))
+   ("C-M-S-SPC" . expreg-contract)
+   :repeat-map my/navigation-map
+   ("m" . expreg-expand)
+   ("M" . expreg-contract)))
 
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.

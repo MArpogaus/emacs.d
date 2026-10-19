@@ -468,8 +468,15 @@ An opened preview shows its source and has no image to scale."
   :config
   (define-key my/outline-repeat-map (kbd "e") (cons "edit" outline-editing-repeat-map))
   (define-key my/outline-repeat-map (kbd "n") (cons "navigate" outline-navigation-repeat-map))
+  ;; outline's own editing repeat map claims these commands when it loads.
+  (my/repeatize-keymap 'my/navigation-map)
   :bind
-  (:repeat-map my/outline-repeat-map
+  (:repeat-map my/navigation-map
+               ("<" . outline-promote)
+               (">" . outline-demote)
+               ("P" . outline-move-subtree-up)
+               ("N" . outline-move-subtree-down)
+   :repeat-map my/outline-repeat-map
                ("SPC"         . outline-mark-subtree)
                ("TAB"         . outline-cycle)
                ("S-<tab>"     . outline-cycle-buffer)
@@ -482,7 +489,7 @@ An opened preview shows its source and has no image to scale."
 
 (use-package outline-indent
   :hook
-  ((yaml-ts-mode) . outline-indent-minor-mode))
+  ((yaml-ts-mode python-base-mode) . outline-indent-minor-mode))
 
 ;; paren :build_in:
 ;; Highlight matching parentheses.
