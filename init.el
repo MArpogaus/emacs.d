@@ -358,8 +358,8 @@ The DWIM behaviour of this command is as follows:
          (create-image
           (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
           'pbm t :foreground color :ascent 'center :scale 1))
-      (propertize "|" 'face (list :foreground color
-                                  :background color))))
+      ;; Without a color, a terminal draws the bar in the default face.
+      (propertize "|" 'face (and color (list :foreground color :background color)))))
   (define-minor-mode my/minimal-ui-mode
     "Hide the tab bar, the tab line, the mode line, the padding and the fringes."
     :global t

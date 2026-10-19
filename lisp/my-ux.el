@@ -138,9 +138,12 @@ any; its own header line stretches to the right edge of the window."
                    (row (if (mode-line-window-selected-p)
                             'header-line-active
                           'header-line-inactive))
-                   (face (list :inherit (list 'my/panel-header-line row)
-                               :background (face-background icon nil 'default)
-                               :foreground (face-foreground icon)))
+                   ;; A terminal leaves colors unspecified: nil is no attribute.
+                   (bg (face-background icon nil 'default))
+                   (fg (face-foreground icon))
+                   (face (append (list :inherit (list 'my/panel-header-line row))
+                                 (and bg (list :background bg))
+                                 (and fg (list :foreground fg))))
                    (own (my/panel-label))
                    ;; Padding of an exact width, and the row's height.
                    (pad (and (display-graphic-p)

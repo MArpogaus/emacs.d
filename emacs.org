@@ -772,8 +772,8 @@ In this section, I define some custom Lisp functions.
            (create-image
             (concat (format "P1\n%i %i\n" width height) (make-string (* width height) ?1) "\n")
             'pbm t :foreground color :ascent 'center :scale 1))
-        (propertize "|" 'face (list :foreground color
-                                    :background color))))
+        ;; Without a color, a terminal draws the bar in the default face.
+        (propertize "|" 'face (and color (list :foreground color :background color)))))
     (define-minor-mode my/minimal-ui-mode
       "Hide the tab bar, the tab line, the mode line, the padding and the fringes."
       :global t
@@ -1838,9 +1838,12 @@ Revert buffers when the underlying file has changed.
                      (row (if (mode-line-window-selected-p)
                               'header-line-active
                             'header-line-inactive))
-                     (face (list :inherit (list 'my/panel-header-line row)
-                                 :background (face-background icon nil 'default)
-                                 :foreground (face-foreground icon)))
+                     ;; A terminal leaves colors unspecified: nil is no attribute.
+                     (bg (face-background icon nil 'default))
+                     (fg (face-foreground icon))
+                     (face (append (list :inherit (list 'my/panel-header-line row))
+                                   (and bg (list :background bg))
+                                   (and fg (list :foreground fg))))
                      (own (my/panel-label))
                      ;; Padding of an exact width, and the row's height.
                      (pad (and (display-graphic-p)
