@@ -339,6 +339,42 @@ rest of the major mode setup, globalized minor modes included."
   :hook
   ((prog-mode yaml-ts-mode) . my/combobulate-mode-maybe))
 
+;; Structural editing :build_in:
+;; Emacs 31 moves by tree-sitter nodes with its own sexp and sentence commands.  The keys are the ones combobulate had.
+
+(use-package prog-mode
+  :ensure nil
+  :preface
+  (defun my/drag-sexp-down ()
+    "Move the node at point after the next one."
+    (interactive)
+    (forward-sexp)
+    (transpose-sexps 1)
+    (backward-sexp))
+  (defun my/drag-sexp-up ()
+    "Move the node at point before the previous one."
+    (interactive)
+    (transpose-sexps 1)
+    (backward-sexp 2))
+  :bind
+  (:map prog-mode-map
+        ("S-<left>"  . backward-sexp)
+        ("S-<right>" . forward-sexp)
+        ("S-<up>"    . backward-up-list)
+        ("S-<down>"  . down-list)
+        ("M-<left>"  . backward-sentence)
+        ("M-<right>" . forward-sentence)
+        ("M-<up>"    . my/drag-sexp-up)
+        ("M-<down>"  . my/drag-sexp-down)))
+
+;; [[https://github.com/casouri/expreg][expreg]]
+;; Expand the region by tree-sitter nodes, or by syntax where there is no parser.
+
+(use-package expreg
+  :bind
+  (("C-M-SPC"   . expreg-expand)
+   ("C-M-S-SPC" . expreg-contract)))
+
 ;; [[https://github.com/svaante/dape.git][dape]]
 ;; Debug Adapter Protocol for Emacs.
 
