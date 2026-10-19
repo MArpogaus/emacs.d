@@ -309,7 +309,10 @@ bar indent-bars puts there would cut through the prose."
 ;; [[https://github.com/mickeynp/combobulate.git][combobulate]]
 ;; Structured Editing and Navigation in Emacs.
 
+;; Off: its highlight query uses `#match', which Emacs 31 rejects, and
+;; the error aborts the mode hooks of Python buffers (upstream PR #212).
 (use-package combobulate
+  :disabled t
   :ensure (:host github :repo "mickeynp/combobulate" :nonrecursive t)
   :custom
   ;; Disable combobulate key prefix
