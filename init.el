@@ -98,7 +98,6 @@
   (help-window-select t)                             ; Select help windows when they open
   (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
   (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
-  (windmove-mode nil)                                ; Disable windmove mode
   (set-mark-command-repeat-pop t)                    ; Enable repeat for mark commands
 
   ;; Enable window dividers

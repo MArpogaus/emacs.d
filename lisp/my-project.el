@@ -69,9 +69,7 @@
   :bind (:map project-prefix-map
               ("S" . project-x-window-state-save)
               ("l" . project-x-window-state-load))
-  :commands project-x-try-local project-x--window-state-write
-  :init
-  (add-hook 'project-find-functions 'project-x-try-local 90)
+  :commands project-x--window-state-write
   :config
   ;; Not in `:init': there the hook would load the package at quit.
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))

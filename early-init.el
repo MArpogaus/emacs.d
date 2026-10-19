@@ -171,14 +171,8 @@
 ;; Halves startup time with fonts larger than the system default.
 (setq frame-inhibit-implied-resize t)
 
-;; X resources would conflict with this configuration.
-(advice-add #'x-apply-session-resources :override #'ignore)
-
 ;; Remove the "For information about GNU Emacs..." startup message.
 (advice-add #'display-startup-echo-area-message :override #'ignore)
-
-;; `inhibit-startup-screen' alone still initializes the startup screen.
-(advice-add #'display-startup-screen :override #'ignore)
 
 ;; Never show the hello file.
 (defalias #'view-hello-file #'ignore)

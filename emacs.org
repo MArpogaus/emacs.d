@@ -336,14 +336,8 @@ The following optimizations have been inspired by:
   ;; Halves startup time with fonts larger than the system default.
   (setq frame-inhibit-implied-resize t)
 
-  ;; X resources would conflict with this configuration.
-  (advice-add #'x-apply-session-resources :override #'ignore)
-
   ;; Remove the "For information about GNU Emacs..." startup message.
   (advice-add #'display-startup-echo-area-message :override #'ignore)
-
-  ;; `inhibit-startup-screen' alone still initializes the startup screen.
-  (advice-add #'display-startup-screen :override #'ignore)
 
   ;; Never show the hello file.
   (defalias #'view-hello-file #'ignore)
@@ -517,7 +511,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (help-window-select t)                             ; Select help windows when they open
     (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
     (shell-command-prompt-show-cwd t)                  ; Show current path when executing shell commands
-    (windmove-mode nil)                                ; Disable windmove mode
     (set-mark-command-repeat-pop t)                    ; Enable repeat for mark commands
 
     ;; Enable window dividers
@@ -3817,9 +3810,7 @@ Enhancements to the built-in project library.
     :bind (:map project-prefix-map
                 ("S" . project-x-window-state-save)
                 ("l" . project-x-window-state-load))
-    :commands project-x-try-local project-x--window-state-write
-    :init
-    (add-hook 'project-find-functions 'project-x-try-local 90)
+    :commands project-x--window-state-write
     :config
     ;; Not in `:init': there the hook would load the package at quit.
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
@@ -3911,8 +3902,7 @@ Integrated environment for *TeX*.
     :mode ("\\.tex\\'" . LaTeX-mode)
     :hook
     ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
-    ((LaTeX-mode . LaTeX-preview-setup)
-     (LaTeX-mode . LaTeX-math-mode)
+    ((LaTeX-mode . LaTeX-math-mode)
      (LaTeX-mode . LaTeX-install-toolbar)
      (LaTeX-mode . TeX-source-correlate-mode)
      (LaTeX-mode . turn-on-reftex)))
@@ -4563,8 +4553,7 @@ It is a globalized mode: =python.el= loads inside the mode setup of the first Py
                                      compile org-babel-eval))
       (advice-add command :around #'inheritenv-apply))
     :config
-    ;; Also after `ben' applies a direnv: only then is `exec-path' local.
-    (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
+    ;; After `ben' applies a direnv: only then is `exec-path' local.
     (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 #+end_src
 **** [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]

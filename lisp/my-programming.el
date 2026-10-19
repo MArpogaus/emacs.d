@@ -62,8 +62,7 @@
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
   ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
-  ((LaTeX-mode . LaTeX-preview-setup)
-   (LaTeX-mode . LaTeX-math-mode)
+  ((LaTeX-mode . LaTeX-math-mode)
    (LaTeX-mode . LaTeX-install-toolbar)
    (LaTeX-mode . TeX-source-correlate-mode)
    (LaTeX-mode . turn-on-reftex)))
@@ -714,8 +713,7 @@ If ENV is nil, drop the choice."
                                    compile org-babel-eval))
     (advice-add command :around #'inheritenv-apply))
   :config
-  ;; Also after `ben' applies a direnv: only then is `exec-path' local.
-  (add-hook 'python-base-mode-hook #'my/python-set-interpreter)
+  ;; After `ben' applies a direnv: only then is `exec-path' local.
   (add-hook 'ben-after-apply-hook #'my/python-set-interpreter))
 
 ;; [[https://github.com/liushihao456/symbols-outline.el.git][symbols-outline]]
