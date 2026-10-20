@@ -343,8 +343,6 @@ rest of the major mode setup, globalized minor modes included."
 
 (use-package emacs
   :ensure nil
-  :init
-  (define-key my/leader-map (kbd "e") (cons "expression" my/navigation-map))
   :bind
   (:repeat-map my/navigation-map
                ("n" . forward-sexp)

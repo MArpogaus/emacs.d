@@ -117,10 +117,6 @@
   :custom
   ;; select keymap theme to use
   (standard-keys-map-style 'my/standard-keys-keymap)
-
-
-  ;; Enable hungry deletion in programming modes
-  (backward-delete-char-untabify-method 'all)
   :config
   (define-key my/standard-keys-keymap (kbd "M-p") standard-keys-C-x-dynamic-prefix)
   (define-key my/standard-keys-keymap (kbd "C-p") standard-keys-C-c-dynamic-prefix)
@@ -145,19 +141,7 @@
         ("C-="        . text-scale-adjust)
         ("C-#"        . comment-line)
         ("C-b"        . switch-to-buffer)
-        ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)
-        :map context-menu-mode-map
-        ;; Bind Context Menu to `Apps' button
-        ;; (requires context-menu-mode enabled)
-        ("<apps>"     . context-menu-open)
-        ;; Make isearch easy to use
-        :map isearch-mode-map
-        ("<up>"       . isearch-repeat-backward)
-        ("<down>"     . isearch-repeat-forward)
-        ([remap yank] . isearch-yank-kill)
-        ;; Use RET as y (yes) action in y-or-n prompts
-        :map y-or-n-p-map
-        ("<return>"   . y-or-n-p-insert-y)))
+        ("<home>"     . standard-keys-move-beginning-of-line-or-indentation)))
 
 ;; which-key :build_in:
 ;; Show the key bindings that follow an incomplete command in a popup.

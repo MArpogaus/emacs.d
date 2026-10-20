@@ -641,8 +641,6 @@ buffer-local VIA picks the map per buffer."
   (kill-buffer-quit-windows t)
   ;; And `q' kills the buffers that are worth nothing once read.
   (quit-window-kill-buffer '(help-mode helpful-mode compilation-mode grep-mode))
-  :config
-  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
   :bind
   (("M-o" . other-window-prefix)
    ("M-t" . other-tab-prefix)

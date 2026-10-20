@@ -215,6 +215,7 @@ The DWIM behaviour of this command is as follows:
   ;; leader keymap
   (define-key my/leader-map (kbd "a") (cons "ai" my/ai-map))
   (define-key my/leader-map (kbd "b") (cons "buffer" my/buffer-map))
+  (define-key my/leader-map (kbd "e") (cons "expression" my/navigation-map))
   (define-key my/leader-map (kbd "f") (cons "file" my/file-map))
   (define-key my/leader-map (kbd "g") (cons "goto" goto-map))
   (define-key my/leader-map (kbd "h") (cons "help" help-map))
@@ -223,6 +224,8 @@ The DWIM behaviour of this command is as follows:
   (define-key my/leader-map (kbd "s") (cons "search" search-map))
   (define-key my/leader-map (kbd "t") (cons "toggle" my/toggle-map))
   (define-key my/leader-map (kbd "v") (cons "version-control" my/version-control-map))
+  (define-key my/leader-map (kbd "w") (cons "window" my/window-map))
+  (define-key my/leader-map (kbd "W") (cons "workspace" my/workspace-map))
 
   ;; Remove binding to view-echo-area-messages when clicking on inactive minibuffer
   (define-key minibuffer-inactive-mode-map (kbd "<mouse-1>") nil)
@@ -238,6 +241,15 @@ The DWIM behaviour of this command is as follows:
   (("<escape>"            . keyboard-escape-quit)
    ([remap keyboard-quit] . prot/keyboard-quit-dwim)
    ("S-<down-mouse-1>"    . mouse-save-then-kill)
+   :map context-menu-mode-map
+   ("<apps>"              . context-menu-open)
+   :map isearch-mode-map
+   ("<up>"                . isearch-repeat-backward)
+   ("<down>"              . isearch-repeat-forward)
+   ([remap yank]          . isearch-yank-kill)
+   ;; RET answers yes in y-or-n prompts
+   :map y-or-n-p-map
+   ("<return>"            . y-or-n-p-insert-y)
    :map my/leader-map
    ("q"                   . save-buffers-kill-terminal)
    :map my/buffer-map
