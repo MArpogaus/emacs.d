@@ -403,7 +403,7 @@ rest of the major mode setup, globalized minor modes included."
   (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
   :hook
   ;; Set breakpoints via fringe or margin mouse clicks
-  (prog-mode . dape-breakpoint-global-mode))
+  (prog-mode . dape-breakpoint-mode))
 
 ;; [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 ;; A client for Language Server Protocol servers.

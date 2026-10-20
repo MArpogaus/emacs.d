@@ -22,7 +22,7 @@
   (auto-compile-mode-line-counter t)
   :hook
   ((elpaca-after-init . auto-compile-on-load-mode)
-   (emacs-lisp-mode . auto-compile-on-save-mode)))
+   (emacs-lisp-mode . auto-compile-mode)))
 
 ;; autorevert :build_in:
 ;; Revert buffers when the underlying file has changed.

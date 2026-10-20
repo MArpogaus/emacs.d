@@ -553,7 +553,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
 *** Configure use-package
 Every package loads lazily. A =use-package= block follows these rules:
 
-1. A global mode starts with =:hook elpaca-after-init=, or =(elpaca-after-init . MODE)= when MODE is not named after the package. A hook with a depth uses =add-hook= in =:init=.
+1. A global mode starts with =:hook elpaca-after-init=, or =(elpaca-after-init . MODE)= when MODE is not named after the package. A hook with a depth uses =add-hook= in =:init=. The built-in global modes of Better Defaults are turned on in its =:custom=.
 2. A mode for some buffers starts from the hook of their mode.
 3. An add-on that must be active with package X: =:after X :demand t=, its mode in =:config=.
 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.
@@ -1750,7 +1750,7 @@ Automatically compile outdated Emacs Lisp libraries.
     (auto-compile-mode-line-counter t)
     :hook
     ((elpaca-after-init . auto-compile-on-load-mode)
-     (emacs-lisp-mode . auto-compile-on-save-mode)))
+     (emacs-lisp-mode . auto-compile-mode)))
 #+end_src
 **** autorevert :build_in:
 Revert buffers when the underlying file has changed.
@@ -3289,9 +3289,10 @@ Citar provides a highly-configurable completing-read front-end to browse and act
      (org-mode . citar-capf-setup)))
 
   (use-package citar-embark
-    :hook
-    ((LaTeX-mode . citar-embark-mode)
-     (org-mode . citar-embark-mode)))
+    :after (citar embark)
+    :demand t
+    :config
+    (citar-embark-mode))
 #+end_src
 **** [[https://github.com/minad/consult.git][consult]]
 Additional featureful completion commands.
@@ -4256,7 +4257,7 @@ Debug Adapter Protocol for Emacs.
     (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
     :hook
     ;; Set breakpoints via fringe or margin mouse clicks
-    (prog-mode . dape-breakpoint-global-mode))
+    (prog-mode . dape-breakpoint-mode))
 #+end_src
 **** [[https://github.com/emacs-straight/eglot.git][eglot]] :build_in:
 A client for Language Server Protocol servers.

@@ -155,7 +155,7 @@ An idle save comes from `auto-save-visited-mode', not from a command."
 ;; Configure use-package
 ;; Every package loads lazily. A =use-package= block follows these rules:
 
-;; 1. A global mode starts with =:hook elpaca-after-init=, or =(elpaca-after-init . MODE)= when MODE is not named after the package. A hook with a depth uses =add-hook= in =:init=.
+;; 1. A global mode starts with =:hook elpaca-after-init=, or =(elpaca-after-init . MODE)= when MODE is not named after the package. A hook with a depth uses =add-hook= in =:init=. The built-in global modes of Better Defaults are turned on in its =:custom=.
 ;; 2. A mode for some buffers starts from the hook of their mode.
 ;; 3. An add-on that must be active with package X: =:after X :demand t=, its mode in =:config=.
 ;; 4. =:after= only with =:demand t=: alone, it also holds back the keys and hooks of the block.

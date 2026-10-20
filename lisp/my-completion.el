@@ -76,9 +76,10 @@
    (org-mode . citar-capf-setup)))
 
 (use-package citar-embark
-  :hook
-  ((LaTeX-mode . citar-embark-mode)
-   (org-mode . citar-embark-mode)))
+  :after (citar embark)
+  :demand t
+  :config
+  (citar-embark-mode))
 
 ;; [[https://github.com/minad/consult.git][consult]]
 ;; Additional featureful completion commands.
