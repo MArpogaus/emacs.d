@@ -3636,6 +3636,7 @@ Emacs package for highlighting uncommitted changes.
     (diff-hl-flydiff-delay 0.5)  ; default: 0.3
     ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
     (diff-hl-show-staged-changes nil)
+    (diff-hl-fringe-bmp-function (lambda (_type _pos) 'my/diff-hl-bitmap))
     :preface
     (defun my/diff-hl-inline-popup-show-adv (orig-func &rest args)
       (setcar (nthcdr 2 args) "")
@@ -3643,9 +3644,9 @@ Emacs package for highlighting uncommitted changes.
     (defun my/diff-hl-fix-face-colors (&rest _)
       "Set foreground to background color for diff-hl faces."
       (seq-do (lambda (face)
-                (if-let* ((color (face-background face)))
-                    (progn (set-face-foreground face color)
-                           (set-face-background face nil))))
+                (when-let* ((color (face-background face)))
+                  (set-face-foreground face color)
+                  (set-face-background face nil)))
               '(diff-hl-insert
                 diff-hl-delete
                 diff-hl-change)))
@@ -3656,10 +3657,10 @@ Emacs package for highlighting uncommitted changes.
     (let* ((width 2)
            (bitmap (vector (1- (expt 2 width)))))
       (define-fringe-bitmap 'my/diff-hl-bitmap bitmap 1 width '(top t)))
-    (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my/diff-hl-bitmap))
     (my/diff-hl-fix-face-colors)
     (add-hook 'enable-theme-functions #'my/diff-hl-fix-face-colors)
-    (when (not (display-graphic-p))
+    (diff-hl-flydiff-mode)
+    (unless (display-graphic-p)
       (diff-hl-margin-mode))
     :bind
     (:map my/version-control-map
@@ -3672,10 +3673,8 @@ Emacs package for highlighting uncommitted changes.
           :exit
           ("C" . magit-commit-create))
     :hook
-    ((find-file    . diff-hl-mode)
-     (vc-dir-mode  . diff-hl-dir-mode)
-     (dired-mode   . diff-hl-dired-mode)
-     (diff-hl-mode . diff-hl-flydiff-mode)
+    ((elpaca-after-init  . global-diff-hl-mode)
+     (dired-mode         . diff-hl-dired-mode)
      (magit-post-refresh . diff-hl-magit-post-refresh)))
 #+end_src
 **** [[https://codeberg.org/pidu/git-timemachine.git][git-timemachine]]
