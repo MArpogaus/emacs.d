@@ -47,9 +47,7 @@
       (unless (boundp 'header-line-icon)
         (setq-local header-line-icon
                     (cond
-                     ((buffer-match-p (lambda (buffer) (with-current-buffer buffer (or (bound-and-true-p gptel-mode)
-                                                                                       (bound-and-true-p agent-shell-ui-mode))))
-                                      buffer)
+                     ((or (bound-and-true-p gptel-mode) (bound-and-true-p agent-shell-ui-mode))
                       '("AI" . mode-line-emphasis))
                      ((buffer-match-p "Warning" buffer)
                       '("WARN" . warning))
@@ -371,17 +369,10 @@ any; its own header line stretches to the right edge of the window."
 
   (defun my/text-scale-adjust-latex-previews ()
     "Scale the LaTeX previews of the buffer with its text scale."
-    (pcase major-mode
-      ((guard (derived-mode-p 'LaTeX-mode))
-       (dolist (ov (overlays-in (point-min) (point-max)))
-         (if (eq (overlay-get ov 'category)
-                 'preview-overlay)
-             (my/zoom-latex-preview ov))))
-      ('org-mode
-       (dolist (ov (overlays-in (point-min) (point-max)))
-         (if (eq (overlay-get ov 'org-overlay-type)
-                 'org-latex-overlay)
-             (my/zoom-latex-preview ov))))))
+    (dolist (ov (overlays-in (point-min) (point-max)))
+      (when (or (eq (overlay-get ov 'category) 'preview-overlay)
+                (eq (overlay-get ov 'org-overlay-type) 'org-latex-overlay))
+        (my/zoom-latex-preview ov))))
 
   (defun my/zoom-latex-preview (ov)
     "Scale the image of preview overlay OV like the text.
