@@ -153,7 +153,6 @@ This Emacs literate configuration has been inspired by the following projects:
   ;; Copyright (C) 2023-%s %s
 
   ;; Author: %s
-  ;; Created: %s
   ;; Keywords: configuration
   ;; Homepage: https://github.com/MArpogaus/emacs.d/
 
@@ -165,8 +164,7 @@ This Emacs literate configuration has been inspired by the following projects:
 
   ;;; Code:" file_name
              (format-time-string "%Y")
-             user-full-name user-full-name
-             (format-time-string "%Y-%m-%d"))
+             user-full-name user-full-name)
 #+end_src
 
 ** Early Emacs Initialization
