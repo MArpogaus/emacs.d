@@ -62,7 +62,7 @@
   ;; \documentclass opens in plain TeX.
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
-  ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
+  ;; Math mode, the toolbar and RefTeX in LaTeX buffers
   ((LaTeX-mode . LaTeX-math-mode)
    (LaTeX-mode . LaTeX-install-toolbar)
    (LaTeX-mode . turn-on-reftex)))
@@ -191,13 +191,11 @@
 
 ;; [[https://github.com/MArpogaus/overblock][overblock]] :own:
 ;; Notebook style results for Python code cells: the output of an evaluated
-;; cell shows up below it, and markdown cells render in place.  This used to
-;; be a long block right here; it is a package now, so only the parts that
-;; are specific to this configuration remain — among them that the terminal
-;; here draws the icon font, which is the one thing Emacs cannot find out
-;; for itself.
+;; cell shows up below it, and markdown cells render in place.  The blocks
+;; set only what is specific to this configuration, among them that the
+;; terminal here draws the icon font, which Emacs cannot find out itself.
 
-;; The layer below the three packages; it draws nothing itself.
+;; The layer below the other four packages; it draws nothing itself.
 (use-package overblock
   :ensure (overblock :host github :repo "MArpogaus/overblock"
                      :branch "dev"
@@ -510,7 +508,7 @@ Tempel comes after :with, so the capf answers only when eglot does."
   (ben-on-indicator '(:propertize "󰯸" face ben-mode-line-on-face))
   (ben-denied-indicator '(:propertize "󰯹" face ben-mode-line-denied-face))
   (ben-error-indicator '(:propertize "󰯹" face ben-mode-line-error-face))
-  (ben-none-indicator nil); '(:propertize "󰯹" face mode-line))
+  (ben-none-indicator nil)
   (ben-status-frames '("" "" "" "" "" ""))
   :init
   (add-hook 'elpaca-after-init-hook #'ben-global-mode 97))

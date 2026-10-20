@@ -134,11 +134,6 @@ Prompts for metadata only if the file is not already a Denote file."
   :demand t
   :bind
   ( :map my/denote-map
-    ;; - `denote-sequence-new-parent'
-    ;; - `denote-sequence-new-sibling'
-    ;; - `denote-sequence-new-child'
-    ;; - `denote-sequence-new-child-of-current'
-    ;; - `denote-sequence-new-sibling-of-current'
     ("S s" . denote-sequence)
     ("S f" . denote-sequence-find)
     ("S l" . denote-sequence-link)

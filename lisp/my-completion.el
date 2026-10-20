@@ -19,8 +19,7 @@
 (use-package cape
   :init
   (define-key my/leader-map (kbd ".") (cons "completion" 'cape-prefix-map))
-  ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  ;; NOTE: The order matters!
+  ;; The order matters: the last one added is asked first.
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-history)
@@ -107,8 +106,8 @@
          :map goto-map
          ;; M-g bindings in `goto-map'
          ("e"                                   . consult-compile-error)
-         ("f"                                   . consult-flymake)             ;; Alternative: consult-flycheck
-         ("o"                                   . consult-outline)             ;; Alternative: consult-org-heading
+         ("f"                                   . consult-flymake)
+         ("o"                                   . consult-outline)
          ("m"                                   . consult-mark)
          ("k"                                   . consult-global-mark)
          ("i"                                   . consult-imenu)
@@ -143,10 +142,7 @@
   ;; Use Consult to select xref locations with preview
   (xref-show-xrefs-function #'consult-xref)
   (xref-show-definitions-function #'consult-xref)
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
-  (consult-narrow-key "<") ;; "C-+"
+  (consult-narrow-key "<")
   :init
   ;; Thin lines, sorting and no mode line in the register preview.
   (advice-add #'register-preview :override #'consult-register-window)
@@ -225,7 +221,6 @@
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand))
-  ;; Other useful Dabbrev configurations.
   :custom
   (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
@@ -242,10 +237,10 @@
 (use-package embark
   :bind
   (("C-." . my/embark-act-maybe-all)
-   ("C-:" . embark-dwim)        ;; good alternative: M-.
+   ("C-:" . embark-dwim)
    ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
   :custom
-  ;; Optionally replace the key help with a completing-read interface
+  ;; The key help as a completing-read
   (prefix-help-command #'embark-prefix-help-command)
   :preface
   ;; which-key as action menu:
@@ -348,7 +343,7 @@ target, followed by an ellipsis if there are further targets."
   :custom
   (tempel-path (expand-file-name "templates.eld" emacs-config-directory))
 
-  :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
+  :bind (("M-+" . tempel-expand)
          ("M-*" . tempel-insert)
          :map tempel-map
          ("C-SPC" . tempel-next)
@@ -385,7 +380,6 @@ target, followed by an ellipsis if there are further targets."
   ;; Grow and shrink the Vertico minibuffer
   (vertico-resize t)
 
-  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
   (vertico-cycle t)
 
   :bind

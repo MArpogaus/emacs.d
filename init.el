@@ -84,7 +84,7 @@
   (lazy-count-suffix-format " [%s/%s]")              ; of the search prompt
 
   ;; Performance
-  ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init                                 . el
+  ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
   (read-process-output-max (* 4 1024 1024))          ; Read more process output per chunk
   (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings
   (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
@@ -120,7 +120,6 @@
   (window-divider-default-right-width 2)
   (window-divider-mode t)
   :config
-  ;; We tell emacs to use UTF-8 encoding as much as possible.
   ;; UTF-8 everywhere; a later "English" would reset the file defaults.
   (set-language-environment "UTF-8")
   :preface

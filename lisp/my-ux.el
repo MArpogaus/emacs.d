@@ -188,9 +188,7 @@ any; its own header line stretches to the right edge of the window."
   (display-buffer-base-action '((display-buffer-in-previous-window
                                  display-buffer-reuse-mode-window
                                  display-buffer-use-some-window
-                                 display-buffer-pop-up-window)
-                                ;;. ((inhibit-same-window . t))
-                                ))
+                                 display-buffer-pop-up-window)))
   ;; Respects display actions when switching buffers
   (switch-to-buffer-obey-display-actions t)
 

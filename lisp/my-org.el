@@ -46,7 +46,7 @@
   (org-metareturn . my/org-metareturn-src-block))
 
 ;; [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
-;; Agenda view and task management follow https://github.com/rougier/emacs-gtd
+;; Org itself: todo keywords, capture into the inbox, refiling into the Tasks heading of a project or under Work and Private.
 
 
 (use-package org
@@ -371,14 +371,10 @@ Its entries point into that buffer: a click on one would fail."
 
 (use-package org-noter
   :custom
-  ;; The WM can handle splits
-  ;; org-noter-notes-window-location 'other-frame
   ;; Please stop opening frames
   (org-noter-always-create-frame nil)
   ;; I want to see the whole file
   (org-noter-hide-other nil)
-  ;; Everything is relative to the main notes file
-  ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
   (org-noter-highlight-selected-text t)
   :hook
   ;; Give each note heading an ID

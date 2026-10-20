@@ -482,7 +482,7 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (lazy-count-suffix-format " [%s/%s]")              ; of the search prompt
 
     ;; Performance
-    ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init                                 . el
+    ;; https://github.com/alexluigit/dirvish/blob/main/docs/.emacs.d.example/early-init.el
     (read-process-output-max (* 4 1024 1024))          ; Read more process output per chunk
     (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings
     (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
@@ -518,7 +518,6 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (window-divider-default-right-width 2)
     (window-divider-mode t)
     :config
-    ;; We tell emacs to use UTF-8 encoding as much as possible.
     ;; UTF-8 everywhere; a later "English" would reset the file defaults.
     (set-language-environment "UTF-8")
     :preface
@@ -857,7 +856,7 @@ This directory is added to the =load-path=.
     (org-metareturn . my/org-metareturn-src-block))
 #+end_src
 **** [[https://git.savannah.gnu.org/git/emacs/org-mode.git][org]]
-Agenda view and task management follow https://github.com/rougier/emacs-gtd
+Org itself: todo keywords, capture into the inbox, refiling into the Tasks heading of a project or under Work and Private.
 
 #+begin_src emacs-lisp
   (use-package org
@@ -1182,14 +1181,10 @@ Emacs document annotator, using Org-mode.
 #+begin_src emacs-lisp
   (use-package org-noter
     :custom
-    ;; The WM can handle splits
-    ;; org-noter-notes-window-location 'other-frame
     ;; Please stop opening frames
     (org-noter-always-create-frame nil)
     ;; I want to see the whole file
     (org-noter-hide-other nil)
-    ;; Everything is relative to the main notes file
-    ;; org-noter-notes-search-path (list bibtex-completion-notes-path)
     (org-noter-highlight-selected-text t)
     :hook
     ;; Give each note heading an ID
@@ -1916,9 +1911,7 @@ Revert buffers when the underlying file has changed.
     (display-buffer-base-action '((display-buffer-in-previous-window
                                    display-buffer-reuse-mode-window
                                    display-buffer-use-some-window
-                                   display-buffer-pop-up-window)
-                                  ;;. ((inhibit-same-window . t))
-                                  ))
+                                   display-buffer-pop-up-window)))
     ;; Respects display actions when switching buffers
     (switch-to-buffer-obey-display-actions t)
 
@@ -2547,11 +2540,6 @@ Commands that ask for a silo first.
     :demand t
     :bind
     ( :map my/denote-map
-      ;; - `denote-sequence-new-parent'
-      ;; - `denote-sequence-new-sibling'
-      ;; - `denote-sequence-new-child'
-      ;; - `denote-sequence-new-child-of-current'
-      ;; - `denote-sequence-new-sibling-of-current'
       ("S s" . denote-sequence)
       ("S f" . denote-sequence-find)
       ("S l" . denote-sequence-link)
@@ -3232,8 +3220,7 @@ Cape provides completion-at-point extensions (Capfs) for Corfu or the default co
   (use-package cape
     :init
     (define-key my/leader-map (kbd ".") (cons "completion" 'cape-prefix-map))
-    ;; Add `completion-at-point-functions', used by `completion-at-point'.
-    ;; NOTE: The order matters!
+    ;; The order matters: the last one added is asked first.
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
     (add-to-list 'completion-at-point-functions #'cape-elisp-block)
     (add-to-list 'completion-at-point-functions #'cape-history)
@@ -3320,8 +3307,8 @@ Additional featureful completion commands.
            :map goto-map
            ;; M-g bindings in `goto-map'
            ("e"                                   . consult-compile-error)
-           ("f"                                   . consult-flymake)             ;; Alternative: consult-flycheck
-           ("o"                                   . consult-outline)             ;; Alternative: consult-org-heading
+           ("f"                                   . consult-flymake)
+           ("o"                                   . consult-outline)
            ("m"                                   . consult-mark)
            ("k"                                   . consult-global-mark)
            ("i"                                   . consult-imenu)
@@ -3356,10 +3343,7 @@ Additional featureful completion commands.
     ;; Use Consult to select xref locations with preview
     (xref-show-xrefs-function #'consult-xref)
     (xref-show-definitions-function #'consult-xref)
-
-    ;; Optionally configure the narrowing key.
-    ;; Both < and C-+ work reasonably well.
-    (consult-narrow-key "<") ;; "C-+"
+    (consult-narrow-key "<")
     :init
     ;; Thin lines, sorting and no mode line in the register preview.
     (advice-add #'register-preview :override #'consult-register-window)
@@ -3438,7 +3422,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     ;; Swap M-/ and C-M-/
     :bind (("M-/" . dabbrev-completion)
            ("C-M-/" . dabbrev-expand))
-    ;; Other useful Dabbrev configurations.
     :custom
     (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
@@ -3455,10 +3438,10 @@ Embark makes it easy to choose a command to run based on what is near point, bot
   (use-package embark
     :bind
     (("C-." . my/embark-act-maybe-all)
-     ("C-:" . embark-dwim)        ;; good alternative: M-.
+     ("C-:" . embark-dwim)
      ("C-h B" . embark-bindings))  ;; alternative for `describe-bindings'
     :custom
-    ;; Optionally replace the key help with a completing-read interface
+    ;; The key help as a completing-read
     (prefix-help-command #'embark-prefix-help-command)
     :preface
     ;; which-key as action menu:
@@ -3561,7 +3544,7 @@ Tempel is a tiny template package with the syntax of the Emacs Tempo library and
     :custom
     (tempel-path (expand-file-name "templates.eld" emacs-config-directory))
 
-    :bind (("M-+" . tempel-expand) ;; Alternative tempel-expand
+    :bind (("M-+" . tempel-expand)
            ("M-*" . tempel-insert)
            :map tempel-map
            ("C-SPC" . tempel-next)
@@ -3598,7 +3581,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ;; Grow and shrink the Vertico minibuffer
     (vertico-resize t)
 
-    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
     (vertico-cycle t)
 
     :bind
@@ -3914,7 +3896,7 @@ Integrated environment for *TeX*.
     ;; \documentclass opens in plain TeX.
     :mode ("\\.tex\\'" . LaTeX-mode)
     :hook
-    ;; Set up preview, math mode, inverse search, and reftex in LaTeX mode
+    ;; Math mode, the toolbar and RefTeX in LaTeX buffers
     ((LaTeX-mode . LaTeX-math-mode)
      (LaTeX-mode . LaTeX-install-toolbar)
      (LaTeX-mode . turn-on-reftex)))
@@ -4043,13 +4025,11 @@ are =M-x= only.  Cell results are rendered inline by the =overblock-pycell= pack
 #+end_src
 **** [[https://github.com/MArpogaus/overblock][overblock]] :own:
 Notebook style results for Python code cells: the output of an evaluated
-cell shows up below it, and markdown cells render in place.  This used to
-be a long block right here; it is a package now, so only the parts that
-are specific to this configuration remain — among them that the terminal
-here draws the icon font, which is the one thing Emacs cannot find out
-for itself.
+cell shows up below it, and markdown cells render in place.  The blocks
+set only what is specific to this configuration, among them that the
+terminal here draws the icon font, which Emacs cannot find out itself.
 #+begin_src emacs-lisp
-  ;; The layer below the three packages; it draws nothing itself.
+  ;; The layer below the other four packages; it draws nothing itself.
   (use-package overblock
     :ensure (overblock :host github :repo "MArpogaus/overblock"
                        :branch "dev"
@@ -4362,7 +4342,7 @@ Asynchronous fork of envrc: https://github.com/purcell/envrc
     (ben-on-indicator '(:propertize "󰯸" face ben-mode-line-on-face))
     (ben-denied-indicator '(:propertize "󰯹" face ben-mode-line-denied-face))
     (ben-error-indicator '(:propertize "󰯹" face ben-mode-line-error-face))
-    (ben-none-indicator nil); '(:propertize "󰯹" face mode-line))
+    (ben-none-indicator nil)
     (ben-status-frames '("" "" "" "" "" ""))
     :init
     (add-hook 'elpaca-after-init-hook #'ben-global-mode 97))
