@@ -1598,7 +1598,6 @@ Display LaTeX compilation information in the mode line.
 #+begin_src emacs-lisp
   (use-package procress
     :ensure (:host github :repo "haji-ali/procress")
-    :commands procress-auctex-mode
     :hook
     (LaTeX-mode . procress-auctex-mode)
     :config
@@ -2205,7 +2204,6 @@ Fold and transform headings. Org mode uses outline for its headlines.
      :repeat-map my/outline-repeat-map
                  ("SPC"         . outline-mark-subtree)
                  ("TAB"         . outline-cycle)
-                 ("S-<tab>"     . outline-cycle-buffer)
                  ("<backtab>"   . outline-cycle-buffer)
                  ("a"           . outline-show-all))
     :hook
@@ -2536,8 +2534,6 @@ Commands that ask for a silo first.
 **** [[https://github.com/protesilaos/denote-sequence][denote-sequence]]
 #+begin_src emacs-lisp
   (use-package denote-sequence
-    :after denote
-    :demand t
     :bind
     ( :map my/denote-map
       ("S s" . denote-sequence)
@@ -2815,7 +2811,6 @@ Use the string syntax in re-builder.
   ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
   (use-package re-builder
     :ensure nil
-    :commands re-builder
     :custom
     (reb-re-syntax 'string))
 #+end_src
@@ -2839,7 +2834,6 @@ Major mode for interacting with a terminal.
 #+begin_src emacs-lisp
   (use-package term
     :ensure nil
-    :commands term
     :if (file-exists-p "/bin/zsh") ; we only use it if shell exists
     :custom
     (shell-file-name "/bin/zsh")
@@ -3080,7 +3074,6 @@ A simple LLM client for Emacs.
     :init
     ;; Saved chats turn `gptel-mode' on through an `eval' local variable.
     (add-to-list 'safe-local-eval-forms '(gptel-mode))
-    :commands (gptel gptel-send)
     :bind
     (:map my/ai-map
           ("a". gptel)
@@ -3395,7 +3388,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
     :config
     ;; Free the RET key for less intrusive behavior.
     (keymap-unset corfu-map "RET")
-    (eldoc-add-command #'corfu-insert)
     (advice-add 'corfu-insert-separator :around #'my/corfu-insert-separator-advice)
     :bind
     (("C-SPC"     . completion-at-point)
@@ -3788,8 +3780,8 @@ Tab group based workflow isolation.
                                (project-find-regexp "Find regexp")
                                (project-find-dir "Find directory")
                                (my/project-vterm "Vterm")
-                               (magit-project-status "Version Control" ?v)
-                               (project-x-window-state-load "Restore windows" ?j)))
+                               (magit-project-status "Version Control")
+                               (project-x-window-state-load "Restore windows")))
     :config
     (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode))
     :init
@@ -3803,7 +3795,6 @@ Enhancements to the built-in project library.
     :bind (:map project-prefix-map
                 ("S" . project-x-window-state-save)
                 ("l" . project-x-window-state-load))
-    :commands project-x--window-state-write
     :config
     ;; Not in `:init': there the hook would load the package at quit.
     (add-hook 'kill-emacs-hook 'project-x--window-state-write))
@@ -4421,8 +4412,7 @@ Emacs major mode for editing Lua.
 **** [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 Emacs Markdown Mode.
 #+begin_src emacs-lisp
-  (use-package markdown-mode
-    :mode "\\.md\\'")
+  (use-package markdown-mode)
 #+end_src
 **** [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
 Insert NumPy style docstrings in Python functions.

@@ -482,7 +482,6 @@ An opened preview shows its source and has no image to scale."
    :repeat-map my/outline-repeat-map
                ("SPC"         . outline-mark-subtree)
                ("TAB"         . outline-cycle)
-               ("S-<tab>"     . outline-cycle-buffer)
                ("<backtab>"   . outline-cycle-buffer)
                ("a"           . outline-show-all))
   :hook

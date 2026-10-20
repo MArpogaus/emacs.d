@@ -262,7 +262,6 @@
 ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 (use-package re-builder
   :ensure nil
-  :commands re-builder
   :custom
   (reb-re-syntax 'string))
 
@@ -286,7 +285,6 @@
 
 (use-package term
   :ensure nil
-  :commands term
   :if (file-exists-p "/bin/zsh") ; we only use it if shell exists
   :custom
   (shell-file-name "/bin/zsh")

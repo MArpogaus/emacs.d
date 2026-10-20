@@ -225,7 +225,6 @@ hides the clock of `tab-bar-format-global'."
 
 (use-package procress
   :ensure (:host github :repo "haji-ali/procress")
-  :commands procress-auctex-mode
   :hook
   (LaTeX-mode . procress-auctex-mode)
   :config

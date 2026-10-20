@@ -587,8 +587,7 @@ Tempel comes after :with, so the capf answers only when eglot does."
 ;; [[https://github.com/jrblevin/markdown-mode.git][markdown]]
 ;; Emacs Markdown Mode.
 
-(use-package markdown-mode
-  :mode "\\.md\\'")
+(use-package markdown-mode)
 
 ;; [[https://github.com/douglasdavis/numpydoc.el.git][numpydoc]]
 ;; Insert NumPy style docstrings in Python functions.

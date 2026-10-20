@@ -144,7 +144,6 @@ buffer that visits a file is left alone."
   :init
   ;; Saved chats turn `gptel-mode' on through an `eval' local variable.
   (add-to-list 'safe-local-eval-forms '(gptel-mode))
-  :commands (gptel gptel-send)
   :bind
   (:map my/ai-map
         ("a". gptel)

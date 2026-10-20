@@ -54,8 +54,8 @@
                              (project-find-regexp "Find regexp")
                              (project-find-dir "Find directory")
                              (my/project-vterm "Vterm")
-                             (magit-project-status "Version Control" ?v)
-                             (project-x-window-state-load "Restore windows" ?j)))
+                             (magit-project-status "Version Control")
+                             (project-x-window-state-load "Restore windows")))
   :config
   (add-to-list 'project-kill-buffer-conditions '(major-mode . vterm-mode))
   :init
@@ -69,7 +69,6 @@
   :bind (:map project-prefix-map
               ("S" . project-x-window-state-save)
               ("l" . project-x-window-state-load))
-  :commands project-x--window-state-write
   :config
   ;; Not in `:init': there the hook would load the package at quit.
   (add-hook 'kill-emacs-hook 'project-x--window-state-write))

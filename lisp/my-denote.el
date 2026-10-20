@@ -130,8 +130,6 @@ Prompts for metadata only if the file is not already a Denote file."
 ;; [[https://github.com/protesilaos/denote-sequence][denote-sequence]]
 
 (use-package denote-sequence
-  :after denote
-  :demand t
   :bind
   ( :map my/denote-map
     ("S s" . denote-sequence)

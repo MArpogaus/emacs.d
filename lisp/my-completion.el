@@ -194,7 +194,6 @@
   :config
   ;; Free the RET key for less intrusive behavior.
   (keymap-unset corfu-map "RET")
-  (eldoc-add-command #'corfu-insert)
   (advice-add 'corfu-insert-separator :around #'my/corfu-insert-separator-advice)
   :bind
   (("C-SPC"     . completion-at-point)
