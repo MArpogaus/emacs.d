@@ -32,8 +32,7 @@ A buffer with unsaved edits is left alone."
         (with-current-buffer buffer
           (unless (or (buffer-modified-p) (verify-visited-file-modtime buffer))
             (revert-buffer t t t)))))
-    (when-let* ((window (get-buffer-window org-agenda-buffer-name t)))
-      (with-selected-window window (org-agenda-redo-all))))
+    (my/org-agenda-redo-visible))
   (defun my/gtd-directory ()
     "Return the directory of the agenda repository."
     (expand-file-name "agenda/" org-directory))

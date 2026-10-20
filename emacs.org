@@ -902,6 +902,37 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
     (org-refile-targets
      '((org-agenda-files :tag . "tasks")
        (org-agenda-files :regexp . "^\\*+ \\(?:Work\\|Private\\)\\(?: \\[[0-9/%]*\\]\\)?\\(?:[ \t]+:[[:alnum:]_@#%:]+:\\)?[ \t]*$")))
+
+    ;; Use SVGs for latex previews -> No blur when scaling
+    (org-preview-latex-default-process 'dvisvgm)
+    :hook
+    (org-mode . reveal-mode)
+    :bind
+    (:map my/leader-map
+          ("i" . my/org-capture-inbox)
+          ("I" . my/org-capture-note)
+          :map my/open-map
+          ("a" . org-agenda)
+          :map org-mode-map
+          ("C-c P" . org-present)))
+#+end_src
+**** org-agenda :build_in:
+Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword, =q= in the GTD tab group also ends the agent and closes the group.
+#+begin_src emacs-lisp
+  (use-package org-agenda
+    :ensure nil
+    :preface
+    (defun my/org-agenda-redo-visible ()
+      "Rebuild the agenda if a window shows it."
+      (when-let* (((boundp 'org-agenda-buffer-name))
+                  (window (get-buffer-window org-agenda-buffer-name t)))
+        (with-selected-window window (org-agenda-redo-all))))
+    (defun my/org-agenda-forget-killed-file ()
+      "Rebuild the agenda in view once a buffer of one of its files is killed.
+  Its entries point into that buffer: a click on one would fail."
+      (when (and (derived-mode-p 'org-mode) (org-agenda-file-p))
+        (run-at-time 0 nil #'my/org-agenda-redo-visible)))
+    :custom
     ;; A project without a NEXT task is stuck.
     (org-stuck-projects '("/PROJ" ("NEXT") nil ""))
     (org-agenda-custom-commands
@@ -932,34 +963,26 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
         ((org-agenda-sorting-strategy '(priority-down category-keep effort-up))
          (org-agenda-prefix-format "  %i %-12:c ")))))
 
-    ;; Use SVGs for latex previews -> No blur when scaling
-    (org-preview-latex-default-process 'dvisvgm)
-    :hook
-    (org-mode . reveal-mode)
-    :bind
-    (:map my/leader-map
-          ("i" . my/org-capture-inbox)
-          ("I" . my/org-capture-note)
-          :map my/open-map
-          ("a" . org-agenda)
-          :map org-mode-map
-          ("C-c P" . org-present)))
-#+end_src
-**** org-agenda :build_in:
-Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword, =q= in the GTD tab group also ends the agent and closes the group.
-#+begin_src emacs-lisp
-  (use-package org-agenda
-    :ensure nil
-    :preface
-    (defun my/org-agenda-forget-killed-file ()
-      "Rebuild the agenda in view once a buffer of one of its files is killed.
-  Its entries point into that buffer: a click on one would fail."
-      (when-let* (((and (derived-mode-p 'org-mode) (org-agenda-file-p)))
-                  ((boundp 'org-agenda-buffer-name))
-                  (window (get-buffer-window org-agenda-buffer-name t)))
-        (run-at-time 0 nil (lambda ()
-                             (when (window-live-p window)
-                               (with-selected-window window (org-agenda-redo-all)))))))
+    ;; Agenda styling
+    (org-agenda-tags-column 0)
+    (org-agenda-remove-tags t)
+    (org-agenda-skip-deadline-if-done t)
+    (org-agenda-skip-scheduled-if-done t)
+    (org-agenda-deadline-leaders '("Heute      " "in %2d T.   " "%2d T. über "))
+    (org-agenda-scheduled-leaders '("Heute      " "seit %2d T. "))
+    (org-agenda-category-icon-alist
+     `(("TIDIT" (,(nerd-icons-mdicon "nf-md-briefcase_outline")))
+       ("EMACS" (,(nerd-icons-sucicon "nf-custom-emacs")))
+       ("CHORA" (,(nerd-icons-mdicon "nf-md-home_outline")))
+       ("VIBE CODING" (,(nerd-icons-mdicon "nf-md-robot_outline")))
+       (".*" (,(nerd-icons-mdicon "nf-md-checkbox_blank_circle_outline")))))
+    (org-agenda-block-separator nil)
+    (org-agenda-time-grid
+     '((daily today require-timed)
+       (800 1000 1200 1400 1600 1800 2000)
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"))
+    (org-agenda-current-time-string
+     "◀── jetzt")
     :hook
     (kill-buffer . my/org-agenda-forget-killed-file)
     :bind
@@ -1027,8 +1050,6 @@ Give Org headlines, keywords, tables and source blocks a modern style.
     ;; Fix indentation when variable pitch fonts are used
     (org-hide ((t (:inherit fixed-pitch))))
     :custom
-    (org-cycle-level-faces nil)
-    (org-n-level-faces 4)
     ;; org-modern draws todo keywords itself and ignores
     ;; `org-todo-keyword-faces'; mirror them here, keeping the label look.
     (org-modern-todo-faces
@@ -1106,37 +1127,6 @@ Give Org headlines, keywords, tables and source blocks a modern style.
        ("call" . "󰆍")
        ("toc" . "")))
 
-    ;; Edit settings
-    (org-auto-align-tags nil)
-    (org-tags-column 0)
-    (org-catch-invisible-edits 'show-and-error)
-    (org-special-ctrl-a/e t)
-    (org-insert-heading-respect-content t)
-
-    ;; Org styling, hide markup etc.
-    (org-hide-emphasis-markers t)
-    (org-pretty-entities t)
-
-    ;; Agenda styling
-    (org-agenda-tags-column 0)
-    (org-agenda-remove-tags t)
-    (org-agenda-skip-deadline-if-done t)
-    (org-agenda-skip-scheduled-if-done t)
-    (org-agenda-deadline-leaders '("Heute      " "in %2d T.   " "%2d T. über "))
-    (org-agenda-scheduled-leaders '("Heute      " "seit %2d T. "))
-    (org-agenda-category-icon-alist
-     `(("TIDIT" (,(nerd-icons-mdicon "nf-md-briefcase_outline")))
-       ("EMACS" (,(nerd-icons-sucicon "nf-custom-emacs")))
-       ("CHORA" (,(nerd-icons-mdicon "nf-md-home_outline")))
-       ("VIBE CODING" (,(nerd-icons-mdicon "nf-md-robot_outline")))
-       (".*" (,(nerd-icons-mdicon "nf-md-checkbox_blank_circle_outline")))))
-    (org-agenda-block-separator nil)
-    (org-agenda-time-grid
-     '((daily today require-timed)
-       (800 1000 1200 1400 1600 1800 2000)
-       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"))
-    (org-agenda-current-time-string
-     "◀── jetzt")
     :hook ((org-mode . org-modern-mode)
            (org-agenda-finalize . org-modern-agenda)))
 #+end_src
@@ -2956,8 +2946,7 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
           (with-current-buffer buffer
             (unless (or (buffer-modified-p) (verify-visited-file-modtime buffer))
               (revert-buffer t t t)))))
-      (when-let* ((window (get-buffer-window org-agenda-buffer-name t)))
-        (with-selected-window window (org-agenda-redo-all))))
+      (my/org-agenda-redo-visible))
     (defun my/gtd-directory ()
       "Return the directory of the agenda repository."
       (expand-file-name "agenda/" org-directory))
