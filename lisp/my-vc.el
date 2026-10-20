@@ -108,6 +108,8 @@
   :config
   (advice-add 'vc-git-root :around #'my/memoize-vc-git-root)
   (advice-add 'magit-toplevel :around #'my/memoize-magit-toplevel)
+  ;; Refresh the status buffer on save, once magit is loaded
+  (add-hook 'after-save-hook #'magit-after-save-refresh-status)
   :bind
   (:map my/version-control-map
         ("F"  . magit-fetch-all)
@@ -123,10 +125,7 @@
         ("v"  . magit-status)
         ("r"  . magit-rebase)
         :map project-prefix-map
-        ("v"  . magit-project-status))
-  :hook
-  ;; Automatic Refreshing of Magit Buffers
-  (after-save . magit-after-save-refresh-status))
+        ("v"  . magit-project-status)))
 
 ;; [[https://github.com/alphapapa/magit-todos.git][magit-todos]]
 ;; Show source files' TODOs (and FIXMEs, etc) in Magit status buffer.
