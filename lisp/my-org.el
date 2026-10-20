@@ -256,15 +256,11 @@ Its entries point into that buffer: a click on one would fail."
   (org-level-3 ((t (:inherit org-level-8 :height 1.2)))) ;\large))
   (org-level-2 ((t (:inherit org-level-8 :height 1.44)))) ;\Large))
   (org-level-1 ((t (:inherit org-level-8 :height 1.728)))) ;\LARGE))
-  ;; Document Title, (\huge)
-  (org-document-title ((t (:height 2.074 :foreground unspecified :inherit org-level-8))))
   ;; Ensure org modern labels use fixed pitch font
   (org-modern-label ((t (:height 1.0 :inherit fixed-pitch))))
   (org-modern-todo ((t (:inherit (org-modern-label org-todo org-level-8)))))
   (org-modern-priority ((t (:inherit (org-priority org-modern-label org-level-8)))))
   (org-modern-tag ((t (:inherit (secondary-selection org-modern-label org-level-8)))))
-  ;; Fix indentation when variable pitch fonts are used
-  (org-hide ((t (:inherit fixed-pitch))))
   :custom
   ;; org-modern draws todo keywords itself and ignores
   ;; `org-todo-keyword-faces'; mirror them here, keeping the label look.
