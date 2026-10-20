@@ -1886,8 +1886,13 @@ Revert buffers when the underlying file has changed.
           ;; local variables but keeps the remaps.
           (unless (member '(:inherit my/panel-header-line)
                           (assq 'header-line face-remapping-alist))
-            (dolist (name '(header-line header-line-active
-                                        header-line-inactive))
+            ;; The panel owns `header-line': a buffer's own remap of it,
+            ;; such as magit's, would color every gap of the row.
+            (setq-local face-remapping-alist
+                        (cons (list 'header-line '(:inherit my/panel-header-line) 'header-line)
+                              (seq-remove (lambda (entry) (eq (car entry) 'header-line))
+                                          face-remapping-alist)))
+            (dolist (name '(header-line-active header-line-inactive))
               (face-remap-add-relative name '(:inherit my/panel-header-line))))
           (setq-local window-box-color (face-foreground icon))
           ;; Content only: window-box owns the ends of the row.
@@ -1895,7 +1900,7 @@ Revert buffers when the underlying file has changed.
            (propertize badge 'face (append '(:inverse-video t) face)
                        'local-map my/side-window-drag-map
                        'help-echo "Drag to another slot")
-           ;; The remap misses a buffer's own header faces (`magit-header-line').
+           ;; The label's own faces give way to the panel's.
            (propertize (concat " " own) 'face face)
            ;; window-box moves `right' past the buffer's margin.
            (propertize " " 'display `(space :align-to
