@@ -322,11 +322,10 @@ hides the clock of `tab-bar-format-global'."
   :ensure nil
   :custom
   (tab-line-new-tab-choice nil)
-  (tab-line-exclude-modes '(completion-list-mode
-                            ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
-                            dirvish-directory-view-mode dirvish-special-preview-mode
-                            dape-info-scope-mode dape-info-stack-mode dape-info-watch-mode dape-info-parent-mode
-                            dape-info-modules-mode dape-info-sources-mode dape-info-threads-mode dape-info-breakpoints-mode))
+  (tab-line-exclude-buffers '(derived-mode completion-list-mode
+                                           ediff-meta-mode ediff-mode symbols-outline-mode flymake-diagnostics-buffer-mode
+                                           dirvish-directory-view-mode dirvish-special-preview-mode
+                                           dape-info-parent-mode))
   :hook
   (elpaca-after-init . global-tab-line-mode))
 
