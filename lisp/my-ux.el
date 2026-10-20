@@ -348,7 +348,7 @@ any; its own header line stretches to the right edge of the window."
 (use-package delsel
   :ensure nil
   :hook
-  ((prog-mode conf-mode text-mode) . delete-selection-local-mode))
+  (elpaca-after-init . delete-selection-mode))
 
 ;; elec-pair :build_in:
 ;; Automatically add closing parentheses, quotes, etc.
@@ -356,7 +356,7 @@ any; its own header line stretches to the right edge of the window."
 (use-package elec-pair
   :ensure nil
   :hook
-  ((prog-mode conf-mode) . electric-pair-local-mode))
+  (elpaca-after-init . electric-pair-mode))
 
 ;; face-remap :build_in:
 ;; Keybindings and optimizations for text-scale-mode.

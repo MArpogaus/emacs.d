@@ -2060,7 +2060,7 @@ Replace selected text when typing.
   (use-package delsel
     :ensure nil
     :hook
-    ((prog-mode conf-mode text-mode) . delete-selection-local-mode))
+    (elpaca-after-init . delete-selection-mode))
 #+end_src
 **** elec-pair :build_in:
 Automatically add closing parentheses, quotes, etc.
@@ -2068,7 +2068,7 @@ Automatically add closing parentheses, quotes, etc.
   (use-package elec-pair
     :ensure nil
     :hook
-    ((prog-mode conf-mode) . electric-pair-local-mode))
+    (elpaca-after-init . electric-pair-mode))
 #+end_src
 **** face-remap :build_in:
 Keybindings and optimizations for text-scale-mode.
