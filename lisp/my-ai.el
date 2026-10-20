@@ -89,7 +89,7 @@ maker rather than into `agent-shell-anthropic-claude-acp-command'."
               (let ((agent-shell-anthropic-claude-acp-command command))
                 (agent-shell-anthropic-make-claude-client :buffer buffer))))
       (agent-shell-start :config config)))
-  :autoload agent-shell-buffers
+  :autoload agent-shell-buffers agent-shell-anthropic-make-claude-code-config
   :custom
   (agent-shell-header-style 'text)
   ;; RET into a working agent steers its turn, M-RET queues; an agent
