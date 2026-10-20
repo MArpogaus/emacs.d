@@ -88,11 +88,26 @@
   (read-process-output-max (* 4 1024 1024))          ; Read more process output per chunk
   (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings
   (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
+  (vc-git-diff-switches '("--histogram"))            ; DOOM: a slightly faster diff algorithm
+
+  ;; Minibuffer and history
+  (enable-recursive-minibuffers t)                   ; Minibuffer commands inside the minibuffer
+  (history-delete-duplicates t)                      ; No duplicates in history
+  (history-length 500)
+  (kill-ring-max 500)
+  (minibuffer-prompt-properties                      ; No cursor in the prompt
+   '(read-only t cursor-intangible t face minibuffer-prompt))
+  (read-extended-command-predicate                   ; M-x hides commands of other modes
+   #'command-completion-default-include-p)
 
   ;; Miscellaneous
   (comment-auto-fill-only-comments t)                ; Use auto fill mode only in comments
   (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
   (custom-buffer-done-kill t)                        ; Kill custom buffer when done
+  (delete-by-moving-to-trash t)                      ; Deleted files go to the trash
+  (revert-without-query (list "."))                  ; Revert without asking
+  (tab-always-indent 'complete)                      ; TAB indents, then completes
+  (backward-delete-char-untabify-method 'all)        ; Hungry deletion
   (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer
   (help-window-select t)                             ; Select help windows when they open
   (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings

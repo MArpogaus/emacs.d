@@ -19,8 +19,6 @@
 (use-package diff-hl
   :custom
   ;; DOOM: https://github.com/doomemacs/doomemacs/blob/98d753e1036f76551ccaa61f5c810782cda3b48a/modules/ui/vc-gutter/config.el#L167C1-L173C41
-  ;; PERF: A slightly faster algorithm for diffing.
-  (vc-git-diff-switches '("--histogram"))
   ;; PERF: Slightly more conservative delay before updating the diff
   (diff-hl-flydiff-delay 0.5)  ; default: 0.3
   ;; UX: get realtime feedback in diffs after staging/unstaging hunks.

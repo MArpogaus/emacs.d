@@ -486,11 +486,26 @@ The main initialization file, =init.el=, is responsible for defining essential c
     (read-process-output-max (* 4 1024 1024))          ; Read more process output per chunk
     (select-active-regions 'only)                      ; Emacs hangs when large selections contain mixed line endings
     (vc-handled-backends '(Git SVN))                   ; Remove unused VC backend
+    (vc-git-diff-switches '("--histogram"))            ; DOOM: a slightly faster diff algorithm
+
+    ;; Minibuffer and history
+    (enable-recursive-minibuffers t)                   ; Minibuffer commands inside the minibuffer
+    (history-delete-duplicates t)                      ; No duplicates in history
+    (history-length 500)
+    (kill-ring-max 500)
+    (minibuffer-prompt-properties                      ; No cursor in the prompt
+     '(read-only t cursor-intangible t face minibuffer-prompt))
+    (read-extended-command-predicate                   ; M-x hides commands of other modes
+     #'command-completion-default-include-p)
 
     ;; Miscellaneous
     (comment-auto-fill-only-comments t)                ; Use auto fill mode only in comments
     (compilation-scroll-output 'first-error)           ; Stop scrolling at the first error
     (custom-buffer-done-kill t)                        ; Kill custom buffer when done
+    (delete-by-moving-to-trash t)                      ; Deleted files go to the trash
+    (revert-without-query (list "."))                  ; Revert without asking
+    (tab-always-indent 'complete)                      ; TAB indents, then completes
+    (backward-delete-char-untabify-method 'all)        ; Hungry deletion
     (fringes-outside-margins t)                        ; DOOM: add some space between fringe and buffer
     (help-window-select t)                             ; Select help windows when they open
     (native-comp-async-report-warnings-errors 'silent) ; disable native compiler warnings
@@ -868,6 +883,25 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
     ;; Return or left-click with mouse follows link
     (org-return-follows-link t)
     (org-mouse-1-follows-link t)
+
+    ;; Citations through citar
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
+    (org-cycle-level-faces nil)
+    (org-n-level-faces 4)
+
+    ;; Edit settings
+    (org-auto-align-tags nil)
+    (org-tags-column 0)
+    (org-catch-invisible-edits 'show-and-error)
+    (org-special-ctrl-a/e t)
+    (org-insert-heading-respect-content t)
+
+    ;; Org styling, hide markup etc.
+    (org-hide-emphasis-markers t)
+    (org-pretty-entities t)
 
     ;; Todo
     (org-todo-keywords
@@ -1728,8 +1762,6 @@ Revert buffers when the underlying file has changed.
     (global-auto-revert-non-file-buffers t)
     ;; Get notified by the system instead of polling.
     (auto-revert-avoid-polling t)
-    ;; Only prompts for confirmation when buffer is unsaved.
-    (revert-without-query (list "."))
     :hook
     (elpaca-after-init . global-auto-revert-mode))
 #+end_src
@@ -2265,16 +2297,12 @@ Enable repeat maps.
   (use-package savehist
     :ensure nil
     :custom
-    (kill-ring-max 500)
-    (history-length 500)
     (savehist-additional-variables
      ;; Minibuffer histories are saved anyway.
      '(command-history
        kill-ring
        regexp-search-ring
        search-ring))
-    ;; No duplicates in history
-    (history-delete-duplicates t)
     :config
     (put 'set-variable-value-history 'history-length 250)
     (put 'custom-variable-history    'history-length 250)
@@ -2567,7 +2595,6 @@ Commands that ask for a silo first.
     (dired-create-destination-dirs 'ask)
     ;; Slightly larger thumbnails
     (image-dired-thumb-size 150)
-    (delete-by-moving-to-trash t)
     (dired-listing-switches
      "-l --almost-all --human-readable --group-directories-first --no-group")
     (dired-find-subdir t) ; Reuse dired buffers if the directory is a sub directory
@@ -3217,10 +3244,6 @@ Citar provides a highly-configurable completing-read front-end to browse and act
 #+begin_src emacs-lisp
   (use-package citar
     :custom
-    (org-cite-insert-processor 'citar)
-    (org-cite-follow-processor 'citar)
-    (org-cite-activate-processor 'citar)
-    (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
     (citar-bibliography org-cite-global-bibliography)
     (citar-at-point-function 'embark-act)
     (citar-templates '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
@@ -3363,10 +3386,6 @@ Corfu is the minimalistic in-buffer completion counterpart of the Vertico minibu
          (setq-local corfu-echo-delay nil
                      corfu-popupinfo-delay nil)
          t)))
-
-    ;; Enable indentation+completion using the TAB key.
-    ;; `completion-at-point' is often bound to M-TAB.
-    (tab-always-indent 'complete)
 
     ;; Additional Customisations
     (corfu-cycle t)                     ;; Enable cycling for `corfu-next/previous'
@@ -3581,18 +3600,6 @@ Vertico provides a performant and minimalistic vertical completion UI based on t
     ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
     (vertico-cycle t)
 
-    ;; Do not allow the cursor in the minibuffer prompt
-    (minibuffer-prompt-properties
-     '(read-only t cursor-intangible t face minibuffer-prompt))
-
-    ;; Hide commands in M-x which do not work in the current mode.
-    ;; Vertico commands are hidden in normal buffers.
-    (read-extended-command-predicate
-     #'command-completion-default-include-p)
-
-    ;; Enable recursive minibuffers
-    (enable-recursive-minibuffers t)
-
     :bind
     (:map vertico-map
           ("C-SPC" . my/embark-select-vertico)
@@ -3624,8 +3631,6 @@ Emacs package for highlighting uncommitted changes.
   (use-package diff-hl
     :custom
     ;; DOOM: https://github.com/doomemacs/doomemacs/blob/98d753e1036f76551ccaa61f5c810782cda3b48a/modules/ui/vc-gutter/config.el#L167C1-L173C41
-    ;; PERF: A slightly faster algorithm for diffing.
-    (vc-git-diff-switches '("--histogram"))
     ;; PERF: Slightly more conservative delay before updating the diff
     (diff-hl-flydiff-delay 0.5)  ; default: 0.3
     ;; UX: get realtime feedback in diffs after staging/unstaging hunks.

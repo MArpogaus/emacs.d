@@ -30,7 +30,6 @@
   (dired-create-destination-dirs 'ask)
   ;; Slightly larger thumbnails
   (image-dired-thumb-size 150)
-  (delete-by-moving-to-trash t)
   (dired-listing-switches
    "-l --almost-all --human-readable --group-directories-first --no-group")
   (dired-find-subdir t) ; Reuse dired buffers if the directory is a sub directory

@@ -31,10 +31,6 @@
 
 (use-package citar
   :custom
-  (org-cite-insert-processor 'citar)
-  (org-cite-follow-processor 'citar)
-  (org-cite-activate-processor 'citar)
-  (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
   (citar-bibliography org-cite-global-bibliography)
   (citar-at-point-function 'embark-act)
   (citar-templates '((main . "${author editor:30}     ${date year issued:4}     ${title:48}")
@@ -177,10 +173,6 @@
        (setq-local corfu-echo-delay nil
                    corfu-popupinfo-delay nil)
        t)))
-
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (tab-always-indent 'complete)
 
   ;; Additional Customisations
   (corfu-cycle t)                     ;; Enable cycling for `corfu-next/previous'
@@ -394,18 +386,6 @@ target, followed by an ellipsis if there are further targets."
 
   ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
   (vertico-cycle t)
-
-  ;; Do not allow the cursor in the minibuffer prompt
-  (minibuffer-prompt-properties
-   '(read-only t cursor-intangible t face minibuffer-prompt))
-
-  ;; Hide commands in M-x which do not work in the current mode.
-  ;; Vertico commands are hidden in normal buffers.
-  (read-extended-command-predicate
-   #'command-completion-default-include-p)
-
-  ;; Enable recursive minibuffers
-  (enable-recursive-minibuffers t)
 
   :bind
   (:map vertico-map

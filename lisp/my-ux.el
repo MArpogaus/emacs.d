@@ -34,8 +34,6 @@
   (global-auto-revert-non-file-buffers t)
   ;; Get notified by the system instead of polling.
   (auto-revert-avoid-polling t)
-  ;; Only prompts for confirmation when buffer is unsaved.
-  (revert-without-query (list "."))
   :hook
   (elpaca-after-init . global-auto-revert-mode))
 
@@ -571,16 +569,12 @@ buffer-local VIA picks the map per buffer."
 (use-package savehist
   :ensure nil
   :custom
-  (kill-ring-max 500)
-  (history-length 500)
   (savehist-additional-variables
    ;; Minibuffer histories are saved anyway.
    '(command-history
      kill-ring
      regexp-search-ring
      search-ring))
-  ;; No duplicates in history
-  (history-delete-duplicates t)
   :config
   (put 'set-variable-value-history 'history-length 250)
   (put 'custom-variable-history    'history-length 250)

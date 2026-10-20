@@ -73,6 +73,25 @@
   (org-return-follows-link t)
   (org-mouse-1-follows-link t)
 
+  ;; Citations through citar
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  (org-cite-biblatex-options "hyperref=true,url=true,backend=biber,natbib=true")
+  (org-cycle-level-faces nil)
+  (org-n-level-faces 4)
+
+  ;; Edit settings
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
+
+  ;; Org styling, hide markup etc.
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+
   ;; Todo
   (org-todo-keywords
    '((sequence
