@@ -35,6 +35,24 @@ A buffer with unsaved edits is left alone."
             (revert-buffer t t t)))))
     (when-let* ((window (get-buffer-window org-agenda-buffer-name t)))
       (with-selected-window window (org-agenda-redo-all))))
+  (defun my/gtd-directory ()
+    "Return the directory of the agenda repository."
+    (expand-file-name "agenda/" org-directory))
+  (defun my/gtd-shell ()
+    "Return the agent that runs in the agenda repository, or nil."
+    (seq-find (lambda (buffer)
+                (file-equal-p (buffer-local-value 'default-directory buffer) (my/gtd-directory)))
+              (agent-shell-buffers)))
+  (defun my/gtd-quit ()
+    "Quit the agenda; in the GTD tab group also end its agent.
+Returns non-nil when the session ended, so auto-tab-groups closes
+the group."
+    (interactive)
+    (let ((gtd (equal (alist-get 'group (tab-bar--current-tab-find)) "GTD")))
+      (when-let* ((shell (and gtd (my/gtd-shell))))
+        (kill-buffer shell))
+      (org-agenda-quit)
+      gtd))
   (defun my/gtd (&optional prompt)
     "Show the GTD agenda beside a Claude agent in the agenda directory.
 A new agent gets the first of `my/gtd-prompts'; with a prefix argument,
@@ -43,10 +61,8 @@ pick PROMPT, which also goes to an agent that runs already."
      (list (when current-prefix-arg
              (cdr (assoc (completing-read "Review: " my/gtd-prompts nil t)
                          my/gtd-prompts)))))
-    (let* ((dir (expand-file-name "agenda/" org-directory))
-           (shell (seq-find (lambda (buffer)
-                              (file-equal-p (buffer-local-value 'default-directory buffer) dir))
-                            (agent-shell-buffers))))
+    (let ((dir (my/gtd-directory))
+          (shell (my/gtd-shell)))
       ;; In a main window: shown the usual way, auto-side-windows would
       ;; put the agenda in a panel.
       (save-window-excursion (org-agenda nil "g"))

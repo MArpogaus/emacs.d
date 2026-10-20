@@ -33,6 +33,7 @@
   (auto-tab-groups-close-commands
    '((dirvish-quit "dirvish" :always-close t)
      (my/kill-denote-buffers "denote" :always-close t)
+     (my/gtd-quit "GTD")
      (Custom-buffer-done "customize" :always-close t)))
   :bind
   (:map my/workspace-map

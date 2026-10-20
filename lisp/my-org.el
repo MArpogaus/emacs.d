@@ -163,7 +163,7 @@
         ("C-c P" . org-present)))
 
 ;; org-agenda :build_in:
-;; Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword.
+;; Keys for the GTD work in the agenda; =g= reloads, =t= sets the keyword, =q= in the GTD tab group also ends the agent and closes the group.
 
 (use-package org-agenda
   :ensure nil
@@ -184,7 +184,8 @@ Its entries point into that buffer: a click on one would fail."
         ("r" . org-agenda-refile)
         ("s" . org-agenda-schedule)
         ("d" . org-agenda-deadline)
-        ("c" . my/org-capture-inbox))
+        ("c" . my/org-capture-inbox)
+        ("q" . my/gtd-quit))
   :config
   ;; Block headers large and in variable pitch.  An override spec, because
   ;; the theme sets this face and would win over a defface spec.
