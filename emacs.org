@@ -913,11 +913,13 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
     ;; Refile and Archive
     (org-refile-use-outline-path 'file)
     (org-outline-path-complete-in-steps nil)
-    ;; The Tasks heading of each project, Miscellaneous and the reading list
+    ;; The Tasks heading of each project, and the Work and Private headings
+    ;; of Miscellaneous and of the reading list
     (org-refile-targets
-     `((org-agenda-files :tag . "tasks")
-       (org-agenda-files :tag . "misc")
-       (,(expand-file-name "agenda/literature.org" org-directory) :level . 1)))
+     '((org-agenda-files :tag . "tasks")
+       (org-agenda-files :regexp . "^\\*+ \\(?:Work\\|Private\\)\\(?: \\[[0-9/%]*\\]\\)?\\(?:[ \t]+:[[:alnum:]_@#%:]+:\\)?[ \t]*$")))
+    ;; A project without a NEXT task is stuck.
+    (org-stuck-projects '("/PROJ" ("NEXT") nil ""))
     (org-agenda-custom-commands
      '(("g" "Get Things Done (GTD)"
         ((agenda "" ((org-agenda-overriding-header "󱨰   Heute")
