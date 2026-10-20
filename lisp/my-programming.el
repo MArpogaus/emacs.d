@@ -442,11 +442,6 @@ Tempel comes after :with, so the capf answers only when eglot does."
         ("a" . eglot-code-actions)
         ("r" . eglot-rename))
   :config
-  ;; Filter list of all possible completions with Orderless
-  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
-  (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless)))
-
   ;; Continuously update the candidates using cape cache buster
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   :hook
