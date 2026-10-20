@@ -3010,6 +3010,23 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
         ;; :no-focus it then shows itself in whatever tab is current.
         (when prompt
           (agent-shell-insert :text prompt :submit t :no-focus t :shell-buffer shell))))
+    (defvar my/agent-shell-args-history nil
+      "Extra arguments given to `my/agent-shell-claude-with-args'.")
+    (defun my/agent-shell-claude-with-args (args)
+      "Start a Claude agent whose command line has ARGS added, for it only.
+  ARGS is read as a shell would split it, e.g. --host-port 8765.  The
+  client is made when the session starts, so the arguments go into its
+  maker rather than into `agent-shell-anthropic-claude-acp-command'."
+      (interactive
+       (list (split-string-shell-command
+              (read-string "Claude ACP arguments: " nil 'my/agent-shell-args-history))))
+      (let ((config (agent-shell-anthropic-make-claude-code-config))
+            (command (append agent-shell-anthropic-claude-acp-command args)))
+        (setf (alist-get :client-maker config)
+              (lambda (buffer)
+                (let ((agent-shell-anthropic-claude-acp-command command))
+                  (agent-shell-anthropic-make-claude-client :buffer buffer))))
+        (agent-shell-start :config config)))
     :autoload agent-shell-buffers
     :custom
     (agent-shell-header-style 'text)
@@ -3020,6 +3037,7 @@ A native Emacs buffer to interact with LLM agents powered by ACP.
     :bind
     (:map my/ai-map
           ("s" . agent-shell)
+          ("S" . my/agent-shell-claude-with-args)
           :map my/open-map
           ("g" . my/gtd)))
 #+end_src
