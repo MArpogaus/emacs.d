@@ -890,9 +890,6 @@ Agenda view and task management follow https://github.com/rougier/emacs-gtd
     ;; org-agenda
     ;; A directory, so Org also finds files created after startup
     (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
-    ;; auto-side-windows places the agenda; quit only kills the buffer and
-    ;; deletes no window, which fails beside side windows.
-    (org-agenda-window-setup 'current-window)
 
     ;; Refile and Archive
     (org-refile-use-outline-path 'file)
@@ -1985,6 +1982,12 @@ Revert buffers when the underlying file has changed.
                (header-line-format . t)
                (mode-line-format . t))))
     (org-src-window-setup 'plain)
+    ;; auto-side-windows places the agenda; quit only kills the buffer and
+    ;; deletes no window, which fails beside side windows.
+    (org-agenda-window-setup 'current-window)
+    (dape-buffer-window-arrangement 'right)
+    (symbols-outline-window-position 'left)
+    (minimap-window-location 'right)
     (magit-display-buffer-function #'display-buffer)
     (magit-commit-diff-inhibit-same-window t)
     (transient-display-buffer-action
@@ -2092,7 +2095,6 @@ Sidebar showing a "mini-map" of a buffer.
 #+begin_src emacs-lisp
   (use-package minimap
     :custom
-    (minimap-window-location 'right)
     (minimap-hide-fringes t)
     (minimap-minimum-width 25)
     (minimap-width-fraction 0)
@@ -4238,9 +4240,6 @@ Debug Adapter Protocol for Emacs.
      :exit
      ("q" . dape-quit))
     :config
-    ;; Info buffers to the right
-    (setq dape-buffer-window-arrangement 'right)
-
     ;; Save buffers on startup, useful for interpreted languages
     (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
     :hook
@@ -4609,8 +4608,6 @@ Display symbols (functions, variables, etc) in a side window.
     ;; It makes its side window itself, past auto-side-windows' parameters.
     :hook
     (symbols-outline-mode . mode-line-invisible-mode)
-    :custom
-    (symbols-outline-window-position 'left)
     :config
     ;; By default the ctags backend is selected
     (unless (executable-find "ctags")

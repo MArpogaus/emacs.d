@@ -106,9 +106,6 @@
   ;; org-agenda
   ;; A directory, so Org also finds files created after startup
   (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
-  ;; auto-side-windows places the agenda; quit only kills the buffer and
-  ;; deletes no window, which fails beside side windows.
-  (org-agenda-window-setup 'current-window)
 
   ;; Refile and Archive
   (org-refile-use-outline-path 'file)

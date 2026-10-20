@@ -401,9 +401,6 @@ rest of the major mode setup, globalized minor modes included."
    :exit
    ("q" . dape-quit))
   :config
-  ;; Info buffers to the right
-  (setq dape-buffer-window-arrangement 'right)
-
   ;; Save buffers on startup, useful for interpreted languages
   (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
   :hook
@@ -772,8 +769,6 @@ If ENV is nil, drop the choice."
   ;; It makes its side window itself, past auto-side-windows' parameters.
   :hook
   (symbols-outline-mode . mode-line-invisible-mode)
-  :custom
-  (symbols-outline-window-position 'left)
   :config
   ;; By default the ctags backend is selected
   (unless (executable-find "ctags")

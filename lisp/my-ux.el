@@ -299,6 +299,12 @@ any; its own header line stretches to the right edge of the window."
              (header-line-format . t)
              (mode-line-format . t))))
   (org-src-window-setup 'plain)
+  ;; auto-side-windows places the agenda; quit only kills the buffer and
+  ;; deletes no window, which fails beside side windows.
+  (org-agenda-window-setup 'current-window)
+  (dape-buffer-window-arrangement 'right)
+  (symbols-outline-window-position 'left)
+  (minimap-window-location 'right)
   (magit-display-buffer-function #'display-buffer)
   (magit-commit-diff-inhibit-same-window t)
   (transient-display-buffer-action
@@ -406,7 +412,6 @@ An opened preview shows its source and has no image to scale."
 
 (use-package minimap
   :custom
-  (minimap-window-location 'right)
   (minimap-hide-fringes t)
   (minimap-minimum-width 25)
   (minimap-width-fraction 0)
